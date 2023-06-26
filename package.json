@@ -1,0 +1,23 @@
+{
+  "name": "@highcharts/dashboards",
+  "description": "Highcharts Dashboards framework",
+  "homepage": "http://www.highcharts.com/dashboards",
+  "version": "1.0.0",
+  "author": "Highsoft AS <support@highcharts.com> (http://www.highcharts.com/about)",
+  "main": "dashboards.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/highcharts/dashboards-dist"
+  },
+  "keywords": [
+    "chart",
+    "dashboard",
+    "data",
+    "graph",
+    "table",
+    "visualization"
+  ],
+  "bugs": "https://github.com/highcharts/highcharts/issues",
+  "license": "https://www.highcharts.com/license",
+  "types": "es-modules/masters/dashboards.d.ts"
+}
