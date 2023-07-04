@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v0.0.2 (@product.date@)
+ * @license Highcharts Dashboards v@product.version@ (@product.date@)
  * @module dashboards/datagrid
  * @requires dashboards
  *
@@ -7,15 +7,11 @@
  *
  * License: www.highcharts.com/license
  */
-import DataGrid from '../DataGrid/DataGrid.js';
 declare global {
     interface Window {
-        DataGrid: typeof DG;
+        DataGrid: typeof G;
     }
-    let DataGrid: typeof DG;
+    let DataGrid: typeof G;
 }
-declare const DG: {
-    win: Window & typeof globalThis;
-    DataGrid: typeof DataGrid;
-};
-export default DG;
+declare const G: AnyRecord;
+export default G;

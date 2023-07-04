@@ -117,6 +117,13 @@ declare namespace HTMLComponent {
          *   }
          * }]
          * ```
+         *
+         * Try it:
+         *
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/html-component/single-element/ | HTML component with one image.}
+         *
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/html-component/nested-elements/ | HTML component with nested images.}
+         *
          */
         elements?: (AST.Node | string)[];
         type: 'HTML';

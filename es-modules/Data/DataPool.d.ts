@@ -5,7 +5,6 @@ import DataConnector from './Connectors/DataConnector.js';
 /**
  * Data pool to load connectors on-demand.
  *
- * @private
  * @class
  * @name Data.DataPool
  *

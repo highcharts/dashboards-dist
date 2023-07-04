@@ -1,4 +1,5 @@
 import type DataEvent from '../DataEvent';
+import type CSVConnectorOptions from './CSVConnectorOptions';
 import CSVConverter from '../Converters/CSVConverter.js';
 import DataConnector from './DataConnector.js';
 /**
@@ -7,7 +8,7 @@ import DataConnector from './DataConnector.js';
  * @private
  */
 declare class CSVConnector extends DataConnector {
-    protected static readonly defaultOptions: CSVConnector.Options;
+    protected static readonly defaultOptions: CSVConnectorOptions;
     /**
      * Constructs an instance of CSVConnector.
      *
@@ -19,7 +20,7 @@ declare class CSVConnector extends DataConnector {
      * Options related to the handling of the CSV DataConnector,
      * i.e. source, fetching, polling
      */
-    readonly options: CSVConnector.Options;
+    readonly options: CSVConnectorOptions;
     /**
      * The attached parser, which can be replaced in the constructor
      */
@@ -70,18 +71,9 @@ declare namespace CSVConnector {
         csv?: string;
     }
     /**
-     * Options of the CSVConnector.
-     */
-    interface Options extends DataConnector.Options {
-        csv: string;
-        csvURL: string;
-        enablePolling: boolean;
-        dataRefreshRate: number;
-    }
-    /**
      * Available options for constructor and converter of the CSVConnector.
      */
-    type UserOptions = (DeepPartial<Options> & CSVConverter.UserOptions);
+    type UserOptions = (DeepPartial<CSVConnectorOptions> & CSVConverter.UserOptions);
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v0.0.2 (2023-07-03)
+ * @license Highcharts Dashboards v1.0.0 (2023-07-04)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '11.1.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.0.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -3612,7 +3612,7 @@
                 }
             }
             /**
-             * Starts polling new data after the specific timespan in milliseconds.
+             * Starts polling new data after the specific time span in milliseconds.
              *
              * @param {number} refreshTime
              * Refresh time in milliseconds between polls.
@@ -4755,6 +4755,278 @@
 
         return DataCursorHelper;
     });
+    _registerModule(_modules, 'Data/Modifiers/DataModifier.js', [_modules['Core/Utilities.js']], function (U) {
+        /* *
+         *
+         *  (c) 2009-2023 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Gøran Slettemark
+         *
+         * */
+        const { addEvent, fireEvent, merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Abstract class to provide an interface for modifying a table.
+         *
+         * @private
+         */
+        class DataModifier {
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Runs a timed execution of the modifier on the given datatable.
+             * Can be configured to run multiple times.
+             *
+             * @param {DataTable} dataTable
+             * The datatable to execute
+             *
+             * @param {DataModifier.BenchmarkOptions} options
+             * Options. Currently supports `iterations` for number of iterations.
+             *
+             * @return {Array<number>}
+             * An array of times in milliseconds
+             *
+             */
+            benchmark(dataTable, options) {
+                const results = [];
+                const modifier = this;
+                const execute = () => {
+                    modifier.modifyTable(dataTable);
+                    modifier.emit({
+                        type: 'afterBenchmarkIteration'
+                    });
+                };
+                const defaultOptions = {
+                    iterations: 1
+                };
+                const { iterations } = merge(defaultOptions, options);
+                modifier.on('afterBenchmarkIteration', () => {
+                    if (results.length === iterations) {
+                        modifier.emit({
+                            type: 'afterBenchmark',
+                            results
+                        });
+                        return;
+                    }
+                    // Run again
+                    execute();
+                });
+                const times = {
+                    startTime: 0,
+                    endTime: 0
+                };
+                // Add timers
+                modifier.on('modify', () => {
+                    times.startTime = window.performance.now();
+                });
+                modifier.on('afterModify', () => {
+                    times.endTime = window.performance.now();
+                    results.push(times.endTime - times.startTime);
+                });
+                // Initial run
+                execute();
+                return results;
+            }
+            /**
+             * Emits an event on the modifier to all registered callbacks of this event.
+             *
+             * @param {DataModifier.Event} [e]
+             * Event object containing additonal event information.
+             */
+            emit(e) {
+                fireEvent(this, e.type, e);
+            }
+            /**
+             * Returns a modified copy of the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Table to modify.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Promise<Highcharts.DataTable>}
+             * Table with `modified` property as a reference.
+             */
+            modify(table, eventDetail) {
+                const modifier = this;
+                return new Promise((resolve, reject) => {
+                    if (table.modified === table) {
+                        table.modified = table.clone(false, eventDetail);
+                    }
+                    try {
+                        resolve(modifier.modifyTable(table, eventDetail));
+                    }
+                    catch (e) {
+                        modifier.emit({
+                            type: 'error',
+                            detail: eventDetail,
+                            table
+                        });
+                        reject(e);
+                    }
+                });
+            }
+            /**
+             * Applies partial modifications of a cell change to the property `modified`
+             * of the given modified table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {string} columnName
+             * Column name of changed cell.
+             *
+             * @param {number|undefined} rowIndex
+             * Row index of changed cell.
+             *
+             * @param {Highcharts.DataTableCellType} cellValue
+             * Changed cell value.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyCell(table, columnName, rowIndex, cellValue, eventDetail) {
+                return this.modifyTable(table);
+            }
+            /**
+             * Applies partial modifications of column changes to the property
+             * `modified` of the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {Highcharts.DataTableColumnCollection} columns
+             * Changed columns as a collection, where the keys are the column names.
+             *
+             * @param {number} [rowIndex=0]
+             * Index of the first changed row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyColumns(table, columns, rowIndex, eventDetail) {
+                return this.modifyTable(table);
+            }
+            /**
+             * Applies partial modifications of row changes to the property `modified`
+             * of the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
+             * Changed rows.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first changed row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyRows(table, rows, rowIndex, eventDetail) {
+                return this.modifyTable(table);
+            }
+            /**
+             * Registers a callback for a specific modifier event.
+             *
+             * @param {string} type
+             * Event type as a string.
+             *
+             * @param {DataEventEmitter.Callback} callback
+             * Function to register for an modifier callback.
+             *
+             * @return {Function}
+             * Function to unregister callback from the modifier event.
+             */
+            on(type, callback) {
+                return addEvent(this, type, callback);
+            }
+        }
+        /* *
+         *
+         *  Class Namespace
+         *
+         * */
+        /**
+         * Additionally provided types for modifier events and options.
+         * @private
+         */
+        (function (DataModifier) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             * Registry as a record object with modifier names and their class
+             * constructor.
+             */
+            DataModifier.types = {};
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Adds a modifier class to the registry. The modifier class has to provide
+             * the `DataModifier.options` property and the `DataModifier.modifyTable`
+             * method to modify the table.
+             *
+             * @private
+             *
+             * @param {string} key
+             * Registry key of the modifier class.
+             *
+             * @param {DataModifierType} DataModifierClass
+             * Modifier class (aka class constructor) to register.
+             *
+             * @return {boolean}
+             * Returns true, if the registration was successful. False is returned, if
+             * their is already a modifier registered with this key.
+             */
+            function registerType(key, DataModifierClass) {
+                return (!!key &&
+                    !DataModifier.types[key] &&
+                    !!(DataModifier.types[key] = DataModifierClass));
+            }
+            DataModifier.registerType = registerType;
+        })(DataModifier || (DataModifier = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataModifier;
+    });
     _registerModule(_modules, 'Data/DataPoolDefaults.js', [], function () {
         /* *
          *
@@ -4784,7 +5056,7 @@
 
         return DataPoolDefaults;
     });
-    _registerModule(_modules, 'Data/DataPool.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/DataPoolDefaults.js'], _modules['Core/Utilities.js']], function (DataConnector, DataPoolDefaults, U) {
+    _registerModule(_modules, 'Data/DataPool.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPoolDefaults.js'], _modules['Core/Utilities.js']], function (DataConnector, DataModifier, DataPoolDefaults, U) {
         /* *
          *
          *  (c) 2009-2023 Highsoft AS
@@ -4805,7 +5077,6 @@
         /**
          * Data pool to load connectors on-demand.
          *
-         * @private
          * @class
          * @name Data.DataPool
          *
@@ -4936,7 +5207,20 @@
                     const connector = new ConnectorClass(options.options);
                     this.connectors[options.id] = connector;
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    connector.load().then((connector) => {
+                    connector
+                        .load()
+                        .then((connector) => {
+                        var _a;
+                        if ((_a = options === null || options === void 0 ? void 0 : options.options) === null || _a === void 0 ? void 0 : _a.dataModifier) {
+                            const ModifierClass = DataModifier
+                                .types[options.options.dataModifier.type];
+                            return connector.table
+                                .setModifier(new ModifierClass(options.options.dataModifier))
+                                .then(() => connector);
+                        }
+                        return connector;
+                    })
+                        .then((connector) => {
                         this.emit({
                             type: 'afterLoad',
                             options
@@ -10062,7 +10346,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/11.1.0/gfx/dashboard-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.0.0/gfx/dashboard-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -13276,278 +13560,6 @@
 
         return Board;
     });
-    _registerModule(_modules, 'Data/Modifiers/DataModifier.js', [_modules['Core/Utilities.js']], function (U) {
-        /* *
-         *
-         *  (c) 2009-2023 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Gøran Slettemark
-         *
-         * */
-        const { addEvent, fireEvent, merge } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Abstract class to provide an interface for modifying a table.
-         *
-         * @private
-         */
-        class DataModifier {
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Runs a timed execution of the modifier on the given datatable.
-             * Can be configured to run multiple times.
-             *
-             * @param {DataTable} dataTable
-             * The datatable to execute
-             *
-             * @param {DataModifier.BenchmarkOptions} options
-             * Options. Currently supports `iterations` for number of iterations.
-             *
-             * @return {Array<number>}
-             * An array of times in milliseconds
-             *
-             */
-            benchmark(dataTable, options) {
-                const results = [];
-                const modifier = this;
-                const execute = () => {
-                    modifier.modifyTable(dataTable);
-                    modifier.emit({
-                        type: 'afterBenchmarkIteration'
-                    });
-                };
-                const defaultOptions = {
-                    iterations: 1
-                };
-                const { iterations } = merge(defaultOptions, options);
-                modifier.on('afterBenchmarkIteration', () => {
-                    if (results.length === iterations) {
-                        modifier.emit({
-                            type: 'afterBenchmark',
-                            results
-                        });
-                        return;
-                    }
-                    // Run again
-                    execute();
-                });
-                const times = {
-                    startTime: 0,
-                    endTime: 0
-                };
-                // Add timers
-                modifier.on('modify', () => {
-                    times.startTime = window.performance.now();
-                });
-                modifier.on('afterModify', () => {
-                    times.endTime = window.performance.now();
-                    results.push(times.endTime - times.startTime);
-                });
-                // Initial run
-                execute();
-                return results;
-            }
-            /**
-             * Emits an event on the modifier to all registered callbacks of this event.
-             *
-             * @param {DataModifier.Event} [e]
-             * Event object containing additonal event information.
-             */
-            emit(e) {
-                fireEvent(this, e.type, e);
-            }
-            /**
-             * Returns a modified copy of the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Table to modify.
-             *
-             * @param {DataEvent.Detail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Promise<Highcharts.DataTable>}
-             * Table with `modified` property as a reference.
-             */
-            modify(table, eventDetail) {
-                const modifier = this;
-                return new Promise((resolve, reject) => {
-                    if (table.modified === table) {
-                        table.modified = table.clone(false, eventDetail);
-                    }
-                    try {
-                        resolve(modifier.modifyTable(table, eventDetail));
-                    }
-                    catch (e) {
-                        modifier.emit({
-                            type: 'error',
-                            detail: eventDetail,
-                            table
-                        });
-                        reject(e);
-                    }
-                });
-            }
-            /**
-             * Applies partial modifications of a cell change to the property `modified`
-             * of the given modified table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {string} columnName
-             * Column name of changed cell.
-             *
-             * @param {number|undefined} rowIndex
-             * Row index of changed cell.
-             *
-             * @param {Highcharts.DataTableCellType} cellValue
-             * Changed cell value.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyCell(table, columnName, rowIndex, cellValue, eventDetail) {
-                return this.modifyTable(table);
-            }
-            /**
-             * Applies partial modifications of column changes to the property
-             * `modified` of the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {Highcharts.DataTableColumnCollection} columns
-             * Changed columns as a collection, where the keys are the column names.
-             *
-             * @param {number} [rowIndex=0]
-             * Index of the first changed row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyColumns(table, columns, rowIndex, eventDetail) {
-                return this.modifyTable(table);
-            }
-            /**
-             * Applies partial modifications of row changes to the property `modified`
-             * of the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
-             * Changed rows.
-             *
-             * @param {number} [rowIndex]
-             * Index of the first changed row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyRows(table, rows, rowIndex, eventDetail) {
-                return this.modifyTable(table);
-            }
-            /**
-             * Registers a callback for a specific modifier event.
-             *
-             * @param {string} type
-             * Event type as a string.
-             *
-             * @param {DataEventEmitter.Callback} callback
-             * Function to register for an modifier callback.
-             *
-             * @return {Function}
-             * Function to unregister callback from the modifier event.
-             */
-            on(type, callback) {
-                return addEvent(this, type, callback);
-            }
-        }
-        /* *
-         *
-         *  Class Namespace
-         *
-         * */
-        /**
-         * Additionally provided types for modifier events and options.
-         * @private
-         */
-        (function (DataModifier) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            /**
-             * Registry as a record object with modifier names and their class
-             * constructor.
-             */
-            DataModifier.types = {};
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Adds a modifier class to the registry. The modifier class has to provide
-             * the `DataModifier.options` property and the `DataModifier.modifyTable`
-             * method to modify the table.
-             *
-             * @private
-             *
-             * @param {string} key
-             * Registry key of the modifier class.
-             *
-             * @param {DataModifierType} DataModifierClass
-             * Modifier class (aka class constructor) to register.
-             *
-             * @return {boolean}
-             * Returns true, if the registration was successful. False is returned, if
-             * their is already a modifier registered with this key.
-             */
-            function registerType(key, DataModifierClass) {
-                return (!!key &&
-                    !DataModifier.types[key] &&
-                    !!(DataModifier.types[key] = DataModifierClass));
-            }
-            DataModifier.registerType = registerType;
-        })(DataModifier || (DataModifier = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataModifier;
-    });
     _registerModule(_modules, 'Dashboards/PluginHandler.js', [_modules['Dashboards/Board.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Components/ComponentRegistry.js']], function (Board, Sync, ComponentRegistry) {
         /* *
          *
@@ -14813,7 +14825,8 @@
             csv: '',
             csvURL: '',
             enablePolling: false,
-            dataRefreshRate: 1
+            dataRefreshRate: 1,
+            firstRowAsNames: true
         };
         DataConnector.registerType('CSV', CSVConnector);
         /* *
@@ -15205,7 +15218,7 @@
          *
          * */
         /**
-         * Class that handles creating a dataconnector from an HTML table.
+         * Class that handles creating a data connector from an HTML table.
          *
          * @private
          */
@@ -16599,25 +16612,35 @@
          *  Namespace
          *
          * */
-        const D = Object.assign(Object.assign(Object.assign({}, Globals), Utilities), { Board, board: Board.board, Component,
-            ComponentRegistry,
-            DataConnector,
-            DataCursor,
-            DataModifier,
-            DataPool,
-            DataTable,
-            PluginHandler,
-            Sync });
+        const G = Globals;
+        G.board = Board.board;
+        G.merge = Utilities.merge;
+        G.uniqueKey = Utilities.uniqueKey;
+        G.Board = Board;
+        G.Component = Component;
+        G.ComponentRegistry = ComponentRegistry;
+        G.DataConnector = DataConnector;
+        G.DataCursor = DataCursor;
+        G.DataModifier = DataModifier;
+        G.DataPool = DataPool;
+        G.DataTable = DataTable;
+        G.PluginHandler = PluginHandler;
+        G.Sync = Sync;
         /* *
          *
-         *  Classic Exports
+         *  Classic Export
          *
          * */
-        if (!D.win.Dashboards) {
-            D.win.Dashboards = D;
+        if (!G.win.Dashboards) {
+            G.win.Dashboards = G;
         }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
 
-        return D;
+        return G;
     });
     _modules['masters/dashboards.src.js']._modules = _modules;
     return _modules['masters/dashboards.src.js'];

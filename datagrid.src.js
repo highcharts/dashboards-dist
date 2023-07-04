@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v0.0.2 (2023-07-03)
+ * @license Highcharts Dashboards v1.0.0 (2023-07-04)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -33,56 +33,6 @@
             }
         }
     }
-    _registerModule(_modules, 'DataGrid/DataGridUtils.js', [], function () {
-        /* *
-         *
-         *  Data Grid utilities
-         *
-         *  (c) 2009-2023 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Øystein Moseng
-         *
-         * */
-        /* *
-         *
-         *  Functions
-         *
-         * */
-        const DataGridUtils = {
-            dataTableCellToString(cell) {
-                return typeof cell === 'string' ||
-                    typeof cell === 'number' ||
-                    typeof cell === 'boolean' ?
-                    '' + cell :
-                    '';
-            },
-            emptyHTMLElement(element) {
-                while (element.firstChild) {
-                    element.removeChild(element.firstChild);
-                }
-            },
-            makeDiv: (className, id) => {
-                const div = document.createElement('div');
-                div.className = className;
-                if (id) {
-                    div.id = id;
-                }
-                return div;
-            }
-        };
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataGridUtils;
-    });
     _registerModule(_modules, 'DataGrid/Globals.js', [], function () {
         /* *
          *
@@ -147,6 +97,56 @@
          * */
 
         return Globals;
+    });
+    _registerModule(_modules, 'DataGrid/DataGridUtils.js', [], function () {
+        /* *
+         *
+         *  Data Grid utilities
+         *
+         *  (c) 2009-2023 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Øystein Moseng
+         *
+         * */
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        const DataGridUtils = {
+            dataTableCellToString(cell) {
+                return typeof cell === 'string' ||
+                    typeof cell === 'number' ||
+                    typeof cell === 'boolean' ?
+                    '' + cell :
+                    '';
+            },
+            emptyHTMLElement(element) {
+                while (element.firstChild) {
+                    element.removeChild(element.firstChild);
+                }
+            },
+            makeDiv: (className, id) => {
+                const div = document.createElement('div');
+                div.className = className;
+                if (id) {
+                    div.id = id;
+                }
+                return div;
+            }
+        };
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataGridUtils;
     });
     _registerModule(_modules, 'Core/Chart/ChartDefaults.js', [], function () {
         /* *
@@ -5950,7 +5950,7 @@
              * @internal
              */
             getColumnsToDisplay() {
-                const columnsOptions = this.options.columns, tableColumns = this.dataTable.getColumnNames(), filteredColumns = [];
+                const columnsOptions = this.options.columns, tableColumns = this.dataTable.modified.getColumnNames(), filteredColumns = [];
                 for (let i = 0; i < tableColumns.length; i++) {
                     const columnName = tableColumns[i];
                     const column = columnsOptions[columnName];
@@ -6055,13 +6055,13 @@
                 }
                 this.prevTop = i;
                 const columnsInPresentationOrder = this.columnNames;
-                const rowCount = this.dataTable.getRowCount();
+                const rowCount = this.dataTable.modified.getRowCount();
                 for (let j = 0; j < this.rowElements.length && i < rowCount; j++, i++) {
                     const rowElement = this.rowElements[j];
                     rowElement.dataset.rowIndex = String(i);
                     const cellElements = rowElement.childNodes;
                     for (let k = 0, kEnd = columnsInPresentationOrder.length; k < kEnd; k++) {
-                        const cell = cellElements[k], column = columnsInPresentationOrder[k], value = this.dataTable
+                        const cell = cellElements[k], column = columnsInPresentationOrder[k], value = this.dataTable.modified
                             .getCell(columnsInPresentationOrder[k], i);
                         cell.textContent = this.formatCell(value, column);
                         // TODO: consider adding these dynamically to the input element
@@ -6206,7 +6206,7 @@
              */
             updateScrollingLength() {
                 const columnsInPresentationOrder = this.columnNames;
-                let i = this.dataTable.getRowCount() - 1;
+                let i = this.dataTable.modified.getRowCount() - 1;
                 let height = 0;
                 const top = i - this.getNumRowsToDraw();
                 const outerHeight = this.outerContainer.clientHeight;
@@ -6220,7 +6220,8 @@
                 for (let j = 0; j < this.rowElements.length; j++) {
                     const cellElements = this.rowElements[j].childNodes;
                     for (let k = 0; k < columnsInPresentationOrder.length; k++) {
-                        cellElements[k].textContent = dataTableCellToString(this.dataTable.getCell(columnsInPresentationOrder[k], i - j));
+                        cellElements[k].textContent = dataTableCellToString(this.dataTable.modified
+                            .getCell(columnsInPresentationOrder[k], i - j));
                     }
                 }
                 this.scrollContainer.appendChild(this.innerContainer);
@@ -6236,7 +6237,7 @@
                 // How much innerContainer needs to be scrolled to fully show the last
                 // row when scrolled to the end
                 this.scrollEndTop = height - outerHeight;
-                const scrollHeight = (this.dataTable.getRowCount() + extraRows) *
+                const scrollHeight = (this.dataTable.modified.getRowCount() + extraRows) *
                     this.options.cellHeight;
                 this.scrollContainer.style.height = scrollHeight + 'px';
             }
@@ -6249,7 +6250,7 @@
              * The number rows to render.
              */
             getNumRowsToDraw() {
-                return Math.min(this.dataTable.getRowCount(), Math.ceil(this.outerContainer.offsetHeight / this.options.cellHeight));
+                return Math.min(this.dataTable.modified.getRowCount(), Math.ceil(this.outerContainer.offsetHeight / this.options.cellHeight));
             }
             /**
              * Internal method that calculates the data grid height. If the container
@@ -6595,7 +6596,7 @@
 
         return DataGrid;
     });
-    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['DataGrid/DataGrid.js']], function (DataGrid) {
+    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/DataGrid.js']], function (Globals, DataGrid) {
 
         /* *
          *
@@ -6607,19 +6608,23 @@
          *  Namespace
          *
          * */
-        const DG = {
-            win: window,
-            DataGrid
-        };
+        const G = Globals;
+        G.win = window;
+        G.DataGrid = DataGrid;
         /* *
          *
-         *  Classic Exports
+         *  Classic Export
          *
          * */
-        if (!DG.win.DataGrid) {
-            DG.win.DataGrid = DG;
+        if (!G.win.DataGrid) {
+            G.win.DataGrid = G;
         }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
 
-        return DG;
+        return G;
     });
 }));

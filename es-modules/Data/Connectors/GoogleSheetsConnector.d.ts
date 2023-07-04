@@ -1,4 +1,5 @@
 import type DataEvent from '../DataEvent';
+import type GoogleSheetsConnectorOptions from './GoogleSheetsConnectorOptions';
 import DataConnector from './DataConnector.js';
 import GoogleSheetsConverter from '../Converters/GoogleSheetsConverter.js';
 /**
@@ -6,7 +7,7 @@ import GoogleSheetsConverter from '../Converters/GoogleSheetsConverter.js';
  * @todo implement save, requires oauth2
  */
 declare class GoogleSheetsConnector extends DataConnector {
-    protected static readonly defaultOptions: GoogleSheetsConnector.Options;
+    protected static readonly defaultOptions: GoogleSheetsConnectorOptions;
     /**
      * Constructs an instance of GoogleSheetsConnector
      *
@@ -14,7 +15,7 @@ declare class GoogleSheetsConnector extends DataConnector {
      * Options for the connector and converter.
      */
     constructor(options?: GoogleSheetsConnector.UserOptions);
-    readonly options: GoogleSheetsConnector.Options;
+    readonly options: GoogleSheetsConnectorOptions;
     /**
      * The attached converter, which can be replaced in the constructor
      */
@@ -40,36 +41,20 @@ declare namespace GoogleSheetsConnector {
         readonly url: string;
     }
     /**
-     * Options of the GoogleSheetsConnector.
-     */
-    interface Options extends DataConnector.Options {
-        dataRefreshRate: number;
-        enablePolling: boolean;
-        endColumn?: number;
-        endRow?: number;
-        firstRowAsNames: boolean;
-        googleAPIKey: string;
-        googleSpreadsheetKey: string;
-        googleSpreadsheetRange?: string;
-        startColumn?: number;
-        startRow?: number;
-        worksheet?: number;
-    }
-    /**
      * Available options for constructor and converter of the
      * GoogleSheetsConnector.
      */
-    type UserOptions = (DeepPartial<Options> & GoogleSheetsConverter.UserOptions);
+    type UserOptions = (DeepPartial<GoogleSheetsConnectorOptions> & GoogleSheetsConverter.UserOptions);
     /**
      * Creates GoogleSheets API v4 URL.
      * @private
      */
-    function buildFetchURL(apiKey: string, sheetKey: string, options?: Partial<(FetchURLOptions & Options)>): string;
+    function buildFetchURL(apiKey: string, sheetKey: string, options?: Partial<(FetchURLOptions & GoogleSheetsConnectorOptions)>): string;
     /**
      * Creates sheets range.
      * @private
      */
-    function buildQueryRange(options?: Partial<Options>): string;
+    function buildQueryRange(options?: Partial<GoogleSheetsConnectorOptions>): string;
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

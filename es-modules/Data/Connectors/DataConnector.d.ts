@@ -1,6 +1,6 @@
 import type { DataConnectorTypes } from './DataConnectorType';
 import type DataEvent from '../DataEvent';
-import type { DataModifierTypeOptions } from '../Modifiers/DataModifierType';
+import type { DataConnectorOptions, MetaColumn, Metadata } from './DataConnectorOptions';
 import DataConverter from '../Converters/DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -24,7 +24,7 @@ declare abstract class DataConnector implements DataEvent.Emitter {
     /**
      * Metadata to describe the connector and the content of columns.
      */
-    readonly metadata: DataConnector.Metadata;
+    readonly metadata: Metadata;
     private _polling?;
     /**
      * Poll timer ID, if active.
@@ -43,14 +43,14 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * @param {DataConnector.MetaColumn} columnMeta
      * The metadata to apply to the column.
      */
-    describeColumn(name: string, columnMeta: DataConnector.MetaColumn): void;
+    describeColumn(name: string, columnMeta: MetaColumn): void;
     /**
      * Method for applying columns meta information to the whole DataConnector.
      *
      * @param {Highcharts.Dictionary<DataConnector.MetaColumn>} columns
      * Pairs of column names and MetaColumn objects.
      */
-    describeColumns(columns: Record<string, DataConnector.MetaColumn>): void;
+    describeColumns(columns: Record<string, MetaColumn>): void;
     /**
      * Emits an event on the connector to all registered callbacks of this
      * event.
@@ -120,7 +120,7 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      */
     setColumnOrder(columnNames: Array<string>): void;
     /**
-     * Starts polling new data after the specific timespan in milliseconds.
+     * Starts polling new data after the specific time span in milliseconds.
      *
      * @param {number} refreshTime
      * Refresh time in milliseconds between polls.
@@ -139,7 +139,7 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * @return {DataConnector.MetaColumn|undefined}
      * Returns a MetaColumn object if found.
      */
-    whatIs(name: string): (DataConnector.MetaColumn | undefined);
+    whatIs(name: string): (MetaColumn | undefined);
 }
 declare namespace DataConnector {
     /**
@@ -162,32 +162,9 @@ declare namespace DataConnector {
         type: ('load' | 'afterLoad');
     }
     /**
-     * Metadata entry containing the name of the column and a metadata object.
-     */
-    interface MetaColumn {
-        dataType?: string;
-        defaultValue?: (boolean | null | number | string);
-        index?: number;
-        title?: string;
-    }
-    /**
-     * Metadata
-     */
-    interface Metadata {
-        columns: Record<string, MetaColumn>;
-    }
-    /**
      * Option of the DataConnector.
      */
-    interface Options {
-        dataModifier?: DataModifierTypeOptions;
-        dataTable?: DataTable.Options;
-        metadata?: Metadata;
-    }
-    /**
-     * Option of the DataConnector.
-     */
-    type UserOptions = Partial<Options>;
+    type UserOptions = Partial<DataConnectorOptions>;
     /**
      * Registry as a record object with connector names and their class.
      */

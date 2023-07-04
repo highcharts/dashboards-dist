@@ -12,6 +12,7 @@
  * */
 'use strict';
 import DataConnector from './Connectors/DataConnector.js';
+import DataModifier from './Modifiers/DataModifier.js';
 import DataPoolDefaults from './DataPoolDefaults.js';
 import U from '../Core/Utilities.js';
 /* *
@@ -22,7 +23,6 @@ import U from '../Core/Utilities.js';
 /**
  * Data pool to load connectors on-demand.
  *
- * @private
  * @class
  * @name Data.DataPool
  *
@@ -153,7 +153,20 @@ class DataPool {
             const connector = new ConnectorClass(options.options);
             this.connectors[options.id] = connector;
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            connector.load().then((connector) => {
+            connector
+                .load()
+                .then((connector) => {
+                var _a;
+                if ((_a = options === null || options === void 0 ? void 0 : options.options) === null || _a === void 0 ? void 0 : _a.dataModifier) {
+                    const ModifierClass = DataModifier
+                        .types[options.options.dataModifier.type];
+                    return connector.table
+                        .setModifier(new ModifierClass(options.options.dataModifier))
+                        .then(() => connector);
+                }
+                return connector;
+            })
+                .then((connector) => {
                 this.emit({
                     type: 'afterLoad',
                     options

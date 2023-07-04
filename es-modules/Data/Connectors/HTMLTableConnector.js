@@ -26,7 +26,7 @@ const { merge } = U;
  *
  * */
 /**
- * Class that handles creating a dataconnector from an HTML table.
+ * Class that handles creating a data connector from an HTML table.
  *
  * @private
  */

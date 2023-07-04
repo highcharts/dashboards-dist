@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v0.0.2 (2023-07-03)
+ * @license Highcharts Dashboards v1.0.0 (2023-07-04)
  * @module dashboards/dashboards
  *
  * (c) 2009-2023 Highsoft AS
@@ -37,21 +37,31 @@ import '../Data/Modifiers/SortModifier.js';
  *  Namespace
  *
  * */
-const D = Object.assign(Object.assign(Object.assign({}, Globals), Utilities), { Board, board: Board.board, Component,
-    ComponentRegistry,
-    DataConnector,
-    DataCursor,
-    DataModifier,
-    DataPool,
-    DataTable,
-    PluginHandler,
-    Sync });
+const G = Globals;
+G.board = Board.board;
+G.merge = Utilities.merge;
+G.uniqueKey = Utilities.uniqueKey;
+G.Board = Board;
+G.Component = Component;
+G.ComponentRegistry = ComponentRegistry;
+G.DataConnector = DataConnector;
+G.DataCursor = DataCursor;
+G.DataModifier = DataModifier;
+G.DataPool = DataPool;
+G.DataTable = DataTable;
+G.PluginHandler = PluginHandler;
+G.Sync = Sync;
 /* *
  *
- *  Classic Exports
+ *  Classic Export
  *
  * */
-if (!D.win.Dashboards) {
-    D.win.Dashboards = D;
+if (!G.win.Dashboards) {
+    G.win.Dashboards = G;
 }
-export default D;
+/* *
+ *
+ *  Default Export
+ *
+ * */
+export default G;

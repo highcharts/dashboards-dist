@@ -63,6 +63,11 @@ declare class HighchartsComponent extends Component {
     /**
      * A full set of chart options used by the chart.
      * [Highcharts API](https://api.highcharts.com/highcharts/)
+     *
+     * Try it:
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/highcharts-components/highcharts/  | Chart options}
+     *
      */
     chartOptions: Partial<ChartOptions>;
     /**
@@ -80,6 +85,15 @@ declare class HighchartsComponent extends Component {
     /**
      * Type of constructor used for creating proper chart like: chart, stock,
      * gantt or map.
+     *
+     * Try it:
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/highcharts-components/chart-constructor-maps/ | Map constructor}
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/highcharts-components/chart-constructor-gantt/ | Gantt constructor}
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/highcharts-components/chart-and-stock-constructors/ | Chart and Stock constructors}
+     *
      */
     chartConstructor: HighchartsComponent.ConstructorType;
     /**
@@ -184,6 +198,11 @@ declare namespace HighchartsComponent {
         /**
          * Whether to allow the component to edit the store to which it is
          * attached.
+         *
+         * Try it:
+         *
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/datagrid-sync/ | Allow connector update comparison}
+         *
          */
         allowConnectorUpdate?: boolean;
         /**

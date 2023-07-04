@@ -1,13 +1,14 @@
 import type DataEvent from '../DataEvent';
+import type HTMLTableConnectorOptions from './HTMLTableConnectorOptions';
 import DataConnector from './DataConnector.js';
 import HTMLTableConverter from '../Converters/HTMLTableConverter.js';
 /**
- * Class that handles creating a dataconnector from an HTML table.
+ * Class that handles creating a data connector from an HTML table.
  *
  * @private
  */
 declare class HTMLTableConnector extends DataConnector {
-    protected static readonly defaultOptions: HTMLTableConnector.Options;
+    protected static readonly defaultOptions: HTMLTableConnectorOptions;
     /**
      * Constructs an instance of HTMLTableConnector.
      *
@@ -19,7 +20,7 @@ declare class HTMLTableConnector extends DataConnector {
      * Options for the HTMLTable dataconnector
      * @todo this should not include parsing options
      */
-    readonly options: HTMLTableConnector.Options;
+    readonly options: HTMLTableConnectorOptions;
     /**
      * The attached parser, which can be replaced in the constructor
      */
@@ -73,16 +74,10 @@ declare namespace HTMLTableConnector {
         tableElement?: (HTMLElement | null);
     }
     /**
-     * Options of the HTMLTableConnector.
-     */
-    interface Options extends DataConnector.Options {
-        table: (string | HTMLElement);
-    }
-    /**
      * Available options for constructor and converter of the
      * HTMLTableConnector.
      */
-    type UserOptions = (DeepPartial<Options> & HTMLTableConverter.UserOptions);
+    type UserOptions = (DeepPartial<HTMLTableConnectorOptions> & HTMLTableConverter.UserOptions);
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

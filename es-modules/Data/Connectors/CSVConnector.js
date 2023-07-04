@@ -133,7 +133,8 @@ CSVConnector.defaultOptions = {
     csv: '',
     csvURL: '',
     enablePolling: false,
-    dataRefreshRate: 1
+    dataRefreshRate: 1,
+    firstRowAsNames: true
 };
 DataConnector.registerType('CSV', CSVConnector);
 /* *

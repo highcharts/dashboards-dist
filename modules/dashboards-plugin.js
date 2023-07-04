@@ -1,5 +1,5 @@
 /*
- Highcharts Dashboards v0.0.3 (2023-07-03)
+ Highcharts Dashboards v1.0.0 (2023-07-04)
 
  (c) 2009-2023 Highsoft AS
 
@@ -83,4 +83,4 @@ this.connector.table.modified&&this.dataGrid.update({dataTable:this.connector.ta
 for(let b=0,c=a.length;b<c;++b)a[b]();a.length=0}yield a.update.call(this,b);this.dataGrid&&this.dataGrid.update(this.options.dataGridOptions||{});this.emit({type:"afterUpdate"})})}constructDataGrid(){if(g.DataGridConstructor)return this.dataGrid=new g.DataGridConstructor(this.contentElement,Object.assign(Object.assign({},this.options.dataGridOptions),{dataTable:this.connector&&this.connector.table.modified}));throw Error("DataGrid not connected.");}setupConnectorUpdate(){const {connector:b,dataGrid:a}=
 this;if(b&&a)a.on("cellClick",a=>{"input"in a&&a.input.addEventListener("keyup",a=>this.options.onUpdate(a,b))})}toJSON(){var b=JSON.stringify(this.options.dataGridOptions);const a=super.toJSON();b=Object.assign(Object.assign({},a),{options:Object.assign(Object.assign({},a.options),{dataGridOptions:b})});this.emit({type:"toJSON",json:b});return b}}g.syncHandlers=t;g.defaultOptions=k(d.defaultOptions,{dataGridClassName:"dataGrid-container",dataGridID:"dataGrid-"+c(),dataGridOptions:{},editableOptions:[{name:"connectorName",
 propertyPath:["connector","id"],type:"select"}],syncHandlers:t,onUpdate:g.onUpdate});return g});t(d,"Dashboards/Plugins/DataGridPlugin.js",[d["Dashboards/Plugins/DataGridComponent.js"]],function(d){return{custom:{connectDataGrid:function(m){d.DataGridConstructor=m}},name:"DataGrid.DashboardPlugin",onRegister:function(m){({ComponentRegistry:m}=m);m.registerComponent("DataGrid",d)},onUnregister:function(){}}});t(d,"masters/modules/dashboards-plugin.src.js",[d["Dashboards/Globals.js"],d["Dashboards/Plugins/HighchartsPlugin.js"],
-d["Dashboards/Plugins/DataGridPlugin.js"]],function(d,m,e){d.DataGridPlugin=e;d.HighchartsPlugin=m;d.win.Dashboards&&(d.win.Highcharts&&(m.custom.connectHighcharts(d.win.Highcharts),d.win.Dashboards.PluginHandler.addPlugin(m)),d.win.DataGrid&&(e.custom.connectDataGrid(d.win.DataGrid.DataGrid),d.win.Dashboards.PluginHandler.addPlugin(e)))})});//# sourceMappingURL=dashboards-plugin.js.map
+d["Dashboards/Plugins/DataGridPlugin.js"]],function(d,m,e){d.DataGridPlugin=e;d.HighchartsPlugin=m;d.win.Highcharts&&(m.custom.connectHighcharts(d.win.Highcharts),d.PluginHandler.addPlugin(m));d.win.DataGrid&&(e.custom.connectDataGrid(d.win.DataGrid.DataGrid),d.PluginHandler.addPlugin(e));return d})});//# sourceMappingURL=dashboards-plugin.js.map

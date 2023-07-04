@@ -170,7 +170,7 @@ class DataConnector {
         }
     }
     /**
-     * Starts polling new data after the specific timespan in milliseconds.
+     * Starts polling new data after the specific time span in milliseconds.
      *
      * @param {number} refreshTime
      * Refresh time in milliseconds between polls.
