@@ -10,7 +10,7 @@ Among the most popular are:
 ```
 Then import the package in your project:
 ``` JS
-    import Dashboards from '@highcharts/dashboards';
+    import * as Dashboards from '@highcharts/dashboards';
 ```
 * Importing as a script
 ``` HTML
