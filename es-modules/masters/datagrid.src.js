@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.0 (2023-07-04)
+ * @license Highcharts Dashboards v1.0.1 (2023-07-19)
  * @module dashboards/datagrid
  * @requires dashboards
  *
@@ -14,15 +14,14 @@
  *
  * */
 import Globals from '../DataGrid/Globals.js';
-import DataGrid from '../DataGrid/DataGrid.js';
+import _DataGrid from '../DataGrid/DataGrid.js';
 /* *
  *
  *  Namespace
  *
  * */
 const G = Globals;
-G.win = window;
-G.DataGrid = DataGrid;
+G.DataGrid = _DataGrid;
 /* *
  *
  *  Classic Export

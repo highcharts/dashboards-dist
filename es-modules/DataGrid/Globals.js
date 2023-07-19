@@ -54,6 +54,7 @@ var Globals;
         row: Globals.classNamePrefix + 'row',
         columnHeader: Globals.classNamePrefix + 'column-header'
     };
+    Globals.win = window;
 })(Globals || (Globals = {}));
 /* *
  *

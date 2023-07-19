@@ -7,11 +7,17 @@
  *
  * License: www.highcharts.com/license
  */
+import Globals from '../DataGrid/Globals.js';
+import _DataGrid from '../DataGrid/DataGrid.js';
 declare global {
-    interface Window {
-        DataGrid: typeof G;
+    interface DataGrid {
+        win: typeof Globals.win;
+        DataGrid: typeof _DataGrid;
     }
-    let DataGrid: typeof G;
+    interface Window {
+        DataGrid: DataGrid;
+    }
+    let DataGrid: DataGrid;
 }
-declare const G: AnyRecord;
+declare const G: DataGrid;
 export default G;

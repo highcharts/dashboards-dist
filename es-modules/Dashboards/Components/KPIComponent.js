@@ -27,9 +27,8 @@ import AST from '../../Core/Renderer/HTML/AST.js';
 import Component from './Component.js';
 import Templating from '../../Core/Templating.js';
 const { format } = Templating;
-import G from '../../Core/Globals.js';
 import U from '../../Core/Utilities.js';
-const { createElement, css, defined, getStyle, isArray, isNumber, merge } = U;
+const { createElement, css, defined, getStyle, isArray, isNumber, merge, diffObjects } = U;
 /* *
  *
  *  Class
@@ -170,8 +169,11 @@ class KPIComponent extends Component {
     }
     render() {
         super.render();
-        const charter = (KPIComponent.charter || G);
-        if (this.options.chartOptions && !this.chart && this.chartContainer) {
+        const charter = KPIComponent.charter;
+        if (charter &&
+            this.options.chartOptions &&
+            !this.chart &&
+            this.chartContainer) {
             this.chart = charter.chart(this.chartContainer, merge(KPIComponent.defaultChartOptions, this.options.chartOptions));
         }
         else if (this.chart &&
@@ -347,6 +349,17 @@ class KPIComponent extends Component {
         const json = Object.assign(Object.assign({}, base), { type: 'KPI', options: Object.assign(Object.assign({}, base.options), { type: 'KPI', value: this.options.value, subtitle: JSON.stringify(this.options.subtitle), title: JSON.stringify(this.options.title), threshold: this.options.threshold, thresholdColors: this.options.thresholdColors, chartOptions: JSON.stringify(this.options.chartOptions), valueFormat: this.options.valueFormat }) });
         this.emit({ type: 'toJSON', json: base });
         return json;
+    }
+    /**
+     * Get the KPI component's options.
+     * @returns
+     * The JSON of KPI component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        return Object.assign(Object.assign({}, diffObjects(this.options, KPIComponent.defaultOptions)), { type: 'KPI' });
     }
 }
 /**

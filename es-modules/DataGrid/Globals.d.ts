@@ -22,5 +22,6 @@ declare namespace Globals {
         row: string;
         columnHeader: string;
     };
+    const win: Window & typeof globalThis;
 }
 export default Globals;

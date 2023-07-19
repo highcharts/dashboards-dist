@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.0 (2023-07-04)
+ * @license Highcharts Dashboards v1.0.1 (2023-07-19)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -33,6 +33,544 @@
             }
         }
     }
+    _registerModule(_modules, 'Dashboards/Plugins/DataGridSyncHandlers.js', [_modules['Core/Utilities.js']], function (U) {
+        /* *
+         *
+         *  (c) 2009-2023 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Karol Kolodziej
+         *
+         * */
+        /* eslint-disable require-jsdoc, max-len */
+        const { addEvent } = U;
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        const configs = {
+            emitters: {
+                highlightEmitter: [
+                    'highlightEmitter',
+                    function () {
+                        if (this.type === 'DataGrid') {
+                            const { dataGrid, board } = this;
+                            if (board) {
+                                const { dataCursor: cursor } = board;
+                                const callbacks = [];
+                                if (!dataGrid) {
+                                    return;
+                                }
+                                callbacks.push(addEvent(dataGrid.container, 'dataGridHover', (e) => {
+                                    const table = this.connector && this.connector.table;
+                                    if (table) {
+                                        const row = e.row;
+                                        const cell = row.querySelector(`.highcharts-datagrid-cell[data-original-data="${row.dataset.rowXIndex}"]`);
+                                        cursor.emitCursor(table, {
+                                            type: 'position',
+                                            row: parseInt(row.dataset.rowIndex, 10),
+                                            column: cell ? cell.dataset.columnName : void 0,
+                                            state: 'dataGrid.hoverRow'
+                                        });
+                                    }
+                                }));
+                                callbacks.push(addEvent(dataGrid.container, 'mouseout', () => {
+                                    const table = this.connector && this.connector.table;
+                                    if (table) {
+                                        cursor.emitCursor(table, {
+                                            type: 'position',
+                                            state: 'dataGrid.hoverOut'
+                                        });
+                                    }
+                                }));
+                                // Return a function that calls the callbacks
+                                return function () {
+                                    callbacks.forEach((callback) => callback());
+                                };
+                            }
+                        }
+                    }
+                ]
+            },
+            handlers: {
+                highlightHandler: [
+                    'highlightHandler',
+                    void 0,
+                    function () {
+                        const { board } = this;
+                        const handlCursor = (e) => {
+                            const cursor = e.cursor;
+                            if (cursor.type === 'position') {
+                                const { row } = cursor;
+                                const { dataGrid } = this;
+                                if (row !== void 0 && dataGrid) {
+                                    const highlightedDataRow = dataGrid.container
+                                        .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
+                                    if (highlightedDataRow) {
+                                        dataGrid.toggleRowHighlight(highlightedDataRow);
+                                        dataGrid.hoveredRow = highlightedDataRow;
+                                    }
+                                }
+                            }
+                        };
+                        const handleCursorOut = () => {
+                            const { dataGrid } = this;
+                            if (dataGrid) {
+                                dataGrid.toggleRowHighlight(void 0);
+                            }
+                        };
+                        const registerCursorListeners = () => {
+                            const { dataCursor: cursor } = board;
+                            if (!cursor) {
+                                return;
+                            }
+                            const table = this.connector && this.connector.table;
+                            if (!table) {
+                                return;
+                            }
+                            cursor.addListener(table.id, 'point.mouseOver', handlCursor);
+                            cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
+                        };
+                        const unregisterCursorListeners = () => {
+                            const cursor = board.dataCursor;
+                            const table = this.connector && this.connector.table;
+                            if (!table) {
+                                return;
+                            }
+                            cursor.addListener(table.id, 'point.mouseOver', handlCursor);
+                            cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
+                        };
+                        if (board) {
+                            registerCursorListeners();
+                            this.on('setConnector', () => unregisterCursorListeners());
+                            this.on('afterSetConnector', () => registerCursorListeners());
+                        }
+                    }
+                ],
+                extremesHandler: function () {
+                    const { board } = this;
+                    const handleChangeExtremes = (e) => {
+                        if (e.cursor.type === 'position' && this.dataGrid && e.cursors.length) {
+                            // Lasting cursor, so get last cursor
+                            const lastCursor = e.cursors[e.cursors.length - 1];
+                            if ('row' in lastCursor && typeof lastCursor.row === 'number') {
+                                const { row } = lastCursor;
+                                this.dataGrid.scrollToRow(row);
+                            }
+                        }
+                    };
+                    const registerCursorListeners = () => {
+                        const { dataCursor: cursor } = board;
+                        if (!cursor) {
+                            return;
+                        }
+                        const table = this.connector && this.connector.table;
+                        if (!table) {
+                            return;
+                        }
+                        cursor.addListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
+                    };
+                    const unregisterCursorListeners = () => {
+                        const table = this.connector && this.connector.table;
+                        const { dataCursor: cursor } = board;
+                        if (!table) {
+                            return;
+                        }
+                        cursor.removeListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
+                    };
+                    if (board) {
+                        registerCursorListeners();
+                        this.on('setConnector', () => unregisterCursorListeners());
+                        this.on('afterSetConnector', () => registerCursorListeners());
+                    }
+                }
+            }
+        };
+        const defaults = {
+            highlight: { emitter: configs.emitters.highlightEmitter, handler: configs.handlers.highlightHandler },
+            extremes: { handler: configs.handlers.extremesHandler }
+        };
+
+        return defaults;
+    });
+    _registerModule(_modules, 'Dashboards/Plugins/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Dashboards/Plugins/DataGridSyncHandlers.js'], _modules['Core/Utilities.js']], function (Component, DataConverter, DataGridSyncHandlers, U) {
+        /* *
+         *
+         *  (c) 2009-2023 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Karol Kolodziej
+         *
+         * */
+        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+            return new (P || (P = Promise))(function (resolve, reject) {
+                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+                step((generator = generator.apply(thisArg, _arguments || [])).next());
+            });
+        };
+        const { diffObjects, merge, uniqueKey } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * DataGrid component for Highcharts Dashboards.
+         * @private
+         */
+        class DataGridComponent extends Component {
+            /* *
+             *
+             *  Static Functions
+             *
+             * */
+            /**
+             * Default update function, if data grid has changed. This functionality can
+             * be replaced with the {@link DataGridComponent.DataGridOptions#onUpdate}
+             * option.
+             *
+             * @private
+             *
+             * @param e
+             * Related keyboard event of the change.
+             *
+             * @param store
+             * Relate store of the change.
+             */
+            static onUpdate(e, store) {
+                const inputElement = e.target;
+                if (inputElement) {
+                    const parentRow = inputElement
+                        .closest('.highcharts-datagrid-row');
+                    const cell = inputElement.closest('.highcharts-datagrid-cell');
+                    const converter = new DataConverter();
+                    if (parentRow &&
+                        parentRow instanceof HTMLElement &&
+                        cell &&
+                        cell instanceof HTMLElement) {
+                        const dataTableRowIndex = parentRow
+                            .dataset.rowIndex;
+                        const { columnName } = cell.dataset;
+                        if (dataTableRowIndex !== void 0 &&
+                            columnName !== void 0) {
+                            const table = store.table.modified;
+                            if (table) {
+                                let valueToSet = converter
+                                    .asGuessedType(inputElement.value);
+                                if (valueToSet instanceof Date) {
+                                    valueToSet = valueToSet.toString();
+                                }
+                                table.setCell(columnName, parseInt(dataTableRowIndex, 10), valueToSet);
+                            }
+                        }
+                    }
+                }
+            }
+            /** @private */
+            static fromJSON(json, cell) {
+                const options = json.options;
+                const dataGridOptions = JSON.parse(json.options.dataGridOptions || '');
+                const component = new DataGridComponent(cell, merge(options, {
+                    dataGridOptions,
+                    syncHandlers: DataGridComponent.syncHandlers
+                }));
+                component.emit({
+                    type: 'fromJSON',
+                    json
+                });
+                return component;
+            }
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(cell, options) {
+                options = merge(DataGridComponent.defaultOptions, options);
+                super(cell, options);
+                this.connectorListeners = [];
+                this.options = options;
+                this.type = 'DataGrid';
+                if (this.options.dataGridClassName) {
+                    this.contentElement.classList.add(this.options.dataGridClassName);
+                }
+                if (this.options.dataGridID) {
+                    this.contentElement.id = this.options.dataGridID;
+                }
+                this.syncHandlers = this.handleSyncOptions(DataGridSyncHandlers);
+                this.sync = new DataGridComponent.Sync(this, this.syncHandlers);
+                this.dataGridOptions = this.options.dataGridOptions || {};
+                this.innerResizeTimeouts = [];
+                this.on('tableChanged', () => {
+                    var _a;
+                    (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ dataTable: this.filterColumns() });
+                });
+                // Add the component instance to the registry
+                Component.addInstance(this);
+            }
+            /* *
+             *
+             *  Class methods
+             *
+             * */
+            /**
+             * Triggered on component initialization.
+             * @private
+             */
+            load() {
+                this.emit({ type: 'load' });
+                super.load();
+                this.parentElement.appendChild(this.element);
+                this.hasLoaded = true;
+                if (this.connector &&
+                    !this.connectorListeners.length) {
+                    const connectorListeners = this.connectorListeners;
+                    // Reload the store when polling.
+                    connectorListeners.push(this.connector
+                        .on('afterLoad', (e) => {
+                        if (e.table && this.connector) {
+                            this.connector.table.setColumns(e.table.getColumns());
+                        }
+                    }));
+                    // Update the DataGrid when store changed.
+                    connectorListeners.push(this.connector.table
+                        .on('afterSetCell', (e) => {
+                        const dataGrid = this.dataGrid;
+                        let shouldUpdateTheGrid = true;
+                        if (dataGrid) {
+                            const row = dataGrid.rowElements[e.rowIndex], cells = Array.prototype.slice.call(row.childNodes);
+                            cells.forEach((cell) => {
+                                if (cell.childElementCount > 0) {
+                                    const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
+                                        input.value :
+                                        +input.value;
+                                    if (cell.dataset.columnName === e.columnName &&
+                                        convertedInputValue === e.cellValue) {
+                                        shouldUpdateTheGrid = false;
+                                    }
+                                }
+                            });
+                        }
+                        shouldUpdateTheGrid ? this.update({}) : void 0;
+                    }));
+                }
+                this.emit({ type: 'afterLoad' });
+                return this;
+            }
+            /** @private */
+            render() {
+                this.emit({ type: 'beforeRender' });
+                super.render();
+                if (!this.dataGrid) {
+                    this.dataGrid = this.constructDataGrid();
+                }
+                if (this.connector &&
+                    this.dataGrid &&
+                    this.dataGrid.dataTable.modified !== this.connector.table.modified) {
+                    this.dataGrid.update({ dataTable: this.filterColumns() });
+                }
+                this.sync.start();
+                this.emit({ type: 'afterRender' });
+                this.setupConnectorUpdate();
+                return this;
+            }
+            /** @private */
+            redraw() {
+                super.redraw();
+                return this.render();
+            }
+            /** @private */
+            resize(width, height) {
+                if (this.dataGrid) {
+                    super.resize(width, height);
+                    this.dataGrid.setSize(width, height);
+                }
+            }
+            update(options) {
+                const _super = Object.create(null, {
+                    update: { get: () => super.update }
+                });
+                var _a;
+                return __awaiter(this, void 0, void 0, function* () {
+                    if (((_a = options.connector) === null || _a === void 0 ? void 0 : _a.id) !== this.connectorId) {
+                        const connectorListeners = this.connectorListeners;
+                        for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
+                            connectorListeners[i]();
+                        }
+                        connectorListeners.length = 0;
+                    }
+                    yield _super.update.call(this, options);
+                    if (this.dataGrid) {
+                        this.dataGrid.update(this.options.dataGridOptions || {});
+                    }
+                    this.emit({ type: 'afterUpdate' });
+                });
+            }
+            /** @private */
+            constructDataGrid() {
+                if (DataGridComponent.DataGridConstructor) {
+                    this.dataGrid = new DataGridComponent.DataGridConstructor(this.contentElement, Object.assign(Object.assign({}, this.options.dataGridOptions), { dataTable: this.connector && this.connector.table.modified }));
+                    return this.dataGrid;
+                }
+                throw new Error('DataGrid not connected.');
+            }
+            setupConnectorUpdate() {
+                const { connector, dataGrid } = this;
+                if (connector && dataGrid) {
+                    dataGrid.on('cellClick', (e) => {
+                        if ('input' in e) {
+                            e.input.addEventListener('keyup', (keyEvent) => this.options.onUpdate(keyEvent, connector));
+                        }
+                    });
+                }
+            }
+            /**
+             * Based on the `visibleColumns` option, filter the columns of the table.
+             *
+             * @internal
+             */
+            filterColumns() {
+                var _a;
+                const table = (_a = this.connector) === null || _a === void 0 ? void 0 : _a.table.modified, visibleColumns = this.options.visibleColumns;
+                if (table) {
+                    // Show all columns if no visibleColumns is provided.
+                    if (!(visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length)) {
+                        return table;
+                    }
+                    const columnsToDelete = table
+                        .getColumnNames()
+                        .filter((columnName) => ((visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length) > 0 &&
+                        // Don't add columns that are not listed.
+                        !visibleColumns.includes(columnName)
+                    // Else show the other columns.
+                    ));
+                    // On a fresh table clone remove the columns that are not mapped.
+                    const filteredTable = table.clone();
+                    filteredTable.deleteColumns(columnsToDelete);
+                    return filteredTable;
+                }
+            }
+            /** @private */
+            toJSON() {
+                const dataGridOptions = JSON.stringify(this.options.dataGridOptions);
+                const base = super.toJSON();
+                const json = Object.assign(Object.assign({}, base), { options: Object.assign(Object.assign({}, base.options), { dataGridOptions }) });
+                this.emit({ type: 'toJSON', json });
+                return json;
+            }
+            /**
+             * Get the DataGrid component's options.
+             * @returns
+             * The JSON of DataGrid component's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                return Object.assign(Object.assign({}, diffObjects(this.options, DataGridComponent.defaultOptions)), { type: 'DataGrid' });
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /** @private */
+        DataGridComponent.syncHandlers = DataGridSyncHandlers;
+        /** @private */
+        DataGridComponent.defaultOptions = merge(Component.defaultOptions, {
+            dataGridClassName: 'dataGrid-container',
+            dataGridID: 'dataGrid-' + uniqueKey(),
+            dataGridOptions: {},
+            editableOptions: [{
+                    name: 'connectorName',
+                    propertyPath: ['connector', 'id'],
+                    type: 'select'
+                }],
+            syncHandlers: DataGridSyncHandlers,
+            onUpdate: DataGridComponent.onUpdate
+        });
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataGridComponent;
+    });
+    _registerModule(_modules, 'Dashboards/Plugins/DataGridPlugin.js', [_modules['Dashboards/Plugins/DataGridComponent.js']], function (DataGridComponent) {
+        /* *
+         *
+         *  (c) 2009-2023 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Karol Kolodziej
+         *
+         * */
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Connects DataGrid with the Dashboard plugin.
+         *
+         * @param {Dashboards.DataGrid} dataGrid DataGrid core to connect.
+         */
+        function connectDataGrid(DataGridClass) {
+            DataGridComponent.DataGridConstructor = DataGridClass;
+        }
+        /**
+         * Callback function of the Dashboard plugin.
+         *
+         * @param {Dashboards.PluginHandler.Event} e
+         * Plugin context provided by the Dashboard.
+         */
+        function onRegister(e) {
+            const { ComponentRegistry } = e;
+            ComponentRegistry.registerComponent('DataGrid', DataGridComponent);
+        }
+        /**
+         * Callback function of the Dashboard plugin.
+         *
+         * @param {Dashboard.PluginHandler.Event} e Plugin context provided by the Dashboard.
+         */
+        function onUnregister(e) {
+            const { Sync } = e;
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+        const DataGridCustom = {
+            connectDataGrid
+        };
+        const DataGridPlugin = {
+            custom: DataGridCustom,
+            name: 'DataGrid.DashboardsPlugin',
+            onRegister,
+            onUnregister
+        };
+
+        return DataGridPlugin;
+    });
     _registerModule(_modules, 'Dashboards/Plugins/HighchartsSyncHandlers.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
@@ -446,7 +984,7 @@
 
         return defaults;
     });
-    _registerModule(_modules, 'Dashboards/Plugins/HighchartsComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Core/Globals.js'], _modules['Dashboards/Plugins/HighchartsSyncHandlers.js'], _modules['Core/Utilities.js']], function (Component, DataConverter, DataTable, G, HighchartsSyncHandlers, U) {
+    _registerModule(_modules, 'Dashboards/Plugins/HighchartsComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Plugins/HighchartsSyncHandlers.js'], _modules['Core/Utilities.js']], function (Component, DataConverter, DataTable, Globals, HighchartsSyncHandlers, U) {
         /* *
          *
          *  (c) 2009-2023 Highsoft AS
@@ -471,7 +1009,7 @@
                 step((generator = generator.apply(thisArg, _arguments || [])).next());
             });
         };
-        const { addEvent, createElement, merge, splat, uniqueKey, error } = U;
+        const { addEvent, createElement, merge, splat, uniqueKey, error, diffObjects } = U;
         /* *
          *
          *  Class
@@ -759,9 +1297,10 @@
              *
              */
             createChart() {
-                const charter = (HighchartsComponent.charter || G);
+                const charter = (HighchartsComponent.charter ||
+                    Globals.win.Highcharts);
                 if (this.chartConstructor !== 'chart') {
-                    const factory = charter[this.chartConstructor] || G.chart;
+                    const factory = charter[this.chartConstructor];
                     if (factory) {
                         try {
                             return factory(this.chartContainer, this.chartOptions);
@@ -863,12 +1402,24 @@
                 this.emit({ type: 'toJSON', json });
                 return json;
             }
+            /**
+             * Get the HighchartsComponent component's options.
+             * @returns
+             * The JSON of HighchartsComponent component's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                return Object.assign(Object.assign({}, diffObjects(this.options, HighchartsComponent.defaultOptions)), { type: 'Highcharts' });
+            }
             getEditableOptions() {
+                var _a;
                 const component = this;
                 const componentOptions = component.options;
                 const chart = component.chart;
                 const chartOptions = chart && chart.options;
-                const chartType = chartOptions && chartOptions.chart.type || 'line';
+                const chartType = chartOptions && ((_a = chartOptions.chart) === null || _a === void 0 ? void 0 : _a.type) || 'line';
                 return merge(componentOptions, {
                     chartOptions
                 }, {
@@ -5683,7 +6234,7 @@
                  *         Different shapes for header and split boxes
                  *
                  * @type       {Highcharts.TooltipShapeValue}
-                 * @validvalue ["callout", "square"]
+                 * @validvalue ["callout", "rect"]
                  * @since      7.0
                  */
                 headerShape: 'callout',
@@ -6611,7 +7162,7 @@
 
         return Templating;
     });
-    _registerModule(_modules, 'Dashboards/Components/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Core/Templating.js'], _modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (AST, Component, Templating, G, U) {
+    _registerModule(_modules, 'Dashboards/Components/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Core/Templating.js'], _modules['Core/Utilities.js']], function (AST, Component, Templating, U) {
         /* *
          *
          *  (c) 2009 - 2023 Highsoft AS
@@ -6637,7 +7188,7 @@
             });
         };
         const { format } = Templating;
-        const { createElement, css, defined, getStyle, isArray, isNumber, merge } = U;
+        const { createElement, css, defined, getStyle, isArray, isNumber, merge, diffObjects } = U;
         /* *
          *
          *  Class
@@ -6778,8 +7329,11 @@
             }
             render() {
                 super.render();
-                const charter = (KPIComponent.charter || G);
-                if (this.options.chartOptions && !this.chart && this.chartContainer) {
+                const charter = KPIComponent.charter;
+                if (charter &&
+                    this.options.chartOptions &&
+                    !this.chart &&
+                    this.chartContainer) {
                     this.chart = charter.chart(this.chartContainer, merge(KPIComponent.defaultChartOptions, this.options.chartOptions));
                 }
                 else if (this.chart &&
@@ -6956,6 +7510,17 @@
                 this.emit({ type: 'toJSON', json: base });
                 return json;
             }
+            /**
+             * Get the KPI component's options.
+             * @returns
+             * The JSON of KPI component's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                return Object.assign(Object.assign({}, diffObjects(this.options, KPIComponent.defaultOptions)), { type: 'KPI' });
+            }
         }
         /**
          * Default options of the KPI component.
@@ -7050,7 +7615,7 @@
         /**
          * Callback function of the Dashboard plugin.
          *
-         * @param {Dashboard.DashboardPlugin.Event} e
+         * @param {Dashboards.PluginHandler.Event} e
          * Plugin context provided by the Dashboard.
          */
         function onRegister(e) {
@@ -7086,515 +7651,15 @@
         };
         const HighchartsPlugin = {
             custom: HighchartsCustom,
-            name: 'Highcharts.DashboardPlugin',
+            name: 'Highcharts.DashboardsPlugin',
             onRegister,
             onUnregister
         };
 
         return HighchartsPlugin;
     });
-    _registerModule(_modules, 'Dashboards/Plugins/DataGridSyncHandlers.js', [_modules['Core/Utilities.js']], function (U) {
-        /* *
-         *
-         *  (c) 2009-2023 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Karol Kolodziej
-         *
-         * */
-        /* eslint-disable require-jsdoc, max-len */
-        const { addEvent } = U;
-        /* *
-         *
-         *  Constants
-         *
-         * */
-        const configs = {
-            emitters: {
-                highlightEmitter: [
-                    'highlightEmitter',
-                    function () {
-                        if (this.type === 'DataGrid') {
-                            const { dataGrid, board } = this;
-                            if (board) {
-                                const { dataCursor: cursor } = board;
-                                const callbacks = [];
-                                if (!dataGrid) {
-                                    return;
-                                }
-                                callbacks.push(addEvent(dataGrid.container, 'dataGridHover', (e) => {
-                                    const table = this.connector && this.connector.table;
-                                    if (table) {
-                                        const row = e.row;
-                                        const cell = row.querySelector(`.highcharts-datagrid-cell[data-original-data="${row.dataset.rowXIndex}"]`);
-                                        cursor.emitCursor(table, {
-                                            type: 'position',
-                                            row: parseInt(row.dataset.rowIndex, 10),
-                                            column: cell ? cell.dataset.columnName : void 0,
-                                            state: 'dataGrid.hoverRow'
-                                        });
-                                    }
-                                }));
-                                callbacks.push(addEvent(dataGrid.container, 'mouseout', () => {
-                                    const table = this.connector && this.connector.table;
-                                    if (table) {
-                                        cursor.emitCursor(table, {
-                                            type: 'position',
-                                            state: 'dataGrid.hoverOut'
-                                        });
-                                    }
-                                }));
-                                // Return a function that calls the callbacks
-                                return function () {
-                                    callbacks.forEach((callback) => callback());
-                                };
-                            }
-                        }
-                    }
-                ]
-            },
-            handlers: {
-                highlightHandler: [
-                    'highlightHandler',
-                    void 0,
-                    function () {
-                        const { board } = this;
-                        const handlCursor = (e) => {
-                            const cursor = e.cursor;
-                            if (cursor.type === 'position') {
-                                const { row } = cursor;
-                                const { dataGrid } = this;
-                                if (row !== void 0 && dataGrid) {
-                                    const highlightedDataRow = dataGrid.container
-                                        .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
-                                    if (highlightedDataRow) {
-                                        dataGrid.toggleRowHighlight(highlightedDataRow);
-                                        dataGrid.hoveredRow = highlightedDataRow;
-                                    }
-                                }
-                            }
-                        };
-                        const handleCursorOut = () => {
-                            const { dataGrid } = this;
-                            if (dataGrid) {
-                                dataGrid.toggleRowHighlight(void 0);
-                            }
-                        };
-                        const registerCursorListeners = () => {
-                            const { dataCursor: cursor } = board;
-                            if (!cursor) {
-                                return;
-                            }
-                            const table = this.connector && this.connector.table;
-                            if (!table) {
-                                return;
-                            }
-                            cursor.addListener(table.id, 'point.mouseOver', handlCursor);
-                            cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
-                        };
-                        const unregisterCursorListeners = () => {
-                            const cursor = board.dataCursor;
-                            const table = this.connector && this.connector.table;
-                            if (!table) {
-                                return;
-                            }
-                            cursor.addListener(table.id, 'point.mouseOver', handlCursor);
-                            cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
-                        };
-                        if (board) {
-                            registerCursorListeners();
-                            this.on('setConnector', () => unregisterCursorListeners());
-                            this.on('afterSetConnector', () => registerCursorListeners());
-                        }
-                    }
-                ],
-                extremesHandler: function () {
-                    const { board } = this;
-                    const handleChangeExtremes = (e) => {
-                        if (e.cursor.type === 'position' && this.dataGrid && e.cursors.length) {
-                            // Lasting cursor, so get last cursor
-                            const lastCursor = e.cursors[e.cursors.length - 1];
-                            if ('row' in lastCursor && typeof lastCursor.row === 'number') {
-                                const { row } = lastCursor;
-                                this.dataGrid.scrollToRow(row);
-                            }
-                        }
-                    };
-                    const registerCursorListeners = () => {
-                        const { dataCursor: cursor } = board;
-                        if (!cursor) {
-                            return;
-                        }
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.addListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
-                    };
-                    const unregisterCursorListeners = () => {
-                        const table = this.connector && this.connector.table;
-                        const { dataCursor: cursor } = board;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.removeListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
-                    };
-                    if (board) {
-                        registerCursorListeners();
-                        this.on('setConnector', () => unregisterCursorListeners());
-                        this.on('afterSetConnector', () => registerCursorListeners());
-                    }
-                }
-            }
-        };
-        const defaults = {
-            highlight: { emitter: configs.emitters.highlightEmitter, handler: configs.handlers.highlightHandler },
-            extremes: { handler: configs.handlers.extremesHandler }
-        };
+    _registerModule(_modules, 'masters/modules/dashboards-plugin.src.js', [_modules['Dashboards/Plugins/DataGridPlugin.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Plugins/HighchartsPlugin.js']], function (DataGridPlugin, Globals, HighchartsPlugin) {
 
-        return defaults;
-    });
-    _registerModule(_modules, 'Dashboards/Plugins/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Plugins/DataGridSyncHandlers.js']], function (Component, DataConverter, U, DataGridSyncHandlers) {
-        /* *
-         *
-         *  (c) 2009-2023 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Karol Kolodziej
-         *
-         * */
-        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-            return new (P || (P = Promise))(function (resolve, reject) {
-                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-                step((generator = generator.apply(thisArg, _arguments || [])).next());
-            });
-        };
-        const { createElement, merge, uniqueKey } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * DataGrid component for Highcharts Dashboards.
-         * @private
-         */
-        class DataGridComponent extends Component {
-            /* *
-             *
-             *  Static Functions
-             *
-             * */
-            /**
-             * Default update function, if data grid has changed. This functionality can
-             * be replaced with the {@link DataGridComponent.DataGridOptions#onUpdate}
-             * option.
-             *
-             * @private
-             *
-             * @param e
-             * Related keyboard event of the change.
-             *
-             * @param store
-             * Relate store of the change.
-             */
-            static onUpdate(e, store) {
-                const inputElement = e.target;
-                if (inputElement) {
-                    const parentRow = inputElement
-                        .closest('.highcharts-datagrid-row');
-                    const cell = inputElement.closest('.highcharts-datagrid-cell');
-                    const converter = new DataConverter();
-                    if (parentRow &&
-                        parentRow instanceof HTMLElement &&
-                        cell &&
-                        cell instanceof HTMLElement) {
-                        const dataTableRowIndex = parentRow
-                            .dataset.rowIndex;
-                        const { columnName } = cell.dataset;
-                        if (dataTableRowIndex !== void 0 &&
-                            columnName !== void 0) {
-                            const table = store.table.modified;
-                            if (table) {
-                                let valueToSet = converter
-                                    .asGuessedType(inputElement.value);
-                                if (valueToSet instanceof Date) {
-                                    valueToSet = valueToSet.toString();
-                                }
-                                table.setCell(columnName, parseInt(dataTableRowIndex, 10), valueToSet);
-                            }
-                        }
-                    }
-                }
-            }
-            /** @private */
-            static fromJSON(json, cell) {
-                const options = json.options;
-                const dataGridOptions = JSON.parse(json.options.dataGridOptions || '');
-                const component = new DataGridComponent(cell, merge(options, {
-                    dataGridOptions,
-                    syncHandlers: DataGridComponent.syncHandlers
-                }));
-                component.emit({
-                    type: 'fromJSON',
-                    json
-                });
-                return component;
-            }
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            constructor(cell, options) {
-                options = merge(DataGridComponent.defaultOptions, options);
-                super(cell, options);
-                this.connectorListeners = [];
-                this.options = options;
-                this.type = 'DataGrid';
-                if (this.options.dataGridClassName) {
-                    this.contentElement.classList.add(this.options.dataGridClassName);
-                }
-                if (this.options.dataGridID) {
-                    this.contentElement.id = this.options.dataGridID;
-                }
-                this.syncHandlers = this.handleSyncOptions(DataGridSyncHandlers);
-                this.sync = new DataGridComponent.Sync(this, this.syncHandlers);
-                this.dataGridOptions = this.options.dataGridOptions || {};
-                this.innerResizeTimeouts = [];
-                // Add the component instance to the registry
-                Component.addInstance(this);
-            }
-            /* *
-             *
-             *  Class methods
-             *
-             * */
-            /** @private */
-            load() {
-                this.emit({ type: 'load' });
-                super.load();
-                this.parentElement.appendChild(this.element);
-                this.hasLoaded = true;
-                if (this.connector &&
-                    !this.connectorListeners.length) {
-                    const connectorListeners = this.connectorListeners;
-                    // this.on('tableChanged', (): void => this.updateSeries());
-                    // Reload the store when polling.
-                    connectorListeners.push(this.connector
-                        .on('afterLoad', (e) => {
-                        if (e.table && this.connector) {
-                            this.connector.table.setColumns(e.table.getColumns());
-                        }
-                    }));
-                    // Update the DataGrid when store changed.
-                    connectorListeners.push(this.connector.table
-                        .on('afterSetCell', (e) => {
-                        const dataGrid = this.dataGrid;
-                        let shouldUpdateTheGrid = true;
-                        if (dataGrid) {
-                            const row = dataGrid.rowElements[e.rowIndex], cells = Array.prototype.slice.call(row.childNodes);
-                            cells.forEach((cell) => {
-                                if (cell.childElementCount > 0) {
-                                    const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
-                                        input.value :
-                                        +input.value;
-                                    if (cell.dataset.columnName === e.columnName &&
-                                        convertedInputValue === e.cellValue) {
-                                        shouldUpdateTheGrid = false;
-                                    }
-                                }
-                            });
-                        }
-                        shouldUpdateTheGrid ? this.update({}) : void 0;
-                    }));
-                }
-                this.emit({ type: 'afterLoad' });
-                return this;
-            }
-            /** @private */
-            render() {
-                this.emit({ type: 'beforeRender' });
-                super.render();
-                if (!this.dataGrid) {
-                    this.dataGrid = this.constructDataGrid();
-                }
-                if (this.connector &&
-                    this.dataGrid &&
-                    this.dataGrid.dataTable.modified !== this.connector.table.modified) {
-                    this.dataGrid.update({ dataTable: this.connector.table.modified });
-                }
-                this.sync.start();
-                this.emit({ type: 'afterRender' });
-                this.setupConnectorUpdate();
-                return this;
-            }
-            /** @private */
-            redraw() {
-                super.redraw();
-                return this.render();
-            }
-            /** @private */
-            resize(width, height) {
-                if (this.dataGrid) {
-                    super.resize(width, height);
-                    this.dataGrid.setSize(width, height);
-                }
-            }
-            update(options) {
-                const _super = Object.create(null, {
-                    update: { get: () => super.update }
-                });
-                var _a;
-                return __awaiter(this, void 0, void 0, function* () {
-                    if (((_a = options.connector) === null || _a === void 0 ? void 0 : _a.id) !== this.connectorId) {
-                        const connectorListeners = this.connectorListeners;
-                        for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
-                            connectorListeners[i]();
-                        }
-                        connectorListeners.length = 0;
-                    }
-                    yield _super.update.call(this, options);
-                    if (this.dataGrid) {
-                        this.dataGrid.update(this.options.dataGridOptions || {});
-                    }
-                    this.emit({ type: 'afterUpdate' });
-                });
-            }
-            /** @private */
-            constructDataGrid() {
-                if (DataGridComponent.DataGridConstructor) {
-                    this.dataGrid = new DataGridComponent.DataGridConstructor(this.contentElement, Object.assign(Object.assign({}, this.options.dataGridOptions), { dataTable: this.connector && this.connector.table.modified }));
-                    return this.dataGrid;
-                }
-                throw new Error('DataGrid not connected.');
-            }
-            setupConnectorUpdate() {
-                const { connector, dataGrid } = this;
-                if (connector && dataGrid) {
-                    dataGrid.on('cellClick', (e) => {
-                        if ('input' in e) {
-                            e.input.addEventListener('keyup', (keyEvent) => this.options.onUpdate(keyEvent, connector));
-                        }
-                    });
-                }
-            }
-            /** @private */
-            toJSON() {
-                const dataGridOptions = JSON.stringify(this.options.dataGridOptions);
-                const base = super.toJSON();
-                const json = Object.assign(Object.assign({}, base), { options: Object.assign(Object.assign({}, base.options), { dataGridOptions }) });
-                this.emit({ type: 'toJSON', json });
-                return json;
-            }
-        }
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        /** @private */
-        DataGridComponent.syncHandlers = DataGridSyncHandlers;
-        /** @private */
-        DataGridComponent.defaultOptions = merge(Component.defaultOptions, {
-            dataGridClassName: 'dataGrid-container',
-            dataGridID: 'dataGrid-' + uniqueKey(),
-            dataGridOptions: {},
-            editableOptions: [{
-                    name: 'connectorName',
-                    propertyPath: ['connector', 'id'],
-                    type: 'select'
-                }],
-            syncHandlers: DataGridSyncHandlers,
-            onUpdate: DataGridComponent.onUpdate
-        });
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataGridComponent;
-    });
-    _registerModule(_modules, 'Dashboards/Plugins/DataGridPlugin.js', [_modules['Dashboards/Plugins/DataGridComponent.js']], function (DataGridComponent) {
-        /* *
-         *
-         *  (c) 2009-2023 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Karol Kolodziej
-         *
-         * */
-        /* *
-         *
-         *  Functions
-         *
-         * */
-        /**
-         * Connects DataGrid with the Dashboard plugin.
-         *
-         * @param {Highcharts} dataGrid DataGrid core to connect.
-         */
-        function connectDataGrid(DataGridClass) {
-            DataGridComponent.DataGridConstructor = DataGridClass;
-        }
-        /**
-         * Callback function of the Dashboard plugin.
-         *
-         * @param {Dashboard.DashboardPlugin.Event} e
-         * Plugin context provided by the Dashboard.
-         */
-        function onRegister(e) {
-            const { ComponentRegistry } = e;
-            ComponentRegistry.registerComponent('DataGrid', DataGridComponent);
-        }
-        /**
-         * Callback function of the Dashboard plugin.
-         *
-         * @param {Dashboard.PluginHandler.Event} e Plugin context provided by the Dashboard.
-         */
-        function onUnregister(e) {
-            const { Sync } = e;
-        }
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-        const DataGridCustom = {
-            connectDataGrid
-        };
-        const DataGridPlugin = {
-            custom: DataGridCustom,
-            name: 'DataGrid.DashboardPlugin',
-            onRegister,
-            onUnregister
-        };
-
-        return DataGridPlugin;
-    });
-    _registerModule(_modules, 'masters/modules/dashboards-plugin.src.js', [_modules['Dashboards/Globals.js'], _modules['Dashboards/Plugins/HighchartsPlugin.js'], _modules['Dashboards/Plugins/DataGridPlugin.js']], function (Globals, HighchartsPlugin, DataGridPlugin) {
-
-        /* *
-         *
-         *  Imports
-         *
-         * */
         /* *
          *
          *  Namespaces

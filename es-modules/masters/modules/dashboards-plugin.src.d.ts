@@ -7,5 +7,17 @@
  *
  * License: www.highcharts.com/license
  * */
-declare const G: AnyRecord;
+import type GlobalsLike from '../../Core/GlobalsLike';
+import DataGridPlugin from '../../Dashboards/Plugins/DataGridPlugin.js';
+import HighchartsPlugin from '../../Dashboards/Plugins/HighchartsPlugin.js';
+declare global {
+    interface Dashboards {
+        DataGridPlugin: typeof DataGridPlugin;
+        HighchartsPlugin: typeof HighchartsPlugin;
+    }
+    interface Window {
+        Highcharts?: GlobalsLike;
+    }
+}
+declare const G: Dashboards;
 export default G;

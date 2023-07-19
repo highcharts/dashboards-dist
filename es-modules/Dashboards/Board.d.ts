@@ -8,6 +8,7 @@ import DataCursorHelper from './SerializeHelper/DataCursorHelper.js';
 import DataPool from '../Data/DataPool.js';
 import EditMode from './EditMode/EditMode.js';
 import Fullscreen from './EditMode/Fullscreen.js';
+import Globals from './Globals.js';
 import Layout from './Layout/Layout.js';
 import Serializable from './Serializable.js';
 import ComponentType from './Components/ComponentType';
@@ -254,6 +255,14 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * @returns Class JSON of this Dashboard instance.
      */
     toJSON(): Board.JSON;
+    /**
+     * Convert the current state of board's options into JSON. The function does
+     * not support converting functions or events into JSON object.
+     *
+     * @returns
+     * The JSON of boards's options.
+     */
+    getOptions(): Globals.DeepPartial<Board.Options>;
 }
 declare namespace Board {
     /**
@@ -279,15 +288,15 @@ declare namespace Board {
          *
          * Try it:
          *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/component-highcharts/  | Highcharts component}
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/component-highcharts | Highcharts component}
          *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/component-html/ | HTML component}
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/component-html | HTML component}
          *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/component-kpi/ | KPI component}
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/component-kpi | KPI component}
          *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/custom-component/ | Custom component}
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/custom-component | Custom component}
          *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/datagrid-component/datagrid-options/ | Datagrid component}
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/datagrid-component/datagrid-options | Datagrid component}
          *
          **/
         components?: Array<Partial<ComponentType['options']>>;

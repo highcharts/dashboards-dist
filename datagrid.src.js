@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.0 (2023-07-04)
+ * @license Highcharts Dashboards v1.0.1 (2023-07-19)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -89,6 +89,7 @@
                 row: Globals.classNamePrefix + 'row',
                 columnHeader: Globals.classNamePrefix + 'column-header'
             };
+            Globals.win = window;
         })(Globals || (Globals = {}));
         /* *
          *
@@ -4743,7 +4744,7 @@
                  *         Different shapes for header and split boxes
                  *
                  * @type       {Highcharts.TooltipShapeValue}
-                 * @validvalue ["callout", "square"]
+                 * @validvalue ["callout", "rect"]
                  * @since      7.0
                  */
                 headerShape: 'callout',
@@ -6197,7 +6198,7 @@
              * @internal
              */
             updateInnerContainerWidth() {
-                const newWidth = this.scrollContainer.offsetWidth;
+                const newWidth = this.outerContainer.offsetWidth;
                 this.innerContainer.style.width = newWidth + 'px';
             }
             /**
@@ -6327,7 +6328,7 @@
              */
             formatCell(cellValue, column) {
                 const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat;
-                let formattedCell = cellValue || '';
+                let formattedCell = defined(cellValue) ? cellValue : '';
                 if (cellFormat) {
                     if (typeof cellValue === 'number' &&
                         cellFormat.indexOf('value') > -1) {
@@ -6596,7 +6597,7 @@
 
         return DataGrid;
     });
-    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/DataGrid.js']], function (Globals, DataGrid) {
+    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/DataGrid.js']], function (Globals, _DataGrid) {
 
         /* *
          *
@@ -6609,8 +6610,7 @@
          *
          * */
         const G = Globals;
-        G.win = window;
-        G.DataGrid = DataGrid;
+        G.DataGrid = _DataGrid;
         /* *
          *
          *  Classic Export

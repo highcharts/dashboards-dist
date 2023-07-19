@@ -1,6 +1,6 @@
 import type Cell from '../Layout/Cell';
-import type Options from '../../Core/Options';
 import type DataGrid from '../../DataGrid/DataGrid';
+import type DataGridOptions from '../../DataGrid/DataGridOptions';
 import type BaseDataGridOptions from '../../DataGrid/DataGridOptions';
 import Component from '../Components/Component.js';
 /**
@@ -44,7 +44,7 @@ declare class DataGridComponent extends Component {
     /** @private */
     dataGrid?: DataGrid;
     /** @private */
-    dataGridOptions: Partial<Options>;
+    dataGridOptions: Partial<DataGridOptions>;
     /** @private */
     options: DataGridComponent.ComponentOptions;
     /** @private */
@@ -52,7 +52,10 @@ declare class DataGridComponent extends Component {
     /** @private */
     private connectorListeners;
     constructor(cell: Cell, options: Partial<DataGridComponent.ComponentOptions>);
-    /** @private */
+    /**
+     * Triggered on component initialization.
+     * @private
+     */
     load(): this;
     /** @private */
     render(): this;
@@ -64,8 +67,23 @@ declare class DataGridComponent extends Component {
     /** @private */
     private constructDataGrid;
     private setupConnectorUpdate;
+    /**
+     * Based on the `visibleColumns` option, filter the columns of the table.
+     *
+     * @internal
+     */
+    private filterColumns;
     /** @private */
     toJSON(): DataGridComponent.ClassJSON;
+    /**
+     * Get the DataGrid component's options.
+     * @returns
+     * The JSON of DataGrid component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions(): Partial<DataGridComponent.ComponentOptions>;
 }
 declare namespace DataGridComponent {
     /** @private */
@@ -89,7 +107,7 @@ declare namespace DataGridComponent {
          */
         dataGridID?: string;
         /**
-         * Callback to use when a change in the data grid occures.
+         * Callback to use when a change in the data grid occurs.
          */
         onUpdate: typeof DataGridComponent.onUpdate;
         type: 'DataGrid';
@@ -106,20 +124,22 @@ declare namespace DataGridComponent {
          * The id that is applied to the chart's container.
          */
         chartID?: string;
-        /**
-         * Names / aliases that should be mapped to xAxis values. You can use
-         * null to keep columns selectively out of the chart.
-         * ```
-         * Example
-         * columnAssignment: {
-         *      'Food': 'x',
-         *      'Vitamin A': 'y'
-         * }
-         * ```
-         */
-        columnAssignment?: Record<string, string | null>;
         /** @private */
         tableAxisMap?: Record<string, string | null>;
+        /**
+         * If the `visibleColumns` option is not provided, the data grid will
+         * calculate and include each column from the data connector.
+         * When declared, the data grid will only include the columns that are
+         * listed.
+         *
+         * Alternatively, the column visibility can be controlled by the
+         * `dataGridOptions.columns` option.
+         * ```
+         * Example
+         * visibleColumns: ['Food', 'Vitamin A']
+         * ```
+         */
+        visibleColumns?: Array<string>;
     }
     /** @private */
     interface ComponentJSONOptions extends Component.ComponentOptionsJSON {

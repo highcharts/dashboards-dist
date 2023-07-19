@@ -305,8 +305,7 @@ SidebarPopup.components = [
                         ],
                         chart: {
                             animation: false,
-                            type: 'pie',
-                            zooming: {}
+                            type: 'pie'
                         }
                     }
                 });

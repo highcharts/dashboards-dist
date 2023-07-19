@@ -1,10 +1,8 @@
 import type Cell from '../Layout/Cell';
 import type CSSObject from '../../Core/Renderer/CSSObject';
-import type Options from '../../Core/Options';
+import type { Chart, Options, Highcharts } from '../Plugins/HighchartsTypes';
 import type TextOptions from './TextOptions';
-import Chart from '../../Core/Chart/Chart.js';
 import Component from './Component.js';
-import G from '../../Core/Globals.js';
 /**
  *
  * Class that represents a KPI component.
@@ -27,7 +25,7 @@ declare class KPIComponent extends Component {
      */
     static fromJSON(json: KPIComponent.ClassJSON, cell: Cell): KPIComponent;
     /** @internal */
-    static charter?: typeof G;
+    static charter?: typeof Highcharts;
     /**
      * Default options of the KPI component.
      */
@@ -167,6 +165,15 @@ declare class KPIComponent extends Component {
      * @internal
      */
     toJSON(): KPIComponent.ClassJSON;
+    /**
+     * Get the KPI component's options.
+     * @returns
+     * The JSON of KPI component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions(): Partial<KPIComponent.ComponentOptions>;
 }
 declare namespace KPIComponent {
     /** @internal */

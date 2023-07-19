@@ -1371,6 +1371,6 @@ export default Tooltip;
 * @type {number}
 */
 /**
- * @typedef {"callout"|"circle"|"square"} Highcharts.TooltipShapeValue
+ * @typedef {"callout"|"circle"|"rect"} Highcharts.TooltipShapeValue
  */
 ''; // keeps doclets above in JS file

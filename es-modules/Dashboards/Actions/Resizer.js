@@ -260,7 +260,7 @@ class Resizer {
             }
             // Resize height
             if (currentDimension === 'y') {
-                cellContainer.style.height = e.clientY - cellOffsets.top + 'px';
+                currentCell.setSize(void 0, e.clientY - cellOffsets.top);
             }
             // Call cellResize dashboard event.
             fireEvent(this.editMode.board, 'cellResize', {

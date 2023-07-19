@@ -268,11 +268,11 @@ declare namespace EditMode {
         /**
          * Whether the edit mode should be enabled for the dashboards.
          *
-         * @default false
-         *
          * Try it:
          *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/edit-mode/ctx-enabled/ | context enabled }
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/edit-mode/ctx-enabled/ | context enabled}
+         *
+         * @default false
          *
          */
         enabled?: boolean;
@@ -284,7 +284,7 @@ declare namespace EditMode {
          * The URL prefix for the icons used in the edit mode like the context
          * menu icons, the row and cell edit toolbar icons, etc.
          *
-         * @default https://code.highcharts.com/dashboards/@product.version@/gfx/dashboard-icons/
+         * @default https://code.highcharts.com/dashboards/@product.version@/gfx/dashboards-icons/
          */
         iconsURLPrefix?: string;
         /**

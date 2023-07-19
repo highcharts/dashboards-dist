@@ -2,6 +2,7 @@ import type CSSJSONObject from '../CSSJSONObject';
 import type JSON from '../JSON';
 import type Layout from './Layout.js';
 import type Serializable from '../Serializable';
+import Globals from '../Globals.js';
 import Cell from './Cell.js';
 import GUIElement from './GUIElement.js';
 import { HTMLDOMElement } from '../../Core/Renderer/DOMElementType';
@@ -73,6 +74,15 @@ declare class Row extends GUIElement {
      * Class JSON of this Row instance.
      */
     toJSON(): Row.JSON;
+    /**
+     * Get the row's options.
+     * @returns
+     * The JSON of row's options.
+     *
+     * @internal
+     *
+     */
+    getOptions(): Globals.DeepPartial<Row.Options>;
     setSize(height?: number | string): void;
     getCellIndex(cell: Cell): number | undefined;
     mountCell(cell: Cell, index?: number): void;

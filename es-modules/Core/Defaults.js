@@ -2174,7 +2174,7 @@ const defaultOptions = {
          *         Different shapes for header and split boxes
          *
          * @type       {Highcharts.TooltipShapeValue}
-         * @validvalue ["callout", "square"]
+         * @validvalue ["callout", "rect"]
          * @since      7.0
          */
         headerShape: 'callout',

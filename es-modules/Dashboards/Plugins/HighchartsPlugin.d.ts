@@ -1,5 +1,5 @@
 import type PluginHandler from '../PluginHandler';
-import type G from '../../Core/Globals';
+import type { Highcharts } from './HighchartsTypes';
 import HighchartsComponent from './HighchartsComponent.js';
 declare module '../Components/ComponentType' {
     interface ComponentTypeRegistry {
@@ -12,9 +12,9 @@ declare module '../Components/ComponentType' {
  * @param {Highcharts} highcharts
  * Highcharts core to connect.
  */
-declare function connectHighcharts(highcharts: typeof G): void;
+declare function connectHighcharts(highcharts: typeof Highcharts): void;
 declare const HighchartsCustom: {
     connectHighcharts: typeof connectHighcharts;
 };
-declare const HighchartsPlugin: PluginHandler.DashboardPlugin<typeof HighchartsCustom>;
+declare const HighchartsPlugin: PluginHandler.DashboardsPlugin<typeof HighchartsCustom>;
 export default HighchartsPlugin;

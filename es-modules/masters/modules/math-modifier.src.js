@@ -1,6 +1,6 @@
 /**
- * @license Highcharts Dashboards Math 1.0.0 (2023-07-04)
- * @module dashboards/modules/dashboard-math
+ * @license Highcharts Dashboards Math 1.0.1 (2023-07-19)
+ * @module dashboards/modules/math-modifier
  * @requires dashboards
  *
  * (c) 2009-2023 Highsoft AS
@@ -8,9 +8,25 @@
  * License: www.highcharts.com/license
  */
 'use strict';
-import Dashboards from '../../Dashboards/Globals.js';
+/* *
+ *
+ *  Imports
+ *
+ * */
+import Globals from '../../Dashboards/Globals.js';
 import Formula from '../../Data/Formula/Formula.js';
+// Fill registries
 import '../../Data/Modifiers/MathModifier.js';
-const G = Dashboards;
+/* *
+ *
+ *  Namespace
+ *
+ * */
+const G = Globals;
 G.Formula = Formula;
+/* *
+ *
+ *  Default Export
+ *
+ * */
 export default G;

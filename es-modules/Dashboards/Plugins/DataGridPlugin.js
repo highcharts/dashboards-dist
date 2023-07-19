@@ -20,7 +20,7 @@ import DataGridComponent from './DataGridComponent.js';
 /**
  * Connects DataGrid with the Dashboard plugin.
  *
- * @param {Highcharts} dataGrid DataGrid core to connect.
+ * @param {Dashboards.DataGrid} dataGrid DataGrid core to connect.
  */
 function connectDataGrid(DataGridClass) {
     DataGridComponent.DataGridConstructor = DataGridClass;
@@ -28,7 +28,7 @@ function connectDataGrid(DataGridClass) {
 /**
  * Callback function of the Dashboard plugin.
  *
- * @param {Dashboard.DashboardPlugin.Event} e
+ * @param {Dashboards.PluginHandler.Event} e
  * Plugin context provided by the Dashboard.
  */
 function onRegister(e) {
@@ -53,7 +53,7 @@ const DataGridCustom = {
 };
 const DataGridPlugin = {
     custom: DataGridCustom,
-    name: 'DataGrid.DashboardPlugin',
+    name: 'DataGrid.DashboardsPlugin',
     onRegister,
     onUnregister
 };

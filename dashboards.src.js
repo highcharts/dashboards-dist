@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.0 (2023-07-04)
+ * @license Highcharts Dashboards v1.0.1 (2023-07-19)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.0.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.0.1', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -7969,6 +7969,17 @@
                     }
                 };
             }
+            /**
+             * Get the cell's options.
+             * @returns
+             * The JSON of cell's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                return this.options;
+            }
             changeVisibility(setVisible = true) {
                 super.changeVisibility(setVisible);
                 const cell = this, row = cell.row;
@@ -8038,19 +8049,30 @@
              *
              * @param width
              * % value or 'auto' or px
+             *
+             * @param height
+             * value in px
              */
-            setSize(width) {
+            setSize(width, height) {
                 const cell = this, editMode = cell.row.layout.board.editMode;
                 if (cell.container) {
-                    if (width === 'auto' && cell.container.style.flex !== '1 1 0%') {
-                        cell.container.style.flex = '1 1 0%';
-                    }
-                    else {
-                        const cellWidth = cell.convertWidthToValue(width);
-                        if (cellWidth &&
-                            cell.container.style.flex !== '0 0 ' + cellWidth) {
-                            cell.container.style.flex = '0 0 ' + cellWidth;
+                    if (width) {
+                        if (width === 'auto' &&
+                            cell.container.style.flex !== '1 1 0%') {
+                            cell.container.style.flex = '1 1 0%';
                         }
+                        else {
+                            const cellWidth = cell.convertWidthToValue(width);
+                            if (cellWidth &&
+                                cell.container.style.flex !== '0 0 ' + cellWidth) {
+                                cell.container.style.flex = '0 0 ' + cellWidth;
+                            }
+                            cell.options.width = cellWidth;
+                        }
+                    }
+                    if (height) {
+                        cell.options.height = cell.container.style.height =
+                            height + 'px';
                     }
                     if (editMode) {
                         editMode.hideContextPointer();
@@ -8354,6 +8376,25 @@
                         cells: cells,
                         style: row.options.style
                     }
+                };
+            }
+            /**
+             * Get the row's options.
+             * @returns
+             * The JSON of row's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                const row = this, cells = [];
+                for (let i = 0, iEnd = row.cells.length; i < iEnd; ++i) {
+                    cells.push(row.cells[i].getOptions());
+                }
+                return {
+                    id: this.options.id,
+                    style: this.options.style,
+                    cells
                 };
             }
             setSize(height) {
@@ -8762,6 +8803,29 @@
                     }
                 };
             }
+            /**
+             * Get the layout's options.
+             * @returns
+             * The JSON of layout's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                const layout = this, rows = [];
+                // Get rows JSON.
+                for (let i = 0, iEnd = layout.rows.length; i < iEnd; ++i) {
+                    rows.push(layout.rows[i].getOptions());
+                }
+                return {
+                    id: this.options.id,
+                    layoutClassName: this.options.layoutClassName,
+                    rowClassName: this.options.rowClassName,
+                    cellClassName: this.options.cellClassName,
+                    style: this.options.style,
+                    rows
+                };
+            }
         }
 
         return Layout;
@@ -9065,8 +9129,7 @@
                                 ],
                                 chart: {
                                     animation: false,
-                                    type: 'pie',
-                                    zooming: {}
+                                    type: 'pie'
                                 }
                             }
                         });
@@ -10088,7 +10151,7 @@
                     }
                     // Resize height
                     if (currentDimension === 'y') {
-                        cellContainer.style.height = e.clientY - cellOffsets.top + 'px';
+                        currentCell.setSize(void 0, e.clientY - cellOffsets.top);
                     }
                     // Call cellResize dashboard event.
                     fireEvent(this.editMode.board, 'cellResize', {
@@ -10346,7 +10409,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.0.0/gfx/dashboard-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.0.1/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -11947,7 +12010,7 @@
             });
         };
         const { classNamePrefix } = DG;
-        const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, relativeLength } = U;
+        const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, relativeLength, diffObjects } = U;
         const { getMargins, getPaddings } = CU;
         const { uniqueKey } = DU;
         /* *
@@ -12630,6 +12693,17 @@
                 };
                 return json;
             }
+            /**
+             * Get the component's options.
+             * @returns
+             * The JSON of component's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                return diffObjects(this.options, Component.defaultOptions);
+            }
             getEditableOptions() {
                 const component = this;
                 return merge(component.options);
@@ -12878,7 +12952,7 @@
                 step((generator = generator.apply(thisArg, _arguments || [])).next());
             });
         };
-        const { merge } = U;
+        const { merge, diffObjects } = U;
         // TODO: This may affect the AST parsing in Highcharts
         // should look into adding these as options if possible
         // Needs to go in a composition in the Highcharts plugin
@@ -13112,6 +13186,17 @@
                     json
                 });
                 return json;
+            }
+            /**
+             * Get the HTML component's options.
+             * @returns
+             * The JSON of HTML component's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                return Object.assign(Object.assign({}, diffObjects(this.options, HTMLComponent.defaultOptions)), { type: 'HTML' });
             }
         }
         /* *
@@ -13475,6 +13560,28 @@
                         responsiveBreakpoints: board.options.responsiveBreakpoints
                     }
                 };
+            }
+            /**
+             * Convert the current state of board's options into JSON. The function does
+             * not support converting functions or events into JSON object.
+             *
+             * @returns
+             * The JSON of boards's options.
+             */
+            getOptions() {
+                const board = this, layouts = [], components = [];
+                for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
+                    layouts.push(board.layouts[i].getOptions());
+                }
+                for (let i = 0, iEnd = board.mountedComponents.length; i < iEnd; ++i) {
+                    if (board.mountedComponents[i].cell &&
+                        board.mountedComponents[i].cell.mountedComponent) {
+                        components.push(board.mountedComponents[i].component.getOptions());
+                    }
+                }
+                return Object.assign(Object.assign({}, this.options), { gui: {
+                        layouts
+                    }, components: components });
             }
         }
         /* *
