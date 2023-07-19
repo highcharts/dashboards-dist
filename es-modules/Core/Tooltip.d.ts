@@ -273,7 +273,7 @@ declare namespace Tooltip {
         plotX: number;
         plotY: number;
     }
-    type ShapeValue = ('callout' | 'circle' | 'square' | 'rect');
+    type ShapeValue = ('callout' | 'circle' | 'rect');
     /**
      * @private
      */

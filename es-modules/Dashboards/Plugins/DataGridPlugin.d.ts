@@ -9,11 +9,11 @@ declare module '../Components/ComponentType' {
 /**
  * Connects DataGrid with the Dashboard plugin.
  *
- * @param {Highcharts} dataGrid DataGrid core to connect.
+ * @param {Dashboards.DataGrid} dataGrid DataGrid core to connect.
  */
 declare function connectDataGrid(DataGridClass: typeof DataGrid): void;
 declare const DataGridCustom: {
     connectDataGrid: typeof connectDataGrid;
 };
-declare const DataGridPlugin: PluginHandler.DashboardPlugin<typeof DataGridCustom>;
+declare const DataGridPlugin: PluginHandler.DashboardsPlugin<typeof DataGridCustom>;
 export default DataGridPlugin;

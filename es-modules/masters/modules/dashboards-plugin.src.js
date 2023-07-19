@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.0 (2023-07-04)
+ * @license Highcharts Dashboards v1.0.1 (2023-07-19)
  * @module dashboards/modules/dashboards-plugin
  * @requires dashboards
  *
@@ -8,14 +8,9 @@
  * License: www.highcharts.com/license
  * */
 'use strict';
-/* *
- *
- *  Imports
- *
- * */
+import DataGridPlugin from '../../Dashboards/Plugins/DataGridPlugin.js';
 import Globals from '../../Dashboards/Globals.js';
 import HighchartsPlugin from '../../Dashboards/Plugins/HighchartsPlugin.js';
-import DataGridPlugin from '../../Dashboards/Plugins/DataGridPlugin.js';
 /* *
  *
  *  Namespaces

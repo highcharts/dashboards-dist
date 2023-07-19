@@ -485,7 +485,7 @@ class DataGrid {
      * @internal
      */
     updateInnerContainerWidth() {
-        const newWidth = this.scrollContainer.offsetWidth;
+        const newWidth = this.outerContainer.offsetWidth;
         this.innerContainer.style.width = newWidth + 'px';
     }
     /**
@@ -615,7 +615,7 @@ class DataGrid {
      */
     formatCell(cellValue, column) {
         const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat;
-        let formattedCell = cellValue || '';
+        let formattedCell = defined(cellValue) ? cellValue : '';
         if (cellFormat) {
             if (typeof cellValue === 'number' &&
                 cellFormat.indexOf('value') > -1) {

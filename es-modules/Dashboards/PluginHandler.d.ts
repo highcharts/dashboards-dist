@@ -3,7 +3,7 @@ import Board from './Board.js';
 import Sync from './Components/Sync/Sync.js';
 import ComponentRegistry from './Components/ComponentRegistry.js';
 declare namespace PluginHandler {
-    interface DashboardPlugin<T = (Globals.AnyRecord | undefined)> {
+    interface DashboardsPlugin<T = (Globals.AnyRecord | undefined)> {
         /** @internal */
         custom: T;
         /**
@@ -33,7 +33,7 @@ declare namespace PluginHandler {
     /** @internal */
     type EventCallback = (e: Event) => void;
     /** @internal */
-    const registry: Record<string, DashboardPlugin>;
+    const registry: Record<string, DashboardsPlugin>;
     /**
      * Revision of the Dashboard plugin API.
      *
@@ -49,7 +49,7 @@ declare namespace PluginHandler {
      * @param {string} [key]
      * Plugin key for the registry. (Default: `plugin.name`)
      */
-    function addPlugin(plugin: DashboardPlugin, key?: string): void;
+    function addPlugin(plugin: DashboardsPlugin, key?: string): void;
     /**
      * Removes a dashboard plugin.
      *

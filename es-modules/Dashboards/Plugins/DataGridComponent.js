@@ -22,9 +22,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import Component from '../Components/Component.js';
 import DataConverter from '../../Data/Converters/DataConverter.js';
-import U from '../../Core/Utilities.js';
-const { createElement, merge, uniqueKey } = U;
 import DataGridSyncHandlers from './DataGridSyncHandlers.js';
+import U from '../../Core/Utilities.js';
+const { diffObjects, merge, uniqueKey } = U;
 /* *
  *
  *  Class
@@ -117,6 +117,10 @@ class DataGridComponent extends Component {
         this.sync = new DataGridComponent.Sync(this, this.syncHandlers);
         this.dataGridOptions = this.options.dataGridOptions || {};
         this.innerResizeTimeouts = [];
+        this.on('tableChanged', () => {
+            var _a;
+            (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ dataTable: this.filterColumns() });
+        });
         // Add the component instance to the registry
         Component.addInstance(this);
     }
@@ -125,7 +129,10 @@ class DataGridComponent extends Component {
      *  Class methods
      *
      * */
-    /** @private */
+    /**
+     * Triggered on component initialization.
+     * @private
+     */
     load() {
         this.emit({ type: 'load' });
         super.load();
@@ -134,7 +141,6 @@ class DataGridComponent extends Component {
         if (this.connector &&
             !this.connectorListeners.length) {
             const connectorListeners = this.connectorListeners;
-            // this.on('tableChanged', (): void => this.updateSeries());
             // Reload the store when polling.
             connectorListeners.push(this.connector
                 .on('afterLoad', (e) => {
@@ -177,7 +183,7 @@ class DataGridComponent extends Component {
         if (this.connector &&
             this.dataGrid &&
             this.dataGrid.dataTable.modified !== this.connector.table.modified) {
-            this.dataGrid.update({ dataTable: this.connector.table.modified });
+            this.dataGrid.update({ dataTable: this.filterColumns() });
         }
         this.sync.start();
         this.emit({ type: 'afterRender' });
@@ -234,6 +240,32 @@ class DataGridComponent extends Component {
             });
         }
     }
+    /**
+     * Based on the `visibleColumns` option, filter the columns of the table.
+     *
+     * @internal
+     */
+    filterColumns() {
+        var _a;
+        const table = (_a = this.connector) === null || _a === void 0 ? void 0 : _a.table.modified, visibleColumns = this.options.visibleColumns;
+        if (table) {
+            // Show all columns if no visibleColumns is provided.
+            if (!(visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length)) {
+                return table;
+            }
+            const columnsToDelete = table
+                .getColumnNames()
+                .filter((columnName) => ((visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length) > 0 &&
+                // Don't add columns that are not listed.
+                !visibleColumns.includes(columnName)
+            // Else show the other columns.
+            ));
+            // On a fresh table clone remove the columns that are not mapped.
+            const filteredTable = table.clone();
+            filteredTable.deleteColumns(columnsToDelete);
+            return filteredTable;
+        }
+    }
     /** @private */
     toJSON() {
         const dataGridOptions = JSON.stringify(this.options.dataGridOptions);
@@ -241,6 +273,17 @@ class DataGridComponent extends Component {
         const json = Object.assign(Object.assign({}, base), { options: Object.assign(Object.assign({}, base.options), { dataGridOptions }) });
         this.emit({ type: 'toJSON', json });
         return json;
+    }
+    /**
+     * Get the DataGrid component's options.
+     * @returns
+     * The JSON of DataGrid component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        return Object.assign(Object.assign({}, diffObjects(this.options, DataGridComponent.defaultOptions)), { type: 'DataGrid' });
     }
 }
 /* *

@@ -230,6 +230,25 @@ class Row extends GUIElement {
             }
         };
     }
+    /**
+     * Get the row's options.
+     * @returns
+     * The JSON of row's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        const row = this, cells = [];
+        for (let i = 0, iEnd = row.cells.length; i < iEnd; ++i) {
+            cells.push(row.cells[i].getOptions());
+        }
+        return {
+            id: this.options.id,
+            style: this.options.style,
+            cells
+        };
+    }
     setSize(height) {
         const cells = this.cells;
         Row.setContainerHeight(this.container, height);

@@ -5,6 +5,7 @@ import type JSON from '../JSON';
 import type LayoutType from './Layout';
 import type Row from './Row';
 import type Serializable from '../Serializable';
+import Globals from '../Globals.js';
 import GUIElement from './GUIElement.js';
 /**
  * @internal
@@ -87,6 +88,15 @@ declare class Cell extends GUIElement {
      * Class JSON of this Cell instance.
      */
     toJSON(): Cell.JSON;
+    /**
+     * Get the cell's options.
+     * @returns
+     * The JSON of cell's options.
+     *
+     * @internal
+     *
+     */
+    getOptions(): Globals.DeepPartial<Cell.Options>;
     protected changeVisibility(setVisible?: boolean): void;
     getParentCell(level: number): (Cell | undefined);
     getOverlappingLevels(align: string, // left, right, top, bottom
@@ -98,8 +108,11 @@ declare class Cell extends GUIElement {
      *
      * @param width
      * % value or 'auto' or px
+     *
+     * @param height
+     * value in px
      */
-    setSize(width: (string | number)): void;
+    setSize(width?: (string | number), height?: (string | number)): void;
     updateSize(width: string, // % value or 'auto' or px
     rwdMode?: string): void;
     setHighlight(remove?: boolean): void;

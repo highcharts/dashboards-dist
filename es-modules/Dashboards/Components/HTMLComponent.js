@@ -26,7 +26,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import AST from '../../Core/Renderer/HTML/AST.js';
 import Component from './Component.js';
 import U from '../../Core/Utilities.js';
-const { merge } = U;
+const { merge, diffObjects } = U;
 // TODO: This may affect the AST parsing in Highcharts
 // should look into adding these as options if possible
 // Needs to go in a composition in the Highcharts plugin
@@ -260,6 +260,17 @@ class HTMLComponent extends Component {
             json
         });
         return json;
+    }
+    /**
+     * Get the HTML component's options.
+     * @returns
+     * The JSON of HTML component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        return Object.assign(Object.assign({}, diffObjects(this.options, HTMLComponent.defaultOptions)), { type: 'HTML' });
     }
 }
 /* *

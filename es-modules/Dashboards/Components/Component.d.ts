@@ -354,6 +354,15 @@ declare abstract class Component {
      * @internal
      */
     toJSON(): Component.JSON;
+    /**
+     * Get the component's options.
+     * @returns
+     * The JSON of component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions(): Partial<Component.ComponentOptions>;
     getEditableOptions(): Component.ComponentOptions;
     getEditableOptionValue(propertyPath?: string[]): number | boolean | undefined | string;
 }

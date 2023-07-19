@@ -100,6 +100,15 @@ declare class HTMLComponent extends Component {
      * @internal
      */
     toJSON(): HTMLComponent.ClassJSON;
+    /**
+     * Get the HTML component's options.
+     * @returns
+     * The JSON of HTML component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions(): Partial<HTMLComponent.HTMLComponentOptions>;
 }
 declare namespace HTMLComponent {
     /** @internal */

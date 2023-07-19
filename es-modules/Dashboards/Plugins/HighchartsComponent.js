@@ -26,10 +26,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import Component from '../Components/Component.js';
 import DataConverter from '../../Data/Converters/DataConverter.js';
 import DataTable from '../../Data/DataTable.js';
-import G from '../../Core/Globals.js';
+import Globals from '../../Dashboards/Globals.js';
 import HighchartsSyncHandlers from './HighchartsSyncHandlers.js';
 import U from '../../Core/Utilities.js';
-const { addEvent, createElement, merge, splat, uniqueKey, error } = U;
+const { addEvent, createElement, merge, splat, uniqueKey, error, diffObjects } = U;
 /* *
  *
  *  Class
@@ -317,9 +317,10 @@ class HighchartsComponent extends Component {
      *
      */
     createChart() {
-        const charter = (HighchartsComponent.charter || G);
+        const charter = (HighchartsComponent.charter ||
+            Globals.win.Highcharts);
         if (this.chartConstructor !== 'chart') {
-            const factory = charter[this.chartConstructor] || G.chart;
+            const factory = charter[this.chartConstructor];
             if (factory) {
                 try {
                     return factory(this.chartContainer, this.chartOptions);
@@ -421,12 +422,24 @@ class HighchartsComponent extends Component {
         this.emit({ type: 'toJSON', json });
         return json;
     }
+    /**
+     * Get the HighchartsComponent component's options.
+     * @returns
+     * The JSON of HighchartsComponent component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        return Object.assign(Object.assign({}, diffObjects(this.options, HighchartsComponent.defaultOptions)), { type: 'Highcharts' });
+    }
     getEditableOptions() {
+        var _a;
         const component = this;
         const componentOptions = component.options;
         const chart = component.chart;
         const chartOptions = chart && chart.options;
-        const chartType = chartOptions && chartOptions.chart.type || 'line';
+        const chartType = chartOptions && ((_a = chartOptions.chart) === null || _a === void 0 ? void 0 : _a.type) || 'line';
         return merge(componentOptions, {
             chartOptions
         }, {

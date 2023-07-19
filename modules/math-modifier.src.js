@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 1.0.0 (2023-07-04)
+ * @license Highcharts Dashboards Math 1.0.1 (2023-07-19)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -10,7 +10,7 @@
         factory['default'] = factory;
         module.exports = factory;
     } else if (typeof define === 'function' && define.amd) {
-        define('dashboards/modules/dashboard-math', ['dashboards'], function (Dashboards) {
+        define('dashboards/modules/math-modifier', ['dashboards'], function (Dashboards) {
             factory(Dashboards);
             factory.Dashboards = Dashboards;
             return factory;
@@ -2611,10 +2611,26 @@
 
         return MathModifier;
     });
-    _registerModule(_modules, 'masters/modules/math-modifier.src.js', [_modules['Dashboards/Globals.js'], _modules['Data/Formula/Formula.js']], function (Dashboards, Formula) {
+    _registerModule(_modules, 'masters/modules/math-modifier.src.js', [_modules['Dashboards/Globals.js'], _modules['Data/Formula/Formula.js']], function (Globals, Formula) {
 
-        const G = Dashboards;
+        /* *
+         *
+         *  Imports
+         *
+         * */
+        // Fill registries
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        const G = Globals;
         G.Formula = Formula;
+        /* *
+         *
+         *  Default Export
+         *
+         * */
 
         return G;
     });

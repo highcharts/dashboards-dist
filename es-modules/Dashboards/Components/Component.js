@@ -28,7 +28,7 @@ import DG from '../Globals.js';
 const { classNamePrefix } = DG;
 import EditableOptions from './EditableOptions.js';
 import U from '../../Core/Utilities.js';
-const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, relativeLength } = U;
+const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, relativeLength, diffObjects } = U;
 import CU from './ComponentUtilities.js';
 const { getMargins, getPaddings } = CU;
 import ComponentGroup from './ComponentGroup.js';
@@ -714,6 +714,17 @@ class Component {
             }
         };
         return json;
+    }
+    /**
+     * Get the component's options.
+     * @returns
+     * The JSON of component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        return diffObjects(this.options, Component.defaultOptions);
     }
     getEditableOptions() {
         const component = this;

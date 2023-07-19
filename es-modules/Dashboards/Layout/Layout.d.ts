@@ -5,6 +5,7 @@ import type Serializable from '../Serializable';
 import Cell from './Cell.js';
 import Row from './Row.js';
 import GUIElement from './GUIElement.js';
+import Globals from '../Globals.js';
 /**
  * @internal
  **/
@@ -84,6 +85,15 @@ declare class Layout extends GUIElement {
      * Class JSON of this Layout instance.
      */
     toJSON(): Layout.JSON;
+    /**
+     * Get the layout's options.
+     * @returns
+     * The JSON of layout's options.
+     *
+     * @internal
+     *
+     */
+    getOptions(): Globals.DeepPartial<Layout.Options>;
 }
 interface Layout {
     options: Layout.Options;

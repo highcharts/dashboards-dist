@@ -1,15 +1,13 @@
-import type Chart from '../../Core/Chart/Chart';
-import type ChartOptions from '../../Core/Options';
 import type Cell from '../Layout/Cell';
+import type { Chart, Options as ChartOptions, Highcharts as H } from './HighchartsTypes';
 import Component from '../Components/Component.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
-import G from '../../Core/Globals.js';
 declare module '../../Core/GlobalsLike' {
     interface GlobalsLike {
-        chart: typeof Chart.chart;
-        ganttChart: typeof Chart.chart;
-        mapChart: typeof Chart.chart;
-        stockChart: typeof Chart.chart;
+        chart: typeof H.chart;
+        ganttChart: typeof H.chart;
+        mapChart: typeof H.chart;
+        stockChart: typeof H.chart;
     }
 }
 /**
@@ -19,7 +17,7 @@ declare module '../../Core/GlobalsLike' {
  */
 declare class HighchartsComponent extends Component {
     /** @private */
-    static charter?: typeof G;
+    static charter?: typeof H;
     /** @private */
     static syncHandlers: import("../Components/Sync/Sync").default.OptionsRecord;
     /**
@@ -180,6 +178,15 @@ declare class HighchartsComponent extends Component {
      * @private
      */
     toJSON(): HighchartsComponent.ClassJSON;
+    /**
+     * Get the HighchartsComponent component's options.
+     * @returns
+     * The JSON of HighchartsComponent component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions(): Partial<HighchartsComponent.Options>;
     getEditableOptions(): HighchartsComponent.Options;
     getEditableOptionValue(propertyPath?: string[]): number | boolean | undefined | string;
 }
