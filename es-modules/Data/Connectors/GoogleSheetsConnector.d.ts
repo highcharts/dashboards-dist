@@ -1,5 +1,6 @@
 import type DataEvent from '../DataEvent';
 import type GoogleSheetsConnectorOptions from './GoogleSheetsConnectorOptions';
+import type Types from '../../Shared/Types';
 import DataConnector from './DataConnector.js';
 import GoogleSheetsConverter from '../Converters/GoogleSheetsConverter.js';
 /**
@@ -44,7 +45,7 @@ declare namespace GoogleSheetsConnector {
      * Available options for constructor and converter of the
      * GoogleSheetsConnector.
      */
-    type UserOptions = (DeepPartial<GoogleSheetsConnectorOptions> & GoogleSheetsConverter.UserOptions);
+    type UserOptions = (Types.DeepPartial<GoogleSheetsConnectorOptions> & GoogleSheetsConverter.UserOptions);
     /**
      * Creates GoogleSheets API v4 URL.
      * @private

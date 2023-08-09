@@ -60,7 +60,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.0.1/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.0.2/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(
@@ -89,6 +89,14 @@ class EditMode {
             confirmationPopup: {
                 close: {
                     icon: this.iconsURLPrefix + 'close.svg'
+                }
+            },
+            toolbars: {
+                cell: {
+                    enabled: true
+                },
+                row: {
+                    enabled: true
                 }
             }
         }, options || {});
@@ -152,18 +160,18 @@ class EditMode {
      * @internal
      */
     init() {
-        var _a;
+        var _a, _b, _c, _d, _e;
         const editMode = this;
         if ((_a = this.options.resize) === null || _a === void 0 ? void 0 : _a.enabled) {
             editMode.resizer = new Resizer(editMode, editMode.options.resize);
         }
         editMode.dragDrop = new DragDrop(editMode, editMode.options.dragDrop);
         // Init rowToolbar.
-        if (!editMode.rowToolbar) {
+        if (((_c = (_b = editMode.options.toolbars) === null || _b === void 0 ? void 0 : _b.row) === null || _c === void 0 ? void 0 : _c.enabled) && !editMode.rowToolbar) {
             editMode.rowToolbar = new RowEditToolbar(editMode);
         }
         // Init cellToolbar.
-        if (!editMode.cellToolbar) {
+        if (((_e = (_d = editMode.options.toolbars) === null || _d === void 0 ? void 0 : _d.cell) === null || _e === void 0 ? void 0 : _e.enabled) && !editMode.cellToolbar) {
             editMode.cellToolbar = new CellEditToolbar(editMode);
         }
         // Init Sidebar.

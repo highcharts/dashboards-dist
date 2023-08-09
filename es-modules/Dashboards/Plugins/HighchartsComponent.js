@@ -29,7 +29,7 @@ import DataTable from '../../Data/DataTable.js';
 import Globals from '../../Dashboards/Globals.js';
 import HighchartsSyncHandlers from './HighchartsSyncHandlers.js';
 import U from '../../Core/Utilities.js';
-const { addEvent, createElement, merge, splat, uniqueKey, error, diffObjects } = U;
+const { addEvent, createElement, merge, splat, uniqueKey, error, diffObjects, defined } = U;
 /* *
  *
  *  Class
@@ -181,7 +181,7 @@ class HighchartsComponent extends Component {
         if (this.options.chartID) {
             this.chartContainer.id = this.options.chartID;
         }
-        this.syncHandlers = this.handleSyncOptions(HighchartsSyncHandlers);
+        this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
     }
     /**
      * Update the store, when the point is being dragged.
@@ -189,7 +189,7 @@ class HighchartsComponent extends Component {
      * @param  {Component.ConnectorTypes} store Connector to update.
      */
     onChartUpdate(point, store) {
-        const table = store.table, columnName = point.series.name, rowNumber = point.x, converter = new DataConverter(), valueToSet = converter.asNumber(point.y);
+        const table = store.table, columnName = point.series.name, rowNumber = point.index, converter = new DataConverter(), valueToSet = converter.asNumber(point.y);
         table.setCell(columnName, rowNumber, valueToSet);
     }
     /**
@@ -218,7 +218,8 @@ class HighchartsComponent extends Component {
      * @private
      */
     updateSeries() {
-        // Heuristically create series from the store dataTable
+        var _a;
+        // Heuristically create series from the connector dataTable
         if (this.chart && this.connector) {
             this.presentationTable = this.presentationModifier ?
                 this.connector.table.modified.clone() :
@@ -232,7 +233,7 @@ class HighchartsComponent extends Component {
                 this.presentationTable = this.presentationModifier
                     .modifyTable(this.presentationTable).modified;
             }
-            const table = this.presentationTable;
+            const table = this.presentationTable, modifierOptions = (_a = table.getModifier()) === null || _a === void 0 ? void 0 : _a.options;
             this.emit({ type: 'afterPresentationModifier', table: table });
             // Remove series names that match the xKeys
             const seriesNames = table.modified.getColumnNames()
@@ -242,10 +243,10 @@ class HighchartsComponent extends Component {
                         .getSharedState()
                         .getColumnVisibility(name) !== false :
                     true;
-                if (!isVisible && !columnAssignment[name]) {
-                    return false;
+                if (!defined(this.options.columnAssignment)) {
+                    return true;
                 }
-                if (columnAssignment[name] === null) {
+                if (!isVisible || !columnAssignment[name]) {
                     return false;
                 }
                 if (columnAssignment[name] === 'x') {
@@ -256,6 +257,7 @@ class HighchartsComponent extends Component {
             });
             // Create the series or get the already added series
             const seriesList = seriesNames.map((seriesName, index) => {
+                var _a;
                 let i = 0;
                 while (i < chart.series.length) {
                     const series = chart.series[i];
@@ -271,9 +273,17 @@ class HighchartsComponent extends Component {
                         series.destroy();
                     }
                 }
+                // Disable dragging on series, which were created out of a
+                // columns which are created by MathModifier.
+                const shouldBeDraggable = !((modifierOptions === null || modifierOptions === void 0 ? void 0 : modifierOptions.type) === 'Math' &&
+                    ((_a = modifierOptions
+                        .columnFormulas) === null || _a === void 0 ? void 0 : _a.some((formula) => formula.column === seriesName)));
                 return chart.addSeries({
                     name: seriesName,
-                    id: `${storeTableID}-series-${index}`
+                    id: `${storeTableID}-series-${index}`,
+                    dragDrop: {
+                        draggableY: shouldBeDraggable
+                    }
                 }, false);
             });
             // Insert the data
@@ -649,7 +659,7 @@ HighchartsComponent.defaultOptions = merge(Component.defaultOptions, {
             'chartConfig'
         ]
     }),
-    columnAssignment: {}
+    columnAssignment: void 0
 });
 /* *
  *

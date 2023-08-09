@@ -1,6 +1,7 @@
 import type { DataConnectorTypes } from './DataConnectorType';
-import type DataEvent from '../DataEvent';
 import type { DataConnectorOptions, MetaColumn, Metadata } from './DataConnectorOptions';
+import type DataEvent from '../DataEvent';
+import type { DataModifierTypeOptions } from '../Modifiers/DataModifierType';
 import DataConverter from '../Converters/DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -119,6 +120,7 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * Order of columns.
      */
     setColumnOrder(columnNames: Array<string>): void;
+    setModifierOptions(modifierOptions?: DataModifierTypeOptions): Promise<this>;
     /**
      * Starts polling new data after the specific time span in milliseconds.
      *

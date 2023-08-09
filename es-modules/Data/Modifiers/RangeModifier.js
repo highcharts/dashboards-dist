@@ -33,7 +33,7 @@ class RangeModifier extends DataModifier {
     /**
      * Constructs an instance of the range modifier.
      *
-     * @param {RangeModifier.Options} [options]
+     * @param {Partial<RangeModifier.Options>} [options]
      * Options to configure the range modifier.
      */
     constructor(options) {
@@ -60,14 +60,21 @@ class RangeModifier extends DataModifier {
     modifyTable(table, eventDetail) {
         const modifier = this;
         modifier.emit({ type: 'modify', detail: eventDetail, table });
-        const { ranges, strict } = modifier.options;
+        const { additive, ranges, strict } = modifier.options;
         if (ranges.length) {
-            const columns = table.getColumns(), rows = [], modified = table.modified;
+            const modified = table.modified;
+            let columns = table.getColumns(), rows = [];
             for (let i = 0, iEnd = ranges.length, range, rangeColumn; i < iEnd; ++i) {
                 range = ranges[i];
                 if (strict &&
                     typeof range.minValue !== typeof range.maxValue) {
                     continue;
+                }
+                if (i > 0 && !additive) {
+                    modified.deleteRows();
+                    modified.setRows(rows);
+                    columns = modified.getColumns();
+                    rows = [];
                 }
                 rangeColumn = (columns[range.column] || []);
                 for (let j = 0, jEnd = rangeColumn.length, cell, row; j < jEnd; ++j) {
@@ -86,7 +93,9 @@ class RangeModifier extends DataModifier {
                     }
                     if (cell >= range.minValue &&
                         cell <= range.maxValue) {
-                        row = table.getRow(j);
+                        row = (additive ?
+                            table.getRow(j) :
+                            modified.getRow(j));
                         if (row) {
                             rows.push(row);
                         }
@@ -102,9 +111,12 @@ class RangeModifier extends DataModifier {
     /**
      * Utility function that returns the first row index
      * if the table has been modified by a range modifier
-     * @param {DataTable} table the table to get the offset from
      *
-     * @return {number} The row offset of the modified table
+     * @param {DataTable} table
+     * The table to get the offset from.
+     *
+     * @return {number}
+     * The row offset of the modified table.
      */
     getModifiedTableOffset(table) {
         const { ranges } = this.options;
@@ -133,8 +145,7 @@ class RangeModifier extends DataModifier {
  */
 RangeModifier.defaultOptions = {
     type: 'Range',
-    ranges: [],
-    strict: false
+    ranges: []
 };
 DataModifier.registerType('Range', RangeModifier);
 /* *

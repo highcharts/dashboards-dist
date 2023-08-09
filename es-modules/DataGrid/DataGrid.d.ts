@@ -61,7 +61,7 @@ declare class DataGrid {
      * The input element of a cell after mouse focus.
      * @internal
      */
-    private cellInputEl?;
+    cellInputEl?: HTMLInputElement;
     /**
      * The container for the column headers.
      * @internal
@@ -283,11 +283,6 @@ declare class DataGrid {
      * @internal
      */
     private removeCellInputElement;
-    /**
-     * Inherits the inner width from the scroll container.
-     * @internal
-     */
-    private updateInnerContainerWidth;
     /**
      * Updates the scroll container to reflect the data size.
      * @internal

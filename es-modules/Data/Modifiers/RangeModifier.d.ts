@@ -15,10 +15,10 @@ declare class RangeModifier extends DataModifier {
     /**
      * Constructs an instance of the range modifier.
      *
-     * @param {RangeModifier.Options} [options]
+     * @param {Partial<RangeModifier.Options>} [options]
      * Options to configure the range modifier.
      */
-    constructor(options?: DeepPartial<RangeModifierOptions>);
+    constructor(options?: Partial<RangeModifierOptions>);
     /**
      * Options of the range modifier.
      */
@@ -39,9 +39,12 @@ declare class RangeModifier extends DataModifier {
     /**
      * Utility function that returns the first row index
      * if the table has been modified by a range modifier
-     * @param {DataTable} table the table to get the offset from
      *
-     * @return {number} The row offset of the modified table
+     * @param {DataTable} table
+     * The table to get the offset from.
+     *
+     * @return {number}
+     * The row offset of the modified table.
      */
     getModifiedTableOffset(table: DataTable): number;
 }

@@ -12,7 +12,6 @@
  * */
 'use strict';
 import DataConnector from './Connectors/DataConnector.js';
-import DataModifier from './Modifiers/DataModifier.js';
 import DataPoolDefaults from './DataPoolDefaults.js';
 import U from '../Core/Utilities.js';
 /* *
@@ -37,8 +36,9 @@ class DataPool {
      * */
     constructor(options = DataPoolDefaults) {
         options.connectors = (options.connectors || []);
-        this.options = options;
         this.connectors = {};
+        this.options = options;
+        this.waiting = {};
     }
     /* *
      *
@@ -69,13 +69,31 @@ class DataPool {
      */
     getConnector(name) {
         const connector = this.connectors[name];
+        // already loaded
         if (connector) {
-            // already loaded
             return Promise.resolve(connector);
         }
+        let waiting = this.waiting[name];
+        // currently loading
+        if (waiting) {
+            return new Promise((resolve) => {
+                waiting.push(resolve);
+            });
+        }
+        this.waiting[name] = waiting = [];
         const connectorOptions = this.getConnectorOptions(name);
         if (connectorOptions) {
-            return this.loadConnector(connectorOptions);
+            return this
+                .loadConnector(connectorOptions)
+                .then((connector) => {
+                delete this.waiting[name];
+                window.setTimeout(() => {
+                    for (let i = 0, iEnd = waiting.length; i < iEnd; ++i) {
+                        waiting[i](connector);
+                    }
+                }, 1);
+                return connector;
+            });
         }
         throw new Error(`Connector not found. (${name})`);
     }
@@ -151,26 +169,15 @@ class DataPool {
                 throw new Error(`Connector type not found. (${options.type})`);
             }
             const connector = new ConnectorClass(options.options);
-            this.connectors[options.id] = connector;
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             connector
                 .load()
-                .then((connector) => {
-                var _a;
-                if ((_a = options === null || options === void 0 ? void 0 : options.options) === null || _a === void 0 ? void 0 : _a.dataModifier) {
-                    const ModifierClass = DataModifier
-                        .types[options.options.dataModifier.type];
-                    return connector.table
-                        .setModifier(new ModifierClass(options.options.dataModifier))
-                        .then(() => connector);
-                }
-                return connector;
-            })
                 .then((connector) => {
                 this.emit({
                     type: 'afterLoad',
                     options
                 });
+                this.connectors[options.id] = connector;
                 resolve(connector);
             })['catch'](reject);
         });

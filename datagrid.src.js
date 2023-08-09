@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.1 (2023-07-19)
+ * @license Highcharts Dashboards v1.0.2 (2023-08-09)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -6014,7 +6014,6 @@
                 else {
                     this.outerContainer.style.top = '0';
                 }
-                this.updateInnerContainerWidth();
                 this.renderInitialRows();
                 this.addEvents();
                 this.updateScrollingLength();
@@ -6192,14 +6191,6 @@
                     cellInputEl.remove();
                     delete this.cellInputEl;
                 }
-            }
-            /**
-             * Inherits the inner width from the scroll container.
-             * @internal
-             */
-            updateInnerContainerWidth() {
-                const newWidth = this.outerContainer.offsetWidth;
-                this.innerContainer.style.width = newWidth + 'px';
             }
             /**
              * Updates the scroll container to reflect the data size.

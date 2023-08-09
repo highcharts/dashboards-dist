@@ -44,7 +44,7 @@ declare class Sync {
      * The emitters and handlers to use for each event.
      */
     /**
-     * Add new emmiter to the registered emitters.
+     * Add new emitter to the registered emitters.
      * @param emitter
      The emitter to register.
      */

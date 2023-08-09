@@ -15,10 +15,10 @@ declare class InvertModifier extends DataModifier {
     /**
      * Constructs an instance of the invert modifier.
      *
-     * @param {InvertModifier.Options} [options]
+     * @param {Partial<InvertModifier.Options>} [options]
      * Options to configure the invert modifier.
      */
-    constructor(options?: DeepPartial<InvertModifierOptions>);
+    constructor(options?: Partial<InvertModifierOptions>);
     /**
      * Options of the invert modifier.
      */

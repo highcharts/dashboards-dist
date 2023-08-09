@@ -50,10 +50,10 @@ class DataGridComponent extends Component {
      * @param e
      * Related keyboard event of the change.
      *
-     * @param store
+     * @param connector
      * Relate store of the change.
      */
-    static onUpdate(e, store) {
+    static onUpdate(e, connector) {
         const inputElement = e.target;
         if (inputElement) {
             const parentRow = inputElement
@@ -69,7 +69,7 @@ class DataGridComponent extends Component {
                 const { columnName } = cell.dataset;
                 if (dataTableRowIndex !== void 0 &&
                     columnName !== void 0) {
-                    const table = store.table.modified;
+                    const table = connector.table;
                     if (table) {
                         let valueToSet = converter
                             .asGuessedType(inputElement.value);
@@ -113,16 +113,49 @@ class DataGridComponent extends Component {
         if (this.options.dataGridID) {
             this.contentElement.id = this.options.dataGridID;
         }
-        this.syncHandlers = this.handleSyncOptions(DataGridSyncHandlers);
+        this.filterAndAssignSyncOptions(DataGridSyncHandlers);
         this.sync = new DataGridComponent.Sync(this, this.syncHandlers);
-        this.dataGridOptions = this.options.dataGridOptions || {};
+        this.dataGridOptions = (this.options.dataGridOptions ||
+            {});
         this.innerResizeTimeouts = [];
+        this.on('afterSetConnector', (e) => {
+            this.disableEditingModifiedColumns(e.connector);
+        });
         this.on('tableChanged', () => {
             var _a;
-            (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ dataTable: this.filterColumns() });
+            // When the table is in the middle of editing a cell, don't update.
+            if (!(this.dataGrid && this.dataGrid.cellInputEl)) {
+                (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ dataTable: this.filterColumns() });
+            }
         });
         // Add the component instance to the registry
         Component.addInstance(this);
+    }
+    /**
+     * Disable editing of the columns that are modified by the data modifier.
+     * @internal
+     *
+     * @param connector
+     * Attached connector
+     */
+    disableEditingModifiedColumns(connector) {
+        var _a;
+        const modifierOptions = connector.options.dataModifier;
+        if (!modifierOptions || modifierOptions.type !== 'Math') {
+            return;
+        }
+        const modifierColumns = modifierOptions.columnFormulas;
+        if (!modifierColumns) {
+            return;
+        }
+        const options = {};
+        for (let i = 0, iEnd = modifierColumns.length; i < iEnd; ++i) {
+            const columnName = modifierColumns[i].column;
+            options[columnName] = {
+                editable: false
+            };
+        }
+        (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ columns: options });
     }
     /* *
      *
@@ -148,13 +181,17 @@ class DataGridComponent extends Component {
                     this.connector.table.setColumns(e.table.getColumns());
                 }
             }));
-            // Update the DataGrid when store changed.
+            // Update the DataGrid when connector changed.
             connectorListeners.push(this.connector.table
                 .on('afterSetCell', (e) => {
                 const dataGrid = this.dataGrid;
                 let shouldUpdateTheGrid = true;
                 if (dataGrid) {
-                    const row = dataGrid.rowElements[e.rowIndex], cells = Array.prototype.slice.call(row.childNodes);
+                    const row = dataGrid.rowElements[e.rowIndex];
+                    let cells = [];
+                    if (row) {
+                        cells = Array.prototype.slice.call(row.childNodes);
+                    }
                     cells.forEach((cell) => {
                         if (cell.childElementCount > 0) {
                             const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
@@ -217,6 +254,7 @@ class DataGridComponent extends Component {
             }
             yield _super.update.call(this, options);
             if (this.dataGrid) {
+                this.filterAndAssignSyncOptions(DataGridSyncHandlers);
                 this.dataGrid.update(this.options.dataGridOptions || {});
             }
             this.emit({ type: 'afterUpdate' });

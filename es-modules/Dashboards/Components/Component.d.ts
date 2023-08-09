@@ -154,7 +154,7 @@ declare abstract class Component {
     /**
      * @internal
      */
-    protected syncHandlers: Sync.OptionsRecord;
+    protected syncHandlers?: Sync.OptionsRecord;
     /**
      * DataModifier that is applied on top of modifiers set on the DataStore.
      *
@@ -203,22 +203,19 @@ declare abstract class Component {
      * Inits connectors for the component and redraws it.
      *
      * @returns
-     * Promise resolviing to the component.
+     * Promise resolving to the component.
      */
     initConnector(): Promise<this>;
     /**
-    * Handles the sync options. Applies the given defaults if no
-    * specific callback given.
+    * Filter the sync options that are declared in the component options.
+    * Assigns the sync options to the component and to the sync instance.
     *
     * @param defaultHandlers
     * Sync handlers on component.
     *
-    * @returns
-    * Sync component.
-    *
     * @internal
     */
-    protected handleSyncOptions(defaultHandlers?: typeof Sync.defaultHandlers): Component['syncHandlers'];
+    protected filterAndAssignSyncOptions(defaultHandlers?: typeof Sync.defaultHandlers): void;
     /**
      * Setup listeners on cell/other things up the chain
      *
@@ -458,7 +455,7 @@ declare namespace Component {
          */
         navigationBindings?: Array<Globals.AnyRecord>;
         /**
-         * Events attached to the component : `mount`, `unmount`.
+         * Events attached to the component : `mount`, `unmount`, `resize`, `update`.
          *
          * Try it:
          *
@@ -539,6 +536,9 @@ declare namespace Component {
     }
     /** @internal */
     type ConnectorTypes = DataConnector;
+    /**
+     * Allowed types for the text.
+    */
     type TextOptionsType = string | false | TextOptions | undefined;
     /** @internal */
     interface MessageTarget {

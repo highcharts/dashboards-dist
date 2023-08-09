@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.1 (2023-07-19)
+ * @license Highcharts Dashboards v1.0.2 (2023-08-09)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -188,12 +188,56 @@
                         this.on('setConnector', () => unregisterCursorListeners());
                         this.on('afterSetConnector', () => registerCursorListeners());
                     }
+                },
+                visibilityHandler: function () {
+                    const component = this, { board } = component;
+                    const handleVisibilityChange = (e) => {
+                        const cursor = e.cursor, dataGrid = component.dataGrid;
+                        if (!(dataGrid && cursor.type === 'position' && cursor.column)) {
+                            return;
+                        }
+                        const columnName = cursor.column;
+                        dataGrid.update({
+                            columns: {
+                                [columnName]: {
+                                    show: cursor.state !== 'series.hide'
+                                }
+                            }
+                        });
+                    };
+                    const registerCursorListeners = () => {
+                        const { dataCursor: cursor } = board;
+                        if (!cursor) {
+                            return;
+                        }
+                        const table = this.connector && this.connector.table;
+                        if (!table) {
+                            return;
+                        }
+                        cursor.addListener(table.id, 'series.show', handleVisibilityChange);
+                        cursor.addListener(table.id, 'series.hide', handleVisibilityChange);
+                    };
+                    const unregisterCursorListeners = () => {
+                        const table = this.connector && this.connector.table;
+                        const { dataCursor: cursor } = board;
+                        if (!table) {
+                            return;
+                        }
+                        cursor.removeListener(table.id, 'series.show', handleVisibilityChange);
+                        cursor.removeListener(table.id, 'series.hide', handleVisibilityChange);
+                    };
+                    if (board) {
+                        registerCursorListeners();
+                        this.on('setConnector', () => unregisterCursorListeners());
+                        this.on('afterSetConnector', () => registerCursorListeners());
+                    }
                 }
             }
         };
         const defaults = {
             highlight: { emitter: configs.emitters.highlightEmitter, handler: configs.handlers.highlightHandler },
-            extremes: { handler: configs.handlers.extremesHandler }
+            extremes: { handler: configs.handlers.extremesHandler },
+            visibility: { handler: configs.handlers.visibilityHandler }
         };
 
         return defaults;
@@ -246,10 +290,10 @@
              * @param e
              * Related keyboard event of the change.
              *
-             * @param store
+             * @param connector
              * Relate store of the change.
              */
-            static onUpdate(e, store) {
+            static onUpdate(e, connector) {
                 const inputElement = e.target;
                 if (inputElement) {
                     const parentRow = inputElement
@@ -265,7 +309,7 @@
                         const { columnName } = cell.dataset;
                         if (dataTableRowIndex !== void 0 &&
                             columnName !== void 0) {
-                            const table = store.table.modified;
+                            const table = connector.table;
                             if (table) {
                                 let valueToSet = converter
                                     .asGuessedType(inputElement.value);
@@ -309,16 +353,49 @@
                 if (this.options.dataGridID) {
                     this.contentElement.id = this.options.dataGridID;
                 }
-                this.syncHandlers = this.handleSyncOptions(DataGridSyncHandlers);
+                this.filterAndAssignSyncOptions(DataGridSyncHandlers);
                 this.sync = new DataGridComponent.Sync(this, this.syncHandlers);
-                this.dataGridOptions = this.options.dataGridOptions || {};
+                this.dataGridOptions = (this.options.dataGridOptions ||
+                    {});
                 this.innerResizeTimeouts = [];
+                this.on('afterSetConnector', (e) => {
+                    this.disableEditingModifiedColumns(e.connector);
+                });
                 this.on('tableChanged', () => {
                     var _a;
-                    (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ dataTable: this.filterColumns() });
+                    // When the table is in the middle of editing a cell, don't update.
+                    if (!(this.dataGrid && this.dataGrid.cellInputEl)) {
+                        (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ dataTable: this.filterColumns() });
+                    }
                 });
                 // Add the component instance to the registry
                 Component.addInstance(this);
+            }
+            /**
+             * Disable editing of the columns that are modified by the data modifier.
+             * @internal
+             *
+             * @param connector
+             * Attached connector
+             */
+            disableEditingModifiedColumns(connector) {
+                var _a;
+                const modifierOptions = connector.options.dataModifier;
+                if (!modifierOptions || modifierOptions.type !== 'Math') {
+                    return;
+                }
+                const modifierColumns = modifierOptions.columnFormulas;
+                if (!modifierColumns) {
+                    return;
+                }
+                const options = {};
+                for (let i = 0, iEnd = modifierColumns.length; i < iEnd; ++i) {
+                    const columnName = modifierColumns[i].column;
+                    options[columnName] = {
+                        editable: false
+                    };
+                }
+                (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ columns: options });
             }
             /* *
              *
@@ -344,13 +421,17 @@
                             this.connector.table.setColumns(e.table.getColumns());
                         }
                     }));
-                    // Update the DataGrid when store changed.
+                    // Update the DataGrid when connector changed.
                     connectorListeners.push(this.connector.table
                         .on('afterSetCell', (e) => {
                         const dataGrid = this.dataGrid;
                         let shouldUpdateTheGrid = true;
                         if (dataGrid) {
-                            const row = dataGrid.rowElements[e.rowIndex], cells = Array.prototype.slice.call(row.childNodes);
+                            const row = dataGrid.rowElements[e.rowIndex];
+                            let cells = [];
+                            if (row) {
+                                cells = Array.prototype.slice.call(row.childNodes);
+                            }
                             cells.forEach((cell) => {
                                 if (cell.childElementCount > 0) {
                                     const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
@@ -413,6 +494,7 @@
                     }
                     yield _super.update.call(this, options);
                     if (this.dataGrid) {
+                        this.filterAndAssignSyncOptions(DataGridSyncHandlers);
                         this.dataGrid.update(this.options.dataGridOptions || {});
                     }
                     this.emit({ type: 'afterUpdate' });
@@ -666,7 +748,7 @@
                         return this.on('afterRender', () => {
                             const { chart, connector, board } = component;
                             const table = connector && connector.table;
-                            if (table && // Has a store
+                            if (table && // Has a connector
                                 board &&
                                 chart) {
                                 const { dataCursor: cursor } = board;
@@ -1009,7 +1091,7 @@
                 step((generator = generator.apply(thisArg, _arguments || [])).next());
             });
         };
-        const { addEvent, createElement, merge, splat, uniqueKey, error, diffObjects } = U;
+        const { addEvent, createElement, merge, splat, uniqueKey, error, diffObjects, defined } = U;
         /* *
          *
          *  Class
@@ -1161,7 +1243,7 @@
                 if (this.options.chartID) {
                     this.chartContainer.id = this.options.chartID;
                 }
-                this.syncHandlers = this.handleSyncOptions(HighchartsSyncHandlers);
+                this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
             }
             /**
              * Update the store, when the point is being dragged.
@@ -1169,7 +1251,7 @@
              * @param  {Component.ConnectorTypes} store Connector to update.
              */
             onChartUpdate(point, store) {
-                const table = store.table, columnName = point.series.name, rowNumber = point.x, converter = new DataConverter(), valueToSet = converter.asNumber(point.y);
+                const table = store.table, columnName = point.series.name, rowNumber = point.index, converter = new DataConverter(), valueToSet = converter.asNumber(point.y);
                 table.setCell(columnName, rowNumber, valueToSet);
             }
             /**
@@ -1198,7 +1280,8 @@
              * @private
              */
             updateSeries() {
-                // Heuristically create series from the store dataTable
+                var _a;
+                // Heuristically create series from the connector dataTable
                 if (this.chart && this.connector) {
                     this.presentationTable = this.presentationModifier ?
                         this.connector.table.modified.clone() :
@@ -1212,7 +1295,7 @@
                         this.presentationTable = this.presentationModifier
                             .modifyTable(this.presentationTable).modified;
                     }
-                    const table = this.presentationTable;
+                    const table = this.presentationTable, modifierOptions = (_a = table.getModifier()) === null || _a === void 0 ? void 0 : _a.options;
                     this.emit({ type: 'afterPresentationModifier', table: table });
                     // Remove series names that match the xKeys
                     const seriesNames = table.modified.getColumnNames()
@@ -1222,10 +1305,10 @@
                                 .getSharedState()
                                 .getColumnVisibility(name) !== false :
                             true;
-                        if (!isVisible && !columnAssignment[name]) {
-                            return false;
+                        if (!defined(this.options.columnAssignment)) {
+                            return true;
                         }
-                        if (columnAssignment[name] === null) {
+                        if (!isVisible || !columnAssignment[name]) {
                             return false;
                         }
                         if (columnAssignment[name] === 'x') {
@@ -1236,6 +1319,7 @@
                     });
                     // Create the series or get the already added series
                     const seriesList = seriesNames.map((seriesName, index) => {
+                        var _a;
                         let i = 0;
                         while (i < chart.series.length) {
                             const series = chart.series[i];
@@ -1251,9 +1335,17 @@
                                 series.destroy();
                             }
                         }
+                        // Disable dragging on series, which were created out of a
+                        // columns which are created by MathModifier.
+                        const shouldBeDraggable = !((modifierOptions === null || modifierOptions === void 0 ? void 0 : modifierOptions.type) === 'Math' &&
+                            ((_a = modifierOptions
+                                .columnFormulas) === null || _a === void 0 ? void 0 : _a.some((formula) => formula.column === seriesName)));
                         return chart.addSeries({
                             name: seriesName,
-                            id: `${storeTableID}-series-${index}`
+                            id: `${storeTableID}-series-${index}`,
+                            dragDrop: {
+                                draggableY: shouldBeDraggable
+                            }
                         }, false);
                     });
                     // Insert the data
@@ -1629,7 +1721,7 @@
                     'chartConfig'
                 ]
             }),
-            columnAssignment: {}
+            columnAssignment: void 0
         });
         /* *
          *
