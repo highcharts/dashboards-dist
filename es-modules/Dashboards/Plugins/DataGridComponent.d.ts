@@ -1,6 +1,5 @@
 import type Cell from '../Layout/Cell';
 import type DataGrid from '../../DataGrid/DataGrid';
-import type DataGridOptions from '../../DataGrid/DataGridOptions';
 import type BaseDataGridOptions from '../../DataGrid/DataGridOptions';
 import Component from '../Components/Component.js';
 /**
@@ -35,16 +34,16 @@ declare class DataGridComponent extends Component {
      * @param e
      * Related keyboard event of the change.
      *
-     * @param store
+     * @param connector
      * Relate store of the change.
      */
-    static onUpdate(e: KeyboardEvent, store: Component.ConnectorTypes): void;
+    static onUpdate(e: KeyboardEvent, connector: Component.ConnectorTypes): void;
     /** @private */
     static fromJSON(json: DataGridComponent.ClassJSON, cell: Cell): DataGridComponent;
     /** @private */
     dataGrid?: DataGrid;
     /** @private */
-    dataGridOptions: Partial<DataGridOptions>;
+    dataGridOptions: Partial<BaseDataGridOptions>;
     /** @private */
     options: DataGridComponent.ComponentOptions;
     /** @private */
@@ -52,6 +51,14 @@ declare class DataGridComponent extends Component {
     /** @private */
     private connectorListeners;
     constructor(cell: Cell, options: Partial<DataGridComponent.ComponentOptions>);
+    /**
+     * Disable editing of the columns that are modified by the data modifier.
+     * @internal
+     *
+     * @param connector
+     * Attached connector
+     */
+    private disableEditingModifiedColumns;
     /**
      * Triggered on component initialization.
      * @private
@@ -112,7 +119,7 @@ declare namespace DataGridComponent {
         onUpdate: typeof DataGridComponent.onUpdate;
         type: 'DataGrid';
         /**
-         * Generic options to adjust behavor and styling of the rendered data
+         * Generic options to adjust behavior and styling of the rendered data
          * grid.
          */
         dataGridOptions?: BaseDataGridOptions;

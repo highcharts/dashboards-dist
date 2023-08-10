@@ -1,5 +1,6 @@
 import type DataEvent from '../DataEvent';
 import type HTMLTableConnectorOptions from './HTMLTableConnectorOptions';
+import type Types from '../../Shared/Types';
 import DataConnector from './DataConnector.js';
 import HTMLTableConverter from '../Converters/HTMLTableConverter.js';
 /**
@@ -77,7 +78,7 @@ declare namespace HTMLTableConnector {
      * Available options for constructor and converter of the
      * HTMLTableConnector.
      */
-    type UserOptions = (DeepPartial<HTMLTableConnectorOptions> & HTMLTableConverter.UserOptions);
+    type UserOptions = (Types.DeepPartial<HTMLTableConnectorOptions> & HTMLTableConverter.UserOptions);
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

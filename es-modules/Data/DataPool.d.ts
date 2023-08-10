@@ -2,6 +2,7 @@ import type DataEvent from './DataEvent';
 import type { DataPoolOptions, DataPoolConnectorOptions } from './DataPoolOptions.js';
 import type DataTable from './DataTable.js';
 import DataConnector from './Connectors/DataConnector.js';
+type ConnectorResolve = (value: (DataConnector | PromiseLike<DataConnector>)) => void;
 /**
  * Data pool to load connectors on-demand.
  *
@@ -14,6 +15,11 @@ import DataConnector from './Connectors/DataConnector.js';
 declare class DataPool implements DataEvent.Emitter {
     constructor(options?: (DataPoolOptions | undefined));
     /**
+     * Internal dictionary with the connectors and their names.
+     * @private
+     */
+    protected readonly connectors: Record<string, DataConnector>;
+    /**
      * Pool options with all connectors.
      *
      * @name Data.DataPool#options
@@ -21,10 +27,11 @@ declare class DataPool implements DataEvent.Emitter {
      */
     readonly options: DataPoolOptions;
     /**
-     * Internal dictionary with the connectors and their names.
+     * Internal dictionary with the promise resolves waiting for connectors to
+     * be done loading.
      * @private
      */
-    protected readonly connectors: (Record<string, (DataConnector | undefined)>);
+    protected readonly waiting: Record<string, Array<ConnectorResolve>>;
     /**
      * Emits an event on this data pool to all registered callbacks of the given
      * event.

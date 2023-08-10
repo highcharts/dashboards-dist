@@ -162,7 +162,7 @@ class Component {
             width: null,
             height: null
         };
-        this.syncHandlers = this.handleSyncOptions();
+        this.filterAndAssignSyncOptions();
         this.element = createElement('div', {
             className: this.options.className
         });
@@ -176,7 +176,7 @@ class Component {
      * Inits connectors for the component and redraws it.
      *
      * @returns
-     * Promise resolviing to the component.
+     * Promise resolving to the component.
      */
     initConnector() {
         var _a;
@@ -198,20 +198,17 @@ class Component {
      *
      * */
     /**
-    * Handles the sync options. Applies the given defaults if no
-    * specific callback given.
+    * Filter the sync options that are declared in the component options.
+    * Assigns the sync options to the component and to the sync instance.
     *
     * @param defaultHandlers
     * Sync handlers on component.
     *
-    * @returns
-    * Sync component.
-    *
     * @internal
     */
-    handleSyncOptions(defaultHandlers = Sync.defaultHandlers) {
+    filterAndAssignSyncOptions(defaultHandlers = Sync.defaultHandlers) {
         const sync = this.options.sync || {};
-        return Object.keys(sync)
+        const syncHandlers = Object.keys(sync)
             .reduce((carry, handlerName) => {
             if (handlerName) {
                 const handler = sync[handlerName];
@@ -224,6 +221,8 @@ class Component {
             }
             return carry;
         }, {});
+        this.sync ? this.sync.syncConfig = syncHandlers : void 0;
+        this.syncHandlers = syncHandlers;
     }
     /**
      * Setup listeners on cell/other things up the chain
@@ -556,7 +555,7 @@ class Component {
      * @internal
      */
     load() {
-        // Set up the connector on inital load if it has not been done
+        // Set up the connector on initial load if it has not been done
         if (!this.hasLoaded && this.connector) {
             this.setConnector(this.connector);
         }

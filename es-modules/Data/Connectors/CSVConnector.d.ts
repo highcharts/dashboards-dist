@@ -1,5 +1,6 @@
 import type DataEvent from '../DataEvent';
 import type CSVConnectorOptions from './CSVConnectorOptions';
+import type Types from '../../Shared/Types';
 import CSVConverter from '../Converters/CSVConverter.js';
 import DataConnector from './DataConnector.js';
 /**
@@ -73,7 +74,7 @@ declare namespace CSVConnector {
     /**
      * Available options for constructor and converter of the CSVConnector.
      */
-    type UserOptions = (DeepPartial<CSVConnectorOptions> & CSVConverter.UserOptions);
+    type UserOptions = (Types.DeepPartial<CSVConnectorOptions> & CSVConverter.UserOptions);
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

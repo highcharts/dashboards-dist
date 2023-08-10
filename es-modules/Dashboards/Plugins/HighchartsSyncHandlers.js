@@ -94,7 +94,7 @@ const configs = {
                 return this.on('afterRender', () => {
                     const { chart, connector, board } = component;
                     const table = connector && connector.table;
-                    if (table && // Has a store
+                    if (table && // Has a connector
                         board &&
                         chart) {
                         const { dataCursor: cursor } = board;

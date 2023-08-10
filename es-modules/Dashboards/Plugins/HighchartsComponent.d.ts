@@ -44,7 +44,7 @@ declare class HighchartsComponent extends Component {
         editableOptionsBindings: import("../Components/EditableOptions").default.OptionsBindings & {
             skipRedraw: string[];
         };
-        columnAssignment: {};
+        columnAssignment: undefined;
     };
     /**
      * Creates component from JSON.
@@ -238,8 +238,11 @@ declare namespace HighchartsComponent {
          */
         chartID?: string;
         /**
-         * Names / aliases that should be mapped to xAxis values. You can use
-         * null to keep columns selectively out of the chart.
+         * Names / aliases that should be mapped to xAxis values. You can
+         * declare which columns will be visible selectively on the chart.
+         *
+         * When the columnAssignment is not declared, all columns are visible.
+         *
          * ```
          * Example
          * columnAssignment: {

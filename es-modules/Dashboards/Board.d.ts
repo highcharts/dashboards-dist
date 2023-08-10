@@ -376,7 +376,7 @@ declare namespace Board {
          *
          * @default true
          **/
-        enabled: boolean;
+        enabled?: boolean;
         /**
          * General options for the layouts applied to all layouts.
          **/

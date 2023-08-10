@@ -16,13 +16,13 @@ declare class ChainModifier extends DataModifier {
     /**
      * Constructs an instance of the modifier chain.
      *
-     * @param {DeepPartial<ChainModifier.Options>} [options]
+     * @param {Partial<ChainModifier.Options>} [options]
      * Options to configure the modifier chain.
      *
      * @param {...DataModifier} [chain]
      * Ordered chain of modifiers.
      */
-    constructor(options?: DeepPartial<ChainModifierOptions>, ...chain: Array<DataModifier>);
+    constructor(options?: Partial<ChainModifierOptions>, ...chain: Array<DataModifier>);
     /**
      * Ordered chain of modifiers.
      */

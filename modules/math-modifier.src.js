@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 1.0.1 (2023-07-19)
+ * @license Highcharts Dashboards Math 1.0.2 (2023-08-10)
  *
  * (c) 2009-2023 Highsoft AS
  *

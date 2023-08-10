@@ -2,6 +2,7 @@ import type Cell from '../Layout/Cell';
 import type CSSObject from '../../Core/Renderer/CSSObject';
 import type { Chart, Options, Highcharts } from '../Plugins/HighchartsTypes';
 import type TextOptions from './TextOptions';
+import type Types from '../../Shared/Types';
 import Component from './Component.js';
 /**
  *
@@ -38,7 +39,7 @@ declare class KPIComponent extends Component {
     /**
      * Default options of the KPI component.
      */
-    static defaultChartOptions: DeepPartial<Options>;
+    static defaultChartOptions: Types.DeepPartial<Options>;
     /**
      * KPI component's options.
      */

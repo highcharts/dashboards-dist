@@ -8,13 +8,17 @@ export interface RangeModifierOptions extends DataModifierOptions {
      */
     type: 'Range';
     /**
+     * If set to true, multiple ranges will add up instead of reduce.
+     */
+    additive?: boolean;
+    /**
      * Value ranges to include in the result.
      */
     ranges: Array<RangeModifierRangeOptions>;
     /**
      * If set to true, it will also compare the value type.
      */
-    strict: boolean;
+    strict?: boolean;
 }
 /**
  * Options to configure a range.

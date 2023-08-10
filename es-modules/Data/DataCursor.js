@@ -95,48 +95,24 @@ class DataCursor {
                 e.cursor.type
             ]).join('\0');
     }
-    /**
-     * This function emits a state cursor related to a table. It will provide
-     * lasting state cursors of the table to listeners.
-     *
-     * @example
-     * ```TypeScript
-     * dataCursor.emit(myTable, {
-     *     type: 'position',
-     *     column: 'city',
-     *     row: 4,
-     *     state: 'hover',
-     * });
-     * ```
-     *
-     * @function #emitCursor
-     *
-     * @param {Data.DataTable} table
-     * The related table of the cursor.
-     *
-     * @param {Data.DataCursor.Type} cursor
-     * The state cursor to emit.
-     *
-     * @param {Event} [event]
-     * Optional event information from a related source.
-     *
-     * @param {boolean} [lasting]
-     * Whether this state cursor should be kept until it is cleared with
-     * {@link DataCursor#remitCursor}.
-     *
-     * @return {Data.DataCursor}
-     * Returns the DataCursor instance for a call chain.
-     */
-    emitCursor(table, cursor, event, lasting) {
-        const tableId = table.id, state = cursor.state, listeners = (this.listenerMap[tableId] &&
+    // Implementation
+    emitCursor(table, groupOrCursor, cursorOrEvent, eventOrLasting, lasting) {
+        const cursor = (typeof groupOrCursor === 'object' ?
+            groupOrCursor :
+            cursorOrEvent), event = (typeof eventOrLasting === 'object' ?
+            eventOrLasting :
+            cursorOrEvent), group = (typeof groupOrCursor === 'string' ?
+            groupOrCursor :
+            void 0), tableId = table.id, state = cursor.state, listeners = (this.listenerMap[tableId] &&
             this.listenerMap[tableId][state]);
+        lasting = (lasting || eventOrLasting === true);
         if (listeners) {
             const stateMap = this.stateMap[tableId] = (this.stateMap[tableId] ||
                 {});
-            let cursors = stateMap[cursor.state];
+            const cursors = stateMap[cursor.state] || [];
             if (lasting) {
-                if (!cursors) {
-                    cursors = stateMap[cursor.state] = [];
+                if (!cursors.length) {
+                    stateMap[cursor.state] = cursors;
                 }
                 if (DataCursor.getIndex(cursor, cursors) === -1) {
                     cursors.push(cursor);
@@ -144,11 +120,14 @@ class DataCursor {
             }
             const e = {
                 cursor,
-                cursors: cursors || [],
+                cursors,
                 table
             };
             if (event) {
                 e.event = event;
+            }
+            if (group) {
+                e.group = group;
             }
             const emittingRegister = this.emittingRegister, emittingTag = this.buildEmittingTag(e);
             if (emittingRegister.indexOf(emittingTag) >= 0) {
