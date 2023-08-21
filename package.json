@@ -17,5 +17,8 @@
         "grid",
         "table",
         "visualization"
-    ]
+    ],
+    "peerDependencies": {
+        "highcharts": ">=10.0.0"
+    }
 }
