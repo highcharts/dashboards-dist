@@ -24,9 +24,9 @@ declare class ConfirmationPopup extends BaseForm {
      */
     constructor(parentDiv: HTMLElement, iconsURL: string, editMode: EditMode, options?: ConfirmationPopup.Options);
     /**
-     * Options for confirmation popup.
+     * Container for buttons.
      */
-    options?: ConfirmationPopup.Options;
+    buttonContainer: HTMLDOMElement | undefined;
     /**
      * Container for popup content.
      */
@@ -35,6 +35,10 @@ declare class ConfirmationPopup extends BaseForm {
      * The EditMode instance.
      */
     editMode: EditMode;
+    /**
+     * Options for confirmation popup.
+     */
+    options?: ConfirmationPopup.Options;
     /**
      * Returns popup container.
      *

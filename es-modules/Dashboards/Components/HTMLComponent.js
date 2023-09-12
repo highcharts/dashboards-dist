@@ -110,14 +110,7 @@ class HTMLComponent extends Component {
         this.options = options;
         this.type = 'HTML';
         this.elements = [];
-        this.scaleElements = !!this.options.scaleElements;
         this.sync = new Component.Sync(this, this.syncHandlers);
-        this.on('tableChanged', (e) => {
-            if ('detail' in e && e.detail && e.detail.sender !== this.id) {
-                this.redraw();
-            }
-        });
-        Component.addInstance(this);
     }
     /* *
      *
@@ -126,86 +119,45 @@ class HTMLComponent extends Component {
      * */
     /** @internal */
     load() {
-        this.emit({
-            type: 'load'
+        const _super = Object.create(null, {
+            load: { get: () => super.load }
         });
-        super.load();
-        const options = this.options;
-        let isError = false;
-        if (options.elements) {
-            this.elements = options.elements.map(function (element) {
-                if (typeof element === 'string') {
-                    return new AST(element).nodes[0];
-                }
-                if (!element.textContent &&
-                    !element.tagName &&
-                    element.attributes) {
-                    isError = true;
-                }
-                return element;
+        return __awaiter(this, void 0, void 0, function* () {
+            this.emit({
+                type: 'load'
             });
-        }
-        this.constructTree();
-        this.parentElement.appendChild(this.element);
-        if (this.scaleElements) {
-            this.autoScale();
-        }
-        this.emit({ type: 'afterLoad' });
-        if (isError) {
-            throw new Error('Missing tagName param in component: ' +
-                options.cell);
-        }
-        return this;
-    }
-    /**
-     * Handle scaling inner elements.
-     *
-     * @internal
-     */
-    autoScale() {
-        this.element.style.display = 'flex';
-        this.element.style.flexDirection = 'column';
-        this.contentElement.childNodes.forEach((element) => {
-            if (element && element instanceof HTMLElement) {
-                element.style.width = 'auto';
-                element.style.maxWidth = '100%';
-                element.style.maxHeight = '100%';
-                element.style.flexBasis = 'auto';
-                element.style.overflow = 'auto';
+            yield _super.load.call(this);
+            const options = this.options;
+            let isError = false;
+            if (options.elements) {
+                this.elements = options.elements.map(function (element) {
+                    if (typeof element === 'string') {
+                        return new AST(element).nodes[0];
+                    }
+                    if (!element.textContent &&
+                        !element.tagName &&
+                        element.attributes) {
+                        isError = true;
+                    }
+                    return element;
+                });
             }
-        });
-        if (this.options.scaleElements) {
-            this.scaleText();
-        }
-    }
-    /**
-     * Basic font size scaling
-     *
-     * @internal
-     */
-    scaleText() {
-        this.contentElement.childNodes.forEach((element) => {
-            if (element instanceof HTMLElement) {
-                element.style.fontSize = Math.max(Math.min(element.clientWidth / (1 * 10), 200), 20) + 'px';
+            this.constructTree();
+            this.emit({ type: 'afterLoad' });
+            if (isError) {
+                throw new Error('Missing tagName param in component: ' +
+                    options.cell);
             }
+            return this;
         });
     }
     render() {
-        this.emit({ type: 'beforeRender' });
-        super.render(); // Fires the render event and calls load
+        super.render();
+        this.constructTree();
         this.emit({ type: 'afterRender' });
         return this;
     }
-    redraw() {
-        super.redraw();
-        this.constructTree();
-        this.emit({ type: 'afterRedraw' });
-        return this;
-    }
     resize(width, height) {
-        if (this.scaleElements) {
-            this.scaleText();
-        }
         super.resize(width, height);
         return this;
     }
@@ -213,9 +165,6 @@ class HTMLComponent extends Component {
      * Handles updating via options.
      * @param options
      * The options to apply.
-     *
-     * @returns
-     * The component for chaining.
      */
     update(options) {
         const _super = Object.create(null, {
@@ -227,13 +176,13 @@ class HTMLComponent extends Component {
         });
     }
     /**
-     * Could probably use the serialize function moved on
+     * TODO: Could probably use the serialize function moved on
      * the exportdata branch
      *
      * @internal
      */
     constructTree() {
-        // Remove old tree if redrawing
+        // Remove old tree if rerendering.
         while (this.contentElement.firstChild) {
             this.contentElement.firstChild.remove();
         }
@@ -272,6 +221,15 @@ class HTMLComponent extends Component {
     getOptions() {
         return Object.assign(Object.assign({}, diffObjects(this.options, HTMLComponent.defaultOptions)), { type: 'HTML' });
     }
+    /**
+     * @internal
+     */
+    onTableChanged(e) {
+        var _a;
+        if (((_a = e.detail) === null || _a === void 0 ? void 0 : _a.sender) !== this.id) {
+            this.render();
+        }
+    }
 }
 /* *
  *
@@ -283,12 +241,7 @@ class HTMLComponent extends Component {
  */
 HTMLComponent.defaultOptions = merge(Component.defaultOptions, {
     type: 'HTML',
-    scaleElements: false,
-    elements: [],
-    editableOptions: (Component.defaultOptions.editableOptions || []).concat([{
-            name: 'scaleElements',
-            type: 'toggle'
-        }])
+    elements: []
 });
 /* *
  *

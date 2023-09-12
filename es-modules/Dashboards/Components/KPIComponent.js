@@ -26,6 +26,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import AST from '../../Core/Renderer/HTML/AST.js';
 import Component from './Component.js';
 import Templating from '../../Core/Templating.js';
+import KPISyncHandlers from '../Plugins/KPISyncHandlers.js';
 const { format } = Templating;
 import U from '../../Core/Utilities.js';
 const { createElement, css, defined, getStyle, isArray, isNumber, merge, diffObjects } = U;
@@ -40,11 +41,6 @@ const { createElement, css, defined, getStyle, isArray, isNumber, merge, diffObj
  *
  */
 class KPIComponent extends Component {
-    /* *
-     *
-     *  Static functions
-     *
-     * */
     /**
      * Creates component from JSON.
      *
@@ -89,16 +85,16 @@ class KPIComponent extends Component {
         super(cell, options);
         this.options = options;
         this.type = 'KPI';
-        this.sync = new Component.Sync(this, this.syncHandlers);
+        this.sync = new KPIComponent.Sync(this, this.syncHandlers);
         this.value = createElement('span', {
-            className: `${Component.defaultOptions.className}-kpi-value`
+            className: `${options.className}-value`
         }, {}, this.contentElement);
         this.subtitle = createElement('span', {
             className: this.getSubtitleClassName()
         }, {}, this.contentElement);
         if (this.options.chartOptions) {
             this.chartContainer = createElement('div', {
-                className: `${Component.defaultOptions.className}-kpi-chart-container`
+                className: `${options.className}-chart-container`
             }, {}, this.contentElement);
         }
     }
@@ -109,66 +105,26 @@ class KPIComponent extends Component {
      * */
     /** @internal */
     load() {
-        super.load();
-        this.contentElement.style.display = 'flex';
-        this.contentElement.style.flexDirection = 'column';
-        this.parentElement.appendChild(this.element);
-        this.updateElements();
-        return this;
+        const _super = Object.create(null, {
+            load: { get: () => super.load }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            yield _super.load.call(this);
+            this.contentElement.style.display = 'flex';
+            this.contentElement.style.flexDirection = 'column';
+            return this;
+        });
     }
     resize(width, height) {
         super.resize(width, height);
-        if (!this.updatingSize &&
-            this.dimensions.width &&
-            this.dimensions.height) {
-            this.updateSize(this.dimensions.width, this.dimensions.height);
-        }
         if (this.chart) {
             this.chart.reflow();
         }
-        this.updatingSize = false;
         return this;
-    }
-    /**
-     * Calculates and applies font size for the title.
-     *
-     * @param width
-     * The width to calculate the title's font size.
-     * @param height
-     * The height to calculate the title's font size.
-     *
-     * @internal
-     */
-    updateTitleSize(width, height) {
-        if (this.titleElement) {
-            this.titleElement.style.fontSize = this.getFontSize(width, height, 0.08 * (this.chart ? 1 : 1.7));
-        }
-    }
-    getFontSize(width, height, multiplier) {
-        return (Math.max(this.options.minFontSize, Math.round(multiplier * Math.min(width, height))) + 'px');
-    }
-    /**
-     * Updates title / subtitle font size and component dimensions.
-     *
-     * @param width
-     * The width to set the component to.
-     * @param height
-     * The height to set the component to.
-     *
-     * @internal
-     */
-    updateSize(width, height) {
-        this.updateTitleSize(width, height);
-        // If there is no chart, make the font size  bigger.
-        const noChartMultiplier = (this.chart ? 1 : 1.7);
-        const noTitleMultiplier = (this.options.title ? 0.7 : 1);
-        this.value.style.fontSize = this.getFontSize(width, height, 0.15 * noChartMultiplier * noTitleMultiplier);
-        this.subtitle.style.fontSize = this.getFontSize(width, height, 0.08 * noChartMultiplier);
-        this.updatingSize = true;
-        super.resize(Number(getStyle(this.parentElement, 'width')), Number(getStyle(this.parentElement, 'height')));
     }
     render() {
         super.render();
+        this.updateElements();
         const charter = KPIComponent.charter;
         if (charter &&
             this.options.chartOptions &&
@@ -182,44 +138,65 @@ class KPIComponent extends Component {
             this.chart.destroy();
             this.chart = void 0;
         }
+        this.sync.start();
+        this.emit({ type: 'afterRender' });
         return this;
     }
-    redraw() {
-        super.redraw();
-        this.updateElements();
-        return this;
+    /**
+     * Internal method for handling option updates.
+     *
+     * @private
+     */
+    setOptions() {
+        this.filterAndAssignSyncOptions(KPISyncHandlers);
     }
     /**
      * Handles updating via options.
      * @param options
      * The options to apply.
      */
-    update(options) {
+    update(options, shouldRerender = true) {
         const _super = Object.create(null, {
             update: { get: () => super.update }
         });
         return __awaiter(this, void 0, void 0, function* () {
             yield _super.update.call(this, options);
+            this.setOptions();
             if (options.chartOptions && this.chart) {
                 this.chart.update(options.chartOptions);
             }
-            this.redraw();
+            shouldRerender && this.render();
         });
     }
     /**
-     * Handles updating elements via options
-     *
      * @internal
      */
-    updateElements() {
-        const { style, subtitle, valueFormat, valueFormatter } = this.options;
-        if (this.options.title) {
-            this.setTitle(this.options.title);
-            if (this.dimensions.width && this.dimensions.height) {
-                this.updateTitleSize(this.dimensions.width, this.dimensions.height);
-            }
+    onTableChanged() {
+        this.setValue();
+    }
+    /**
+     * Gets the default value that should be displayed in the KPI.
+     *
+     * @returns
+     * The value that should be displayed in the KPI.
+     */
+    getValue() {
+        var _a;
+        if (this.options.value) {
+            return this.options.value;
         }
-        let value = this.options.value;
+        if (this.connector && this.options.columnName) {
+            const table = (_a = this.connector) === null || _a === void 0 ? void 0 : _a.table.modified, column = table.getColumn(this.options.columnName), length = (column === null || column === void 0 ? void 0 : column.length) || 0;
+            return table.getCellAsString(this.options.columnName, length - 1);
+        }
+    }
+    /**
+     * Sets the value that should be displayed in the KPI.
+     * @param value
+     * The value to display in the KPI.
+     */
+    setValue(value = this.getValue()) {
+        const { valueFormat, valueFormatter } = this.options;
         if (defined(value)) {
             let prevValue;
             if (isNumber(value)) {
@@ -234,10 +211,19 @@ class KPIComponent extends Component {
             else if (isNumber(value)) {
                 value = value.toLocaleString();
             }
-            AST.setElementHTML(this.value, value);
-            AST.setElementHTML(this.subtitle, this.getSubtitle());
+            AST.setElementHTML(this.value, '' + value);
             this.prevValue = prevValue;
         }
+    }
+    /**
+     * Handles updating elements via options
+     *
+     * @internal
+     */
+    updateElements() {
+        const { style, subtitle } = this.options;
+        this.setValue();
+        AST.setElementHTML(this.subtitle, this.getSubtitle());
         if (style) {
             css(this.element, style);
         }
@@ -305,7 +291,7 @@ class KPIComponent extends Component {
      */
     getSubtitleClassName() {
         const { subtitle } = this.options;
-        return `${Component.defaultOptions.className}-kpi-subtitle` +
+        return `${Component.defaultOptions.className}-subtitle` +
             ((typeof subtitle === 'object' && subtitle.className) || '');
     }
     /**
@@ -362,6 +348,12 @@ class KPIComponent extends Component {
         return Object.assign(Object.assign({}, diffObjects(this.options, KPIComponent.defaultOptions)), { type: 'KPI' });
     }
 }
+/* *
+ *
+ *  Static functions
+ *
+ * */
+KPIComponent.syncHandlers = KPISyncHandlers;
 /**
  * Default options of the KPI component.
  */
@@ -372,7 +364,21 @@ KPIComponent.defaultOptions = merge(Component.defaultOptions, {
         `${Component.defaultOptions.className}-kpi`
     ].join(' '),
     minFontSize: 20,
-    thresholdColors: ['#f45b5b', '#90ed7d']
+    syncHandlers: KPISyncHandlers,
+    thresholdColors: ['#f45b5b', '#90ed7d'],
+    editableOptions: (Component.defaultOptions.editableOptions || []).concat([{
+            name: 'Value',
+            type: 'input',
+            propertyPath: ['value']
+        }, {
+            name: 'Column name',
+            type: 'input',
+            propertyPath: ['columnName']
+        }, {
+            name: 'Value format',
+            type: 'input',
+            propertyPath: ['valueFormat']
+        }])
 });
 /* *
  *
@@ -385,7 +391,12 @@ KPIComponent.defaultOptions = merge(Component.defaultOptions, {
 KPIComponent.defaultChartOptions = {
     chart: {
         type: 'spline',
-        backgroundColor: 'transparent'
+        styledMode: true,
+        zooming: {
+            mouseWheel: {
+                enabled: false
+            }
+        }
     },
     title: {
         text: void 0

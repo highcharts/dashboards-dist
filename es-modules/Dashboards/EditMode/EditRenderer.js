@@ -16,7 +16,7 @@
 'use strict';
 import EditGlobals from './EditGlobals.js';
 import U from '../../Core/Utilities.js';
-const { merge, createElement } = U;
+const { merge, createElement, defined } = U;
 /* *
  *
  *  Functions
@@ -79,16 +79,15 @@ function renderCollapseHeader(parentElement, options) {
         renderToggle(header, {
             enabledOnOffLabels: true,
             id: name,
-            name: name,
+            name: '',
             onchange: onchange,
             value: isEnabled || false,
             lang
         });
     }
-    const headerIcon = createElement('img', {
+    const headerIcon = createElement('span', {
         className: EditGlobals.classNames.accordionHeaderIcon + ' ' +
-            EditGlobals.classNames.rotateElement,
-        src: iconsURLPrefix + 'dropdown-pointer.svg'
+            EditGlobals.classNames.collapsedElement
     }, {}, headerBtn);
     const content = createElement('div', {
         className: EditGlobals.classNames.accordionContent + ' ' +
@@ -96,7 +95,7 @@ function renderCollapseHeader(parentElement, options) {
     }, {}, accordion);
     headerBtn.addEventListener('click', function () {
         content.classList.toggle(EditGlobals.classNames.hiddenElement);
-        headerIcon.classList.toggle(EditGlobals.classNames.rotateElement);
+        headerIcon.classList.toggle(EditGlobals.classNames.collapsedElement);
     });
     return { outerElement: accordion, content: content };
 }
@@ -146,7 +145,7 @@ function renderSelect(parentElement, options) {
     const dropdownPointer = createElement('img', {
         className: EditGlobals.classNames.dropdownIcon +
             ' ' +
-            EditGlobals.classNames.rotateElement,
+            EditGlobals.classNames.collapsedElement,
         src: iconsURLPrefix + 'dropdown-pointer.svg'
     }, {}, btn);
     const dropdown = createElement('ul', {
@@ -156,7 +155,7 @@ function renderSelect(parentElement, options) {
     }, {}, customSelect);
     btn.addEventListener('click', function () {
         dropdown.classList.toggle(EditGlobals.classNames.hiddenElement);
-        dropdownPointer.classList.toggle(EditGlobals.classNames.rotateElement);
+        dropdownPointer.classList.toggle(EditGlobals.classNames.collapsedElement);
     });
     for (let i = 0, iEnd = options.selectOptions.length; i < iEnd; ++i) {
         renderSelectElement(merge(options.selectOptions[i] || {}, { iconsURLPrefix }), dropdown, placeholder, options.id, dropdownPointer, headerIcon, options.onchange);
@@ -179,7 +178,7 @@ function renderSelectElement(option, dropdown, placeholder, id, dropdownPointer,
     createElement('span', { textContent: option.name || '' }, {}, selectOptionBtn);
     selectOptionBtn.addEventListener('click', function () {
         dropdown.classList.add(EditGlobals.classNames.hiddenElement);
-        dropdownPointer.classList.toggle(EditGlobals.classNames.rotateElement);
+        dropdownPointer.classList.toggle(EditGlobals.classNames.collapsedElement);
         placeholder.textContent = option.name || '';
         if (headerIcon && option.iconURL) {
             headerIcon.src = iconURL;
@@ -205,7 +204,8 @@ function renderToggle(parentElement, options) {
     if (!parentElement) {
         return;
     }
-    const { value, title, lang } = options;
+    const { value, lang } = options;
+    const title = options.title || options.name;
     const toggleContainer = createElement('div', { className: EditGlobals.classNames.toggleContainer }, {}, parentElement);
     if (title) {
         renderText(toggleContainer, { title });
@@ -328,8 +328,8 @@ function renderInput(parentElement, options) {
         onclick: options.callback,
         id: options.id || '',
         name: options.name || '',
-        value: (options.value && options.value.replace(/\"/g, '') ||
-            '')
+        value: ((defined(options.value) &&
+            options.value.toString().replace(/\"/g, '')) || '')
     }, {}, parentElement);
     const onchange = options.onchange;
     if (onchange) {

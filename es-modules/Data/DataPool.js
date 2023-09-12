@@ -73,29 +73,33 @@ class DataPool {
         if (connector) {
             return Promise.resolve(connector);
         }
-        let waiting = this.waiting[name];
-        // currently loading
-        if (waiting) {
-            return new Promise((resolve) => {
-                waiting.push(resolve);
-            });
-        }
-        this.waiting[name] = waiting = [];
-        const connectorOptions = this.getConnectorOptions(name);
-        if (connectorOptions) {
-            return this
+        let waitingList = this.waiting[name];
+        // start loading
+        if (!waitingList) {
+            waitingList = this.waiting[name] = [];
+            const connectorOptions = this.getConnectorOptions(name);
+            if (!connectorOptions) {
+                throw new Error(`Connector not found. (${name})`);
+            }
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this
                 .loadConnector(connectorOptions)
                 .then((connector) => {
                 delete this.waiting[name];
-                window.setTimeout(() => {
-                    for (let i = 0, iEnd = waiting.length; i < iEnd; ++i) {
-                        waiting[i](connector);
-                    }
-                }, 1);
-                return connector;
+                for (let i = 0, iEnd = waitingList.length; i < iEnd; ++i) {
+                    waitingList[i][0](connector);
+                }
+            })['catch']((error) => {
+                delete this.waiting[name];
+                for (let i = 0, iEnd = waitingList.length; i < iEnd; ++i) {
+                    waitingList[i][1](error);
+                }
             });
         }
-        throw new Error(`Connector not found. (${name})`);
+        // add request to waiting list
+        return new Promise((resolve, reject) => {
+            waitingList.push([resolve, reject]);
+        });
     }
     /**
      * Returns the names of all connectors.
@@ -173,11 +177,11 @@ class DataPool {
             connector
                 .load()
                 .then((connector) => {
+                this.connectors[options.id] = connector;
                 this.emit({
                     type: 'afterLoad',
                     options
                 });
-                this.connectors[options.id] = connector;
                 resolve(connector);
             })['catch'](reject);
         });

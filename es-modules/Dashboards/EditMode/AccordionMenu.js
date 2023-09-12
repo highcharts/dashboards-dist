@@ -72,6 +72,7 @@ class AccordionMenu {
         EditRenderer.renderButton(buttonContainer, {
             text: (((_b = component.board) === null || _b === void 0 ? void 0 : _b.editMode) || EditGlobals)
                 .lang.confirmButton,
+            className: EditGlobals.classNames.popupConfirmBtn,
             callback: () => {
                 const changedOptions = this
                     .changedOptions;
@@ -86,6 +87,7 @@ class AccordionMenu {
         EditRenderer.renderButton(buttonContainer, {
             text: (((_c = component.board) === null || _c === void 0 ? void 0 : _c.editMode) || EditGlobals)
                 .lang.cancelButton,
+            className: EditGlobals.classNames.popupCancelBtn,
             callback: () => {
                 menu.changedOptions = {};
                 menu.chartOptionsJSON = {};

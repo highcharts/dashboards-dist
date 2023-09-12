@@ -24,12 +24,12 @@ declare abstract class GUIElement {
      */
     isVisible?: boolean;
     /**
-     * Create or set existing HTML element as a GUIElement container.
+     * Create or get existing HTML element as a GUIElement container.
      *
      * @param {GUIElement.ContainerOptions} options
      * Options.
      */
-    protected setElementContainer(options: GUIElement.SetElementContainerOptions): void;
+    protected getElementContainer(options: GUIElement.GetElementContainerOptions): HTMLElement;
     /**
      * Destroy the element, its container, event hooks
      * and all properties.
@@ -46,7 +46,7 @@ declare abstract class GUIElement {
     show(): void;
 }
 declare namespace GUIElement {
-    interface SetElementContainerOptions {
+    interface GetElementContainerOptions {
         render?: boolean;
         parentContainer?: HTMLDOMElement;
         attribs?: HTMLAttributes;

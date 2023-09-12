@@ -146,6 +146,11 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * */
     options: Board.Options;
     /**
+     * Reference to ResizeObserver, which allows running 'unobserve'.
+     * @internal
+     */
+    private resizeObserver?;
+    /**
      * Init the layouts and components on the dashboard.
      *
      * @internal
@@ -209,7 +214,7 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * An array of component options.
      *
      */
-    setComponents(components: Array<Partial<ComponentType['options']>>): void;
+    setComponents(components: Array<Partial<ComponentType['options']>>): Array<Promise<Component | void>>;
     /**
      * Returns the current size of the layout container based on the selected
      * responsive breakpoints.
@@ -240,6 +245,7 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * layouts and its cells.
      */
     reflow(): void;
+    reflowLayout(layout: Layout, cntSize: string): void;
     /**
      * Converts the given JSON to a class instance.
      *

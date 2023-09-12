@@ -4,10 +4,10 @@ import Component from '../Components/Component.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
 declare module '../../Core/GlobalsLike' {
     interface GlobalsLike {
-        chart: typeof H.chart;
-        ganttChart: typeof H.chart;
-        mapChart: typeof H.chart;
-        stockChart: typeof H.chart;
+        chart: typeof Chart.chart;
+        ganttChart: typeof Chart.chart;
+        mapChart: typeof Chart.chart;
+        stockChart: typeof Chart.chart;
     }
 }
 /**
@@ -17,7 +17,7 @@ declare module '../../Core/GlobalsLike' {
  */
 declare class HighchartsComponent extends Component {
     /** @private */
-    static charter?: typeof H;
+    static charter?: H;
     /** @private */
     static syncHandlers: import("../Components/Sync/Sync").default.OptionsRecord;
     /**
@@ -30,11 +30,17 @@ declare class HighchartsComponent extends Component {
          * @default true
          */
         allowConnectorUpdate: boolean;
+        className: string;
         chartClassName: string;
         chartID: string;
         chartOptions: {
             chart: {
                 styledMode: boolean;
+                zooming: {
+                    mouseWheel: {
+                        enabled: boolean;
+                    };
+                };
             };
             series: never[];
         };
@@ -107,8 +113,9 @@ declare class HighchartsComponent extends Component {
      * The options for the component.
      */
     constructor(cell: Cell, options: Partial<HighchartsComponent.Options>);
+    onTableChanged(): void;
     /** @private */
-    load(): this;
+    load(): Promise<this>;
     render(): this;
     resize(width?: number | string | null, height?: number | string | null): this;
     /**
@@ -135,13 +142,13 @@ declare class HighchartsComponent extends Component {
      * The options to apply.
      *
      */
-    update(options: Partial<HighchartsComponent.Options>, redraw?: boolean): Promise<void>;
+    update(options: Partial<HighchartsComponent.Options>, shouldRerender?: boolean): Promise<void>;
     /**
      * Updates chart's series when the data table is changed.
      *
      * @private
      */
-    private updateSeries;
+    updateSeries(): void;
     /**
      * Destroy chart and create a new one.
      *
@@ -152,6 +159,17 @@ declare class HighchartsComponent extends Component {
      *
      */
     private getChart;
+    /**
+     * Creates default mapping when columnAssignment is not declared.
+     * @param  { Array<string>} columnNames all columns returned from dataTable.
+     *
+     * @returns
+     * The record of mapping
+     *
+     * @private
+     *
+     */
+    private getDefaultColumnAssignment;
     /**
      * Creates chart.
      *

@@ -30,6 +30,7 @@ declare namespace Globals {
         cell: string;
         cellHover: string;
         cellActive: string;
+        cellLoading: string;
         row: string;
         layoutsWrapper: string;
         boardContainer: string;

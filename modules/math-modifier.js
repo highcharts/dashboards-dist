@@ -1,5 +1,5 @@
 /*
- Highcharts Dashboards Math 1.0.2 (2023-08-10)
+ Highcharts Dashboards Math 1.1.0 (2023-09-12)
 
  (c) 2009-2023 Highsoft AS
 
@@ -37,4 +37,5 @@ f;++e)switch(g=c(a[e],b),typeof g){case "boolean":case "number":if("undefined"==
 function(f,b,c){return Object.assign(Object.assign(Object.assign({},f),b),c)});l(g,"Data/Modifiers/MathModifier.js",[g["Data/Modifiers/DataModifier.js"],g["Data/Formula/FormulaParser.js"],g["Data/Formula/FormulaProcessor.js"]],function(f,b,c){class a extends f{constructor(b){super();this.options=Object.assign(Object.assign({},a.defaultOptions),b)}modifyTable(a,c){this.emit({type:"modify",detail:c,table:a});const e=this.options.alternativeSeparators;var d=this.options.formulaColumns||a.getColumnNames();
 const f=a.modified;for(let b=0,c=d.length,e;b<c;++b)e=d[b],0<=d.indexOf(e)&&f.setColumn(e,this.processColumn(a,e));d=this.options.columnFormulas||[];for(let c=0,g=d.length,h,n;c<g;++c)h=d[c],n=b.parseFormula(h.formula,e),f.setColumn(h.column,this.processColumnFormula(n,a,h.rowStart,h.rowEnd));this.emit({type:"afterModify",detail:c,table:a});return a}processColumn(a,f,g=0){const d=this.options.alternativeSeparators;f=(a.getColumn(f,!0)||[]).slice(0<g?g:0);for(let e=0,g=f.length,h=[],l="",p;e<g;++e)if(p=
 f[e],"string"===typeof p&&"="===p[0])try{h=l===p?h:b.parseFormula(p.substring(1),d),f[e]=c.processFormula(h,a)}catch(D){f[e]=NaN}return f}processColumnFormula(a,b,f=0,d=b.getRowCount()){f=0<=f?f:0;d=0<=d?d:b.getRowCount()+d;const e=[];b=b.modified;for(let g=0,h=d-f;g<h;++g)try{e[g]=c.processFormula(a,b)}catch(w){e[g]=NaN}finally{a=c.translateReferences(a,0,1)}return e}}a.defaultOptions={type:"Math",alternativeSeparators:!1};f.registerType("Math",a);return a});l(g,"masters/modules/math-modifier.src.js",
-[g["Dashboards/Globals.js"],g["Data/Formula/Formula.js"]],function(f,b){f.Formula=b;return f})});//# sourceMappingURL=math-modifier.js.map
+[g["Dashboards/Globals.js"],g["Data/Formula/Formula.js"]],function(f,b){f.Formula=b;return f})});
+//# sourceMappingURL=math-modifier.js.map

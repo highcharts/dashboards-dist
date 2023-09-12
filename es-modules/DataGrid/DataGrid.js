@@ -605,7 +605,7 @@ class DataGrid {
      * The column name the cell belongs to.
      */
     formatCell(cellValue, column) {
-        const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat;
+        const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat, cellFormatter = columnOptions && columnOptions.cellFormatter;
         let formattedCell = defined(cellValue) ? cellValue : '';
         if (cellFormat) {
             if (typeof cellValue === 'number' &&
@@ -618,6 +618,9 @@ class DataGrid {
                 formattedCell =
                     Templating.format(cellFormat, { text: cellValue });
             }
+        }
+        if (cellFormatter) {
+            return cellFormatter.call({ value: cellValue });
         }
         return formattedCell.toString();
     }

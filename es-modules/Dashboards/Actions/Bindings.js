@@ -14,10 +14,19 @@
  *
  * */
 'use strict';
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import ComponentRegistry from '../Components/ComponentRegistry.js';
 import Globals from '../Globals.js';
 import U from '../../Core/Utilities.js';
-const { merge, addEvent, fireEvent, error } = U;
+const { addEvent, fireEvent, error } = U;
 /* *
  *
  *  Namespace
@@ -47,73 +56,72 @@ var Bindings;
         return guiElement;
     }
     function addComponent(options, cell) {
-        var _a, _b, _c, _d;
-        // TODO: Check if there are states in the options, and if so, add them
-        const optionsStates = options.states;
-        const optionsEvents = options.events;
-        cell = cell || Bindings.getCell(options.cell || '');
-        if (!cell || !cell.container || !options.type) {
-            error('The component is misconfigured and is unable to find the ' +
-                'HTML cell element `' + options.cell + '` to render the content.');
-            return;
-        }
-        const componentContainer = cell.container;
-        let ComponentClass = ComponentRegistry.types[options.type];
-        if (!ComponentClass) {
-            error('The component\'s type `' + options.type + '` does not exist.');
-            ComponentClass =
-                ComponentRegistry.types['HTML'];
-            options.title = {
-                text: (_b = (_a = cell.row.layout.board) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.lang.errorMessage,
-                className: Globals.classNamePrefix + 'component-title-error ' +
-                    Globals.classNamePrefix + 'component-title'
-            };
-        }
-        let board = cell.row.layout.board;
-        const component = new ComponentClass(cell, options);
-        try {
-            component.render();
-        }
-        catch (e) {
-            component.update({
-                title: {
-                    text: (_d = (_c = cell.row.layout.board) === null || _c === void 0 ? void 0 : _c.editMode) === null || _d === void 0 ? void 0 : _d.lang.errorMessage,
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            const optionsStates = options.states;
+            const optionsEvents = options.events;
+            cell = cell || Bindings.getCell(options.cell || '');
+            if (!(cell === null || cell === void 0 ? void 0 : cell.container) || !options.type) {
+                error(`The component is misconfigured and is unable to find the
+                HTML cell element ${options.cell} to render the content.`);
+                return;
+            }
+            const componentContainer = cell.container;
+            let ComponentClass = ComponentRegistry.types[options.type];
+            if (!ComponentClass) {
+                error(`The component's type ${options.type} does not exist.`);
+                ComponentClass =
+                    ComponentRegistry.types['HTML'];
+                options.title = {
+                    text: (_b = (_a = cell.row.layout.board) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.lang.errorMessage,
                     className: Globals.classNamePrefix + 'component-title-error ' +
                         Globals.classNamePrefix + 'component-title'
-                }
+                };
+            }
+            const component = new ComponentClass(cell, options);
+            const promise = component.load()['catch']((e) => {
+                var _a, _b;
+                // eslint-disable-next-line no-console
+                console.error(e);
+                component.update({
+                    connector: {
+                        id: ''
+                    },
+                    title: {
+                        text: (_b = (_a = cell === null || cell === void 0 ? void 0 : cell.row.layout.board) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.lang.errorMessage,
+                        className: Globals.classNamePrefix + 'component-title-error ' +
+                            Globals.classNamePrefix + 'component-title'
+                    }
+                });
             });
-        }
-        // update cell size (when component is wider, cell should adjust)
-        // this.updateSize();
-        // add events
-        fireEvent(component, 'mount');
-        component.setCell(cell);
-        cell.mountedComponent = component;
-        cell.row.layout.board.mountedComponents.push({
-            options: options,
-            component: component,
-            cell: cell
+            fireEvent(component, 'mount');
+            component.setCell(cell);
+            cell.mountedComponent = component;
+            cell.row.layout.board.mountedComponents.push({
+                options: options,
+                component: component,
+                cell: cell
+            });
+            // events
+            if (optionsEvents && optionsEvents.click) {
+                addEvent(componentContainer, 'click', () => {
+                    optionsEvents.click();
+                    if (cell &&
+                        component &&
+                        componentContainer &&
+                        optionsStates &&
+                        optionsStates.active) {
+                        cell.setActiveState();
+                    }
+                });
+            }
+            // states
+            if (optionsStates === null || optionsStates === void 0 ? void 0 : optionsStates.hover) {
+                componentContainer.classList.add(Globals.classNames.cellHover);
+            }
+            fireEvent(component, 'afterLoad');
+            return promise;
         });
-        // events
-        if (optionsEvents && optionsEvents.click) {
-            addEvent(componentContainer, 'click', () => {
-                optionsEvents.click();
-                if (cell &&
-                    component &&
-                    componentContainer &&
-                    optionsStates &&
-                    optionsStates.active) {
-                    cell.setActiveState();
-                }
-            });
-        }
-        // states
-        if (optionsStates &&
-            optionsStates.hover) {
-            componentContainer.classList.add(Globals.classNames.cellHover);
-        }
-        fireEvent(component, 'afterLoad');
-        return component;
     }
     Bindings.addComponent = addComponent;
     /** @internal */

@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.2 (2023-08-10)
+ * @license Highcharts Dashboards v1.1.0 (2023-09-12)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -723,7 +723,8 @@
             spacing: [10, 10, 15, 10],
             /**
              * The button that appears after a selection zoom, allowing the user
-             * to reset zoom.
+             * to reset zoom. This option is deprecated in favor of
+             * [zooming](#chart.zooming).
              *
              * @since      2.2
              * @deprecated 10.2.1
@@ -739,7 +740,6 @@
                  *         Relative to the chart
                  *
                  * @type      {Highcharts.ButtonRelativeToValue}
-                 * @default   plot
                  * @apioption chart.resetZoomButton.relativeTo
                  */
                 /**
@@ -757,10 +757,12 @@
                  * @type {Highcharts.SVGAttributes}
                  */
                 theme: {
-                    /**
-                     * @internal
-                     */
-                    zIndex: 6
+                /**
+                 * zIndex of the button.
+                 *
+                 * @type {number}
+                 * @apioption chart.resetZoomButton.theme.zIndex
+                 */
                 },
                 /**
                  * The position of the button.
@@ -775,25 +777,30 @@
                  * @type {Highcharts.AlignObject}
                  */
                 position: {
-                    /**
-                     * The horizontal alignment of the button.
-                     */
-                    align: 'right',
-                    /**
-                     * The horizontal offset of the button.
-                     */
-                    x: -10,
-                    /**
-                     * The vertical alignment of the button.
-                     *
-                     * @type      {Highcharts.VerticalAlignValue}
-                     * @default   top
-                     * @apioption chart.resetZoomButton.position.verticalAlign
-                     */
-                    /**
-                     * The vertical offset of the button.
-                     */
-                    y: 10
+                /**
+                 * The horizontal alignment of the button.
+                 *
+                 * @type {number}
+                 * @apioption chart.resetZoomButton.position.align
+                 */
+                /**
+                 * The horizontal offset of the button.
+                 *
+                 * @type {number}
+                 * @apioption chart.resetZoomButton.position.x
+                 */
+                /**
+                 * The vertical alignment of the button.
+                 *
+                 * @type      {Highcharts.VerticalAlignValue}
+                 * @apioption chart.resetZoomButton.position.verticalAlign
+                 */
+                /**
+                 * The vertical offset of the button.
+                 *
+                 * @type {number}
+                 * @apioption chart.resetZoomButton.position.y
+                 */
                 }
             },
             /**
@@ -2630,7 +2637,7 @@
              *     "#2ee0ca",
              *     "#fa4b42",
              *     "#feb56a",
-             *     "#91e8e12
+             *     "#91e8e1"
              * ]
              */
             colors: Palettes.colors,
@@ -6318,7 +6325,7 @@
              * The column name the cell belongs to.
              */
             formatCell(cellValue, column) {
-                const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat;
+                const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat, cellFormatter = columnOptions && columnOptions.cellFormatter;
                 let formattedCell = defined(cellValue) ? cellValue : '';
                 if (cellFormat) {
                     if (typeof cellValue === 'number' &&
@@ -6331,6 +6338,9 @@
                         formattedCell =
                             Templating.format(cellFormat, { text: cellValue });
                     }
+                }
+                if (cellFormatter) {
+                    return cellFormatter.call({ value: cellValue });
                 }
                 return formattedCell.toString();
             }

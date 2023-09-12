@@ -41,7 +41,7 @@ class Resizer {
         this.isActive = false;
         this.startX = 0;
         this.tempSiblingsWidth = [];
-        this.addSnaps(this.options);
+        this.addSnaps();
     }
     /* *
      *
@@ -51,29 +51,33 @@ class Resizer {
     /**
      * Add Snap - create snaps and add events.
      *
-     * @param {Resizer.Options} options
-     * Reference to options of snaps
-     *
      */
-    addSnaps(options) {
-        const minWidth = options.styles.minWidth;
-        const minHeight = options.styles.minHeight;
+    addSnaps() {
+        const iconsURLPrefix = this.editMode.iconsURLPrefix;
         const snapWidth = this.options.snap.width || 0;
         const snapHeight = this.options.snap.height || 0;
         const dashboardContainer = this.editMode.board.container;
         // Right snap
-        this.snapRight = createElement('div', {
+        this.snapRight = createElement('img', {
             className: EditGlobals.classNames.resizeSnap + ' ' +
-                EditGlobals.classNames.resizeSnapX
+                EditGlobals.classNames.resizeSnapX,
+            // src: iconsURLPrefix + 'resize-handle.svg'
+            // eslint-disable-next-line max-len
+            src: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@b2d3673cfd596a9615e57233914836c78544884c/gfx/dashboards-icons/resize-handle.svg'
         }, {
             width: snapWidth + 'px',
+            height: snapHeight + 'px',
             left: -9999 + 'px'
         }, dashboardContainer);
         // Bottom snap
-        this.snapBottom = createElement('div', {
+        this.snapBottom = createElement('img', {
             className: EditGlobals.classNames.resizeSnap + ' ' +
-                EditGlobals.classNames.resizeSnapY
+                EditGlobals.classNames.resizeSnapY,
+            // src: iconsURLPrefix + 'resize-handle.svg'
+            // eslint-disable-next-line max-len
+            src: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@b2d3673cfd596a9615e57233914836c78544884c/gfx/dashboards-icons/resize-handle.svg'
         }, {
+            width: snapWidth + 'px',
             height: snapHeight + 'px',
             top: -9999 + 'px',
             left: '0px'
@@ -222,12 +226,19 @@ class Resizer {
         //         addEvent(rowContainer, 'touchend', mouseUpSnap);
         //     }
         // }
-        // Update snaps, when resize the window
-        addEvent(window, 'resize', () => {
+        const runReflow = () => {
             if (resizer.currentCell) {
                 resizer.setSnapPositions(resizer.currentCell);
             }
-        });
+        };
+        if (typeof ResizeObserver === 'function') {
+            this.resizeObserver = new ResizeObserver(runReflow);
+            this.resizeObserver.observe(resizer.editMode.board.container);
+        }
+        else {
+            const unbind = addEvent(window, 'resize', runReflow);
+            addEvent(this, 'destroy', unbind);
+        }
     }
     /**
      * General method used on resizing.
@@ -277,11 +288,13 @@ class Resizer {
      * Destroy resizer
      */
     destroy() {
+        var _a;
         const snaps = ['snapRight', 'snapBottom'];
         let snap;
         // Unbind events
         removeEvent(document, 'mousemove');
         removeEvent(document, 'mouseup');
+        (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.editMode.board.container);
         for (let i = 0, iEnd = snaps.length; i < iEnd; ++i) {
             snap = this[snaps[i]];
             // Unbind event
@@ -324,8 +337,8 @@ Resizer.defaultOptions = {
     },
     type: 'xy',
     snap: {
-        width: 20,
-        height: 20
+        width: 9,
+        height: 17
     }
 };
 export default Resizer;

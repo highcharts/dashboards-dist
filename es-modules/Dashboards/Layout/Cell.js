@@ -86,50 +86,45 @@ class Cell extends GUIElement {
         // Get parent container
         const parentContainer = document.getElementById(options.parentContainerId || '') ||
             row.container;
-        if (parentContainer) {
-            const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
-            let cellHeight;
-            if (options.height) {
-                if (typeof options.height === 'number') {
-                    cellHeight = options.height + 'px';
-                }
-                else {
-                    cellHeight = options.height;
-                }
+        const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
+        let cellHeight;
+        if (options.height) {
+            if (typeof options.height === 'number') {
+                cellHeight = options.height + 'px';
             }
-            this.setElementContainer({
-                render: row.layout.board.guiEnabled,
-                parentContainer: parentContainer,
-                attribs: {
-                    id: options.id,
-                    className: Globals.classNames.cell + ' ' +
-                        cellClassName
-                },
-                element: cellElement,
-                elementId: options.id,
-                style: merge(layoutOptions.style, rowOptions.style, options.style, {
-                    height: cellHeight
-                })
-            });
-            // Set cell width respecting responsive options.
-            this.reflow();
-            // Mount component from JSON.
-            if (this.options.mountedComponentJSON) {
-                this.mountComponentFromJSON(this.options.mountedComponentJSON, this.container);
-            }
-            // nested layout
-            if (this.options.layout) {
-                this.setNestedLayout();
-            }
-            if (this.options.layoutJSON) {
-                const layout = this.row.layout, board = layout.board, layoutFromJSON = layout.constructor.fromJSON;
-                this.nestedLayout = layoutFromJSON(merge(this.options.layoutJSON, {
-                    parentContainerId: this.options.id
-                }), board, this);
+            else {
+                cellHeight = options.height;
             }
         }
-        else {
-            // Error
+        this.container = this.getElementContainer({
+            render: row.layout.board.guiEnabled,
+            parentContainer: parentContainer,
+            attribs: {
+                id: options.id,
+                className: Globals.classNames.cell + ' ' +
+                    cellClassName
+            },
+            element: cellElement,
+            elementId: options.id,
+            style: merge(layoutOptions.style, rowOptions.style, options.style, {
+                height: cellHeight
+            })
+        });
+        // Set cell width respecting responsive options.
+        this.reflow();
+        // Mount component from JSON.
+        if (this.options.mountedComponentJSON) {
+            this.mountComponentFromJSON(this.options.mountedComponentJSON, this.container);
+        }
+        // nested layout
+        if (this.options.layout) {
+            this.setNestedLayout();
+        }
+        if (this.options.layoutJSON) {
+            const layout = this.row.layout, board = layout.board, layoutFromJSON = layout.constructor.fromJSON;
+            this.nestedLayout = layoutFromJSON(merge(this.options.layoutJSON, {
+                parentContainerId: this.options.id
+            }), board, this);
         }
     }
     /* *
@@ -379,6 +374,15 @@ class Cell extends GUIElement {
         if (cell.container) {
             cell.container.classList.add(Globals.classNames.cellActive);
         }
+    }
+    /**
+     * Enables or disables the loading indicator in the cell.
+     *
+     * @internal
+     */
+    setLoadingState(enabled = true) {
+        var _a, _b;
+        (_b = (_a = this.container) === null || _a === void 0 ? void 0 : _a.classList) === null || _b === void 0 ? void 0 : _b.toggle(Globals.classNames.cellLoading, enabled);
     }
     convertWidthToValue(width) {
         if (typeof width === 'number') {

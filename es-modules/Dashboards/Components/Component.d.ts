@@ -1,17 +1,16 @@
 import type Board from '../Board';
 import type Cell from '../Layout/Cell';
 import type { ComponentConnectorOptions } from './ComponentOptions';
-import type { ComponentType, ComponentTypeRegistry } from './ComponentType';
-import type Globals from '../Globals';
+import type { ComponentTypeRegistry } from './ComponentType';
 import type JSON from '../JSON';
 import type Serializable from '../Serializable';
 import type DataModifier from '../../Data/Modifiers/DataModifier';
-import type CSSObject from '../../Core/Renderer/CSSObject';
 import type TextOptions from './TextOptions';
 import CallbackRegistry from '../CallbackRegistry.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
 import DataTable from '../../Data/DataTable.js';
 import EditableOptions from './EditableOptions.js';
+import Globals from '../Globals.js';
 import ComponentGroup from './ComponentGroup.js';
 import Sync from './Sync/Sync.js';
 /**
@@ -62,6 +61,10 @@ declare abstract class Component {
      */
     cell: Cell;
     /**
+     * Default sync Handlers.
+     */
+    static syncHandlers: Sync.OptionsRecord;
+    /**
      * Connector that allows you to load data via URL or from a local source.
      */
     connector?: Component.ConnectorTypes;
@@ -106,9 +109,6 @@ declare abstract class Component {
      * */
     options: Component.ComponentOptions;
     /**
-     * The type of component like: `HTML`, `KPI`, `Highcharts`, `DataGrid`.
-     */
-    /**
      * Sets an ID for the component's `div`.
      */
     id: string;
@@ -125,32 +125,24 @@ declare abstract class Component {
      */
     callbackRegistry: CallbackRegistry;
     /**
-     * The interval for redrawing the component on data changes.
+     * The interval for rendering the component on data changes.
      * @internal
      */
     private tableEventTimeout?;
     /**
-     * Event listeners tied to the current DataTable. Used for redrawing the
+     * Event listeners tied to the current DataTable. Used for rerendering the
      * component on data changes.
      *
      * @internal
      */
     private tableEvents;
     /**
-     * Event listeners tied to the parent cell. Used for redrawing/resizing the
+     * Event listeners tied to the parent cell. Used for rendering/resizing the
      * component on interactions.
      *
      * @internal
      */
     private cellListeners;
-    /**
-     * @internal
-     */
-    protected hasLoaded: boolean;
-    /**
-     * @internal
-     */
-    protected shouldRedraw: boolean;
     /**
      * @internal
      */
@@ -200,7 +192,12 @@ declare abstract class Component {
      */
     constructor(cell: Cell, options: Partial<Component.ComponentOptions>);
     /**
-     * Inits connectors for the component and redraws it.
+     * Function fired when component's `tableChanged` event is fired.
+     * @internal
+     */
+    abstract onTableChanged(e?: Component.EventTypes): void;
+    /**
+     * Inits connectors for the component and rerenders it.
      *
      * @returns
      * Promise resolving to the component.
@@ -288,12 +285,19 @@ declare abstract class Component {
      * @param newOptions
      * The options to apply.
      *
-     * @param redraw
-     * Set to true if the update should redraw the component.
+     * @param shouldRerender
+     * Set to true if the update should rerender the component.
      */
-    update(newOptions: Partial<Component.ComponentOptions>, redraw?: boolean): Promise<void>;
+    update(newOptions: Partial<Component.ComponentOptions>, shouldRerender?: boolean): Promise<void>;
+    /**
+     * Private method which sets up event listeners for the component.
+     *
+     * @internal
+     */
+    private setupEventListeners;
     /**
      * Adds title at the top of component's container.
+     *
      * @param titleOptions
      * The options for the title.
      */
@@ -313,7 +317,7 @@ declare abstract class Component {
      *
      * @internal
      */
-    load(): this;
+    load(): Promise<this>;
     /**
      * Renders the component.
      *
@@ -324,12 +328,6 @@ declare abstract class Component {
      */
     render(): this;
     /**
-     * Redraws the component.
-     * @returns
-     * The component for chaining.
-     */
-    redraw(): this;
-    /**
      * Destroys the component.
      */
     destroy(): void;
@@ -337,10 +335,6 @@ declare abstract class Component {
     on<TEvent extends Component.EventTypes>(type: TEvent['type'], callback: (this: this, e: TEvent) => void): Function;
     /** @internal */
     emit<TEvent extends Component.EventTypes>(e: TEvent): void;
-    /** @internal */
-    postMessage(message: Component.MessageType, target?: Component.MessageTarget): void;
-    /** @internal */
-    onMessage(message: Component.MessageType): void;
     /**
      * Converts the class instance to a class JSON.
      * @internal
@@ -375,7 +369,7 @@ declare namespace Component {
      * The basic events
      */
     /** @internal */
-    type EventTypes = SetConnectorEvent | ResizeEvent | UpdateEvent | TableChangedEvent | LoadEvent | RenderEvent | RedrawEvent | JSONEvent | MessageEvent | PresentationModifierEvent;
+    type EventTypes = SetConnectorEvent | ResizeEvent | UpdateEvent | TableChangedEvent | LoadEvent | RenderEvent | JSONEvent | PresentationModifierEvent;
     type SetConnectorEvent = Event<'setConnector' | 'afterSetConnector', {}>;
     /** @internal */
     type ResizeEvent = Event<'resize', {
@@ -390,17 +384,7 @@ declare namespace Component {
     /** @internal */
     type LoadEvent = Event<'load' | 'afterLoad', {}>;
     /** @internal */
-    type RedrawEvent = Event<'redraw' | 'afterRedraw', {}>;
-    /** @internal */
-    type RenderEvent = Event<'beforeRender' | 'afterRender', {}>;
-    /** @internal */
-    type MessageEvent = Event<'message', {
-        message: MessageType;
-        detail?: {
-            sender: string;
-            target: string;
-        };
-    }>;
+    type RenderEvent = Event<'render' | 'afterRender', {}>;
     /** @internal */
     type JSONEvent = Event<'toJSON' | 'fromJSON', {
         json: Serializable.JSON<string>;
@@ -435,18 +419,12 @@ declare namespace Component {
          */
         cell?: string;
         /**
-         * The HTML element or id of HTML element that is used for appending
-         * a component.
-         *
-         * @internal
-         */
-        parentElement: HTMLElement | string;
-        /**
          * The name of class that is applied to the component's container.
          */
         className?: string;
         /**
-         * The type of component like: `HTML`, `KPI`, `Highcharts`, `DataGrid`.
+         * The type of component like: `HTML`, `KPI`, `Highcharts`, `DataGrid`,
+         * `Navigator`.
          */
         type: keyof ComponentTypeRegistry;
         /**
@@ -496,10 +474,6 @@ declare namespace Component {
          */
         id?: string;
         /**
-         * Additional CSS styles to apply inline to the component's container.
-         */
-        style?: CSSObject;
-        /**
          * The component's title, which will render at the top.
          *
          * Try it:
@@ -540,98 +514,5 @@ declare namespace Component {
      * Allowed types for the text.
     */
     type TextOptionsType = string | false | TextOptions | undefined;
-    /** @internal */
-    interface MessageTarget {
-        type: 'group' | 'componentType' | 'componentID';
-        target: (ComponentType['id'] | ComponentType['type'] | ComponentGroup['id']);
-    }
-    /** @internal */
-    type MessageType = string | {
-        callback: Function;
-    };
-    /**
-     *
-     * Record of component instances
-     *
-     */
-    /** @internal */
-    const instanceRegistry: Record<string, ComponentType>;
-    /**
-     * Adds component to the registry.
-     *
-     * @internal
-     *
-     * @internal
-     * Adds a component instance to the registry.
-     * @param component
-     * The component to add.
-     * Returns the true when component was found and added properly to the
-     * registry, otherwise it is false.
-     *
-     * @internal
-     */
-    function addInstance(component: ComponentType): void;
-    /**
-     * Removes a component instance from the registry.
-     * @param component
-     * The component to remove.
-     *
-     * @internal
-     */
-    function removeInstance(component: Component): void;
-    /**
-     * Retrieves the IDs of the registered component instances.
-     * @returns
-     * Array of component IDs.
-     *
-     * @internal
-     */
-    function getAllInstanceIDs(): string[];
-    /**
-     * Retrieves all registered component instances.
-     * @returns
-     * Array of components.
-     *
-     * @internal
-     */
-    function getAllInstances(): Component[];
-    /**
-     * Gets instance of component from registry.
-     *
-     * @param id
-     * Component's id that exists in registry.
-     *
-     * @returns
-     * Returns the component.
-     * Gets instance of component from registry.
-     *
-     * @param id
-     * Component's id that exists in registry.
-     *
-     * @returns
-     * Returns the component type or undefined.
-     *
-     * @internal
-     */
-    function getInstanceById(id: string): ComponentType | undefined;
-    /**
-     * Sends a message from the given sender to the target,
-     * with an optional callback.
-     *
-     * @param sender
-     * The sender of the message. Can be a Component or a ComponentGroup.
-     *
-     * @param message
-     * The message. It can be a string, or a an object containing a
-     * `callback` function.
-     *
-     * @param targetObj
-     * An object containing the `type` of target,
-     * which can be `group`, `componentID`, or `componentType`
-     * as well as the id of the recipient.
-     *
-     * @internal
-     */
-    function relayMessage(sender: ComponentType | ComponentGroup, message: Component.MessageEvent['message'], targetObj: Component.MessageTarget): void;
 }
 export default Component;

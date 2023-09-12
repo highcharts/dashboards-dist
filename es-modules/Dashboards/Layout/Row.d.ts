@@ -43,6 +43,10 @@ declare class Row extends GUIElement {
      */
     readonly type: GUIElement.GUIElementType;
     /**
+     * HTML container of a GUIElement.
+     */
+    container: HTMLDOMElement;
+    /**
      * Set the row cells using cell options or cellClassName.
      */
     setCells(): void;

@@ -97,13 +97,18 @@ class ConfirmationPopup extends BaseForm {
         EditRenderer.renderText(this.contentContainer, {
             title: options.text || ''
         });
+        // Render button wrapper
+        this.buttonContainer = createElement('div', {
+            className: EditGlobals.classNames.popupButtonContainer
+        }, {}, this.container);
         // Render cancel buttons
-        EditRenderer.renderButton(this.contentContainer, {
+        EditRenderer.renderButton(this.buttonContainer, {
             text: options.cancelButton.value,
+            className: EditGlobals.classNames.popupCancelBtn,
             callback: options.cancelButton.callback
         });
         // Confirm
-        EditRenderer.renderButton(this.contentContainer, {
+        EditRenderer.renderButton(this.buttonContainer, {
             text: options.confirmButton.value,
             className: EditGlobals.classNames.popupConfirmBtn,
             callback: () => {

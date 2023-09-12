@@ -44,6 +44,10 @@ declare class Layout extends GUIElement {
     level: number;
     parentCell?: Cell;
     /**
+     * HTML container of a GUIElement.
+     */
+    container: HTMLElement;
+    /**
      * Set the layout rows using rows options or rowClassName.
      */
     setRows(): void;

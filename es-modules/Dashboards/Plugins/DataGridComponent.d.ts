@@ -51,6 +51,7 @@ declare class DataGridComponent extends Component {
     /** @private */
     private connectorListeners;
     constructor(cell: Cell, options: Partial<DataGridComponent.ComponentOptions>);
+    onTableChanged(): void;
     /**
      * Disable editing of the columns that are modified by the data modifier.
      * @internal
@@ -60,14 +61,17 @@ declare class DataGridComponent extends Component {
      */
     private disableEditingModifiedColumns;
     /**
+     * Get the column options for the data grid.
+     * @internal
+     */
+    private getColumnOptions;
+    /**
      * Triggered on component initialization.
      * @private
      */
-    load(): this;
+    load(): Promise<this>;
     /** @private */
     render(): this;
-    /** @private */
-    redraw(): this;
     /** @private */
     resize(width?: number | null, height?: number | null): void;
     update(options: Partial<DataGridComponent.ComponentOptions>): Promise<void>;

@@ -48,7 +48,6 @@ class Tooltip {
          *
          * */
         this.allowShared = true;
-        this.container = void 0;
         this.crosshairs = [];
         this.distance = 0;
         this.isHidden = true;
@@ -237,7 +236,7 @@ class Tooltip {
      */
     getLabel() {
         const tooltip = this, styledMode = this.chart.styledMode, options = this.options, doSplit = this.split && this.allowShared;
-        let container, renderer = this.chart.renderer;
+        let container = this.container, renderer = this.chart.renderer;
         // If changing from a split tooltip to a non-split tooltip, we must
         // destroy it in order to get the SVG right. #13868.
         if (this.label) {
@@ -268,7 +267,6 @@ class Tooltip {
                     pointerEvents: 'none',
                     zIndex: Math.max(this.options.style.zIndex || 0, (chartStyle && chartStyle.zIndex || 0) + 3)
                 });
-                H.doc.body.appendChild(container);
                 /**
                  * Reference to the tooltip's renderer, when
                  * [Highcharts.Tooltip#outside] is set to true, otherwise
@@ -311,17 +309,24 @@ class Tooltip {
                 const { xSetter, ySetter } = label;
                 label.xSetter = function (value) {
                     xSetter.call(label, tooltip.distance);
-                    container.style.left = value + 'px';
+                    if (container) {
+                        container.style.left = value + 'px';
+                    }
                 };
                 label.ySetter = function (value) {
                     ySetter.call(label, tooltip.distance);
-                    container.style.top = value + 'px';
+                    if (container) {
+                        container.style.top = value + 'px';
+                    }
                 };
             }
             this.label
                 .attr({ zIndex: 8 })
                 .shadow(options.shadow)
                 .add();
+        }
+        if (container && !container.parentElement) {
+            H.doc.body.appendChild(container);
         }
         return this.label;
     }
@@ -509,15 +514,28 @@ class Tooltip {
      */
     hide(delay) {
         const tooltip = this;
-        // disallow duplicate timers (#1728, #1766)
+        // Disallow duplicate timers (#1728, #1766)
         U.clearTimeout(this.hideTimer);
         delay = pick(delay, this.options.hideDelay);
         if (!this.isHidden) {
             this.hideTimer = syncTimeout(function () {
-                // If there is a delay, do fadeOut with the default duration. If
+                const label = tooltip.getLabel();
+                // If there is a delay, fade out with the default duration. If
                 // the hideDelay is 0, we assume no animation is wanted, so we
                 // pass 0 duration. #12994.
-                tooltip.getLabel().fadeOut(delay ? void 0 : delay);
+                tooltip.getLabel().animate({
+                    opacity: 0
+                }, {
+                    duration: delay ? 150 : delay,
+                    complete: () => {
+                        // #3088, assuming we're only using this for tooltips
+                        label.hide();
+                        // Clear the container for outside tooltip (#18490)
+                        if (tooltip.container) {
+                            tooltip.container.remove();
+                        }
+                    }
+                });
                 tooltip.isHidden = true;
             }, delay);
         }
@@ -830,7 +848,7 @@ class Tooltip {
             let anchorY;
             if (isHeader) {
                 // Set anchorX to plotX
-                anchorX = plotLeft + plotX;
+                anchorX = Math.max(plotLeft + plotX, plotLeft);
                 // Set anchorY to center of visible plot area.
                 anchorY = plotTop + plotHeight / 2;
             }
@@ -1215,23 +1233,26 @@ class Tooltip {
      * @param {Highcharts.Point} point
      */
     updatePosition(point) {
-        const { chart, distance, options } = this, pointer = chart.pointer, label = this.getLabel(), 
+        const { chart, container, distance, options } = this, pointer = chart.pointer, label = this.getLabel(), 
         // Needed for outside: true (#11688)
-        { left, top, scaleX, scaleY } = pointer.getChartPosition(), pos = (options.positioner || this.getPosition).call(this, label.width, label.height, point);
+        { left, top, scaleX, scaleY } = pointer.getChartPosition(), pos = (options.positioner || this.getPosition).call(this, label.width, label.height, point), renderer = this.renderer;
         let anchorX = (point.plotX || 0) + chart.plotLeft, anchorY = (point.plotY || 0) + chart.plotTop, pad;
-        // Set the renderer size dynamically to prevent document size to change
-        if (this.outside) {
+        // Set the renderer size dynamically to prevent document size to change.
+        // Renderer only exists when tooltip is outside.
+        if (renderer && container) {
             // Corrects positions, occurs with tooltip positioner (#16944)
             if (options.positioner) {
                 pos.x += left - distance;
                 pos.y += top - distance;
             }
-            pad = (options.borderWidth || 0) + 2 * distance;
-            this.renderer.setSize(label.width + pad, label.height + pad, false);
+            // Pad it by the border width and distance. Add 2 to make room for
+            // the default shadow (#19314).
+            pad = (options.borderWidth || 0) + 2 * distance + 2;
+            renderer.setSize(label.width + pad, label.height + pad, false);
             // Anchor and tooltip container need scaling if chart container has
             // scale transform/css zoom. #11329.
             if (scaleX !== 1 || scaleY !== 1) {
-                css(this.container, {
+                css(container, {
                     transform: `scale(${scaleX}, ${scaleY})`
                 });
                 anchorX *= scaleX;
@@ -1240,8 +1261,8 @@ class Tooltip {
             anchorX += left - pos.x;
             anchorY += top - pos.y;
         }
-        // do the move
-        this.move(Math.round(pos.x), Math.round(pos.y || 0), // can be undefined (#3977)
+        // Do the move
+        this.move(Math.round(pos.x), Math.round(pos.y || 0), // Can be undefined (#3977)
         anchorX, anchorY);
     }
 }

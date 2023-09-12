@@ -11,8 +11,11 @@ declare class ThresholdComponent extends Component {
     component?: Component;
     sync: Component['sync'];
     private undoOptions?;
+    /**
+     * @internal
+     */
+    onTableChanged(): void;
     render(): this;
-    redraw(): this;
 }
 declare namespace ThresholdComponent {
     type ComponentType = ThresholdComponent;

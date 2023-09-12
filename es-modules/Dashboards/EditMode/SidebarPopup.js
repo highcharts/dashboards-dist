@@ -19,7 +19,7 @@ import EditRenderer from './EditRenderer.js';
 import GUIElement from '../Layout/GUIElement.js';
 import Layout from '../Layout/Layout.js';
 import U from '../../Core/Utilities.js';
-const { createElement, merge } = U;
+const { addEvent, createElement, merge } = U;
 /* *
  *
  *  Class
@@ -77,7 +77,6 @@ class SidebarPopup extends BaseForm {
     removeClassNames() {
         const classNames = EditGlobals.classNames, classList = this.container.classList;
         classList.remove(classNames.editSidebarShow);
-        classList.remove(classNames.editSidebarRight);
         classList.remove(classNames.editSidebarRightShow);
     }
     /**
@@ -91,6 +90,9 @@ class SidebarPopup extends BaseForm {
         const classList = this.container.classList;
         if (isRightSidebar) {
             classList.add(EditGlobals.classNames.editSidebarRight);
+        }
+        else {
+            classList.remove(EditGlobals.classNames.editSidebarRight);
         }
         setTimeout(() => {
             classList.add(EditGlobals.classNames[isRightSidebar ? 'editSidebarRightShow' : 'editSidebarShow']);
@@ -122,7 +124,7 @@ class SidebarPopup extends BaseForm {
         // Title
         this.renderHeader(context ?
             this.editMode.lang.settings :
-            this.editMode.lang.addComponent, this.iconsURL + 'settings.svg');
+            this.editMode.lang.addComponent, '');
         if (!context) {
             this.renderAddComponentsList();
             return;
@@ -148,8 +150,12 @@ class SidebarPopup extends BaseForm {
             // Drag drop new component.
             gridElement.addEventListener('mousedown', (e) => {
                 if (sidebar.editMode.dragDrop) {
-                    sidebar.hide();
+                    const onMouseLeave = () => {
+                        sidebar.hide();
+                    };
+                    sidebar.container.addEventListener('mouseleave', onMouseLeave);
                     sidebar.editMode.dragDrop.onDragStart(e, void 0, (dropContext) => {
+                        var _a, _b;
                         // Add component if there is no layout yet.
                         if (this.editMode.board.layouts.length === 0) {
                             const board = this.editMode.board, newLayoutName = GUIElement.createElementId('layout'), layout = new Layout(board, {
@@ -166,10 +172,17 @@ class SidebarPopup extends BaseForm {
                         }
                         const newCell = components[i].onDrop(sidebar, dropContext);
                         if (newCell) {
+                            const mountedComponent = newCell.mountedComponent;
+                            // skip init connector when is not defined by
+                            // options f.e HTML component.
+                            if ((_b = (_a = mountedComponent.options) === null || _a === void 0 ? void 0 : _a.connector) === null || _b === void 0 ? void 0 : _b.id) {
+                                mountedComponent.initConnector();
+                            }
                             sidebar.editMode.setEditCellContext(newCell);
                             sidebar.show(newCell);
                             newCell.setHighlight();
                         }
+                        sidebar.container.removeEventListener('mouseleave', onMouseLeave);
                     });
                 }
             });
@@ -190,6 +203,7 @@ class SidebarPopup extends BaseForm {
                 cell: newCell.id
             });
             Bindings.addComponent(options, newCell);
+            sidebar.editMode.setEditOverlay();
             return newCell;
         }
     }
@@ -199,7 +213,6 @@ class SidebarPopup extends BaseForm {
     hide() {
         const editMode = this.editMode;
         const editCellContext = editMode.editCellContext;
-        this.closePopup();
         this.removeClassNames();
         // Remove edit overlay if active.
         if (editMode.isEditOverlayActive) {
@@ -256,6 +269,22 @@ class SidebarPopup extends BaseForm {
 }
 SidebarPopup.components = [
     {
+        text: 'HTML',
+        onDrop: function (sidebar, dropContext) {
+            if (sidebar && dropContext) {
+                return sidebar.onDropNewComponent(dropContext, {
+                    cell: '',
+                    type: 'HTML',
+                    elements: [{
+                            tagName: 'img',
+                            attributes: {
+                                src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
+                            }
+                        }]
+                });
+            }
+        }
+    }, {
         text: 'layout',
         onDrop: function (sidebar, dropContext) {
             if (!dropContext) {
@@ -293,60 +322,58 @@ SidebarPopup.components = [
         text: 'chart',
         onDrop: function (sidebar, dropContext) {
             if (sidebar && dropContext) {
-                return sidebar.onDropNewComponent(dropContext, {
+                const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+                let options = {
                     cell: '',
                     type: 'Highcharts',
                     chartOptions: {
-                        series: [
-                            {
-                                name: 'Series from options',
-                                data: [1, 2, 1, 4]
-                            }
-                        ],
                         chart: {
                             animation: false,
-                            type: 'pie'
+                            type: 'column',
+                            zooming: {}
                         }
                     }
-                });
-            }
-        }
-    }, {
-        text: 'HTML',
-        onDrop: function (sidebar, dropContext) {
-            if (sidebar && dropContext) {
-                return sidebar.onDropNewComponent(dropContext, {
-                    cell: '',
-                    type: 'HTML',
-                    elements: [{
-                            tagName: 'img',
-                            attributes: {
-                                src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
-                            }
-                        }]
-                });
+                };
+                if (connectorsIds.length) {
+                    options = Object.assign(Object.assign({}, options), { connector: {
+                            id: connectorsIds[0]
+                        } });
+                }
+                return sidebar.onDropNewComponent(dropContext, options);
             }
         }
     }, {
         text: 'datagrid',
         onDrop: function (sidebar, dropContext) {
             if (sidebar && dropContext) {
-                return sidebar.onDropNewComponent(dropContext, {
+                const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+                let options = {
                     cell: '',
                     type: 'DataGrid'
-                });
+                };
+                if (connectorsIds.length) {
+                    options = Object.assign(Object.assign({}, options), { connector: {
+                            id: connectorsIds[0]
+                        } });
+                }
+                return sidebar.onDropNewComponent(dropContext, options);
             }
         }
     }, {
         text: 'KPI',
         onDrop: function (sidebar, dropContext) {
             if (sidebar && dropContext) {
-                return sidebar.onDropNewComponent(dropContext, {
+                const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+                let options = {
                     cell: '',
-                    type: 'KPI',
-                    title: 'Example KPI',
-                    value: 70
-                });
+                    type: 'KPI'
+                };
+                if (connectorsIds.length) {
+                    options = Object.assign(Object.assign({}, options), { connector: {
+                            id: connectorsIds[0]
+                        } });
+                }
+                return sidebar.onDropNewComponent(dropContext, options);
             }
         }
     }

@@ -71,14 +71,16 @@ declare namespace EditGlobals {
         menuItem: string;
         menuVerticalSeparator: string;
         popupCloseButton: string;
+        popupCancelBtn: string;
         popupConfirmBtn: string;
+        popupButtonContainer: string;
         popupContentContainer: string;
         resizePointer: string;
         resizeSnap: string;
         resizeSnapX: string;
         resizeSnapY: string;
         resizerMenuBtnActive: string;
-        rotateElement: string;
+        collapsedElement: string;
         rowContextHighlight: string;
         separator: string;
         sidebarCloseButton: string;
@@ -124,15 +126,15 @@ declare namespace EditGlobals {
          */
         chartType: string;
         /**
-         * @default 'Connector name'
+         * @default 'Confirm'
          */
         confirmButton: string;
         /**
-         * @default 'Do you want to destroy the cell?'
+         * @default 'Do you really want to destroy the cell?'
          */
         confirmDestroyCell: string;
         /**
-         * @default 'Do you want to destroy the row?'
+         * @default 'Do you really want to destroy the row?'
          */
         confirmDestroyRow: string;
         /**
@@ -175,10 +177,6 @@ declare namespace EditGlobals {
          * @default 'Point format'
          */
         pointFormat: string;
-        /**
-         * @default 'Scale elements'
-         */
-        scaleElements: string;
         /**
          * @default 'Settings'
          */

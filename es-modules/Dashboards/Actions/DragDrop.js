@@ -156,6 +156,7 @@ class DragDrop {
     onDrag(e) {
         const dragDrop = this;
         if (dragDrop.isActive) {
+            e.preventDefault();
             dragDrop.setMockElementPosition(e);
             if (dragDrop.context) {
                 if (dragDrop.context.getType() ===

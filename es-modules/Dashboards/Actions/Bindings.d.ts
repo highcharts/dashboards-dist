@@ -9,7 +9,7 @@ declare namespace Bindings {
         component: ComponentType;
         options: Partial<Component.ComponentOptions>;
     }
-    function addComponent(options: Partial<ComponentType['options']>, cell?: Cell): (Component | undefined);
+    function addComponent(options: Partial<ComponentType['options']>, cell?: Cell): Promise<(Component | void)>;
     /** @internal */
     function componentFromJSON(json: Component.JSON, cellContainer: (HTMLElement | undefined)): (Component | undefined);
     function getCell(idOrElement: string): (Cell | undefined);

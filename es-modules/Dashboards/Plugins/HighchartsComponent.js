@@ -29,7 +29,7 @@ import DataTable from '../../Data/DataTable.js';
 import Globals from '../../Dashboards/Globals.js';
 import HighchartsSyncHandlers from './HighchartsSyncHandlers.js';
 import U from '../../Core/Utilities.js';
-const { addEvent, createElement, merge, splat, uniqueKey, error, diffObjects, defined } = U;
+const { addEvent, createElement, error, diffObjects, isString, merge, splat, uniqueKey } = U;
 /* *
  *
  *  Class
@@ -91,14 +91,13 @@ class HighchartsComponent extends Component {
         this.options = options;
         this.chartConstructor = this.options.chartConstructor;
         this.type = 'Highcharts';
-        this.chartContainer = createElement('figure', void 0, void 0, void 0, true);
+        this.chartContainer = createElement('figure', void 0, void 0, this.contentElement, true);
         this.setOptions();
         this.sync = new HighchartsComponent.Sync(this, this.syncHandlers);
         this.chartOptions = merge((this.options.chartOptions ||
             { chart: {} }), {
             tooltip: {} // Temporary fix for #18876
         });
-        this.on('tableChanged', () => this.updateSeries());
         if (this.connector) {
             // reload the store when polling
             this.connector.on('afterLoad', (e) => {
@@ -108,8 +107,9 @@ class HighchartsComponent extends Component {
             });
         }
         this.innerResizeTimeouts = [];
-        // Add the component instance to the registry
-        Component.addInstance(this);
+    }
+    onTableChanged() {
+        this.updateSeries();
     }
     /* *
      *
@@ -118,17 +118,18 @@ class HighchartsComponent extends Component {
      * */
     /** @private */
     load() {
-        this.emit({ type: 'load' });
-        super.load();
-        this.parentElement.appendChild(this.element);
-        this.contentElement.appendChild(this.chartContainer);
-        this.hasLoaded = true;
-        this.emit({ type: 'afterLoad' });
-        return this;
+        const _super = Object.create(null, {
+            load: { get: () => super.load }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            this.emit({ type: 'load' });
+            yield _super.load.call(this);
+            this.emit({ type: 'afterLoad' });
+            return this;
+        });
     }
     render() {
         const hcComponent = this;
-        hcComponent.emit({ type: 'beforeRender' });
         super.render();
         hcComponent.chart = hcComponent.getChart();
         hcComponent.updateSeries();
@@ -181,7 +182,6 @@ class HighchartsComponent extends Component {
         if (this.options.chartID) {
             this.chartContainer.id = this.options.chartID;
         }
-        this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
     }
     /**
      * Update the store, when the point is being dragged.
@@ -198,18 +198,19 @@ class HighchartsComponent extends Component {
      * The options to apply.
      *
      */
-    update(options, redraw = true) {
+    update(options, shouldRerender = true) {
         const _super = Object.create(null, {
             update: { get: () => super.update }
         });
         return __awaiter(this, void 0, void 0, function* () {
             yield _super.update.call(this, options, false);
             this.setOptions();
+            this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
             if (this.chart) {
                 this.chart.update(merge(this.options.chartOptions) || {});
             }
             this.emit({ type: 'afterUpdate' });
-            redraw && this.redraw();
+            shouldRerender && this.render();
         });
     }
     /**
@@ -226,14 +227,16 @@ class HighchartsComponent extends Component {
                 this.connector.table;
             const { id: storeTableID } = this.connector.table;
             const { chart } = this;
-            // Names/aliases that should be mapped to xAxis values
-            const columnAssignment = this.options.columnAssignment || {};
-            const xKeyMap = {};
             if (this.presentationModifier) {
                 this.presentationTable = this.presentationModifier
                     .modifyTable(this.presentationTable).modified;
             }
             const table = this.presentationTable, modifierOptions = (_a = table.getModifier()) === null || _a === void 0 ? void 0 : _a.options;
+            // Names/aliases that should be mapped to xAxis values
+            const columnNames = table.modified.getColumnNames();
+            const columnAssignment = this.options.columnAssignment ||
+                this.getDefaultColumnAssignment(columnNames);
+            const xKeyMap = {};
             this.emit({ type: 'afterPresentationModifier', table: table });
             // Remove series names that match the xKeys
             const seriesNames = table.modified.getColumnNames()
@@ -243,9 +246,6 @@ class HighchartsComponent extends Component {
                         .getSharedState()
                         .getColumnVisibility(name) !== false :
                     true;
-                if (!defined(this.options.columnAssignment)) {
-                    return true;
-                }
                 if (!isVisible || !columnAssignment[name]) {
                     return false;
                 }
@@ -302,7 +302,6 @@ class HighchartsComponent extends Component {
                 }, []);
                 series.setData(seriesData);
             });
-            /* chart.redraw(); */
         }
     }
     /**
@@ -316,6 +315,30 @@ class HighchartsComponent extends Component {
      */
     getChart() {
         return this.chart || this.createChart();
+    }
+    /**
+     * Creates default mapping when columnAssignment is not declared.
+     * @param  { Array<string>} columnNames all columns returned from dataTable.
+     *
+     * @returns
+     * The record of mapping
+     *
+     * @private
+     *
+     */
+    getDefaultColumnAssignment(columnNames = []) {
+        var _a;
+        const defaultColumnAssignment = {};
+        for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
+            defaultColumnAssignment[columnNames[i]] = 'y';
+            if (i === 0) {
+                const firstColumnValues = (_a = this.presentationTable) === null || _a === void 0 ? void 0 : _a.getColumn(columnNames[i], true);
+                if (firstColumnValues && isString(firstColumnValues[0])) {
+                    defaultColumnAssignment[columnNames[i]] = 'x';
+                }
+            }
+        }
+        return defaultColumnAssignment;
     }
     /**
      * Creates chart.
@@ -486,11 +509,20 @@ HighchartsComponent.defaultOptions = merge(Component.defaultOptions, {
      * @default true
      */
     allowConnectorUpdate: true,
+    className: [
+        Component.defaultOptions.className,
+        `${Component.defaultOptions.className}-highcharts`
+    ].join(' '),
     chartClassName: 'chart-container',
     chartID: 'chart-' + uniqueKey(),
     chartOptions: {
         chart: {
-            styledMode: true
+            styledMode: true,
+            zooming: {
+                mouseWheel: {
+                    enabled: false
+                }
+            }
         },
         series: []
     },

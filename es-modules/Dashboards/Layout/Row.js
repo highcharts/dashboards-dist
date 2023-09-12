@@ -82,31 +82,26 @@ class Row extends GUIElement {
         // Get parent container
         const parentContainer = document.getElementById(options.parentContainerId || '') ||
             layout.container;
-        if (parentContainer) {
-            const layoutOptions = (layout.options || {}), rowClassName = layoutOptions.rowClassName || '';
-            this.setElementContainer({
-                render: layout.board.guiEnabled,
-                parentContainer: parentContainer,
-                attribs: {
-                    id: options.id,
-                    className: Globals.classNames.row + ' ' +
-                        rowClassName
-                },
-                element: rowElement,
-                elementId: options.id,
-                style: merge(layoutOptions.style, options.style)
-            });
-            // Init rows from options.
-            if (this.options.cells) {
-                this.setCells();
-            }
-            // Init rows from JSON.
-            if (options.cellsJSON && !this.cells.length) {
-                this.setCellsFromJSON(options.cellsJSON);
-            }
+        const layoutOptions = (layout.options || {}), rowClassName = layoutOptions.rowClassName || '';
+        this.container = this.getElementContainer({
+            render: layout.board.guiEnabled,
+            parentContainer: parentContainer,
+            attribs: {
+                id: options.id,
+                className: Globals.classNames.row + ' ' +
+                    rowClassName
+            },
+            element: rowElement,
+            elementId: options.id,
+            style: merge(layoutOptions.style, options.style)
+        });
+        // Init rows from options.
+        if (this.options.cells) {
+            this.setCells();
         }
-        else {
-            // Error
+        // Init rows from JSON.
+        if (options.cellsJSON && !this.cells.length) {
+            this.setCellsFromJSON(options.cellsJSON);
         }
     }
     /* *
@@ -252,17 +247,6 @@ class Row extends GUIElement {
     setSize(height) {
         const cells = this.cells;
         Row.setContainerHeight(this.container, height);
-        // redraw component inside the cell
-        if (cells) {
-            /* for (let i = 0, iEnd = cells.length; i < iEnd; ++i) { */
-            /*     if (cells[i] && cells[i].mountedComponent) { */
-            /*         (cells[i] as any).mountedComponent.resize(null); */
-            /*     } */
-            /* } */
-        }
-        else {
-            // nested layouts
-        }
     }
     // Get cell index from the row.cells array.
     getCellIndex(cell) {

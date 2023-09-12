@@ -1,6 +1,6 @@
 import type Cell from '../Layout/Cell';
 import type CSSObject from '../../Core/Renderer/CSSObject';
-import type { Chart, Options, Highcharts } from '../Plugins/HighchartsTypes';
+import type { Chart, Options, Highcharts as H } from '../Plugins/HighchartsTypes';
 import type TextOptions from './TextOptions';
 import type Types from '../../Shared/Types';
 import Component from './Component.js';
@@ -10,6 +10,7 @@ import Component from './Component.js';
  *
  */
 declare class KPIComponent extends Component {
+    static syncHandlers: import("./Sync/Sync").default.OptionsRecord;
     /**
      * Creates component from JSON.
      *
@@ -26,7 +27,7 @@ declare class KPIComponent extends Component {
      */
     static fromJSON(json: KPIComponent.ClassJSON, cell: Cell): KPIComponent;
     /** @internal */
-    static charter?: typeof Highcharts;
+    static charter?: H;
     /**
      * Default options of the KPI component.
      */
@@ -34,7 +35,9 @@ declare class KPIComponent extends Component {
         type: string;
         className: string;
         minFontSize: number;
+        syncHandlers: import("./Sync/Sync").default.OptionsRecord;
         thresholdColors: string[];
+        editableOptions: import("./EditableOptions").default.Options[];
     };
     /**
      * Default options of the KPI component.
@@ -75,12 +78,6 @@ declare class KPIComponent extends Component {
      */
     private prevValue?;
     /**
-     * Flag used in resize method to avoid multi redraws.
-     *
-     * @internal
-     */
-    private updatingSize?;
-    /**
      * Creates a KPI component in the cell.
      *
      * @param cell
@@ -91,39 +88,38 @@ declare class KPIComponent extends Component {
      */
     constructor(cell: Cell, options: Partial<KPIComponent.ComponentOptions>);
     /** @internal */
-    load(): this;
+    load(): Promise<this>;
     resize(width?: number | string | null, height?: number | string | null): this;
-    /**
-     * Calculates and applies font size for the title.
-     *
-     * @param width
-     * The width to calculate the title's font size.
-     * @param height
-     * The height to calculate the title's font size.
-     *
-     * @internal
-     */
-    private updateTitleSize;
-    private getFontSize;
-    /**
-     * Updates title / subtitle font size and component dimensions.
-     *
-     * @param width
-     * The width to set the component to.
-     * @param height
-     * The height to set the component to.
-     *
-     * @internal
-     */
-    private updateSize;
     render(): this;
-    redraw(): this;
+    /**
+     * Internal method for handling option updates.
+     *
+     * @private
+     */
+    private setOptions;
     /**
      * Handles updating via options.
      * @param options
      * The options to apply.
      */
-    update(options: Partial<KPIComponent.ComponentOptions>): Promise<void>;
+    update(options: Partial<KPIComponent.ComponentOptions>, shouldRerender?: boolean): Promise<void>;
+    /**
+     * @internal
+     */
+    onTableChanged(): void;
+    /**
+     * Gets the default value that should be displayed in the KPI.
+     *
+     * @returns
+     * The value that should be displayed in the KPI.
+     */
+    private getValue;
+    /**
+     * Sets the value that should be displayed in the KPI.
+     * @param value
+     * The value to display in the KPI.
+     */
+    setValue(value?: number | string | undefined): void;
     /**
      * Handles updating elements via options
      *
@@ -195,6 +191,7 @@ declare namespace KPIComponent {
         valueFormat?: string;
     }
     interface ComponentOptions extends Component.ComponentOptions {
+        columnName: string;
         /**
          * A full set of chart options applied into KPI chart that is displayed
          * below the value.

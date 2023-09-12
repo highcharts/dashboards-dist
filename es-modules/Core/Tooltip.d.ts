@@ -45,7 +45,7 @@ declare class Tooltip {
     constructor(chart: Chart, options: TooltipOptions);
     allowShared: boolean;
     chart: Chart;
-    container: globalThis.HTMLElement;
+    container?: globalThis.HTMLElement;
     crosshairs: Array<null>;
     distance: number;
     followPointer?: boolean;

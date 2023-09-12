@@ -108,32 +108,6 @@ class RangeModifier extends DataModifier {
         modifier.emit({ type: 'afterModify', detail: eventDetail, table });
         return table;
     }
-    /**
-     * Utility function that returns the first row index
-     * if the table has been modified by a range modifier
-     *
-     * @param {DataTable} table
-     * The table to get the offset from.
-     *
-     * @return {number}
-     * The row offset of the modified table.
-     */
-    getModifiedTableOffset(table) {
-        const { ranges } = this.options;
-        if (ranges) {
-            const minRange = ranges.reduce((minRange, currentRange) => {
-                if (currentRange.minValue > minRange.minValue) {
-                    minRange = currentRange;
-                }
-                return minRange;
-            }, ranges[0]);
-            const tableRowIndex = table.getRowIndexBy(minRange.column, minRange.minValue);
-            if (tableRowIndex) {
-                return tableRowIndex;
-            }
-        }
-        return 0;
-    }
 }
 /* *
  *

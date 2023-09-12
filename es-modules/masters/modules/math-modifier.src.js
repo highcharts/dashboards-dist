@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 1.0.2 (2023-08-10)
+ * @license Highcharts Dashboards Math 1.1.0 (2023-09-12)
  * @module dashboards/modules/math-modifier
  * @requires dashboards
  *
