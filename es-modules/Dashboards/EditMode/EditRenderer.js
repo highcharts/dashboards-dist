@@ -16,7 +16,7 @@
 'use strict';
 import EditGlobals from './EditGlobals.js';
 import U from '../../Core/Utilities.js';
-const { merge, createElement } = U;
+const { merge, createElement, defined } = U;
 /* *
  *
  *  Functions
@@ -24,10 +24,10 @@ const { merge, createElement } = U;
  * */
 /**
  * Function to create a context button.
- * @intenal
+ * @internal
  *
  * @param parentElement
- * The element to which the new elemenet should be appended.
+ * The element to which the new element should be appended.
  *
  * @param editMode
  * EditMode instance.
@@ -48,6 +48,7 @@ function renderContextButton(parentNode, editMode) {
                 editMode.options.contextMenu.icon +
                 ')'
         }, parentNode);
+        ctxBtnElement.setAttribute('aria-label', editMode.lang.accessibility.contextMenu.button);
     }
     return ctxBtnElement;
 }
@@ -79,16 +80,15 @@ function renderCollapseHeader(parentElement, options) {
         renderToggle(header, {
             enabledOnOffLabels: true,
             id: name,
-            name: name,
+            name: '',
             onchange: onchange,
             value: isEnabled || false,
             lang
         });
     }
-    const headerIcon = createElement('img', {
+    const headerIcon = createElement('span', {
         className: EditGlobals.classNames.accordionHeaderIcon + ' ' +
-            EditGlobals.classNames.rotateElement,
-        src: iconsURLPrefix + 'dropdown-pointer.svg'
+            EditGlobals.classNames.collapsedElement
     }, {}, headerBtn);
     const content = createElement('div', {
         className: EditGlobals.classNames.accordionContent + ' ' +
@@ -96,7 +96,7 @@ function renderCollapseHeader(parentElement, options) {
     }, {}, accordion);
     headerBtn.addEventListener('click', function () {
         content.classList.toggle(EditGlobals.classNames.hiddenElement);
-        headerIcon.classList.toggle(EditGlobals.classNames.rotateElement);
+        headerIcon.classList.toggle(EditGlobals.classNames.collapsedElement);
     });
     return { outerElement: accordion, content: content };
 }
@@ -104,7 +104,7 @@ function renderCollapseHeader(parentElement, options) {
  * Function to create select element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended.
+ * The element to which the new element should be appended.
  *
  * @param options
  * Select form field options.
@@ -146,7 +146,7 @@ function renderSelect(parentElement, options) {
     const dropdownPointer = createElement('img', {
         className: EditGlobals.classNames.dropdownIcon +
             ' ' +
-            EditGlobals.classNames.rotateElement,
+            EditGlobals.classNames.collapsedElement,
         src: iconsURLPrefix + 'dropdown-pointer.svg'
     }, {}, btn);
     const dropdown = createElement('ul', {
@@ -156,7 +156,7 @@ function renderSelect(parentElement, options) {
     }, {}, customSelect);
     btn.addEventListener('click', function () {
         dropdown.classList.toggle(EditGlobals.classNames.hiddenElement);
-        dropdownPointer.classList.toggle(EditGlobals.classNames.rotateElement);
+        dropdownPointer.classList.toggle(EditGlobals.classNames.collapsedElement);
     });
     for (let i = 0, iEnd = options.selectOptions.length; i < iEnd; ++i) {
         renderSelectElement(merge(options.selectOptions[i] || {}, { iconsURLPrefix }), dropdown, placeholder, options.id, dropdownPointer, headerIcon, options.onchange);
@@ -179,7 +179,7 @@ function renderSelectElement(option, dropdown, placeholder, id, dropdownPointer,
     createElement('span', { textContent: option.name || '' }, {}, selectOptionBtn);
     selectOptionBtn.addEventListener('click', function () {
         dropdown.classList.add(EditGlobals.classNames.hiddenElement);
-        dropdownPointer.classList.toggle(EditGlobals.classNames.rotateElement);
+        dropdownPointer.classList.toggle(EditGlobals.classNames.collapsedElement);
         placeholder.textContent = option.name || '';
         if (headerIcon && option.iconURL) {
             headerIcon.src = iconURL;
@@ -193,7 +193,7 @@ function renderSelectElement(option, dropdown, placeholder, id, dropdownPointer,
  * Function to create toggle element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended.
+ * The element to which the new element should be appended.
  *
  * @param options
  * Form field options
@@ -205,7 +205,8 @@ function renderToggle(parentElement, options) {
     if (!parentElement) {
         return;
     }
-    const { value, title, lang } = options;
+    const { value, lang } = options;
+    const title = options.title || options.name;
     const toggleContainer = createElement('div', { className: EditGlobals.classNames.toggleContainer }, {}, parentElement);
     if (title) {
         renderText(toggleContainer, { title });
@@ -246,7 +247,7 @@ function renderToggle(parentElement, options) {
  * Function to create text element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended
+ * The element to which the new element should be appended
  *
  * @param text
  * Text to be displayed
@@ -269,7 +270,7 @@ function renderText(parentElement, options) {
  * Function to create Icon element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended.
+ * The element to which the new element should be appended.
  *
  * @param icon
  * Icon URL
@@ -308,7 +309,7 @@ function renderIcon(parentElement, options) {
  * Function to create input element.
  *
  * @param parentElement
- * the element to which the new elemenet should be appended
+ * the element to which the new element should be appended
  *
  * @param options
  * Form field options
@@ -328,8 +329,8 @@ function renderInput(parentElement, options) {
         onclick: options.callback,
         id: options.id || '',
         name: options.name || '',
-        value: (options.value && options.value.replace(/\"/g, '') ||
-            '')
+        value: ((defined(options.value) &&
+            options.value.toString().replace(/\"/g, '')) || '')
     }, {}, parentElement);
     const onchange = options.onchange;
     if (onchange) {
@@ -343,7 +344,7 @@ function renderInput(parentElement, options) {
  * Function to create textarea element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended
+ * The element to which the new element should be appended
  *
  * @param options
  * Form field options
@@ -397,7 +398,7 @@ function renderCheckbox(parentElement, checked) {
  * Function to create button element.
  *
  * @param parentElement
- * the element to which the new elemenet should be appended
+ * the element to which the new element should be appended
  *
  * @param options
  * Button field options

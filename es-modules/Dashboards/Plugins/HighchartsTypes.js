@@ -16,4 +16,4 @@
  *  Default Export
  *
  * */
-export default Highcharts;
+export default H;

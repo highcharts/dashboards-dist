@@ -1,6 +1,6 @@
-import type EditMode from './EditMode';
 import type Cell from '../Layout/Cell';
 import type ComponentType from '../Components/ComponentType';
+import type EditMode from './EditMode';
 import type Row from '../Layout/Row';
 import AccordionMenu from './AccordionMenu.js';
 import BaseForm from '../../Shared/BaseForm.js';

@@ -49,6 +49,7 @@ class CellEditToolbar extends EditToolbar {
                 icon: iconURLPrefix + 'settings.svg',
                 events: {
                     click: function (e) {
+                        this.menu.parent.editMode.setEditOverlay();
                         this.menu.parent.onCellOptions();
                     }
                 }
@@ -99,14 +100,14 @@ class CellEditToolbar extends EditToolbar {
      *
      * */
     showToolbar(cell) {
-        const toolbar = this, cellCnt = cell.container;
+        const toolbar = this, cellCnt = cell.container, toolbarWidth = 30, toolbarMargin = 10;
         let x, y;
         if (cellCnt &&
             toolbar.editMode.isActive() &&
             !(toolbar.editMode.dragDrop || {}).isActive) {
             const cellOffsets = GUIElement.getOffsets(cell, toolbar.editMode.board.container);
-            x = cellOffsets.right;
-            y = cellOffsets.top;
+            x = cellOffsets.right - toolbarWidth - toolbarMargin;
+            y = cellOffsets.top + toolbarMargin;
             // Temp - activate all items.
             objectEach(toolbar.menu.items, (item) => {
                 item.activate();
@@ -164,7 +165,7 @@ class CellEditToolbar extends EditToolbar {
 CellEditToolbar.defaultOptions = {
     enabled: true,
     className: EditGlobals.classNames.editToolbar,
-    outline: true,
+    outline: false,
     outlineClassName: EditGlobals.classNames.editToolbarCellOutline,
     menu: {
         className: EditGlobals.classNames.editToolbarCell,

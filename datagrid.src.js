@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.2 (2023-08-10)
+ * @license Highcharts Dashboards v1.1.0 (2023-09-19)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -723,7 +723,8 @@
             spacing: [10, 10, 15, 10],
             /**
              * The button that appears after a selection zoom, allowing the user
-             * to reset zoom.
+             * to reset zoom. This option is deprecated in favor of
+             * [zooming](#chart.zooming).
              *
              * @since      2.2
              * @deprecated 10.2.1
@@ -739,7 +740,6 @@
                  *         Relative to the chart
                  *
                  * @type      {Highcharts.ButtonRelativeToValue}
-                 * @default   plot
                  * @apioption chart.resetZoomButton.relativeTo
                  */
                 /**
@@ -757,10 +757,12 @@
                  * @type {Highcharts.SVGAttributes}
                  */
                 theme: {
-                    /**
-                     * @internal
-                     */
-                    zIndex: 6
+                /**
+                 * zIndex of the button.
+                 *
+                 * @type {number}
+                 * @apioption chart.resetZoomButton.theme.zIndex
+                 */
                 },
                 /**
                  * The position of the button.
@@ -775,25 +777,30 @@
                  * @type {Highcharts.AlignObject}
                  */
                 position: {
-                    /**
-                     * The horizontal alignment of the button.
-                     */
-                    align: 'right',
-                    /**
-                     * The horizontal offset of the button.
-                     */
-                    x: -10,
-                    /**
-                     * The vertical alignment of the button.
-                     *
-                     * @type      {Highcharts.VerticalAlignValue}
-                     * @default   top
-                     * @apioption chart.resetZoomButton.position.verticalAlign
-                     */
-                    /**
-                     * The vertical offset of the button.
-                     */
-                    y: 10
+                /**
+                 * The horizontal alignment of the button.
+                 *
+                 * @type {number}
+                 * @apioption chart.resetZoomButton.position.align
+                 */
+                /**
+                 * The horizontal offset of the button.
+                 *
+                 * @type {number}
+                 * @apioption chart.resetZoomButton.position.x
+                 */
+                /**
+                 * The vertical alignment of the button.
+                 *
+                 * @type      {Highcharts.VerticalAlignValue}
+                 * @apioption chart.resetZoomButton.position.verticalAlign
+                 */
+                /**
+                 * The vertical offset of the button.
+                 *
+                 * @type {number}
+                 * @apioption chart.resetZoomButton.position.y
+                 */
                 }
             },
             /**
@@ -2630,7 +2637,7 @@
              *     "#2ee0ca",
              *     "#fa4b42",
              *     "#feb56a",
-             *     "#91e8e12
+             *     "#91e8e1"
              * ]
              */
             colors: Palettes.colors,
@@ -5788,6 +5795,12 @@
                  * @internal
                  */
                 this.bottom = false;
+                /**
+                 * An array of the min column widths for which the text in headers is not
+                 * overflown.
+                 * @internal
+                 */
+                this.overflowHeaderWidths = [];
                 // Initialize containers
                 if (typeof container === 'string') {
                     const existingContainer = doc.getElementById(container);
@@ -5818,6 +5831,9 @@
                 this.draggedResizeHandle = null;
                 this.draggedColumnRightIx = null;
                 this.render();
+                (this.containerResizeObserver = new ResizeObserver(() => {
+                    this.updateGridElements();
+                })).observe(this.container);
             }
             /**
              * Update the data grid with new options.
@@ -5861,12 +5877,12 @@
                                 header.style.flex = flex;
                             }
                         }
-                        this.rowElements.forEach((row) => {
-                            const cellElement = row.children[index];
+                        for (let i = 0; i < this.rowElements.length; i++) {
+                            const cellElement = this.rowElements[i].children[index];
                             if (cellElement) {
                                 cellElement.style.flex = flex;
                             }
-                        });
+                        }
                     }
                 }
                 else {
@@ -5875,11 +5891,12 @@
                             headers.children[i].style.flex = flex;
                         }
                     }
-                    this.rowElements.forEach((row) => {
+                    for (let i = 0; i < this.rowElements.length; i++) {
+                        const row = this.rowElements[i];
                         for (let i = 0; i < row.children.length; i++) {
                             row.children[i].style.flex = flex;
                         }
-                    });
+                    }
                 }
                 this.renderColumnDragHandles();
                 this.emit({
@@ -6008,7 +6025,6 @@
                 emptyHTMLElement(this.innerContainer);
                 if (options.columnHeaders.enabled) {
                     this.columnNames = this.getColumnsToDisplay();
-                    this.outerContainer.style.top = this.options.cellHeight + 'px';
                     this.renderColumnHeaders();
                 }
                 else {
@@ -6021,6 +6037,7 @@
                 if (options.columnHeaders.enabled && options.resizableColumns) {
                     this.renderColumnDragHandles();
                 }
+                this.updateGridElements();
             }
             /**
              * Add internal event listeners to the grid.
@@ -6042,15 +6059,19 @@
              * scrolling.
              *
              * @internal
+             *
+             * @param force
+             * Whether to force the update regardless of whether the position of the
+             * first row has not been changed.
              */
-            updateVisibleCells() {
+            updateVisibleCells(force = false) {
                 let scrollTop = this.outerContainer.scrollTop;
                 if (H.isSafari) {
                     scrollTop = clamp(scrollTop, 0, (this.outerContainer.scrollHeight -
                         this.outerContainer.clientHeight));
                 }
                 let i = Math.floor(scrollTop / this.options.cellHeight);
-                if (i === this.prevTop) {
+                if (i === this.prevTop && !force) {
                     return;
                 }
                 this.prevTop = i;
@@ -6098,7 +6119,7 @@
              */
             onScroll(e) {
                 e.preventDefault();
-                window.requestAnimationFrame(this.updateVisibleCells.bind(this));
+                window.requestAnimationFrame(this.updateVisibleCells.bind(this, false));
             }
             /**
              * Handle the user starting interaction with a cell.
@@ -6318,7 +6339,7 @@
              * The column name the cell belongs to.
              */
             formatCell(cellValue, column) {
-                const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat;
+                const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat, cellFormatter = columnOptions && columnOptions.cellFormatter;
                 let formattedCell = defined(cellValue) ? cellValue : '';
                 if (cellFormat) {
                     if (typeof cellValue === 'number' &&
@@ -6331,6 +6352,9 @@
                         formattedCell =
                             Templating.format(cellFormat, { text: cellValue });
                     }
+                }
+                if (cellFormatter) {
+                    return cellFormatter.call({ value: cellValue });
                 }
                 return formattedCell.toString();
             }
@@ -6351,7 +6375,8 @@
                     className += ` ${className}-readonly`;
                 }
                 const headerEl = makeDiv(className);
-                headerEl.style.height = this.options.cellHeight + 'px';
+                headerEl.style.minHeight = this.options.cellHeight + 'px';
+                headerEl.style.maxHeight = this.options.cellHeight * 2 + 'px';
                 headerEl.textContent = this.formatHeaderCell(columnName);
                 parentEl.appendChild(headerEl);
             }
@@ -6371,6 +6396,89 @@
                     this.headerContainer.appendChild(columnHeadersContainer);
                 }
                 this.gridContainer.insertBefore(this.headerContainer, this.outerContainer);
+                this.updateColumnHeaders();
+            }
+            /**
+             * Refresh container elements to adapt them to new container dimensions.
+             * @internal
+             */
+            updateGridElements() {
+                this.updateColumnHeaders();
+                this.redrawRowElements();
+                this.updateDragHandlesPosition();
+            }
+            /**
+             * Update the column headers of the table.
+             * @internal
+             */
+            updateColumnHeaders() {
+                const headersContainer = this.columnHeadersContainer;
+                if (!headersContainer) {
+                    return;
+                }
+                // Handle overflowing text in headers.
+                for (let i = 0; i < this.columnNames.length; i++) {
+                    const columnName = this.columnNames[i], header = headersContainer.children[i], overflowWidth = this.overflowHeaderWidths[i];
+                    if (header.scrollWidth > header.clientWidth) {
+                        // Headers overlap
+                        this.overflowHeaderWidths[i] = header.scrollWidth;
+                        header.textContent = this.formatHeaderCell(columnName)
+                            .split(' ').map((word) => (word.length < 4 ? word : word.slice(0, 2) + '...')).join(' ');
+                    }
+                    else if (isNumber(overflowWidth) &&
+                        overflowWidth <= header.clientWidth) {
+                        // Headers not overlap
+                        this.overflowHeaderWidths[i] = null;
+                        header.textContent = this.formatHeaderCell(columnName);
+                    }
+                }
+                // Offset the outer container by the header row height.
+                this.outerContainer.style.top = headersContainer.clientHeight + 'px';
+                // Header columns alignment when scrollbar is shown.
+                if (headersContainer.lastChild) {
+                    headersContainer.lastChild
+                        .style.marginRight = (this.outerContainer.offsetWidth -
+                        this.outerContainer.clientWidth) + 'px';
+                }
+            }
+            /**
+             * Redraw existing row elements.
+             * @internal
+             */
+            redrawRowElements() {
+                if (!this.rowElements.length) {
+                    return;
+                }
+                const prevColumnFlexes = [], firstRowChildren = this.rowElements[0].children;
+                for (let i = 0; i < firstRowChildren.length; i++) {
+                    prevColumnFlexes.push(firstRowChildren[i].style.flex);
+                }
+                emptyHTMLElement(this.innerContainer);
+                this.renderInitialRows();
+                this.updateScrollingLength();
+                this.updateVisibleCells(true);
+                for (let i = 0; i < this.rowElements.length; i++) {
+                    const row = this.rowElements[i];
+                    for (let j = 0; j < row.childElementCount; j++) {
+                        row.children[j].style.flex =
+                            prevColumnFlexes[j];
+                    }
+                }
+            }
+            /**
+             * Update the column drag handles position.
+             * @internal
+             */
+            updateDragHandlesPosition() {
+                const headersContainer = this.columnHeadersContainer, handlesContainer = this.columnDragHandlesContainer;
+                if (!handlesContainer || !headersContainer) {
+                    return;
+                }
+                for (let i = 0; i < handlesContainer.childElementCount - 1; i++) {
+                    const handle = handlesContainer.children[i], header = headersContainer.children[i + 1];
+                    handle.style.height = headersContainer.clientHeight + 'px';
+                    handle.style.left = header.offsetLeft - 2 + 'px';
+                }
             }
             /**
              * Render initial rows before the user starts scrolling.
@@ -6534,6 +6642,7 @@
                 this.resizeColumn(rightFlexRatio, colRightIx);
                 this.draggedResizeHandle = null;
                 this.draggedColumnRightIx = null;
+                this.updateGridElements();
             }
             /**
              * Update the size of grid container.

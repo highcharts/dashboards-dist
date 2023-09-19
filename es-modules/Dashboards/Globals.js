@@ -48,6 +48,7 @@ var Globals;
         cell: Globals.classNamePrefix + 'cell',
         cellHover: Globals.classNamePrefix + 'cell-state-hover',
         cellActive: Globals.classNamePrefix + 'cell-state-active',
+        cellLoading: Globals.classNamePrefix + 'cell-state-loading',
         row: Globals.classNamePrefix + 'row',
         layoutsWrapper: Globals.classNamePrefix + 'layouts-wrapper',
         boardContainer: Globals.classNamePrefix + 'wrapper'

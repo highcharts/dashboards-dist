@@ -129,16 +129,10 @@ class Board {
         if (options.layoutsJSON && !this.layouts.length) {
             this.setLayoutsFromJSON(options.layoutsJSON);
         }
-        // Init components from options.
-        if (options.components) {
-            this.setComponents(options.components);
-        }
+        let componentPromises = (options.components) ?
+            this.setComponents(options.components) : [];
         // Init events.
         this.initEvents();
-        const componentPromises = [], mountedComponents = this.mountedComponents;
-        for (let i = 0, iEnd = mountedComponents.length; i < iEnd; ++i) {
-            componentPromises.push(mountedComponents[i].component.initConnector());
-        }
         if (async) {
             return Promise.all(componentPromises).then(() => this);
         }
@@ -149,10 +143,17 @@ class Board {
      * @internal
      */
     initEvents() {
-        const board = this;
-        addEvent(window, 'resize', function () {
+        const board = this, runReflow = () => {
             board.reflow();
-        });
+        };
+        if (typeof ResizeObserver === 'function') {
+            this.resizeObserver = new ResizeObserver(runReflow);
+            this.resizeObserver.observe(board.container);
+        }
+        else {
+            const unbind = addEvent(window, 'resize', runReflow);
+            addEvent(this, 'destroy', unbind);
+        }
     }
     /**
      * Initialize the container for the dashboard.
@@ -220,9 +221,11 @@ class Board {
      *
      */
     setComponents(components) {
+        const promises = [];
         for (let i = 0, iEnd = components.length; i < iEnd; ++i) {
-            Bindings.addComponent(components[i]);
+            promises.push(Bindings.addComponent(components[i]));
         }
+        return promises;
     }
     /**
      * Returns the current size of the layout container based on the selected
@@ -249,11 +252,14 @@ class Board {
      * Destroy the whole dashboard, its layouts and elements.
      */
     destroy() {
+        var _a;
         const board = this;
         // Destroy layouts.
         for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
             board.layouts[i].destroy();
         }
+        // Remove resizeObserver from the board
+        (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(board.container);
         // Destroy container.
         board.container.remove();
         // @ToDo Destroy bindings.
@@ -290,18 +296,24 @@ class Board {
      */
     reflow() {
         const board = this, cntSize = board.getLayoutContainerSize();
-        let layout, row, cell;
+        let layout;
         if (board.editMode) {
             board.editMode.hideToolbars(['cell', 'row']);
             board.editMode.hideContextPointer();
         }
         for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-            layout = board.layouts[i];
-            for (let j = 0, jEnd = layout.rows.length; j < jEnd; ++j) {
-                row = layout.rows[j];
-                for (let k = 0, kEnd = row.cells.length; k < kEnd; ++k) {
-                    cell = row.cells[k];
-                    cell.reflow(cntSize);
+            this.reflowLayout(board.layouts[i], cntSize);
+        }
+    }
+    reflowLayout(layout, cntSize) {
+        let row, cell;
+        for (let j = 0, jEnd = layout.rows.length; j < jEnd; ++j) {
+            row = layout.rows[j];
+            for (let k = 0, kEnd = row.cells.length; k < kEnd; ++k) {
+                cell = row.cells[k];
+                cell.reflow(cntSize);
+                if (cell.nestedLayout) {
+                    this.reflowLayout(cell.nestedLayout, cntSize);
                 }
             }
         }

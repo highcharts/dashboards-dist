@@ -33,6 +33,12 @@ declare class DataGrid {
      */
     rowElements: Array<HTMLElement>;
     /**
+     * The observer object that calls the callback when the container is
+     * resized.
+     * @internal
+     */
+    containerResizeObserver: ResizeObserver;
+    /**
      * The rendered grid.
      * @internal
      */
@@ -118,6 +124,12 @@ declare class DataGrid {
      * @internal
      */
     private bottom;
+    /**
+     * An array of the min column widths for which the text in headers is not
+     * overflown.
+     * @internal
+     */
+    private overflowHeaderWidths;
     /**
      * Creates an instance of DataGrid.
      *
@@ -237,6 +249,10 @@ declare class DataGrid {
      * scrolling.
      *
      * @internal
+     *
+     * @param force
+     * Whether to force the update regardless of whether the position of the
+     * first row has not been changed.
      */
     private updateVisibleCells;
     /**
@@ -358,6 +374,26 @@ declare class DataGrid {
      * @internal
      */
     private renderColumnHeaders;
+    /**
+     * Refresh container elements to adapt them to new container dimensions.
+     * @internal
+     */
+    private updateGridElements;
+    /**
+     * Update the column headers of the table.
+     * @internal
+     */
+    private updateColumnHeaders;
+    /**
+     * Redraw existing row elements.
+     * @internal
+     */
+    private redrawRowElements;
+    /**
+     * Update the column drag handles position.
+     * @internal
+     */
+    private updateDragHandlesPosition;
     /**
      * Render initial rows before the user starts scrolling.
      * @internal

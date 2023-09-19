@@ -36,17 +36,6 @@ declare class RangeModifier extends DataModifier {
      * Table with `modified` property as a reference.
      */
     modifyTable<T extends DataTable>(table: T, eventDetail?: DataEvent.Detail): T;
-    /**
-     * Utility function that returns the first row index
-     * if the table has been modified by a range modifier
-     *
-     * @param {DataTable} table
-     * The table to get the offset from.
-     *
-     * @return {number}
-     * The row offset of the modified table.
-     */
-    getModifiedTableOffset(table: DataTable): number;
 }
 declare module './DataModifierType' {
     interface DataModifierTypes {

@@ -375,7 +375,7 @@ declare class Pointer {
      * @private
      * @function Highcharts.Pointer#setHoverChartIndex
      */
-    setHoverChartIndex(): void;
+    setHoverChartIndex(e?: MouseEvent): void;
     /**
      * General touch handler shared by touchstart and touchmove.
      * @private

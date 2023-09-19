@@ -778,6 +778,7 @@ class Pointer {
     onContainerMouseLeave(e) {
         const chart = charts[pick(Pointer.hoverChartIndex, -1)];
         e = this.normalize(e);
+        this.onContainerMouseMove(e);
         // #4886, MS Touch end fires mouseleave but with no related target
         if (chart &&
             e.relatedTarget &&
@@ -802,7 +803,7 @@ class Pointer {
      */
     onContainerMouseMove(e) {
         const chart = this.chart, tooltip = chart.tooltip, pEvt = this.normalize(e);
-        this.setHoverChartIndex();
+        this.setHoverChartIndex(e);
         if (chart.mouseIsDown === 'mousedown' || this.touchSelect(pEvt)) {
             this.drag(pEvt);
         }
@@ -1049,7 +1050,8 @@ class Pointer {
         const transformScale = inverted ? 1 / scale : scale;
         selectionMarker[wh] = selectionWH;
         selectionMarker[xy] = selectionXY;
-        transform[scaleKey] = scale;
+        // Invert scale if needed (#19217)
+        transform[scaleKey] = scale * (inverted && !horiz ? -1 : 1);
         transform['translate' + XY] = (transformScale * plotLeftTop) +
             (touch0Now - (transformScale * touch0Start));
     }
@@ -1269,7 +1271,7 @@ class Pointer {
         const chart = this.chart;
         // Scale each series
         chart.series.forEach(function (series) {
-            const seriesAttribs = attribs || series.getPlotBox(); // #1701
+            const seriesAttribs = attribs || series.getPlotBox('series'); // #1701 and #19217
             if (series.group &&
                 ((series.xAxis && series.xAxis.zoomEnabled) ||
                     chart.mapView)) {
@@ -1327,12 +1329,12 @@ class Pointer {
      * @private
      * @function Highcharts.Pointer#setHoverChartIndex
      */
-    setHoverChartIndex() {
+    setHoverChartIndex(e) {
         const chart = this.chart;
         const hoverChart = H.charts[pick(Pointer.hoverChartIndex, -1)];
         if (hoverChart &&
             hoverChart !== chart) {
-            hoverChart.pointer.onContainerMouseLeave({ relatedTarget: chart.container });
+            hoverChart.pointer.onContainerMouseLeave(e || { relatedTarget: chart.container });
         }
         if (!hoverChart ||
             !hoverChart.mouseIsDown) {

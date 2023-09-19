@@ -55,6 +55,10 @@ declare class Cell extends GUIElement {
      */
     isHighlighted?: boolean;
     /**
+     * HTML container of a GUIElement.
+     */
+    container: HTMLElement;
+    /**
      * Create a nested layout in the cell and assign it to the nestedCell
      * property.
      * @internal
@@ -117,6 +121,12 @@ declare class Cell extends GUIElement {
     rwdMode?: string): void;
     setHighlight(remove?: boolean): void;
     setActiveState(): void;
+    /**
+     * Enables or disables the loading indicator in the cell.
+     *
+     * @internal
+     */
+    setLoadingState(enabled?: boolean): void;
     private convertWidthToValue;
 }
 declare namespace Cell {

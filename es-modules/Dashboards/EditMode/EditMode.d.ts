@@ -284,7 +284,7 @@ declare namespace EditMode {
          * The URL prefix for the icons used in the edit mode like the context
          * menu icons, the row and cell edit toolbar icons, etc.
          *
-         * @default https://code.highcharts.com/dashboards/@product.version@/gfx/dashboards-icons/
+         * @default @product.assetPrefix@/gfx/dashboards-icons/
          */
         iconsURLPrefix?: string;
         /**

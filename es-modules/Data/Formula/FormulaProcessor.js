@@ -426,10 +426,10 @@ function translateReferences(formula, columnDelta = 0, rowDelta = 0) {
     for (let i = 0, iEnd = formula.length, item; i < iEnd; ++i) {
         item = formula[i];
         if (item instanceof Array) {
-            translateReferences(item);
+            translateReferences(item, columnDelta, rowDelta);
         }
         else if (isFunction(item)) {
-            translateReferences(item.args);
+            translateReferences(item.args, columnDelta, rowDelta);
         }
         else if (isRange(item)) {
             if (item.beginColumnRelative) {

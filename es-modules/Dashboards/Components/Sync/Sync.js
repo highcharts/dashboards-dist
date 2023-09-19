@@ -98,8 +98,10 @@ class Sync {
      */
     start() {
         const { syncConfig, component } = this;
-        Object.keys(syncConfig)
-            .forEach((id) => {
+        for (const id of Object.keys(syncConfig)) {
+            if (!syncConfig[id]) {
+                continue;
+            }
             let { emitter: emitterConfig, handler: handlerConfig } = syncConfig[id];
             if (handlerConfig) {
                 // Avoid registering the same handler multiple times
@@ -144,7 +146,7 @@ class Sync {
                     emitter.create(component);
                 }
             }
-        });
+        }
         this.isSyncing = true;
         this.listeners.push(component.on('update', () => this.stop()));
     }

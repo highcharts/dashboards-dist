@@ -50,6 +50,11 @@ class ThresholdComponent extends Component {
      *  Functions
      *
      * */
+    /**
+     * @internal
+     */
+    onTableChanged() {
+    }
     render() {
         super.render();
         const { options } = this;
@@ -92,9 +97,7 @@ class ThresholdComponent extends Component {
         }
         componentOptions = merge(valueName && isNumber(options.value) ?
             { [valueName]: options.value } :
-            {}, {
-            parentElement: options.parentElement
-        }, componentOptions);
+            {}, componentOptions);
         if (this.component instanceof CurrentComponent) {
             if (this.undoOptions) {
                 if (!componentOptions.chartOptions &&
@@ -112,10 +115,6 @@ class ThresholdComponent extends Component {
             this.component = new CurrentComponent(componentOptions).render();
         }
         return this;
-    }
-    redraw() {
-        super.redraw();
-        return this.render();
     }
 }
 /* *

@@ -24,9 +24,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import CallbackRegistry from '../CallbackRegistry.js';
-import DG from '../Globals.js';
-const { classNamePrefix } = DG;
 import EditableOptions from './EditableOptions.js';
+import Globals from '../Globals.js';
+const { classNamePrefix } = Globals;
 import U from '../../Core/Utilities.js';
 const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, relativeLength, diffObjects } = U;
 import CU from './ComponentUtilities.js';
@@ -84,7 +84,7 @@ class Component {
             return createElement(tagName, {
                 className: `${classNamePrefix}component-${elementName}`,
                 textContent: textOptions
-            });
+            }, {});
         }
     }
     /* *
@@ -110,14 +110,14 @@ class Component {
          */
         this.callbackRegistry = new CallbackRegistry();
         /**
-         * Event listeners tied to the current DataTable. Used for redrawing the
+         * Event listeners tied to the current DataTable. Used for rerendering the
          * component on data changes.
          *
          * @internal
          */
         this.tableEvents = [];
         /**
-         * Event listeners tied to the parent cell. Used for redrawing/resizing the
+         * Event listeners tied to the parent cell. Used for rendering/resizing the
          * component on interactions.
          *
          * @internal
@@ -143,37 +143,47 @@ class Component {
          * */
         this.innerResizeTimeouts = [];
         this.board = cell.row.layout.board;
-        this.cell = cell;
-        // TODO: Change the TS of cell.
         this.parentElement = cell.container;
-        this.attachCellListeneres();
+        this.cell = cell;
         this.options = merge(Component.defaultOptions, options);
         this.id = this.options.id && this.options.id.length ?
             this.options.id :
             uniqueKey();
-        // Todo: we might want to handle this later
-        this.hasLoaded = false;
-        this.shouldRedraw = true;
         this.editableOptions =
             new EditableOptions(this, options.editableOptionsBindings);
         this.presentationModifier = this.options.presentationModifier;
-        // Initial dimensions
         this.dimensions = {
             width: null,
             height: null
         };
-        this.filterAndAssignSyncOptions();
         this.element = createElement('div', {
             className: this.options.className
-        });
+        }, {}, this.parentElement);
         this.contentElement = createElement('div', {
             className: `${this.options.className}-content`
         }, {
             height: '100%'
-        }, void 0, true);
+        }, this.element, true);
+        this.filterAndAssignSyncOptions();
+        this.setupEventListeners();
+        this.attachCellListeneres();
+        this.on('tableChanged', () => {
+            this.onTableChanged();
+        });
+        this.on('update', () => {
+            this.cell.setLoadingState();
+        });
+        this.on('afterRender', () => {
+            this.cell.setLoadingState(false);
+        });
     }
+    /* *
+     *
+     *  Functions
+     *
+     * */
     /**
-     * Inits connectors for the component and redraws it.
+     * Inits connectors for the component and rerenders it.
      *
      * @returns
      * Promise resolving to the component.
@@ -183,20 +193,14 @@ class Component {
         return __awaiter(this, void 0, void 0, function* () {
             if (((_a = this.options.connector) === null || _a === void 0 ? void 0 : _a.id) &&
                 this.connectorId !== this.options.connector.id) {
+                this.cell.setLoadingState();
                 const connector = yield this.board.dataPool
                     .getConnector(this.options.connector.id);
                 this.setConnector(connector);
-                this.shouldRedraw = true;
-                this.redraw();
             }
             return this;
         });
     }
-    /* *
-     *
-     *  Functions
-     *
-     * */
     /**
     * Filter the sync options that are declared in the component options.
     * Assigns the sync options to the component and to the sync instance.
@@ -206,7 +210,7 @@ class Component {
     *
     * @internal
     */
-    filterAndAssignSyncOptions(defaultHandlers = Sync.defaultHandlers) {
+    filterAndAssignSyncOptions(defaultHandlers = this.constructor.syncHandlers) {
         const sync = this.options.sync || {};
         const syncHandlers = Object.keys(sync)
             .reduce((carry, handlerName) => {
@@ -288,26 +292,26 @@ class Component {
         if (connector) {
             if (table) {
                 [
-                    'afterSetRows',
-                    'afterDeleteRows',
-                    'afterSetColumns',
                     'afterDeleteColumns',
-                    'afterSetCell'
+                    'afterDeleteRows',
+                    'afterSetCell',
+                    'afterSetConnector',
+                    'afterSetColumns',
+                    'afterSetRows'
                 ].forEach((event) => {
                     this.tableEvents.push((table)
                         .on(event, (e) => {
                         clearInterval(this.tableEventTimeout);
-                        this.tableEventTimeout = setTimeout(() => {
+                        this.tableEventTimeout = Globals.win.setTimeout(() => {
                             this.emit(Object.assign(Object.assign({}, e), { type: 'tableChanged' }));
                             this.tableEventTimeout = void 0;
                         }, 0);
                     }));
                 });
             }
-            const component = this;
             this.tableEvents.push(connector.on('afterLoad', () => {
                 this.emit({
-                    target: component,
+                    target: this,
                     type: 'tableChanged'
                 });
             }));
@@ -472,15 +476,15 @@ class Component {
      * @param newOptions
      * The options to apply.
      *
-     * @param redraw
-     * Set to true if the update should redraw the component.
+     * @param shouldRerender
+     * Set to true if the update should rerender the component.
      */
-    update(newOptions, redraw = true) {
+    update(newOptions, shouldRerender = true) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const eventObject = {
                 options: newOptions,
-                shouldForceRedraw: false
+                shouldForceRerender: false
             };
             // Update options
             fireEvent(this, 'update', eventObject);
@@ -490,88 +494,19 @@ class Component {
                 const connector = yield this.board.dataPool
                     .getConnector(this.options.connector.id);
                 this.setConnector(connector);
-                this.shouldRedraw = true;
             }
             this.options = merge(this.options, newOptions);
-            if (redraw || eventObject.shouldForceRedraw) {
-                this.redraw();
+            if (shouldRerender || eventObject.shouldForceRerender) {
+                this.render();
             }
         });
     }
     /**
-     * Adds title at the top of component's container.
-     * @param titleOptions
-     * The options for the title.
-     */
-    setTitle(titleOptions) {
-        const previousTitle = this.titleElement;
-        if (!titleOptions || typeof titleOptions === 'string' ?
-            titleOptions === '' :
-            titleOptions.text === '') {
-            if (previousTitle) {
-                previousTitle.remove();
-            }
-            return;
-        }
-        const titleElement = Component.createTextElement('h1', 'title', titleOptions);
-        if (titleElement) {
-            this.titleElement = titleElement;
-            if (previousTitle) {
-                previousTitle.replaceWith(this.titleElement);
-            }
-        }
-    }
-    /**
-     * Adds caption at the bottom of component's container.
-     *
-     * @param captionOptions
-     * The options for the caption.
-     */
-    setCaption(captionOptions) {
-        const previousCaption = this.captionElement;
-        if (!captionOptions ||
-            typeof captionOptions === 'string' ?
-            captionOptions === '' :
-            captionOptions.text === '') {
-            if (previousCaption) {
-                previousCaption.remove();
-            }
-            return;
-        }
-        const captionElement = Component.createTextElement('div', 'caption', captionOptions);
-        if (captionElement) {
-            this.captionElement = captionElement;
-            if (previousCaption) {
-                previousCaption.replaceWith(this.captionElement);
-            }
-        }
-    }
-    /**
-     * Handles setting things up on initial render.
-     *
-     * @returns
-     * The component for chaining.
+     * Private method which sets up event listeners for the component.
      *
      * @internal
      */
-    load() {
-        // Set up the connector on initial load if it has not been done
-        if (!this.hasLoaded && this.connector) {
-            this.setConnector(this.connector);
-        }
-        this.setTitle(this.options.title);
-        this.setCaption(this.options.caption);
-        [
-            this.titleElement,
-            this.contentElement,
-            this.captionElement
-        ].forEach((element) => {
-            if (element) {
-                this.element.appendChild(element);
-            }
-        });
-        // Setup event listeners
-        // Grabbed from Chart.ts
+    setupEventListeners() {
         const events = this.options.events;
         if (events) {
             Object.keys(events).forEach((key) => {
@@ -589,16 +524,81 @@ class Component {
                 }
             });
         }
-        this.on('message', (e) => {
-            if ('message' in e) {
-                this.onMessage(e.message);
-            }
-        });
-        // TODO: should cleanup this event listener
+        // TODO: Replace with a resize observer.
         window.addEventListener('resize', () => this.resizeTo(this.parentElement));
-        this.hasLoaded = true;
-        this.shouldRedraw = false;
-        return this;
+    }
+    /**
+     * Adds title at the top of component's container.
+     *
+     * @param titleOptions
+     * The options for the title.
+     */
+    setTitle(titleOptions) {
+        const titleElement = this.titleElement, shouldExist = titleOptions &&
+            (typeof titleOptions === 'string' || titleOptions.text);
+        if (shouldExist) {
+            const newTitle = Component.createTextElement('h1', 'title', titleOptions);
+            if (newTitle) {
+                if (!titleElement) {
+                    this.element.insertBefore(newTitle, this.element.firstChild);
+                }
+                else {
+                    titleElement.replaceWith(newTitle);
+                }
+                this.titleElement = newTitle;
+            }
+        }
+        else {
+            if (titleElement) {
+                titleElement.remove();
+                delete this.titleElement;
+                return;
+            }
+        }
+    }
+    /**
+     * Adds caption at the bottom of component's container.
+     *
+     * @param captionOptions
+     * The options for the caption.
+     */
+    setCaption(captionOptions) {
+        const captionElement = this.captionElement, shouldExist = captionOptions &&
+            (typeof captionOptions === 'string' || captionOptions.text);
+        if (shouldExist) {
+            const newCaption = Component.createTextElement('div', 'caption', captionOptions);
+            if (newCaption) {
+                if (!captionElement) {
+                    this.element.appendChild(newCaption);
+                }
+                else {
+                    captionElement.replaceWith(newCaption);
+                }
+                this.titleElement = newCaption;
+            }
+        }
+        else {
+            if (captionElement) {
+                captionElement.remove();
+                delete this.captionElement;
+                return;
+            }
+        }
+    }
+    /**
+     * Handles setting things up on initial render.
+     *
+     * @returns
+     * The component for chaining.
+     *
+     * @internal
+     */
+    load() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.initConnector();
+            this.render();
+            return this;
+        });
     }
     /**
      * Renders the component.
@@ -609,37 +609,18 @@ class Component {
      * @internal
      */
     render() {
-        /**
-         * TODO: make this call load on initial render
-         */
-        if (this.shouldRedraw || !this.hasLoaded) {
-            this.load();
-            // Call resize to fit to the cell.
-            this.resizeTo(this.parentElement);
-        }
+        this.emit({ type: 'render' });
+        this.resizeTo(this.parentElement);
+        this.setTitle(this.options.title);
+        this.setCaption(this.options.caption);
         return this;
-    }
-    /**
-     * Redraws the component.
-     * @returns
-     * The component for chaining.
-     */
-    redraw() {
-        // Do a redraw
-        const e = {
-            component: this
-        };
-        fireEvent(this, 'redraw', e);
-        this.shouldRedraw = true; // set to make render call load as well
-        return this.render();
     }
     /**
      * Destroys the component.
      */
     destroy() {
         /**
-         * TODO: Should perhaps also remove the component from the registry
-         * or set an `isactive` flag to false.
+         * TODO: Should perhaps set an `isActive` flag to false.
          */
         while (this.element.firstChild) {
             this.element.firstChild.remove();
@@ -647,7 +628,6 @@ class Component {
         // Unregister events
         this.tableEvents.forEach((eventCallback) => eventCallback());
         this.element.remove();
-        Component.removeInstance(this);
     }
     /** @internal */
     on(type, callback) {
@@ -659,27 +639,6 @@ class Component {
             e.target = this;
         }
         fireEvent(this, e.type, e);
-    }
-    /** @internal */
-    postMessage(message, target = {
-        type: 'componentType',
-        target: 'all'
-    }) {
-        const component = Component.getInstanceById(this.id);
-        if (component) {
-            Component.relayMessage(component, message, target);
-        }
-    }
-    /** @internal */
-    onMessage(message) {
-        if (message && typeof message === 'string') {
-            // do something
-            return;
-        }
-        if (typeof message === 'object' &&
-            typeof message.callback === 'function') {
-            message.callback.apply(this);
-        }
     }
     /**
      * Converts the class instance to a class JSON.
@@ -759,14 +718,9 @@ Component.Sync = Sync;
  */
 Component.defaultOptions = {
     className: `${classNamePrefix}component`,
-    parentElement: document.body,
     id: '',
     title: false,
     caption: false,
-    style: {
-        display: 'flex',
-        'flex-direction': 'column'
-    },
     sync: Sync.defaultHandlers,
     editableOptions: [{
             name: 'connectorName',
@@ -782,167 +736,8 @@ Component.defaultOptions = {
             type: 'input'
         }]
 };
-/* *
- *
- *  Class Namespace
- *
- * */
-(function (Component) {
-    /* *
-    *
-    *  Constants
-    *
-    * */
-    /**
-     *
-     * Record of component instances
-     *
-     */
-    /** @internal */
-    Component.instanceRegistry = {};
-    /* *
-    *
-    *  Functions
-    *
-    * */
-    /**
-     * Adds component to the registry.
-     *
-     * @internal
-     *
-     * @internal
-     * Adds a component instance to the registry.
-     * @param component
-     * The component to add.
-     * Returns the true when component was found and added properly to the
-     * registry, otherwise it is false.
-     *
-     * @internal
-     */
-    function addInstance(component) {
-        Component.instanceRegistry[component.id] = component;
-    }
-    Component.addInstance = addInstance;
-    /**
-     * Removes a component instance from the registry.
-     * @param component
-     * The component to remove.
-     *
-     * @internal
-     */
-    function removeInstance(component) {
-        delete Component.instanceRegistry[component.id];
-    }
-    Component.removeInstance = removeInstance;
-    /**
-     * Retrieves the IDs of the registered component instances.
-     * @returns
-     * Array of component IDs.
-     *
-     * @internal
-     */
-    function getAllInstanceIDs() {
-        return Object.keys(Component.instanceRegistry);
-    }
-    Component.getAllInstanceIDs = getAllInstanceIDs;
-    /**
-     * Retrieves all registered component instances.
-     * @returns
-     * Array of components.
-     *
-     * @internal
-     */
-    function getAllInstances() {
-        const ids = getAllInstanceIDs();
-        return ids.map((id) => Component.instanceRegistry[id]);
-    }
-    Component.getAllInstances = getAllInstances;
-    /**
-     * Gets instance of component from registry.
-     *
-     * @param id
-     * Component's id that exists in registry.
-     *
-     * @returns
-     * Returns the component.
-     * Gets instance of component from registry.
-     *
-     * @param id
-     * Component's id that exists in registry.
-     *
-     * @returns
-     * Returns the component type or undefined.
-     *
-     * @internal
-     */
-    function getInstanceById(id) {
-        return Component.instanceRegistry[id];
-    }
-    Component.getInstanceById = getInstanceById;
-    /**
-     * Sends a message from the given sender to the target,
-     * with an optional callback.
-     *
-     * @param sender
-     * The sender of the message. Can be a Component or a ComponentGroup.
-     *
-     * @param message
-     * The message. It can be a string, or a an object containing a
-     * `callback` function.
-     *
-     * @param targetObj
-     * An object containing the `type` of target,
-     * which can be `group`, `componentID`, or `componentType`
-     * as well as the id of the recipient.
-     *
-     * @internal
-     */
-    function relayMessage(sender, 
-    // Are there cases where a group should be the sender?
-    message, targetObj) {
-        const emit = (component) => component.emit({
-            type: 'message',
-            detail: {
-                sender: sender.id,
-                target: targetObj.target
-            },
-            message,
-            target: component
-        });
-        const handlers = {
-            'componentID': (recipient) => {
-                const component = getInstanceById(recipient);
-                if (component) {
-                    emit(component);
-                }
-            },
-            'componentType': (recipient) => {
-                getAllInstanceIDs()
-                    .forEach((instanceID) => {
-                    const component = getInstanceById(instanceID);
-                    if (component && component.id !== sender.id) {
-                        if (component.type === recipient ||
-                            recipient === 'all') {
-                            emit(component);
-                        }
-                    }
-                });
-            },
-            'group': (recipient) => {
-                // Send a message to a whole group
-                const group = ComponentGroup.getComponentGroup(recipient);
-                if (group) {
-                    group.components.forEach((id) => {
-                        const component = getInstanceById(id);
-                        if (component && component.id !== sender.id) {
-                            emit(component);
-                        }
-                    });
-                }
-            }
-        };
-        handlers[targetObj.type](targetObj.target);
-    }
-    Component.relayMessage = relayMessage;
-})(Component || (Component = {}));
+/**
+ * Default sync Handlers.
+ */
+Component.syncHandlers = {};
 export default Component;

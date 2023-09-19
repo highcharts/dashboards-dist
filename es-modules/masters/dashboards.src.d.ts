@@ -19,6 +19,7 @@ import PluginHandler from '../Dashboards/PluginHandler.js';
 import Sync from '../Dashboards/Components/Sync/Sync.js';
 import Utilities from '../Dashboards/Utilities.js';
 import '../Data/Connectors/CSVConnector.js';
+import '../Data/Connectors/JSONConnector.js';
 import '../Data/Connectors/HTMLTableConnector.js';
 import '../Data/Connectors/GoogleSheetsConnector.js';
 import '../Data/Modifiers/ChainModifier.js';

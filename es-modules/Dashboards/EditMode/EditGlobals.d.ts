@@ -71,14 +71,16 @@ declare namespace EditGlobals {
         menuItem: string;
         menuVerticalSeparator: string;
         popupCloseButton: string;
+        popupCancelBtn: string;
         popupConfirmBtn: string;
+        popupButtonContainer: string;
         popupContentContainer: string;
         resizePointer: string;
         resizeSnap: string;
         resizeSnapX: string;
         resizeSnapY: string;
         resizerMenuBtnActive: string;
-        rotateElement: string;
+        collapsedElement: string;
         rowContextHighlight: string;
         separator: string;
         sidebarCloseButton: string;
@@ -91,6 +93,10 @@ declare namespace EditGlobals {
         viewFullscreen: string;
     }
     interface LangOptions {
+        /**
+         * Accessibility language options for the dashboard.
+         */
+        accessibility: EditGlobals.LangAccessibilityOptions;
         /**
          * @default 'Add component'
          */
@@ -126,13 +132,17 @@ declare namespace EditGlobals {
         /**
          * @default 'Connector name'
          */
+        connectorName: string;
+        /**
+         * @default 'Confirm'
+         */
         confirmButton: string;
         /**
-         * @default 'Do you want to destroy the cell?'
+         * @default 'Do you really want to destroy the cell?'
          */
         confirmDestroyCell: string;
         /**
-         * @default 'Do you want to destroy the row?'
+         * @default 'Do you really want to destroy the row?'
          */
         confirmDestroyRow: string;
         /**
@@ -176,13 +186,13 @@ declare namespace EditGlobals {
          */
         pointFormat: string;
         /**
-         * @default 'Scale elements'
-         */
-        scaleElements: string;
-        /**
          * @default 'Settings'
          */
         settings: string;
+        /**
+         * @default 'Small'
+         */
+        small: string;
         /**
          * @default 'Styles'
          */
@@ -195,7 +205,16 @@ declare namespace EditGlobals {
          * @default 'View in full screen'
          */
         viewFullscreen: string;
-        [key: string]: string;
+        [key: string]: any;
+    }
+    interface LangAccessibilityOptions {
+        contextMenu: LangAccessibilityOptionsContextMenu;
+    }
+    interface LangAccessibilityOptionsContextMenu {
+        /**
+         * @default 'Context menu'
+         */
+        button: string;
     }
     type TLangKeys = 'editMode' | 'verticalSeparator';
 }

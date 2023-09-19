@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.0.2 (2023-08-10)
+ * @license Highcharts Dashboards v1.1.0 (2023-09-19)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.0.2', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -4100,6 +4100,7 @@
                 cell: Globals.classNamePrefix + 'cell',
                 cellHover: Globals.classNamePrefix + 'cell-state-hover',
                 cellActive: Globals.classNamePrefix + 'cell-state-active',
+                cellLoading: Globals.classNamePrefix + 'cell-state-loading',
                 row: Globals.classNamePrefix + 'row',
                 layoutsWrapper: Globals.classNamePrefix + 'layouts-wrapper',
                 boardContainer: Globals.classNamePrefix + 'wrapper'
@@ -4149,7 +4150,16 @@
          *  - Sophie Bremer
          *
          * */
-        const { merge, addEvent, fireEvent, error } = U;
+        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+            return new (P || (P = Promise))(function (resolve, reject) {
+                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+                step((generator = generator.apply(thisArg, _arguments || [])).next());
+            });
+        };
+        const { addEvent, fireEvent, error } = U;
         /* *
          *
          *  Namespace
@@ -4179,73 +4189,72 @@
                 return guiElement;
             }
             function addComponent(options, cell) {
-                var _a, _b, _c, _d;
-                // TODO: Check if there are states in the options, and if so, add them
-                const optionsStates = options.states;
-                const optionsEvents = options.events;
-                cell = cell || Bindings.getCell(options.cell || '');
-                if (!cell || !cell.container || !options.type) {
-                    error('The component is misconfigured and is unable to find the ' +
-                        'HTML cell element `' + options.cell + '` to render the content.');
-                    return;
-                }
-                const componentContainer = cell.container;
-                let ComponentClass = ComponentRegistry.types[options.type];
-                if (!ComponentClass) {
-                    error('The component\'s type `' + options.type + '` does not exist.');
-                    ComponentClass =
-                        ComponentRegistry.types['HTML'];
-                    options.title = {
-                        text: (_b = (_a = cell.row.layout.board) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.lang.errorMessage,
-                        className: Globals.classNamePrefix + 'component-title-error ' +
-                            Globals.classNamePrefix + 'component-title'
-                    };
-                }
-                let board = cell.row.layout.board;
-                const component = new ComponentClass(cell, options);
-                try {
-                    component.render();
-                }
-                catch (e) {
-                    component.update({
-                        title: {
-                            text: (_d = (_c = cell.row.layout.board) === null || _c === void 0 ? void 0 : _c.editMode) === null || _d === void 0 ? void 0 : _d.lang.errorMessage,
+                var _a, _b;
+                return __awaiter(this, void 0, void 0, function* () {
+                    const optionsStates = options.states;
+                    const optionsEvents = options.events;
+                    cell = cell || Bindings.getCell(options.cell || '');
+                    if (!(cell === null || cell === void 0 ? void 0 : cell.container) || !options.type) {
+                        error(`The component is misconfigured and is unable to find the
+                        HTML cell element ${options.cell} to render the content.`);
+                        return;
+                    }
+                    const componentContainer = cell.container;
+                    let ComponentClass = ComponentRegistry.types[options.type];
+                    if (!ComponentClass) {
+                        error(`The component's type ${options.type} does not exist.`);
+                        ComponentClass =
+                            ComponentRegistry.types['HTML'];
+                        options.title = {
+                            text: (_b = (_a = cell.row.layout.board) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.lang.errorMessage,
                             className: Globals.classNamePrefix + 'component-title-error ' +
                                 Globals.classNamePrefix + 'component-title'
-                        }
+                        };
+                    }
+                    const component = new ComponentClass(cell, options);
+                    const promise = component.load()['catch']((e) => {
+                        var _a, _b;
+                        // eslint-disable-next-line no-console
+                        console.error(e);
+                        component.update({
+                            connector: {
+                                id: ''
+                            },
+                            title: {
+                                text: (_b = (_a = cell === null || cell === void 0 ? void 0 : cell.row.layout.board) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.lang.errorMessage,
+                                className: Globals.classNamePrefix + 'component-title-error ' +
+                                    Globals.classNamePrefix + 'component-title'
+                            }
+                        });
                     });
-                }
-                // update cell size (when component is wider, cell should adjust)
-                // this.updateSize();
-                // add events
-                fireEvent(component, 'mount');
-                component.setCell(cell);
-                cell.mountedComponent = component;
-                cell.row.layout.board.mountedComponents.push({
-                    options: options,
-                    component: component,
-                    cell: cell
+                    fireEvent(component, 'mount');
+                    component.setCell(cell);
+                    cell.mountedComponent = component;
+                    cell.row.layout.board.mountedComponents.push({
+                        options: options,
+                        component: component,
+                        cell: cell
+                    });
+                    // events
+                    if (optionsEvents && optionsEvents.click) {
+                        addEvent(componentContainer, 'click', () => {
+                            optionsEvents.click();
+                            if (cell &&
+                                component &&
+                                componentContainer &&
+                                optionsStates &&
+                                optionsStates.active) {
+                                cell.setActiveState();
+                            }
+                        });
+                    }
+                    // states
+                    if (optionsStates === null || optionsStates === void 0 ? void 0 : optionsStates.hover) {
+                        componentContainer.classList.add(Globals.classNames.cellHover);
+                    }
+                    fireEvent(component, 'afterLoad');
+                    return promise;
                 });
-                // events
-                if (optionsEvents && optionsEvents.click) {
-                    addEvent(componentContainer, 'click', () => {
-                        optionsEvents.click();
-                        if (cell &&
-                            component &&
-                            componentContainer &&
-                            optionsStates &&
-                            optionsStates.active) {
-                            cell.setActiveState();
-                        }
-                    });
-                }
-                // states
-                if (optionsStates &&
-                    optionsStates.hover) {
-                    componentContainer.classList.add(Globals.classNames.cellHover);
-                }
-                fireEvent(component, 'afterLoad');
-                return component;
             }
             Bindings.addComponent = addComponent;
             /** @internal */
@@ -5116,29 +5125,33 @@
                 if (connector) {
                     return Promise.resolve(connector);
                 }
-                let waiting = this.waiting[name];
-                // currently loading
-                if (waiting) {
-                    return new Promise((resolve) => {
-                        waiting.push(resolve);
-                    });
-                }
-                this.waiting[name] = waiting = [];
-                const connectorOptions = this.getConnectorOptions(name);
-                if (connectorOptions) {
-                    return this
+                let waitingList = this.waiting[name];
+                // start loading
+                if (!waitingList) {
+                    waitingList = this.waiting[name] = [];
+                    const connectorOptions = this.getConnectorOptions(name);
+                    if (!connectorOptions) {
+                        throw new Error(`Connector not found. (${name})`);
+                    }
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this
                         .loadConnector(connectorOptions)
                         .then((connector) => {
                         delete this.waiting[name];
-                        window.setTimeout(() => {
-                            for (let i = 0, iEnd = waiting.length; i < iEnd; ++i) {
-                                waiting[i](connector);
-                            }
-                        }, 1);
-                        return connector;
+                        for (let i = 0, iEnd = waitingList.length; i < iEnd; ++i) {
+                            waitingList[i][0](connector);
+                        }
+                    })['catch']((error) => {
+                        delete this.waiting[name];
+                        for (let i = 0, iEnd = waitingList.length; i < iEnd; ++i) {
+                            waitingList[i][1](error);
+                        }
                     });
                 }
-                throw new Error(`Connector not found. (${name})`);
+                // add request to waiting list
+                return new Promise((resolve, reject) => {
+                    waitingList.push([resolve, reject]);
+                });
             }
             /**
              * Returns the names of all connectors.
@@ -5216,11 +5229,11 @@
                     connector
                         .load()
                         .then((connector) => {
+                        this.connectors[options.id] = connector;
                         this.emit({
                             type: 'afterLoad',
                             options
                         });
-                        this.connectors[options.id] = connector;
                         resolve(connector);
                     })['catch'](reject);
                 });
@@ -5347,7 +5360,9 @@
                 editGridItems: PREFIX + 'grid-items',
                 // Confirmation popup
                 confirmationPopup: PREFIX + 'confirmation-popup',
+                popupButtonContainer: PREFIX + 'confirmation-popup-button-container',
                 popupContentContainer: PREFIX + 'confirmation-popup-content',
+                popupCancelBtn: PREFIX + 'confirmation-popup-cancel-btn',
                 popupConfirmBtn: PREFIX + 'confirmation-popup-confirm-btn',
                 popupCloseButton: PREFIX + 'popup-close',
                 editOverlay: PREFIX + 'overlay',
@@ -5371,15 +5386,20 @@
                 hiddenElement: PREFIX + 'hidden-element',
                 collapsableContentHeader: PREFIX + 'collapsable-content-header',
                 // Custom dropdown with icons
+                collapsedElement: PREFIX + 'collapsed-element',
                 dropdown: PREFIX + 'dropdown',
                 dropdownContent: PREFIX + 'dropdown-content',
                 dropdownButton: PREFIX + 'dropdown-button',
                 dropdownButtonContent: PREFIX + 'dropdown-button-content',
                 dropdownIcon: PREFIX + 'pointer',
-                rotateElement: PREFIX + 'rotate-element',
                 icon: PREFIX + 'icon'
             },
             lang: {
+                accessibility: {
+                    contextMenu: {
+                        button: 'Context menu'
+                    }
+                },
                 addComponent: 'Add component',
                 cancelButton: 'Cancel',
                 caption: 'Caption',
@@ -5390,8 +5410,8 @@
                 chartType: 'Chart type',
                 connectorName: 'Connector name',
                 confirmButton: 'Confirm',
-                confirmDestroyCell: 'Do you want to destroy the cell?',
-                confirmDestroyRow: 'Do you want to destroy the row?',
+                confirmDestroyCell: 'Do you really want to destroy the cell?',
+                confirmDestroyRow: 'Do you really want to destroy the row?',
                 dataLabels: 'Data labels',
                 editMode: 'Edit mode',
                 errorMessage: 'Something went wrong',
@@ -5402,7 +5422,6 @@
                 off: 'off',
                 on: 'on',
                 pointFormat: 'Point format',
-                scaleElements: 'Scale elements',
                 settings: 'Settings',
                 small: 'Small',
                 style: 'Styles',
@@ -5429,7 +5448,7 @@
          *  - Sophie Bremer
          *
          * */
-        const { merge, createElement } = U;
+        const { merge, createElement, defined } = U;
         /* *
          *
          *  Functions
@@ -5437,10 +5456,10 @@
          * */
         /**
          * Function to create a context button.
-         * @intenal
+         * @internal
          *
          * @param parentElement
-         * The element to which the new elemenet should be appended.
+         * The element to which the new element should be appended.
          *
          * @param editMode
          * EditMode instance.
@@ -5461,6 +5480,7 @@
                         editMode.options.contextMenu.icon +
                         ')'
                 }, parentNode);
+                ctxBtnElement.setAttribute('aria-label', editMode.lang.accessibility.contextMenu.button);
             }
             return ctxBtnElement;
         }
@@ -5492,16 +5512,15 @@
                 renderToggle(header, {
                     enabledOnOffLabels: true,
                     id: name,
-                    name: name,
+                    name: '',
                     onchange: onchange,
                     value: isEnabled || false,
                     lang
                 });
             }
-            const headerIcon = createElement('img', {
+            const headerIcon = createElement('span', {
                 className: EditGlobals.classNames.accordionHeaderIcon + ' ' +
-                    EditGlobals.classNames.rotateElement,
-                src: iconsURLPrefix + 'dropdown-pointer.svg'
+                    EditGlobals.classNames.collapsedElement
             }, {}, headerBtn);
             const content = createElement('div', {
                 className: EditGlobals.classNames.accordionContent + ' ' +
@@ -5509,7 +5528,7 @@
             }, {}, accordion);
             headerBtn.addEventListener('click', function () {
                 content.classList.toggle(EditGlobals.classNames.hiddenElement);
-                headerIcon.classList.toggle(EditGlobals.classNames.rotateElement);
+                headerIcon.classList.toggle(EditGlobals.classNames.collapsedElement);
             });
             return { outerElement: accordion, content: content };
         }
@@ -5517,7 +5536,7 @@
          * Function to create select element.
          *
          * @param parentElement
-         * The element to which the new elemenet should be appended.
+         * The element to which the new element should be appended.
          *
          * @param options
          * Select form field options.
@@ -5559,7 +5578,7 @@
             const dropdownPointer = createElement('img', {
                 className: EditGlobals.classNames.dropdownIcon +
                     ' ' +
-                    EditGlobals.classNames.rotateElement,
+                    EditGlobals.classNames.collapsedElement,
                 src: iconsURLPrefix + 'dropdown-pointer.svg'
             }, {}, btn);
             const dropdown = createElement('ul', {
@@ -5569,7 +5588,7 @@
             }, {}, customSelect);
             btn.addEventListener('click', function () {
                 dropdown.classList.toggle(EditGlobals.classNames.hiddenElement);
-                dropdownPointer.classList.toggle(EditGlobals.classNames.rotateElement);
+                dropdownPointer.classList.toggle(EditGlobals.classNames.collapsedElement);
             });
             for (let i = 0, iEnd = options.selectOptions.length; i < iEnd; ++i) {
                 renderSelectElement(merge(options.selectOptions[i] || {}, { iconsURLPrefix }), dropdown, placeholder, options.id, dropdownPointer, headerIcon, options.onchange);
@@ -5592,7 +5611,7 @@
             createElement('span', { textContent: option.name || '' }, {}, selectOptionBtn);
             selectOptionBtn.addEventListener('click', function () {
                 dropdown.classList.add(EditGlobals.classNames.hiddenElement);
-                dropdownPointer.classList.toggle(EditGlobals.classNames.rotateElement);
+                dropdownPointer.classList.toggle(EditGlobals.classNames.collapsedElement);
                 placeholder.textContent = option.name || '';
                 if (headerIcon && option.iconURL) {
                     headerIcon.src = iconURL;
@@ -5606,7 +5625,7 @@
          * Function to create toggle element.
          *
          * @param parentElement
-         * The element to which the new elemenet should be appended.
+         * The element to which the new element should be appended.
          *
          * @param options
          * Form field options
@@ -5618,7 +5637,8 @@
             if (!parentElement) {
                 return;
             }
-            const { value, title, lang } = options;
+            const { value, lang } = options;
+            const title = options.title || options.name;
             const toggleContainer = createElement('div', { className: EditGlobals.classNames.toggleContainer }, {}, parentElement);
             if (title) {
                 renderText(toggleContainer, { title });
@@ -5659,7 +5679,7 @@
          * Function to create text element.
          *
          * @param parentElement
-         * The element to which the new elemenet should be appended
+         * The element to which the new element should be appended
          *
          * @param text
          * Text to be displayed
@@ -5682,7 +5702,7 @@
          * Function to create Icon element.
          *
          * @param parentElement
-         * The element to which the new elemenet should be appended.
+         * The element to which the new element should be appended.
          *
          * @param icon
          * Icon URL
@@ -5721,7 +5741,7 @@
          * Function to create input element.
          *
          * @param parentElement
-         * the element to which the new elemenet should be appended
+         * the element to which the new element should be appended
          *
          * @param options
          * Form field options
@@ -5741,8 +5761,8 @@
                 onclick: options.callback,
                 id: options.id || '',
                 name: options.name || '',
-                value: (options.value && options.value.replace(/\"/g, '') ||
-                    '')
+                value: ((defined(options.value) &&
+                    options.value.toString().replace(/\"/g, '')) || '')
             }, {}, parentElement);
             const onchange = options.onchange;
             if (onchange) {
@@ -5756,7 +5776,7 @@
          * Function to create textarea element.
          *
          * @param parentElement
-         * The element to which the new elemenet should be appended
+         * The element to which the new element should be appended
          *
          * @param options
          * Form field options
@@ -5810,7 +5830,7 @@
          * Function to create button element.
          *
          * @param parentElement
-         * the element to which the new elemenet should be appended
+         * the element to which the new element should be appended
          *
          * @param options
          * Button field options
@@ -6260,7 +6280,7 @@
          *  - Sophie Bremer
          *
          * */
-        const { addEvent, createElement, uniqueKey, objectEach } = U;
+        const { addEvent, createElement, uniqueKey, objectEach, error } = U;
         class GUIElement {
             /* *
             *
@@ -6320,44 +6340,37 @@
             *
             * */
             /**
-             * Create or set existing HTML element as a GUIElement container.
+             * Create or get existing HTML element as a GUIElement container.
              *
              * @param {GUIElement.ContainerOptions} options
              * Options.
              */
-            setElementContainer(options) {
+            getElementContainer(options) {
                 const guiElement = this;
-                let elem;
-                // @ToDo use try catch block
-                if (options.render && options.parentContainer) {
-                    // Purge empty id attribute.
+                let elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
+                if (options.render) {
                     if (options.attribs && !options.attribs.id) {
                         delete options.attribs.id;
                     }
-                    guiElement.container = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
                 }
-                else if (options.element instanceof HTMLElement) { // @ToDo check if this is enough
-                    guiElement.container = options.element;
+                else if (options.element instanceof HTMLElement) {
+                    elem = options.element;
                 }
                 else if (typeof options.elementId === 'string') {
-                    elem = document.getElementById(options.elementId);
-                    if (elem) {
-                        guiElement.container = elem;
+                    const div = document.getElementById(options.elementId);
+                    if (div) {
+                        guiElement.container = div;
                     }
                     else {
-                        // Error
+                        error('Element ' + options.elementId + ' does not exist');
                     }
                 }
-                else {
-                    // Error
-                }
                 // Set bindedGUIElement event on GUIElement container.
-                if (guiElement.container) {
-                    guiElement.removeBindedEventFn = addEvent(guiElement.container, 'bindedGUIElement', function (e) {
-                        e.guiElement = guiElement;
-                        e.stopImmediatePropagation();
-                    });
-                }
+                guiElement.removeBindedEventFn = addEvent(elem, 'bindedGUIElement', function (e) {
+                    e.guiElement = guiElement;
+                    e.stopImmediatePropagation();
+                });
+                return elem;
             }
             /**
              * Destroy the element, its container, event hooks
@@ -6454,6 +6467,7 @@
                         icon: iconURLPrefix + 'settings.svg',
                         events: {
                             click: function (e) {
+                                this.menu.parent.editMode.setEditOverlay();
                                 this.menu.parent.onCellOptions();
                             }
                         }
@@ -6504,14 +6518,14 @@
              *
              * */
             showToolbar(cell) {
-                const toolbar = this, cellCnt = cell.container;
+                const toolbar = this, cellCnt = cell.container, toolbarWidth = 30, toolbarMargin = 10;
                 let x, y;
                 if (cellCnt &&
                     toolbar.editMode.isActive() &&
                     !(toolbar.editMode.dragDrop || {}).isActive) {
                     const cellOffsets = GUIElement.getOffsets(cell, toolbar.editMode.board.container);
-                    x = cellOffsets.right;
-                    y = cellOffsets.top;
+                    x = cellOffsets.right - toolbarWidth - toolbarMargin;
+                    y = cellOffsets.top + toolbarMargin;
                     // Temp - activate all items.
                     objectEach(toolbar.menu.items, (item) => {
                         item.activate();
@@ -6569,7 +6583,7 @@
         CellEditToolbar.defaultOptions = {
             enabled: true,
             className: EditGlobals.classNames.editToolbar,
-            outline: true,
+            outline: false,
             outlineClassName: EditGlobals.classNames.editToolbarCellOutline,
             menu: {
                 className: EditGlobals.classNames.editToolbarCell,
@@ -6625,6 +6639,7 @@
                     icon: iconURLPrefix + 'settings.svg',
                     events: {
                         click: function (e) {
+                            this.menu.parent.editMode.setEditOverlay();
                             this.menu.parent.onRowOptions(e);
                         }
                     }
@@ -6823,6 +6838,7 @@
                 EditRenderer.renderButton(buttonContainer, {
                     text: (((_b = component.board) === null || _b === void 0 ? void 0 : _b.editMode) || EditGlobals)
                         .lang.confirmButton,
+                    className: EditGlobals.classNames.popupConfirmBtn,
                     callback: () => {
                         const changedOptions = this
                             .changedOptions;
@@ -6837,6 +6853,7 @@
                 EditRenderer.renderButton(buttonContainer, {
                     text: (((_c = component.board) === null || _c === void 0 ? void 0 : _c.editMode) || EditGlobals)
                         .lang.cancelButton,
+                    className: EditGlobals.classNames.popupCancelBtn,
                     callback: () => {
                         menu.changedOptions = {};
                         menu.chartOptionsJSON = {};
@@ -7835,50 +7852,45 @@
                 // Get parent container
                 const parentContainer = document.getElementById(options.parentContainerId || '') ||
                     row.container;
-                if (parentContainer) {
-                    const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
-                    let cellHeight;
-                    if (options.height) {
-                        if (typeof options.height === 'number') {
-                            cellHeight = options.height + 'px';
-                        }
-                        else {
-                            cellHeight = options.height;
-                        }
+                const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
+                let cellHeight;
+                if (options.height) {
+                    if (typeof options.height === 'number') {
+                        cellHeight = options.height + 'px';
                     }
-                    this.setElementContainer({
-                        render: row.layout.board.guiEnabled,
-                        parentContainer: parentContainer,
-                        attribs: {
-                            id: options.id,
-                            className: Globals.classNames.cell + ' ' +
-                                cellClassName
-                        },
-                        element: cellElement,
-                        elementId: options.id,
-                        style: merge(layoutOptions.style, rowOptions.style, options.style, {
-                            height: cellHeight
-                        })
-                    });
-                    // Set cell width respecting responsive options.
-                    this.reflow();
-                    // Mount component from JSON.
-                    if (this.options.mountedComponentJSON) {
-                        this.mountComponentFromJSON(this.options.mountedComponentJSON, this.container);
-                    }
-                    // nested layout
-                    if (this.options.layout) {
-                        this.setNestedLayout();
-                    }
-                    if (this.options.layoutJSON) {
-                        const layout = this.row.layout, board = layout.board, layoutFromJSON = layout.constructor.fromJSON;
-                        this.nestedLayout = layoutFromJSON(merge(this.options.layoutJSON, {
-                            parentContainerId: this.options.id
-                        }), board, this);
+                    else {
+                        cellHeight = options.height;
                     }
                 }
-                else {
-                    // Error
+                this.container = this.getElementContainer({
+                    render: row.layout.board.guiEnabled,
+                    parentContainer: parentContainer,
+                    attribs: {
+                        id: options.id,
+                        className: Globals.classNames.cell + ' ' +
+                            cellClassName
+                    },
+                    element: cellElement,
+                    elementId: options.id,
+                    style: merge(layoutOptions.style, rowOptions.style, options.style, {
+                        height: cellHeight
+                    })
+                });
+                // Set cell width respecting responsive options.
+                this.reflow();
+                // Mount component from JSON.
+                if (this.options.mountedComponentJSON) {
+                    this.mountComponentFromJSON(this.options.mountedComponentJSON, this.container);
+                }
+                // nested layout
+                if (this.options.layout) {
+                    this.setNestedLayout();
+                }
+                if (this.options.layoutJSON) {
+                    const layout = this.row.layout, board = layout.board, layoutFromJSON = layout.constructor.fromJSON;
+                    this.nestedLayout = layoutFromJSON(merge(this.options.layoutJSON, {
+                        parentContainerId: this.options.id
+                    }), board, this);
                 }
             }
             /* *
@@ -8129,6 +8141,15 @@
                     cell.container.classList.add(Globals.classNames.cellActive);
                 }
             }
+            /**
+             * Enables or disables the loading indicator in the cell.
+             *
+             * @internal
+             */
+            setLoadingState(enabled = true) {
+                var _a, _b;
+                (_b = (_a = this.container) === null || _a === void 0 ? void 0 : _a.classList) === null || _b === void 0 ? void 0 : _b.toggle(Globals.classNames.cellLoading, enabled);
+            }
             convertWidthToValue(width) {
                 if (typeof width === 'number') {
                     return width + 'px';
@@ -8226,31 +8247,26 @@
                 // Get parent container
                 const parentContainer = document.getElementById(options.parentContainerId || '') ||
                     layout.container;
-                if (parentContainer) {
-                    const layoutOptions = (layout.options || {}), rowClassName = layoutOptions.rowClassName || '';
-                    this.setElementContainer({
-                        render: layout.board.guiEnabled,
-                        parentContainer: parentContainer,
-                        attribs: {
-                            id: options.id,
-                            className: Globals.classNames.row + ' ' +
-                                rowClassName
-                        },
-                        element: rowElement,
-                        elementId: options.id,
-                        style: merge(layoutOptions.style, options.style)
-                    });
-                    // Init rows from options.
-                    if (this.options.cells) {
-                        this.setCells();
-                    }
-                    // Init rows from JSON.
-                    if (options.cellsJSON && !this.cells.length) {
-                        this.setCellsFromJSON(options.cellsJSON);
-                    }
+                const layoutOptions = (layout.options || {}), rowClassName = layoutOptions.rowClassName || '';
+                this.container = this.getElementContainer({
+                    render: layout.board.guiEnabled,
+                    parentContainer: parentContainer,
+                    attribs: {
+                        id: options.id,
+                        className: Globals.classNames.row + ' ' +
+                            rowClassName
+                    },
+                    element: rowElement,
+                    elementId: options.id,
+                    style: merge(layoutOptions.style, options.style)
+                });
+                // Init rows from options.
+                if (this.options.cells) {
+                    this.setCells();
                 }
-                else {
-                    // Error
+                // Init rows from JSON.
+                if (options.cellsJSON && !this.cells.length) {
+                    this.setCellsFromJSON(options.cellsJSON);
                 }
             }
             /* *
@@ -8396,17 +8412,6 @@
             setSize(height) {
                 const cells = this.cells;
                 Row.setContainerHeight(this.container, height);
-                // redraw component inside the cell
-                if (cells) {
-                    /* for (let i = 0, iEnd = cells.length; i < iEnd; ++i) { */
-                    /*     if (cells[i] && cells[i].mountedComponent) { */
-                    /*         (cells[i] as any).mountedComponent.resize(null); */
-                    /*     } */
-                    /* } */
-                }
-                else {
-                    // nested layouts
-                }
             }
             // Get cell index from the row.cells array.
             getCellIndex(cell) {
@@ -8616,33 +8621,28 @@
                     this.level = 0;
                 }
                 // GUI structure
-                if (parentContainer) {
-                    if (options.copyId) {
-                        this.copyId = options.copyId;
-                    }
-                    const layoutOptions = (this.options || {}), layoutClassName = layoutOptions.rowClassName || '';
-                    this.setElementContainer({
-                        render: board.guiEnabled,
-                        parentContainer: parentContainer,
-                        attribs: {
-                            id: options.id + (this.copyId ? '_' + this.copyId : ''),
-                            className: Globals.classNames.layout + ' ' +
-                                layoutClassName
-                        },
-                        elementId: options.id,
-                        style: this.options.style
-                    });
-                    // Init rows from options.
-                    if (this.options.rows) {
-                        this.setRows();
-                    }
-                    // Init rows from JSON.
-                    if (options.rowsJSON && !this.rows.length) {
-                        this.setRowsFromJSON(options.rowsJSON);
-                    }
+                if (options.copyId) {
+                    this.copyId = options.copyId;
                 }
-                else {
-                    // Error
+                const layoutOptions = (this.options || {}), layoutClassName = layoutOptions.rowClassName || '';
+                this.container = this.getElementContainer({
+                    render: board.guiEnabled,
+                    parentContainer: parentContainer,
+                    attribs: {
+                        id: options.id + (this.copyId ? '_' + this.copyId : ''),
+                        className: Globals.classNames.layout + ' ' +
+                            layoutClassName
+                    },
+                    elementId: options.id,
+                    style: this.options.style
+                });
+                // Init rows from options.
+                if (this.options.rows) {
+                    this.setRows();
+                }
+                // Init rows from JSON.
+                if (options.rowsJSON && !this.rows.length) {
+                    this.setRowsFromJSON(options.rowsJSON);
                 }
             }
             /* *
@@ -8839,7 +8839,7 @@
          *  Pawel Lysy
          *
          * */
-        const { createElement, merge } = U;
+        const { addEvent, createElement, merge } = U;
         /* *
          *
          *  Class
@@ -8897,7 +8897,6 @@
             removeClassNames() {
                 const classNames = EditGlobals.classNames, classList = this.container.classList;
                 classList.remove(classNames.editSidebarShow);
-                classList.remove(classNames.editSidebarRight);
                 classList.remove(classNames.editSidebarRightShow);
             }
             /**
@@ -8911,6 +8910,9 @@
                 const classList = this.container.classList;
                 if (isRightSidebar) {
                     classList.add(EditGlobals.classNames.editSidebarRight);
+                }
+                else {
+                    classList.remove(EditGlobals.classNames.editSidebarRight);
                 }
                 setTimeout(() => {
                     classList.add(EditGlobals.classNames[isRightSidebar ? 'editSidebarRightShow' : 'editSidebarShow']);
@@ -8942,7 +8944,7 @@
                 // Title
                 this.renderHeader(context ?
                     this.editMode.lang.settings :
-                    this.editMode.lang.addComponent, this.iconsURL + 'settings.svg');
+                    this.editMode.lang.addComponent, '');
                 if (!context) {
                     this.renderAddComponentsList();
                     return;
@@ -8968,8 +8970,12 @@
                     // Drag drop new component.
                     gridElement.addEventListener('mousedown', (e) => {
                         if (sidebar.editMode.dragDrop) {
-                            sidebar.hide();
+                            const onMouseLeave = () => {
+                                sidebar.hide();
+                            };
+                            sidebar.container.addEventListener('mouseleave', onMouseLeave);
                             sidebar.editMode.dragDrop.onDragStart(e, void 0, (dropContext) => {
+                                var _a, _b;
                                 // Add component if there is no layout yet.
                                 if (this.editMode.board.layouts.length === 0) {
                                     const board = this.editMode.board, newLayoutName = GUIElement.createElementId('layout'), layout = new Layout(board, {
@@ -8986,10 +8992,17 @@
                                 }
                                 const newCell = components[i].onDrop(sidebar, dropContext);
                                 if (newCell) {
+                                    const mountedComponent = newCell.mountedComponent;
+                                    // skip init connector when is not defined by
+                                    // options f.e HTML component.
+                                    if ((_b = (_a = mountedComponent.options) === null || _a === void 0 ? void 0 : _a.connector) === null || _b === void 0 ? void 0 : _b.id) {
+                                        mountedComponent.initConnector();
+                                    }
                                     sidebar.editMode.setEditCellContext(newCell);
                                     sidebar.show(newCell);
                                     newCell.setHighlight();
                                 }
+                                sidebar.container.removeEventListener('mouseleave', onMouseLeave);
                             });
                         }
                     });
@@ -9010,6 +9023,7 @@
                         cell: newCell.id
                     });
                     Bindings.addComponent(options, newCell);
+                    sidebar.editMode.setEditOverlay();
                     return newCell;
                 }
             }
@@ -9019,7 +9033,6 @@
             hide() {
                 const editMode = this.editMode;
                 const editCellContext = editMode.editCellContext;
-                this.closePopup();
                 this.removeClassNames();
                 // Remove edit overlay if active.
                 if (editMode.isEditOverlayActive) {
@@ -9076,6 +9089,22 @@
         }
         SidebarPopup.components = [
             {
+                text: 'HTML',
+                onDrop: function (sidebar, dropContext) {
+                    if (sidebar && dropContext) {
+                        return sidebar.onDropNewComponent(dropContext, {
+                            cell: '',
+                            type: 'HTML',
+                            elements: [{
+                                    tagName: 'img',
+                                    attributes: {
+                                        src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
+                                    }
+                                }]
+                        });
+                    }
+                }
+            }, {
                 text: 'layout',
                 onDrop: function (sidebar, dropContext) {
                     if (!dropContext) {
@@ -9113,60 +9142,58 @@
                 text: 'chart',
                 onDrop: function (sidebar, dropContext) {
                     if (sidebar && dropContext) {
-                        return sidebar.onDropNewComponent(dropContext, {
+                        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+                        let options = {
                             cell: '',
                             type: 'Highcharts',
                             chartOptions: {
-                                series: [
-                                    {
-                                        name: 'Series from options',
-                                        data: [1, 2, 1, 4]
-                                    }
-                                ],
                                 chart: {
                                     animation: false,
-                                    type: 'pie'
+                                    type: 'column',
+                                    zooming: {}
                                 }
                             }
-                        });
-                    }
-                }
-            }, {
-                text: 'HTML',
-                onDrop: function (sidebar, dropContext) {
-                    if (sidebar && dropContext) {
-                        return sidebar.onDropNewComponent(dropContext, {
-                            cell: '',
-                            type: 'HTML',
-                            elements: [{
-                                    tagName: 'img',
-                                    attributes: {
-                                        src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
-                                    }
-                                }]
-                        });
+                        };
+                        if (connectorsIds.length) {
+                            options = Object.assign(Object.assign({}, options), { connector: {
+                                    id: connectorsIds[0]
+                                } });
+                        }
+                        return sidebar.onDropNewComponent(dropContext, options);
                     }
                 }
             }, {
                 text: 'datagrid',
                 onDrop: function (sidebar, dropContext) {
                     if (sidebar && dropContext) {
-                        return sidebar.onDropNewComponent(dropContext, {
+                        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+                        let options = {
                             cell: '',
                             type: 'DataGrid'
-                        });
+                        };
+                        if (connectorsIds.length) {
+                            options = Object.assign(Object.assign({}, options), { connector: {
+                                    id: connectorsIds[0]
+                                } });
+                        }
+                        return sidebar.onDropNewComponent(dropContext, options);
                     }
                 }
             }, {
                 text: 'KPI',
                 onDrop: function (sidebar, dropContext) {
                     if (sidebar && dropContext) {
-                        return sidebar.onDropNewComponent(dropContext, {
+                        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+                        let options = {
                             cell: '',
-                            type: 'KPI',
-                            title: 'Example KPI',
-                            value: 70
-                        });
+                            type: 'KPI'
+                        };
+                        if (connectorsIds.length) {
+                            options = Object.assign(Object.assign({}, options), { connector: {
+                                    id: connectorsIds[0]
+                                } });
+                        }
+                        return sidebar.onDropNewComponent(dropContext, options);
                     }
                 }
             }
@@ -9246,10 +9273,6 @@
                         this.isVisible) {
                         this.setVisible(false);
                     }
-                });
-                // Hide the context menu on window resize.
-                addEvent(window, 'resize', (event) => {
-                    contextMenu.setVisible(false);
                 });
             }
             setVisible(visible) {
@@ -9565,6 +9588,7 @@
             onDrag(e) {
                 const dragDrop = this;
                 if (dragDrop.isActive) {
+                    e.preventDefault();
                     dragDrop.setMockElementPosition(e);
                     if (dragDrop.context) {
                         if (dragDrop.context.getType() ===
@@ -9928,7 +9952,7 @@
                 this.isActive = false;
                 this.startX = 0;
                 this.tempSiblingsWidth = [];
-                this.addSnaps(this.options);
+                this.addSnaps();
             }
             /* *
              *
@@ -9938,29 +9962,33 @@
             /**
              * Add Snap - create snaps and add events.
              *
-             * @param {Resizer.Options} options
-             * Reference to options of snaps
-             *
              */
-            addSnaps(options) {
-                const minWidth = options.styles.minWidth;
-                const minHeight = options.styles.minHeight;
+            addSnaps() {
+                const iconsURLPrefix = this.editMode.iconsURLPrefix;
                 const snapWidth = this.options.snap.width || 0;
                 const snapHeight = this.options.snap.height || 0;
                 const dashboardContainer = this.editMode.board.container;
                 // Right snap
-                this.snapRight = createElement('div', {
+                this.snapRight = createElement('img', {
                     className: EditGlobals.classNames.resizeSnap + ' ' +
-                        EditGlobals.classNames.resizeSnapX
+                        EditGlobals.classNames.resizeSnapX,
+                    // src: iconsURLPrefix + 'resize-handle.svg'
+                    // eslint-disable-next-line max-len
+                    src: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@b2d3673cfd596a9615e57233914836c78544884c/gfx/dashboards-icons/resize-handle.svg'
                 }, {
                     width: snapWidth + 'px',
+                    height: snapHeight + 'px',
                     left: -9999 + 'px'
                 }, dashboardContainer);
                 // Bottom snap
-                this.snapBottom = createElement('div', {
+                this.snapBottom = createElement('img', {
                     className: EditGlobals.classNames.resizeSnap + ' ' +
-                        EditGlobals.classNames.resizeSnapY
+                        EditGlobals.classNames.resizeSnapY,
+                    // src: iconsURLPrefix + 'resize-handle.svg'
+                    // eslint-disable-next-line max-len
+                    src: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@b2d3673cfd596a9615e57233914836c78544884c/gfx/dashboards-icons/resize-handle.svg'
                 }, {
+                    width: snapWidth + 'px',
                     height: snapHeight + 'px',
                     top: -9999 + 'px',
                     left: '0px'
@@ -10109,12 +10137,19 @@
                 //         addEvent(rowContainer, 'touchend', mouseUpSnap);
                 //     }
                 // }
-                // Update snaps, when resize the window
-                addEvent(window, 'resize', () => {
+                const runReflow = () => {
                     if (resizer.currentCell) {
                         resizer.setSnapPositions(resizer.currentCell);
                     }
-                });
+                };
+                if (typeof ResizeObserver === 'function') {
+                    this.resizeObserver = new ResizeObserver(runReflow);
+                    this.resizeObserver.observe(resizer.editMode.board.container);
+                }
+                else {
+                    const unbind = addEvent(window, 'resize', runReflow);
+                    addEvent(this, 'destroy', unbind);
+                }
             }
             /**
              * General method used on resizing.
@@ -10164,11 +10199,13 @@
              * Destroy resizer
              */
             destroy() {
+                var _a;
                 const snaps = ['snapRight', 'snapBottom'];
                 let snap;
                 // Unbind events
                 removeEvent(document, 'mousemove');
                 removeEvent(document, 'mouseup');
+                (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.editMode.board.container);
                 for (let i = 0, iEnd = snaps.length; i < iEnd; ++i) {
                     snap = this[snaps[i]];
                     // Unbind event
@@ -10211,8 +10248,8 @@
             },
             type: 'xy',
             snap: {
-                width: 20,
-                height: 20
+                width: 9,
+                height: 17
             }
         };
 
@@ -10265,6 +10302,10 @@
              * Options for confirmation popup.
              */
             constructor(parentDiv, iconsURL, editMode, options) {
+                iconsURL =
+                    options && options.close && options.close.icon ?
+                        options.close.icon :
+                        iconsURL;
                 super(parentDiv, iconsURL);
                 this.editMode = editMode;
                 this.options = options;
@@ -10314,13 +10355,18 @@
                 EditRenderer.renderText(this.contentContainer, {
                     title: options.text || ''
                 });
+                // Render button wrapper
+                this.buttonContainer = createElement('div', {
+                    className: EditGlobals.classNames.popupButtonContainer
+                }, {}, this.container);
                 // Render cancel buttons
-                EditRenderer.renderButton(this.contentContainer, {
+                EditRenderer.renderButton(this.buttonContainer, {
                     text: options.cancelButton.value,
+                    className: EditGlobals.classNames.popupCancelBtn,
                     callback: options.cancelButton.callback
                 });
                 // Confirm
-                EditRenderer.renderButton(this.contentContainer, {
+                EditRenderer.renderButton(this.buttonContainer, {
                     text: options.confirmButton.value,
                     className: EditGlobals.classNames.popupConfirmBtn,
                     callback: () => {
@@ -10405,7 +10451,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.0.2/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -10921,6 +10967,10 @@
              */
             stopContextDetection() {
                 this.isContextDetectionActive = false;
+                if (this.dragDrop) {
+                    this.dragDrop.mouseCellContext = void 0;
+                }
+                this.mouseCellContext = void 0;
                 this.hideContextPointer();
             }
             /**
@@ -11901,8 +11951,10 @@
              */
             start() {
                 const { syncConfig, component } = this;
-                Object.keys(syncConfig)
-                    .forEach((id) => {
+                for (const id of Object.keys(syncConfig)) {
+                    if (!syncConfig[id]) {
+                        continue;
+                    }
                     let { emitter: emitterConfig, handler: handlerConfig } = syncConfig[id];
                     if (handlerConfig) {
                         // Avoid registering the same handler multiple times
@@ -11947,7 +11999,7 @@
                             emitter.create(component);
                         }
                     }
-                });
+                }
                 this.isSyncing = true;
                 this.listeners.push(component.on('update', () => this.stop()));
             }
@@ -11988,7 +12040,7 @@
 
         return Sync;
     });
-    _registerModule(_modules, 'Dashboards/Components/Component.js', [_modules['Dashboards/CallbackRegistry.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/EditableOptions.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/ComponentUtilities.js'], _modules['Dashboards/Components/ComponentGroup.js'], _modules['Dashboards/Utilities.js'], _modules['Dashboards/Components/Sync/Sync.js']], function (CallbackRegistry, DG, EditableOptions, U, CU, ComponentGroup, DU, Sync) {
+    _registerModule(_modules, 'Dashboards/Components/Component.js', [_modules['Dashboards/CallbackRegistry.js'], _modules['Dashboards/Components/EditableOptions.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/ComponentUtilities.js'], _modules['Dashboards/Components/ComponentGroup.js'], _modules['Dashboards/Utilities.js'], _modules['Dashboards/Components/Sync/Sync.js']], function (CallbackRegistry, EditableOptions, Globals, U, CU, ComponentGroup, DU, Sync) {
         /* *
          *
          *  (c) 2009 - 2023 Highsoft AS
@@ -12013,7 +12065,7 @@
                 step((generator = generator.apply(thisArg, _arguments || [])).next());
             });
         };
-        const { classNamePrefix } = DG;
+        const { classNamePrefix } = Globals;
         const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, relativeLength, diffObjects } = U;
         const { getMargins, getPaddings } = CU;
         const { uniqueKey } = DU;
@@ -12066,7 +12118,7 @@
                     return createElement(tagName, {
                         className: `${classNamePrefix}component-${elementName}`,
                         textContent: textOptions
-                    });
+                    }, {});
                 }
             }
             /* *
@@ -12092,14 +12144,14 @@
                  */
                 this.callbackRegistry = new CallbackRegistry();
                 /**
-                 * Event listeners tied to the current DataTable. Used for redrawing the
+                 * Event listeners tied to the current DataTable. Used for rerendering the
                  * component on data changes.
                  *
                  * @internal
                  */
                 this.tableEvents = [];
                 /**
-                 * Event listeners tied to the parent cell. Used for redrawing/resizing the
+                 * Event listeners tied to the parent cell. Used for rendering/resizing the
                  * component on interactions.
                  *
                  * @internal
@@ -12125,37 +12177,47 @@
                  * */
                 this.innerResizeTimeouts = [];
                 this.board = cell.row.layout.board;
-                this.cell = cell;
-                // TODO: Change the TS of cell.
                 this.parentElement = cell.container;
-                this.attachCellListeneres();
+                this.cell = cell;
                 this.options = merge(Component.defaultOptions, options);
                 this.id = this.options.id && this.options.id.length ?
                     this.options.id :
                     uniqueKey();
-                // Todo: we might want to handle this later
-                this.hasLoaded = false;
-                this.shouldRedraw = true;
                 this.editableOptions =
                     new EditableOptions(this, options.editableOptionsBindings);
                 this.presentationModifier = this.options.presentationModifier;
-                // Initial dimensions
                 this.dimensions = {
                     width: null,
                     height: null
                 };
-                this.filterAndAssignSyncOptions();
                 this.element = createElement('div', {
                     className: this.options.className
-                });
+                }, {}, this.parentElement);
                 this.contentElement = createElement('div', {
                     className: `${this.options.className}-content`
                 }, {
                     height: '100%'
-                }, void 0, true);
+                }, this.element, true);
+                this.filterAndAssignSyncOptions();
+                this.setupEventListeners();
+                this.attachCellListeneres();
+                this.on('tableChanged', () => {
+                    this.onTableChanged();
+                });
+                this.on('update', () => {
+                    this.cell.setLoadingState();
+                });
+                this.on('afterRender', () => {
+                    this.cell.setLoadingState(false);
+                });
             }
+            /* *
+             *
+             *  Functions
+             *
+             * */
             /**
-             * Inits connectors for the component and redraws it.
+             * Inits connectors for the component and rerenders it.
              *
              * @returns
              * Promise resolving to the component.
@@ -12165,20 +12227,14 @@
                 return __awaiter(this, void 0, void 0, function* () {
                     if (((_a = this.options.connector) === null || _a === void 0 ? void 0 : _a.id) &&
                         this.connectorId !== this.options.connector.id) {
+                        this.cell.setLoadingState();
                         const connector = yield this.board.dataPool
                             .getConnector(this.options.connector.id);
                         this.setConnector(connector);
-                        this.shouldRedraw = true;
-                        this.redraw();
                     }
                     return this;
                 });
             }
-            /* *
-             *
-             *  Functions
-             *
-             * */
             /**
             * Filter the sync options that are declared in the component options.
             * Assigns the sync options to the component and to the sync instance.
@@ -12188,7 +12244,7 @@
             *
             * @internal
             */
-            filterAndAssignSyncOptions(defaultHandlers = Sync.defaultHandlers) {
+            filterAndAssignSyncOptions(defaultHandlers = this.constructor.syncHandlers) {
                 const sync = this.options.sync || {};
                 const syncHandlers = Object.keys(sync)
                     .reduce((carry, handlerName) => {
@@ -12270,26 +12326,26 @@
                 if (connector) {
                     if (table) {
                         [
-                            'afterSetRows',
-                            'afterDeleteRows',
-                            'afterSetColumns',
                             'afterDeleteColumns',
-                            'afterSetCell'
+                            'afterDeleteRows',
+                            'afterSetCell',
+                            'afterSetConnector',
+                            'afterSetColumns',
+                            'afterSetRows'
                         ].forEach((event) => {
                             this.tableEvents.push((table)
                                 .on(event, (e) => {
                                 clearInterval(this.tableEventTimeout);
-                                this.tableEventTimeout = setTimeout(() => {
+                                this.tableEventTimeout = Globals.win.setTimeout(() => {
                                     this.emit(Object.assign(Object.assign({}, e), { type: 'tableChanged' }));
                                     this.tableEventTimeout = void 0;
                                 }, 0);
                             }));
                         });
                     }
-                    const component = this;
                     this.tableEvents.push(connector.on('afterLoad', () => {
                         this.emit({
-                            target: component,
+                            target: this,
                             type: 'tableChanged'
                         });
                     }));
@@ -12454,15 +12510,15 @@
              * @param newOptions
              * The options to apply.
              *
-             * @param redraw
-             * Set to true if the update should redraw the component.
+             * @param shouldRerender
+             * Set to true if the update should rerender the component.
              */
-            update(newOptions, redraw = true) {
+            update(newOptions, shouldRerender = true) {
                 var _a;
                 return __awaiter(this, void 0, void 0, function* () {
                     const eventObject = {
                         options: newOptions,
-                        shouldForceRedraw: false
+                        shouldForceRerender: false
                     };
                     // Update options
                     fireEvent(this, 'update', eventObject);
@@ -12472,88 +12528,19 @@
                         const connector = yield this.board.dataPool
                             .getConnector(this.options.connector.id);
                         this.setConnector(connector);
-                        this.shouldRedraw = true;
                     }
                     this.options = merge(this.options, newOptions);
-                    if (redraw || eventObject.shouldForceRedraw) {
-                        this.redraw();
+                    if (shouldRerender || eventObject.shouldForceRerender) {
+                        this.render();
                     }
                 });
             }
             /**
-             * Adds title at the top of component's container.
-             * @param titleOptions
-             * The options for the title.
-             */
-            setTitle(titleOptions) {
-                const previousTitle = this.titleElement;
-                if (!titleOptions || typeof titleOptions === 'string' ?
-                    titleOptions === '' :
-                    titleOptions.text === '') {
-                    if (previousTitle) {
-                        previousTitle.remove();
-                    }
-                    return;
-                }
-                const titleElement = Component.createTextElement('h1', 'title', titleOptions);
-                if (titleElement) {
-                    this.titleElement = titleElement;
-                    if (previousTitle) {
-                        previousTitle.replaceWith(this.titleElement);
-                    }
-                }
-            }
-            /**
-             * Adds caption at the bottom of component's container.
-             *
-             * @param captionOptions
-             * The options for the caption.
-             */
-            setCaption(captionOptions) {
-                const previousCaption = this.captionElement;
-                if (!captionOptions ||
-                    typeof captionOptions === 'string' ?
-                    captionOptions === '' :
-                    captionOptions.text === '') {
-                    if (previousCaption) {
-                        previousCaption.remove();
-                    }
-                    return;
-                }
-                const captionElement = Component.createTextElement('div', 'caption', captionOptions);
-                if (captionElement) {
-                    this.captionElement = captionElement;
-                    if (previousCaption) {
-                        previousCaption.replaceWith(this.captionElement);
-                    }
-                }
-            }
-            /**
-             * Handles setting things up on initial render.
-             *
-             * @returns
-             * The component for chaining.
+             * Private method which sets up event listeners for the component.
              *
              * @internal
              */
-            load() {
-                // Set up the connector on initial load if it has not been done
-                if (!this.hasLoaded && this.connector) {
-                    this.setConnector(this.connector);
-                }
-                this.setTitle(this.options.title);
-                this.setCaption(this.options.caption);
-                [
-                    this.titleElement,
-                    this.contentElement,
-                    this.captionElement
-                ].forEach((element) => {
-                    if (element) {
-                        this.element.appendChild(element);
-                    }
-                });
-                // Setup event listeners
-                // Grabbed from Chart.ts
+            setupEventListeners() {
                 const events = this.options.events;
                 if (events) {
                     Object.keys(events).forEach((key) => {
@@ -12571,16 +12558,81 @@
                         }
                     });
                 }
-                this.on('message', (e) => {
-                    if ('message' in e) {
-                        this.onMessage(e.message);
-                    }
-                });
-                // TODO: should cleanup this event listener
+                // TODO: Replace with a resize observer.
                 window.addEventListener('resize', () => this.resizeTo(this.parentElement));
-                this.hasLoaded = true;
-                this.shouldRedraw = false;
-                return this;
+            }
+            /**
+             * Adds title at the top of component's container.
+             *
+             * @param titleOptions
+             * The options for the title.
+             */
+            setTitle(titleOptions) {
+                const titleElement = this.titleElement, shouldExist = titleOptions &&
+                    (typeof titleOptions === 'string' || titleOptions.text);
+                if (shouldExist) {
+                    const newTitle = Component.createTextElement('h1', 'title', titleOptions);
+                    if (newTitle) {
+                        if (!titleElement) {
+                            this.element.insertBefore(newTitle, this.element.firstChild);
+                        }
+                        else {
+                            titleElement.replaceWith(newTitle);
+                        }
+                        this.titleElement = newTitle;
+                    }
+                }
+                else {
+                    if (titleElement) {
+                        titleElement.remove();
+                        delete this.titleElement;
+                        return;
+                    }
+                }
+            }
+            /**
+             * Adds caption at the bottom of component's container.
+             *
+             * @param captionOptions
+             * The options for the caption.
+             */
+            setCaption(captionOptions) {
+                const captionElement = this.captionElement, shouldExist = captionOptions &&
+                    (typeof captionOptions === 'string' || captionOptions.text);
+                if (shouldExist) {
+                    const newCaption = Component.createTextElement('div', 'caption', captionOptions);
+                    if (newCaption) {
+                        if (!captionElement) {
+                            this.element.appendChild(newCaption);
+                        }
+                        else {
+                            captionElement.replaceWith(newCaption);
+                        }
+                        this.titleElement = newCaption;
+                    }
+                }
+                else {
+                    if (captionElement) {
+                        captionElement.remove();
+                        delete this.captionElement;
+                        return;
+                    }
+                }
+            }
+            /**
+             * Handles setting things up on initial render.
+             *
+             * @returns
+             * The component for chaining.
+             *
+             * @internal
+             */
+            load() {
+                return __awaiter(this, void 0, void 0, function* () {
+                    yield this.initConnector();
+                    this.render();
+                    return this;
+                });
             }
             /**
              * Renders the component.
@@ -12591,37 +12643,18 @@
              * @internal
              */
             render() {
-                /**
-                 * TODO: make this call load on initial render
-                 */
-                if (this.shouldRedraw || !this.hasLoaded) {
-                    this.load();
-                    // Call resize to fit to the cell.
-                    this.resizeTo(this.parentElement);
-                }
+                this.emit({ type: 'render' });
+                this.resizeTo(this.parentElement);
+                this.setTitle(this.options.title);
+                this.setCaption(this.options.caption);
                 return this;
-            }
-            /**
-             * Redraws the component.
-             * @returns
-             * The component for chaining.
-             */
-            redraw() {
-                // Do a redraw
-                const e = {
-                    component: this
-                };
-                fireEvent(this, 'redraw', e);
-                this.shouldRedraw = true; // set to make render call load as well
-                return this.render();
             }
             /**
              * Destroys the component.
              */
             destroy() {
                 /**
-                 * TODO: Should perhaps also remove the component from the registry
-                 * or set an `isactive` flag to false.
+                 * TODO: Should perhaps set an `isActive` flag to false.
                  */
                 while (this.element.firstChild) {
                     this.element.firstChild.remove();
@@ -12629,7 +12662,6 @@
                 // Unregister events
                 this.tableEvents.forEach((eventCallback) => eventCallback());
                 this.element.remove();
-                Component.removeInstance(this);
             }
             /** @internal */
             on(type, callback) {
@@ -12641,27 +12673,6 @@
                     e.target = this;
                 }
                 fireEvent(this, e.type, e);
-            }
-            /** @internal */
-            postMessage(message, target = {
-                type: 'componentType',
-                target: 'all'
-            }) {
-                const component = Component.getInstanceById(this.id);
-                if (component) {
-                    Component.relayMessage(component, message, target);
-                }
-            }
-            /** @internal */
-            onMessage(message) {
-                if (message && typeof message === 'string') {
-                    // do something
-                    return;
-                }
-                if (typeof message === 'object' &&
-                    typeof message.callback === 'function') {
-                    message.callback.apply(this);
-                }
             }
             /**
              * Converts the class instance to a class JSON.
@@ -12741,14 +12752,9 @@
          */
         Component.defaultOptions = {
             className: `${classNamePrefix}component`,
-            parentElement: document.body,
             id: '',
             title: false,
             caption: false,
-            style: {
-                display: 'flex',
-                'flex-direction': 'column'
-            },
             sync: Sync.defaultHandlers,
             editableOptions: [{
                     name: 'connectorName',
@@ -12764,169 +12770,10 @@
                     type: 'input'
                 }]
         };
-        /* *
-         *
-         *  Class Namespace
-         *
-         * */
-        (function (Component) {
-            /* *
-            *
-            *  Constants
-            *
-            * */
-            /**
-             *
-             * Record of component instances
-             *
-             */
-            /** @internal */
-            Component.instanceRegistry = {};
-            /* *
-            *
-            *  Functions
-            *
-            * */
-            /**
-             * Adds component to the registry.
-             *
-             * @internal
-             *
-             * @internal
-             * Adds a component instance to the registry.
-             * @param component
-             * The component to add.
-             * Returns the true when component was found and added properly to the
-             * registry, otherwise it is false.
-             *
-             * @internal
-             */
-            function addInstance(component) {
-                Component.instanceRegistry[component.id] = component;
-            }
-            Component.addInstance = addInstance;
-            /**
-             * Removes a component instance from the registry.
-             * @param component
-             * The component to remove.
-             *
-             * @internal
-             */
-            function removeInstance(component) {
-                delete Component.instanceRegistry[component.id];
-            }
-            Component.removeInstance = removeInstance;
-            /**
-             * Retrieves the IDs of the registered component instances.
-             * @returns
-             * Array of component IDs.
-             *
-             * @internal
-             */
-            function getAllInstanceIDs() {
-                return Object.keys(Component.instanceRegistry);
-            }
-            Component.getAllInstanceIDs = getAllInstanceIDs;
-            /**
-             * Retrieves all registered component instances.
-             * @returns
-             * Array of components.
-             *
-             * @internal
-             */
-            function getAllInstances() {
-                const ids = getAllInstanceIDs();
-                return ids.map((id) => Component.instanceRegistry[id]);
-            }
-            Component.getAllInstances = getAllInstances;
-            /**
-             * Gets instance of component from registry.
-             *
-             * @param id
-             * Component's id that exists in registry.
-             *
-             * @returns
-             * Returns the component.
-             * Gets instance of component from registry.
-             *
-             * @param id
-             * Component's id that exists in registry.
-             *
-             * @returns
-             * Returns the component type or undefined.
-             *
-             * @internal
-             */
-            function getInstanceById(id) {
-                return Component.instanceRegistry[id];
-            }
-            Component.getInstanceById = getInstanceById;
-            /**
-             * Sends a message from the given sender to the target,
-             * with an optional callback.
-             *
-             * @param sender
-             * The sender of the message. Can be a Component or a ComponentGroup.
-             *
-             * @param message
-             * The message. It can be a string, or a an object containing a
-             * `callback` function.
-             *
-             * @param targetObj
-             * An object containing the `type` of target,
-             * which can be `group`, `componentID`, or `componentType`
-             * as well as the id of the recipient.
-             *
-             * @internal
-             */
-            function relayMessage(sender, 
-            // Are there cases where a group should be the sender?
-            message, targetObj) {
-                const emit = (component) => component.emit({
-                    type: 'message',
-                    detail: {
-                        sender: sender.id,
-                        target: targetObj.target
-                    },
-                    message,
-                    target: component
-                });
-                const handlers = {
-                    'componentID': (recipient) => {
-                        const component = getInstanceById(recipient);
-                        if (component) {
-                            emit(component);
-                        }
-                    },
-                    'componentType': (recipient) => {
-                        getAllInstanceIDs()
-                            .forEach((instanceID) => {
-                            const component = getInstanceById(instanceID);
-                            if (component && component.id !== sender.id) {
-                                if (component.type === recipient ||
-                                    recipient === 'all') {
-                                    emit(component);
-                                }
-                            }
-                        });
-                    },
-                    'group': (recipient) => {
-                        // Send a message to a whole group
-                        const group = ComponentGroup.getComponentGroup(recipient);
-                        if (group) {
-                            group.components.forEach((id) => {
-                                const component = getInstanceById(id);
-                                if (component && component.id !== sender.id) {
-                                    emit(component);
-                                }
-                            });
-                        }
-                    }
-                };
-                handlers[targetObj.type](targetObj.target);
-            }
-            Component.relayMessage = relayMessage;
-        })(Component || (Component = {}));
+        /**
+         * Default sync Handlers.
+         */
+        Component.syncHandlers = {};
 
         return Component;
     });
@@ -13039,14 +12886,7 @@
                 this.options = options;
                 this.type = 'HTML';
                 this.elements = [];
-                this.scaleElements = !!this.options.scaleElements;
                 this.sync = new Component.Sync(this, this.syncHandlers);
-                this.on('tableChanged', (e) => {
-                    if ('detail' in e && e.detail && e.detail.sender !== this.id) {
-                        this.redraw();
-                    }
-                });
-                Component.addInstance(this);
             }
             /* *
              *
@@ -13055,86 +12895,45 @@
              * */
             /** @internal */
             load() {
-                this.emit({
-                    type: 'load'
+                const _super = Object.create(null, {
+                    load: { get: () => super.load }
                 });
-                super.load();
-                const options = this.options;
-                let isError = false;
-                if (options.elements) {
-                    this.elements = options.elements.map(function (element) {
-                        if (typeof element === 'string') {
-                            return new AST(element).nodes[0];
-                        }
-                        if (!element.textContent &&
-                            !element.tagName &&
-                            element.attributes) {
-                            isError = true;
-                        }
-                        return element;
+                return __awaiter(this, void 0, void 0, function* () {
+                    this.emit({
+                        type: 'load'
                     });
-                }
-                this.constructTree();
-                this.parentElement.appendChild(this.element);
-                if (this.scaleElements) {
-                    this.autoScale();
-                }
-                this.emit({ type: 'afterLoad' });
-                if (isError) {
-                    throw new Error('Missing tagName param in component: ' +
-                        options.cell);
-                }
-                return this;
-            }
-            /**
-             * Handle scaling inner elements.
-             *
-             * @internal
-             */
-            autoScale() {
-                this.element.style.display = 'flex';
-                this.element.style.flexDirection = 'column';
-                this.contentElement.childNodes.forEach((element) => {
-                    if (element && element instanceof HTMLElement) {
-                        element.style.width = 'auto';
-                        element.style.maxWidth = '100%';
-                        element.style.maxHeight = '100%';
-                        element.style.flexBasis = 'auto';
-                        element.style.overflow = 'auto';
+                    yield _super.load.call(this);
+                    const options = this.options;
+                    let isError = false;
+                    if (options.elements) {
+                        this.elements = options.elements.map(function (element) {
+                            if (typeof element === 'string') {
+                                return new AST(element).nodes[0];
+                            }
+                            if (!element.textContent &&
+                                !element.tagName &&
+                                element.attributes) {
+                                isError = true;
+                            }
+                            return element;
+                        });
                     }
-                });
-                if (this.options.scaleElements) {
-                    this.scaleText();
-                }
-            }
-            /**
-             * Basic font size scaling
-             *
-             * @internal
-             */
-            scaleText() {
-                this.contentElement.childNodes.forEach((element) => {
-                    if (element instanceof HTMLElement) {
-                        element.style.fontSize = Math.max(Math.min(element.clientWidth / (1 * 10), 200), 20) + 'px';
+                    this.constructTree();
+                    this.emit({ type: 'afterLoad' });
+                    if (isError) {
+                        throw new Error('Missing tagName param in component: ' +
+                            options.cell);
                     }
+                    return this;
                 });
             }
             render() {
-                this.emit({ type: 'beforeRender' });
-                super.render(); // Fires the render event and calls load
+                super.render();
+                this.constructTree();
                 this.emit({ type: 'afterRender' });
                 return this;
             }
-            redraw() {
-                super.redraw();
-                this.constructTree();
-                this.emit({ type: 'afterRedraw' });
-                return this;
-            }
             resize(width, height) {
-                if (this.scaleElements) {
-                    this.scaleText();
-                }
                 super.resize(width, height);
                 return this;
             }
@@ -13142,9 +12941,6 @@
              * Handles updating via options.
              * @param options
              * The options to apply.
-             *
-             * @returns
-             * The component for chaining.
              */
             update(options) {
                 const _super = Object.create(null, {
@@ -13156,13 +12952,13 @@
                 });
             }
             /**
-             * Could probably use the serialize function moved on
+             * TODO: Could probably use the serialize function moved on
              * the exportdata branch
              *
              * @internal
              */
             constructTree() {
-                // Remove old tree if redrawing
+                // Remove old tree if rerendering.
                 while (this.contentElement.firstChild) {
                     this.contentElement.firstChild.remove();
                 }
@@ -13201,6 +12997,15 @@
             getOptions() {
                 return Object.assign(Object.assign({}, diffObjects(this.options, HTMLComponent.defaultOptions)), { type: 'HTML' });
             }
+            /**
+             * @internal
+             */
+            onTableChanged(e) {
+                var _a;
+                if (((_a = e.detail) === null || _a === void 0 ? void 0 : _a.sender) !== this.id) {
+                    this.render();
+                }
+            }
         }
         /* *
          *
@@ -13212,12 +13017,7 @@
          */
         HTMLComponent.defaultOptions = merge(Component.defaultOptions, {
             type: 'HTML',
-            scaleElements: false,
-            elements: [],
-            editableOptions: (Component.defaultOptions.editableOptions || []).concat([{
-                    name: 'scaleElements',
-                    type: 'toggle'
-                }])
+            elements: []
         });
         /* *
          *
@@ -13345,16 +13145,10 @@
                 if (options.layoutsJSON && !this.layouts.length) {
                     this.setLayoutsFromJSON(options.layoutsJSON);
                 }
-                // Init components from options.
-                if (options.components) {
-                    this.setComponents(options.components);
-                }
+                let componentPromises = (options.components) ?
+                    this.setComponents(options.components) : [];
                 // Init events.
                 this.initEvents();
-                const componentPromises = [], mountedComponents = this.mountedComponents;
-                for (let i = 0, iEnd = mountedComponents.length; i < iEnd; ++i) {
-                    componentPromises.push(mountedComponents[i].component.initConnector());
-                }
                 if (async) {
                     return Promise.all(componentPromises).then(() => this);
                 }
@@ -13365,10 +13159,17 @@
              * @internal
              */
             initEvents() {
-                const board = this;
-                addEvent(window, 'resize', function () {
+                const board = this, runReflow = () => {
                     board.reflow();
-                });
+                };
+                if (typeof ResizeObserver === 'function') {
+                    this.resizeObserver = new ResizeObserver(runReflow);
+                    this.resizeObserver.observe(board.container);
+                }
+                else {
+                    const unbind = addEvent(window, 'resize', runReflow);
+                    addEvent(this, 'destroy', unbind);
+                }
             }
             /**
              * Initialize the container for the dashboard.
@@ -13436,9 +13237,11 @@
              *
              */
             setComponents(components) {
+                const promises = [];
                 for (let i = 0, iEnd = components.length; i < iEnd; ++i) {
-                    Bindings.addComponent(components[i]);
+                    promises.push(Bindings.addComponent(components[i]));
                 }
+                return promises;
             }
             /**
              * Returns the current size of the layout container based on the selected
@@ -13465,11 +13268,14 @@
              * Destroy the whole dashboard, its layouts and elements.
              */
             destroy() {
+                var _a;
                 const board = this;
                 // Destroy layouts.
                 for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
                     board.layouts[i].destroy();
                 }
+                // Remove resizeObserver from the board
+                (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(board.container);
                 // Destroy container.
                 board.container.remove();
                 // @ToDo Destroy bindings.
@@ -13506,18 +13312,24 @@
              */
             reflow() {
                 const board = this, cntSize = board.getLayoutContainerSize();
-                let layout, row, cell;
+                let layout;
                 if (board.editMode) {
                     board.editMode.hideToolbars(['cell', 'row']);
                     board.editMode.hideContextPointer();
                 }
                 for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-                    layout = board.layouts[i];
-                    for (let j = 0, jEnd = layout.rows.length; j < jEnd; ++j) {
-                        row = layout.rows[j];
-                        for (let k = 0, kEnd = row.cells.length; k < kEnd; ++k) {
-                            cell = row.cells[k];
-                            cell.reflow(cntSize);
+                    this.reflowLayout(board.layouts[i], cntSize);
+                }
+            }
+            reflowLayout(layout, cntSize) {
+                let row, cell;
+                for (let j = 0, jEnd = layout.rows.length; j < jEnd; ++j) {
+                    row = layout.rows[j];
+                    for (let k = 0, kEnd = row.cells.length; k < kEnd; ++k) {
+                        cell = row.cells[k];
+                        cell.reflow(cntSize);
+                        if (cell.nestedLayout) {
+                            this.reflowLayout(cell.nestedLayout, cntSize);
                         }
                     }
                 }
@@ -14927,6 +14739,275 @@
          * */
 
         return CSVConnector;
+    });
+    _registerModule(_modules, 'Data/Converters/JSONConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataConverter, DataTable, U) {
+        /* *
+         *
+         *  (c) 2009-2023 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Pawel Lysy
+         *
+         * */
+        const { merge, isArray } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Handles parsing and transforming JSON to a table.
+         *
+         * @private
+         */
+        class JSONConverter extends DataConverter {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the JSON parser.
+             *
+             * @param {JSONConverter.UserOptions} [options]
+             * Options for the JSON parser.
+             */
+            constructor(options) {
+                const mergedOptions = merge(JSONConverter.defaultOptions, options);
+                super(mergedOptions);
+                /* *
+                 *
+                 *  Properties
+                 *
+                 * */
+                this.columns = [];
+                this.headers = [];
+                this.dataTypes = [];
+                this.options = mergedOptions;
+                this.table = new DataTable();
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Initiates parsing of JSON structure.
+             *
+             * @param {JSONConverter.UserOptions}[options]
+             * Options for the parser
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits JSONConverter#parse
+             * @emits JSONConverter#afterParse
+             */
+            parse(options, eventDetail) {
+                const converter = this;
+                options = merge(converter.options, options);
+                const { beforeParse, orientation, firstRowAsNames, columnNames } = options;
+                let data = options.data;
+                if (!data) {
+                    return;
+                }
+                if (beforeParse) {
+                    data = beforeParse(data);
+                }
+                data = data.slice();
+                if (orientation === 'columns') {
+                    for (let i = 0, iEnd = data.length; i < iEnd; i++) {
+                        const item = data[i];
+                        if (!(item instanceof Array)) {
+                            return;
+                        }
+                        if (firstRowAsNames) {
+                            converter.headers.push(`${item.shift()}`);
+                        }
+                        else if (columnNames) {
+                            converter.headers.push(columnNames[i]);
+                        }
+                        converter.table.setColumn(converter.headers[i] || i.toString(), item);
+                    }
+                }
+                else if (orientation === 'rows') {
+                    if (firstRowAsNames) {
+                        converter.headers = data.shift();
+                    }
+                    else if (columnNames) {
+                        converter.headers = columnNames;
+                    }
+                    for (let rowIndex = 0, iEnd = data.length; rowIndex < iEnd; rowIndex++) {
+                        const row = data[rowIndex];
+                        if (isArray(row)) {
+                            for (let columnIndex = 0, jEnd = row.length; columnIndex < jEnd; columnIndex++) {
+                                if (converter.columns.length < columnIndex + 1) {
+                                    converter.columns.push([]);
+                                }
+                                converter.columns[columnIndex].push(row[columnIndex]);
+                                this.table.setCell(converter.headers[columnIndex] ||
+                                    rowIndex.toString(), rowIndex, row[columnIndex]);
+                            }
+                        }
+                        else {
+                            this.table.setRows([row], rowIndex);
+                        }
+                    }
+                }
+            }
+            /**
+             * Handles converting the parsed data to a table.
+             *
+             * @return {DataTable}
+             * Table from the parsed CSV.
+             */
+            getTable() {
+                return this.table;
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Default options
+         */
+        JSONConverter.defaultOptions = Object.assign(Object.assign({}, DataConverter.defaultOptions), { data: [], orientation: 'columns' });
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return JSONConverter;
+    });
+    _registerModule(_modules, 'Data/Connectors/JSONConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Core/Utilities.js'], _modules['Data/Converters/JSONConverter.js']], function (DataConnector, U, JSONConverter) {
+        /* *
+         *
+         *  (c) 2009-2023 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Pawel Lysy
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Class that handles creating a DataConnector from JSON structure
+         *
+         * @private
+         */
+        class JSONConnector extends DataConnector {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of JSONConnector.
+             *
+             * @param {JSONConnector.UserOptions} [options]
+             * Options for the connector and converter.
+             */
+            constructor(options) {
+                const mergedOptions = merge(JSONConnector.defaultOptions, options);
+                super(mergedOptions);
+                this.converter = new JSONConverter(mergedOptions);
+                this.options = mergedOptions;
+                if (mergedOptions.enablePolling) {
+                    this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
+                }
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Initiates the loading of the JSON source to the connector
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits JSONConnector#load
+             * @emits JSONConnector#afterLoad
+             */
+            load(eventDetail) {
+                const connector = this, converter = connector.converter, table = connector.table, { data, dataUrl, dataModifier } = connector.options;
+                connector.emit({
+                    type: 'load',
+                    data,
+                    detail: eventDetail,
+                    table
+                });
+                // If already loaded, clear the current rows
+                table.deleteRows();
+                return Promise.resolve(dataUrl ?
+                    fetch(dataUrl).then((json) => json.json()) :
+                    data ?
+                        data :
+                        [])
+                    .then((data) => {
+                    if (data) {
+                        converter.parse({ data });
+                        table.setColumns(converter.getTable().getColumns());
+                    }
+                    return connector
+                        .setModifierOptions(dataModifier)
+                        .then(() => data);
+                })
+                    .then((data) => {
+                    connector.emit({
+                        type: 'afterLoad',
+                        data,
+                        detail: eventDetail,
+                        table
+                    });
+                    return connector;
+                })['catch']((error) => {
+                    connector.emit({
+                        type: 'loadError',
+                        detail: eventDetail,
+                        error,
+                        table
+                    });
+                    throw error;
+                });
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        JSONConnector.defaultOptions = {
+            data: [],
+            enablePolling: false,
+            dataRefreshRate: 0,
+            firstRowAsNames: true,
+            orientation: 'rows'
+        };
+        DataConnector.registerType('JSON', JSONConnector);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return JSONConnector;
     });
     _registerModule(_modules, 'Data/Converters/HTMLTableConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
@@ -16402,32 +16483,6 @@
                 }
                 modifier.emit({ type: 'afterModify', detail: eventDetail, table });
                 return table;
-            }
-            /**
-             * Utility function that returns the first row index
-             * if the table has been modified by a range modifier
-             *
-             * @param {DataTable} table
-             * The table to get the offset from.
-             *
-             * @return {number}
-             * The row offset of the modified table.
-             */
-            getModifiedTableOffset(table) {
-                const { ranges } = this.options;
-                if (ranges) {
-                    const minRange = ranges.reduce((minRange, currentRange) => {
-                        if (currentRange.minValue > minRange.minValue) {
-                            minRange = currentRange;
-                        }
-                        return minRange;
-                    }, ranges[0]);
-                    const tableRowIndex = table.getRowIndexBy(minRange.column, minRange.minValue);
-                    if (tableRowIndex) {
-                        return tableRowIndex;
-                    }
-                }
-                return 0;
             }
         }
         /* *

@@ -15,7 +15,7 @@
  * */
 import U from '../../Core/Utilities.js';
 import Globals from '../Globals.js';
-const { addEvent, createElement, uniqueKey, objectEach } = U;
+const { addEvent, createElement, uniqueKey, objectEach, error } = U;
 class GUIElement {
     /* *
     *
@@ -75,44 +75,37 @@ class GUIElement {
     *
     * */
     /**
-     * Create or set existing HTML element as a GUIElement container.
+     * Create or get existing HTML element as a GUIElement container.
      *
      * @param {GUIElement.ContainerOptions} options
      * Options.
      */
-    setElementContainer(options) {
+    getElementContainer(options) {
         const guiElement = this;
-        let elem;
-        // @ToDo use try catch block
-        if (options.render && options.parentContainer) {
-            // Purge empty id attribute.
+        let elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
+        if (options.render) {
             if (options.attribs && !options.attribs.id) {
                 delete options.attribs.id;
             }
-            guiElement.container = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
         }
-        else if (options.element instanceof HTMLElement) { // @ToDo check if this is enough
-            guiElement.container = options.element;
+        else if (options.element instanceof HTMLElement) {
+            elem = options.element;
         }
         else if (typeof options.elementId === 'string') {
-            elem = document.getElementById(options.elementId);
-            if (elem) {
-                guiElement.container = elem;
+            const div = document.getElementById(options.elementId);
+            if (div) {
+                guiElement.container = div;
             }
             else {
-                // Error
+                error('Element ' + options.elementId + ' does not exist');
             }
         }
-        else {
-            // Error
-        }
         // Set bindedGUIElement event on GUIElement container.
-        if (guiElement.container) {
-            guiElement.removeBindedEventFn = addEvent(guiElement.container, 'bindedGUIElement', function (e) {
-                e.guiElement = guiElement;
-                e.stopImmediatePropagation();
-            });
-        }
+        guiElement.removeBindedEventFn = addEvent(elem, 'bindedGUIElement', function (e) {
+            e.guiElement = guiElement;
+            e.stopImmediatePropagation();
+        });
+        return elem;
     }
     /**
      * Destroy the element, its container, event hooks

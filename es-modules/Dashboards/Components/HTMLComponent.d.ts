@@ -12,9 +12,7 @@ declare class HTMLComponent extends Component {
      */
     static defaultOptions: Partial<Component.ComponentOptions> & {
         type: string;
-        scaleElements: boolean;
         elements: never[];
-        editableOptions: import("./EditableOptions.js").default.Options[];
     };
     /**
      * Creates component from JSON.
@@ -36,12 +34,6 @@ declare class HTMLComponent extends Component {
      */
     private elements;
     /**
-     * Enables auto-scaling of the elements inside the component.
-     *
-     * @internal
-     */
-    private scaleElements;
-    /**
      * HTML component's options.
      */
     options: HTMLComponent.HTMLComponentOptions;
@@ -59,33 +51,17 @@ declare class HTMLComponent extends Component {
      */
     constructor(cell: Cell, options: Partial<HTMLComponent.HTMLComponentOptions>);
     /** @internal */
-    load(): this;
-    /**
-     * Handle scaling inner elements.
-     *
-     * @internal
-     */
-    autoScale(): void;
-    /**
-     * Basic font size scaling
-     *
-     * @internal
-     */
-    scaleText(): void;
+    load(): Promise<this>;
     render(): this;
-    redraw(): this;
     resize(width?: number | string | null, height?: number | string | null): this;
     /**
      * Handles updating via options.
      * @param options
      * The options to apply.
-     *
-     * @returns
-     * The component for chaining.
      */
     update(options: Partial<HTMLComponent.HTMLComponentOptions>): Promise<void>;
     /**
-     * Could probably use the serialize function moved on
+     * TODO: Could probably use the serialize function moved on
      * the exportdata branch
      *
      * @internal
@@ -109,6 +85,10 @@ declare class HTMLComponent extends Component {
      *
      */
     getOptions(): Partial<HTMLComponent.HTMLComponentOptions>;
+    /**
+     * @internal
+     */
+    onTableChanged(e: Component.EventTypes): void;
 }
 declare namespace HTMLComponent {
     /** @internal */
@@ -136,16 +116,9 @@ declare namespace HTMLComponent {
          */
         elements?: (AST.Node | string)[];
         type: 'HTML';
-        /**
-         * Enables auto-scaling of the elements inside the component.
-         *
-         * @internal
-         */
-        scaleElements?: boolean;
     }
     /** @internal */
     interface HTMLComponentOptionsJSON extends Component.ComponentOptionsJSON {
-        scaleElements?: boolean;
         type: 'HTML';
     }
     /** @internal */

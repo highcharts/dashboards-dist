@@ -4,10 +4,10 @@ import type EditMode from './EditMode.js';
 import EditGlobals from './EditGlobals.js';
 /**
  * Function to create a context button.
- * @intenal
+ * @internal
  *
  * @param parentElement
- * The element to which the new elemenet should be appended.
+ * The element to which the new element should be appended.
  *
  * @param editMode
  * EditMode instance.
@@ -36,7 +36,7 @@ declare function renderCollapseHeader(parentElement: HTMLElement, options: Neste
  * Function to create select element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended.
+ * The element to which the new element should be appended.
  *
  * @param options
  * Select form field options.
@@ -49,7 +49,7 @@ declare function renderSelect(parentElement: HTMLElement, options: SelectFormFie
  * Function to create toggle element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended.
+ * The element to which the new element should be appended.
  *
  * @param options
  * Form field options
@@ -62,7 +62,7 @@ declare function renderToggle(parentElement: HTMLElement, options: ToggleFormFie
  * Function to create text element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended
+ * The element to which the new element should be appended
  *
  * @param text
  * Text to be displayed
@@ -77,7 +77,7 @@ declare function renderText(parentElement: HTMLElement, options: TextOptions): H
  * Function to create Icon element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended.
+ * The element to which the new element should be appended.
  *
  * @param icon
  * Icon URL
@@ -93,7 +93,7 @@ declare function renderIcon(parentElement: HTMLElement, options: IconFormFieldOp
  * Function to create input element.
  *
  * @param parentElement
- * the element to which the new elemenet should be appended
+ * the element to which the new element should be appended
  *
  * @param options
  * Form field options
@@ -106,7 +106,7 @@ declare function renderInput(parentElement: HTMLElement, options: FormFieldOptio
  * Function to create textarea element.
  *
  * @param parentElement
- * The element to which the new elemenet should be appended
+ * The element to which the new element should be appended
  *
  * @param options
  * Form field options
@@ -132,7 +132,7 @@ declare function renderCheckbox(parentElement: HTMLElement, checked?: boolean): 
  * Function to create button element.
  *
  * @param parentElement
- * the element to which the new elemenet should be appended
+ * the element to which the new element should be appended
  *
  * @param options
  * Button field options

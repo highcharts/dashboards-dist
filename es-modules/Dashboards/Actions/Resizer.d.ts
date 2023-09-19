@@ -69,13 +69,15 @@ declare class Resizer {
      */
     tempSiblingsWidth: Array<Cell>;
     /**
+     * Reference to ResizeObserver, which allows running 'unobserve'.
+     * @internal
+     */
+    private resizeObserver?;
+    /**
      * Add Snap - create snaps and add events.
      *
-     * @param {Resizer.Options} options
-     * Reference to options of snaps
-     *
      */
-    addSnaps(options: Resizer.Options): void;
+    addSnaps(): void;
     /**
      * Hide snaps
      *

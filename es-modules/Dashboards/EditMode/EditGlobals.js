@@ -71,7 +71,9 @@ const EditGlobals = {
         editGridItems: PREFIX + 'grid-items',
         // Confirmation popup
         confirmationPopup: PREFIX + 'confirmation-popup',
+        popupButtonContainer: PREFIX + 'confirmation-popup-button-container',
         popupContentContainer: PREFIX + 'confirmation-popup-content',
+        popupCancelBtn: PREFIX + 'confirmation-popup-cancel-btn',
         popupConfirmBtn: PREFIX + 'confirmation-popup-confirm-btn',
         popupCloseButton: PREFIX + 'popup-close',
         editOverlay: PREFIX + 'overlay',
@@ -95,15 +97,20 @@ const EditGlobals = {
         hiddenElement: PREFIX + 'hidden-element',
         collapsableContentHeader: PREFIX + 'collapsable-content-header',
         // Custom dropdown with icons
+        collapsedElement: PREFIX + 'collapsed-element',
         dropdown: PREFIX + 'dropdown',
         dropdownContent: PREFIX + 'dropdown-content',
         dropdownButton: PREFIX + 'dropdown-button',
         dropdownButtonContent: PREFIX + 'dropdown-button-content',
         dropdownIcon: PREFIX + 'pointer',
-        rotateElement: PREFIX + 'rotate-element',
         icon: PREFIX + 'icon'
     },
     lang: {
+        accessibility: {
+            contextMenu: {
+                button: 'Context menu'
+            }
+        },
         addComponent: 'Add component',
         cancelButton: 'Cancel',
         caption: 'Caption',
@@ -114,8 +121,8 @@ const EditGlobals = {
         chartType: 'Chart type',
         connectorName: 'Connector name',
         confirmButton: 'Confirm',
-        confirmDestroyCell: 'Do you want to destroy the cell?',
-        confirmDestroyRow: 'Do you want to destroy the row?',
+        confirmDestroyCell: 'Do you really want to destroy the cell?',
+        confirmDestroyRow: 'Do you really want to destroy the row?',
         dataLabels: 'Data labels',
         editMode: 'Edit mode',
         errorMessage: 'Something went wrong',
@@ -126,7 +133,6 @@ const EditGlobals = {
         off: 'off',
         on: 'on',
         pointFormat: 'Point format',
-        scaleElements: 'Scale elements',
         settings: 'Settings',
         small: 'Small',
         style: 'Styles',

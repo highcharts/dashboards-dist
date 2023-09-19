@@ -91,33 +91,28 @@ class Layout extends GUIElement {
             this.level = 0;
         }
         // GUI structure
-        if (parentContainer) {
-            if (options.copyId) {
-                this.copyId = options.copyId;
-            }
-            const layoutOptions = (this.options || {}), layoutClassName = layoutOptions.rowClassName || '';
-            this.setElementContainer({
-                render: board.guiEnabled,
-                parentContainer: parentContainer,
-                attribs: {
-                    id: options.id + (this.copyId ? '_' + this.copyId : ''),
-                    className: Globals.classNames.layout + ' ' +
-                        layoutClassName
-                },
-                elementId: options.id,
-                style: this.options.style
-            });
-            // Init rows from options.
-            if (this.options.rows) {
-                this.setRows();
-            }
-            // Init rows from JSON.
-            if (options.rowsJSON && !this.rows.length) {
-                this.setRowsFromJSON(options.rowsJSON);
-            }
+        if (options.copyId) {
+            this.copyId = options.copyId;
         }
-        else {
-            // Error
+        const layoutOptions = (this.options || {}), layoutClassName = layoutOptions.rowClassName || '';
+        this.container = this.getElementContainer({
+            render: board.guiEnabled,
+            parentContainer: parentContainer,
+            attribs: {
+                id: options.id + (this.copyId ? '_' + this.copyId : ''),
+                className: Globals.classNames.layout + ' ' +
+                    layoutClassName
+            },
+            elementId: options.id,
+            style: this.options.style
+        });
+        // Init rows from options.
+        if (this.options.rows) {
+            this.setRows();
+        }
+        // Init rows from JSON.
+        if (options.rowsJSON && !this.rows.length) {
+            this.setRowsFromJSON(options.rowsJSON);
         }
     }
     /* *

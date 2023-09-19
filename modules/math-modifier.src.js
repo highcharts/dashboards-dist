@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 1.0.2 (2023-08-10)
+ * @license Highcharts Dashboards Math 1.1.0 (2023-09-19)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -1055,10 +1055,10 @@
             for (let i = 0, iEnd = formula.length, item; i < iEnd; ++i) {
                 item = formula[i];
                 if (item instanceof Array) {
-                    translateReferences(item);
+                    translateReferences(item, columnDelta, rowDelta);
                 }
                 else if (isFunction(item)) {
-                    translateReferences(item.args);
+                    translateReferences(item.args, columnDelta, rowDelta);
                 }
                 else if (isRange(item)) {
                     if (item.beginColumnRelative) {
