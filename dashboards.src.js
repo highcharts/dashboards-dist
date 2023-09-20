@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.0 (2023-09-19)
+ * @license Highcharts Dashboards v1.1.1 (2023-09-20)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.1', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -2611,7 +2611,17 @@
              * Options to initialize the new DataTable instance.
              */
             constructor(options = {}) {
-                this.aliases = {};
+                /**
+                 * Dictionary of all column aliases and their mapped column. If a column
+                 * for one of the get-methods matches an column alias, this column will
+                 * be replaced with the mapped column by the column alias.
+                 *
+                 * @name Highcharts.DataTable#aliases
+                 * @type {Highcharts.Dictionary<string>}
+                 */
+                this.aliases = (options.aliases ?
+                    JSON.parse(JSON.stringify(options.aliases)) :
+                    {});
                 /**
                  * Whether the ID was automatic generated or given in the constructor.
                  *
@@ -2963,22 +2973,6 @@
              */
             getColumn(columnNameOrAlias, asReference) {
                 return this.getColumns([columnNameOrAlias], asReference)[columnNameOrAlias];
-            }
-            /**
-             * Fetches all column aliases and their mapped columns.
-             *
-             * @function Highcharts.DataTable#getColumnAliases
-             *
-             * @return {Highcharts.Dictionary<string>}
-             * Returns all column aliases.
-             */
-            getColumnAliases() {
-                const aliases = this.aliases, aliasKeys = Object.keys(aliases), columnAliases = {};
-                for (let i = 0, iEnd = aliasKeys.length, alias; i < iEnd; ++i) {
-                    alias = aliasKeys[i];
-                    columnAliases[alias] = aliases[alias];
-                }
-                return columnAliases;
             }
             /**
              * Fetches the given column by the canonical column name or by an alias, and
@@ -3394,30 +3388,6 @@
                 this.setColumns({ [columnNameOrAlias]: column }, rowIndex, eventDetail);
             }
             /**
-             * Defines an alias for a column. If a column name for one of the
-             * get-functions matches an column alias, the column name will be replaced
-             * with the original column name.
-             *
-             * @function Highcharts.DataTable#setColumnAlias
-             *
-             * @param {string} columnAlias
-             * Column alias to create.
-             *
-             * @param {string} columnName
-             * Original column name to create an alias for.
-             *
-             * @return {boolean}
-             * `true` if successfully changed, `false` if reserved.
-             */
-            setColumnAlias(columnAlias, columnName) {
-                const aliases = this.aliases;
-                if (!aliases[columnAlias]) {
-                    aliases[columnAlias] = columnName;
-                    return true;
-                }
-                return false;
-            }
-            /**
              * Sets cell values for multiple columns. Will insert new columns, if not
              * found.
              *
@@ -3627,7 +3597,7 @@
         }
         /* *
          *
-         *  Static Functions
+         *  Static Properties
          *
          * */
         /**
@@ -3644,73 +3614,16 @@
          * table.setRows([DataTable.NULL, DataTable.NULL], 10);
          */
         DataTable.NULL = {};
+        /**
+         * Semantic version string of the DataTable class.
+         * @internal
+         */
+        DataTable.version = '1.0.0';
         /* *
          *
          *  Default Export
          *
          * */
-        /* *
-         *
-         *  API Declarations
-         *
-         * */
-        /**
-         * Possible value types for a table cell.
-         * @private
-         * @typedef {boolean|null|number|string|Highcharts.DataTable|undefined} Highcharts.DataTableCellType
-         */
-        /**
-         * Array of table cells in vertical expansion.
-         * @private
-         * @typedef {Array<Highcharts.DataTableCellType>} Highcharts.DataTableColumn
-         */
-        /**
-         * Collection of columns, where the key is the column name (or alias) and
-         * the value is an array of column values.
-         * @private
-         * @interface Highcharts.DataTableColumnCollection
-         * @readonly
-         */ /**
-        * @name Highcharts.DataTableColumnCollection#[key:string]
-        * @type {Highcharts.DataTableColumn}
-        */
-        /**
-         * Options to initialize a new DataTable instance.
-         * @private
-         * @interface Highcharts.DataTableOptions
-         * @readonly
-         */ /**
-        * Initial map of column aliases to original column names.
-        * @name Highcharts.DataTableOptions#aliases
-        * @type {Highcharts.Dictionary<string>|undefined}
-        */ /**
-        * Initial columns with their values.
-        * @name Highcharts.DataTableOptions#columns
-        * @type {Highcharts.DataTableColumnCollection|undefined}
-        */ /**
-        * Custom ID to identify the new DataTable instance.
-        * @name Highcharts.DataTableOptions#id
-        * @type {string|undefined}
-        */
-        /**
-         * Custom information for an event.
-         * @private
-         * @typedef Highcharts.DataTableEventDetail
-         * @type {Record<string,(boolean|number|string|null|undefined)>}
-         */
-        /**
-         * Array of table cells in horizontal expansion. Index of the array is the index
-         * of the column names.
-         * @private
-         * @typedef {Array<Highcharts.DataTableCellType>} Highcharts.DataTableRow
-         */
-        /**
-         * Record of table cells in horizontal expansion. Keys of the record are the
-         * column names (or aliases).
-         * @private
-         * @typedef {Record<string,Highcharts.DataTableCellType>} Highcharts.DataTableRowObject
-         */
-        (''); // keeps doclets above in transpiled file
 
         return DataTable;
     });
@@ -4573,6 +4486,16 @@
         }
         /* *
          *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Semantic version string of the DataCursor class.
+         * @internal
+         */
+        DataCursor.version = '1.0.0';
+        /* *
+         *
          *  Class Namespace
          *
          * */
@@ -4718,68 +4641,6 @@
          *  Default Export
          *
          * */
-        /* *
-         *
-         *  API Declarations
-         *
-         * */
-        /**
-         * @typedef {
-         *     Data.DataCursor.Position|
-         *     Data.DataCursor.Range
-         * } Data.DataCursor.Type
-         */
-        /**
-         * @interface Data.DataCursor.Position
-         */
-        /**
-         * @name Data.DataCursor.Position#type
-         * @type {'position'}
-         */
-        /**
-         * @name Data.DataCursor.Position#column
-         * @type {string|undefined}
-         */
-        /**
-         * @name Data.DataCursor.Position#row
-         * @type {number|undefined}
-         */
-        /**
-         * @name Data.DataCursor.Position#state
-         * @type {string}
-         */
-        /**
-         * @name Data.DataCursor.Position#tableScope
-         * @type {'original'|'modified'}
-         */
-        /**
-         * @interface Data.DataCursor.Range
-         */
-        /**
-         * @name Data.DataCursor.Range#type
-         * @type {'range'}
-         */
-        /**
-         * @name Data.DataCursor.Range#columns
-         * @type {Array<string>|undefined}
-         */
-        /**
-         * @name Data.DataCursor.Range#firstRow
-         * @type {number}
-         */
-        /**
-         * @name Data.DataCursor.Range#lastRow
-         * @type {number}
-         */
-        /**
-         * @name Data.DataCursor.Range#state
-         * @type {string}
-         */
-        /**
-         * @name Data.DataCursor.Range#tableScope
-         * @type {'original'|'modified'}
-         */
-        '';
 
         return DataCursor;
     });
@@ -5280,6 +5141,16 @@
                 });
             }
         }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Semantic version string of the DataPool class.
+         * @internal
+         */
+        DataPool.version = '1.0.0';
         /* *
          *
          *  Default Export
@@ -7588,6 +7459,12 @@
                         iconsURL : iconsURL + 'close.svg') + ')';
                 ['click', 'touchstart'].forEach((eventName) => {
                     addEvent(closeButton, eventName, popup.closeButtonEvents.bind(popup));
+                });
+                // close popup when press ESC
+                addEvent(document, 'keydown', function (event) {
+                    if (event.code === 'Escape') {
+                        popup.closeButtonEvents();
+                    }
                 });
                 return closeButton;
             }
@@ -9972,9 +9849,7 @@
                 this.snapRight = createElement('img', {
                     className: EditGlobals.classNames.resizeSnap + ' ' +
                         EditGlobals.classNames.resizeSnapX,
-                    // src: iconsURLPrefix + 'resize-handle.svg'
-                    // eslint-disable-next-line max-len
-                    src: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@b2d3673cfd596a9615e57233914836c78544884c/gfx/dashboards-icons/resize-handle.svg'
+                    src: iconsURLPrefix + 'resize-handle.svg'
                 }, {
                     width: snapWidth + 'px',
                     height: snapHeight + 'px',
@@ -9984,9 +9859,7 @@
                 this.snapBottom = createElement('img', {
                     className: EditGlobals.classNames.resizeSnap + ' ' +
                         EditGlobals.classNames.resizeSnapY,
-                    // src: iconsURLPrefix + 'resize-handle.svg'
-                    // eslint-disable-next-line max-len
-                    src: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@b2d3673cfd596a9615e57233914836c78544884c/gfx/dashboards-icons/resize-handle.svg'
+                    src: iconsURLPrefix + 'resize-handle.svg'
                 }, {
                     width: snapWidth + 'px',
                     height: snapHeight + 'px',
@@ -10451,7 +10324,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.1/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -14740,7 +14613,7 @@
 
         return CSVConnector;
     });
-    _registerModule(_modules, 'Data/Converters/JSONConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataConverter, DataTable, U) {
+    _registerModule(_modules, 'Data/Converters/GoogleSheetsConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
          *  (c) 2009-2023 Highsoft AS
@@ -14750,45 +14623,41 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Pawel Lysy
+         *  - Torstein Hønsi
+         *  - Gøran Slettemark
+         *  - Wojciech Chmiel
+         *  - Sophie Bremer
          *
          * */
-        const { merge, isArray } = U;
+        const { merge, uniqueKey } = U;
         /* *
          *
          *  Class
          *
          * */
         /**
-         * Handles parsing and transforming JSON to a table.
+         * Handles parsing and transformation of an Google Sheets to a table.
          *
          * @private
          */
-        class JSONConverter extends DataConverter {
+        class GoogleSheetsConverter extends DataConverter {
             /* *
              *
              *  Constructor
              *
              * */
             /**
-             * Constructs an instance of the JSON parser.
+             * Constructs an instance of the GoogleSheetsConverter.
              *
-             * @param {JSONConverter.UserOptions} [options]
-             * Options for the JSON parser.
+             * @param {GoogleSheetsConverter.UserOptions} [options]
+             * Options for the GoogleSheetsConverter.
              */
             constructor(options) {
-                const mergedOptions = merge(JSONConverter.defaultOptions, options);
+                const mergedOptions = merge(GoogleSheetsConverter.defaultOptions, options);
                 super(mergedOptions);
-                /* *
-                 *
-                 *  Properties
-                 *
-                 * */
                 this.columns = [];
-                this.headers = [];
-                this.dataTypes = [];
+                this.header = [];
                 this.options = mergedOptions;
-                this.table = new DataTable();
             }
             /* *
              *
@@ -14796,77 +14665,63 @@
              *
              * */
             /**
-             * Initiates parsing of JSON structure.
+             * Initiates the parsing of the Google Sheet
              *
-             * @param {JSONConverter.UserOptions}[options]
+             * @param {GoogleSheetsConverter.UserOptions}[options]
              * Options for the parser
              *
              * @param {DataEvent.Detail} [eventDetail]
              * Custom information for pending events.
              *
-             * @emits JSONConverter#parse
-             * @emits JSONConverter#afterParse
+             * @emits GoogleSheetsParser#parse
+             * @emits GoogleSheetsParser#afterParse
              */
             parse(options, eventDetail) {
-                const converter = this;
-                options = merge(converter.options, options);
-                const { beforeParse, orientation, firstRowAsNames, columnNames } = options;
-                let data = options.data;
-                if (!data) {
-                    return;
+                const converter = this, parseOptions = merge(converter.options, options), columns = ((parseOptions.json &&
+                    parseOptions.json.values) || []).map((column) => column.slice());
+                if (columns.length === 0) {
+                    return false;
                 }
-                if (beforeParse) {
-                    data = beforeParse(data);
-                }
-                data = data.slice();
-                if (orientation === 'columns') {
-                    for (let i = 0, iEnd = data.length; i < iEnd; i++) {
-                        const item = data[i];
-                        if (!(item instanceof Array)) {
-                            return;
-                        }
-                        if (firstRowAsNames) {
-                            converter.headers.push(`${item.shift()}`);
-                        }
-                        else if (columnNames) {
-                            converter.headers.push(columnNames[i]);
-                        }
-                        converter.table.setColumn(converter.headers[i] || i.toString(), item);
-                    }
-                }
-                else if (orientation === 'rows') {
-                    if (firstRowAsNames) {
-                        converter.headers = data.shift();
-                    }
-                    else if (columnNames) {
-                        converter.headers = columnNames;
-                    }
-                    for (let rowIndex = 0, iEnd = data.length; rowIndex < iEnd; rowIndex++) {
-                        const row = data[rowIndex];
-                        if (isArray(row)) {
-                            for (let columnIndex = 0, jEnd = row.length; columnIndex < jEnd; columnIndex++) {
-                                if (converter.columns.length < columnIndex + 1) {
-                                    converter.columns.push([]);
-                                }
-                                converter.columns[columnIndex].push(row[columnIndex]);
-                                this.table.setCell(converter.headers[columnIndex] ||
-                                    rowIndex.toString(), rowIndex, row[columnIndex]);
+                converter.header = [];
+                converter.columns = [];
+                converter.emit({
+                    type: 'parse',
+                    columns: converter.columns,
+                    detail: eventDetail,
+                    headers: converter.header
+                });
+                converter.columns = columns;
+                let column;
+                for (let i = 0, iEnd = columns.length; i < iEnd; i++) {
+                    column = columns[i];
+                    converter.header[i] = (parseOptions.firstRowAsNames ?
+                        `${column.shift()}` :
+                        uniqueKey());
+                    for (let j = 0, jEnd = column.length; j < jEnd; ++j) {
+                        if (column[j] && typeof column[j] === 'string') {
+                            let cellValue = converter.asGuessedType(column[j]);
+                            if (cellValue instanceof Date) {
+                                cellValue = cellValue.getTime();
                             }
-                        }
-                        else {
-                            this.table.setRows([row], rowIndex);
+                            converter.columns[i][j] = cellValue;
                         }
                     }
                 }
+                converter.emit({
+                    type: 'afterParse',
+                    columns: converter.columns,
+                    detail: eventDetail,
+                    headers: converter.header
+                });
             }
             /**
              * Handles converting the parsed data to a table.
              *
              * @return {DataTable}
-             * Table from the parsed CSV.
+             * Table from the parsed Google Sheet
              */
             getTable() {
-                return this.table;
+                return DataConverter.getTableFromColumns(this.columns, this.header);
             }
         }
         /* *
@@ -14877,16 +14732,16 @@
         /**
          * Default options
          */
-        JSONConverter.defaultOptions = Object.assign(Object.assign({}, DataConverter.defaultOptions), { data: [], orientation: 'columns' });
+        GoogleSheetsConverter.defaultOptions = Object.assign({}, DataConverter.defaultOptions);
         /* *
          *
          *  Default Export
          *
          * */
 
-        return JSONConverter;
+        return GoogleSheetsConverter;
     });
-    _registerModule(_modules, 'Data/Connectors/JSONConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Core/Utilities.js'], _modules['Data/Converters/JSONConverter.js']], function (DataConnector, U, JSONConverter) {
+    _registerModule(_modules, 'Data/Connectors/GoogleSheetsConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/GoogleSheetsConverter.js'], _modules['Core/Utilities.js']], function (DataConnector, GoogleSheetsConverter, U) {
         /* *
          *
          *  (c) 2009-2023 Highsoft AS
@@ -14896,40 +14751,55 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Pawel Lysy
+         *  - Torstein Hønsi
+         *  - Gøran Slettemark
+         *  - Wojciech Chmiel
+         *  - Sophie Bremer
          *
          * */
-        const { merge } = U;
+        const { merge, pick } = U;
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Tests Google's response for error.
+         * @private
+         */
+        function isGoogleError(json) {
+            return (typeof json === 'object' && json &&
+                typeof json.error === 'object' && json.error &&
+                typeof json.error.code === 'number' &&
+                typeof json.error.message === 'string' &&
+                typeof json.error.status === 'string');
+        }
         /* *
          *
          *  Class
          *
          * */
         /**
-         * Class that handles creating a DataConnector from JSON structure
-         *
          * @private
+         * @todo implement save, requires oauth2
          */
-        class JSONConnector extends DataConnector {
+        class GoogleSheetsConnector extends DataConnector {
             /* *
              *
              *  Constructor
              *
              * */
             /**
-             * Constructs an instance of JSONConnector.
+             * Constructs an instance of GoogleSheetsConnector
              *
-             * @param {JSONConnector.UserOptions} [options]
+             * @param {GoogleSheetsConnector.UserOptions} [options]
              * Options for the connector and converter.
              */
             constructor(options) {
-                const mergedOptions = merge(JSONConnector.defaultOptions, options);
+                const mergedOptions = merge(GoogleSheetsConnector.defaultOptions, options);
                 super(mergedOptions);
-                this.converter = new JSONConverter(mergedOptions);
+                this.converter = new GoogleSheetsConverter(mergedOptions);
                 this.options = mergedOptions;
-                if (mergedOptions.enablePolling) {
-                    this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
-                }
             }
             /* *
              *
@@ -14937,45 +14807,48 @@
              *
              * */
             /**
-             * Initiates the loading of the JSON source to the connector
+             * Loads data from a Google Spreadsheet.
              *
              * @param {DataEvent.Detail} [eventDetail]
              * Custom information for pending events.
              *
-             * @emits JSONConnector#load
-             * @emits JSONConnector#afterLoad
+             * @return {Promise<this>}
+             * Same connector instance with modified table.
              */
             load(eventDetail) {
-                const connector = this, converter = connector.converter, table = connector.table, { data, dataUrl, dataModifier } = connector.options;
+                const connector = this, converter = connector.converter, table = connector.table, { dataModifier, dataRefreshRate, enablePolling, firstRowAsNames, googleAPIKey, googleSpreadsheetKey } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
                 connector.emit({
                     type: 'load',
-                    data,
                     detail: eventDetail,
-                    table
+                    table,
+                    url
                 });
-                // If already loaded, clear the current rows
-                table.deleteRows();
-                return Promise.resolve(dataUrl ?
-                    fetch(dataUrl).then((json) => json.json()) :
-                    data ?
-                        data :
-                        [])
-                    .then((data) => {
-                    if (data) {
-                        converter.parse({ data });
-                        table.setColumns(converter.getTable().getColumns());
+                // If already loaded, clear the current table
+                table.deleteColumns();
+                return fetch(url)
+                    .then((response) => (response.json()))
+                    .then((json) => {
+                    if (isGoogleError(json)) {
+                        throw new Error(json.error.message);
                     }
-                    return connector
-                        .setModifierOptions(dataModifier)
-                        .then(() => data);
+                    converter.parse({
+                        firstRowAsNames,
+                        json
+                    });
+                    table.setColumns(converter.getTable().getColumns());
+                    return connector.setModifierOptions(dataModifier);
                 })
-                    .then((data) => {
+                    .then(() => {
                     connector.emit({
                         type: 'afterLoad',
-                        data,
                         detail: eventDetail,
-                        table
+                        table,
+                        url
                     });
+                    // Polling
+                    if (enablePolling) {
+                        setTimeout(() => connector.load(), Math.max(dataRefreshRate || 0, 1) * 1000);
+                    }
                     return connector;
                 })['catch']((error) => {
                     connector.emit({
@@ -14993,21 +14866,79 @@
          *  Static Properties
          *
          * */
-        JSONConnector.defaultOptions = {
-            data: [],
+        GoogleSheetsConnector.defaultOptions = {
+            googleAPIKey: '',
+            googleSpreadsheetKey: '',
+            worksheet: 1,
             enablePolling: false,
-            dataRefreshRate: 0,
-            firstRowAsNames: true,
-            orientation: 'rows'
+            dataRefreshRate: 2,
+            firstRowAsNames: true
         };
-        DataConnector.registerType('JSON', JSONConnector);
+        /* *
+         *
+         *  Class Namespace
+         *
+         * */
+        (function (GoogleSheetsConnector) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Creates GoogleSheets API v4 URL.
+             * @private
+             */
+            function buildFetchURL(apiKey, sheetKey, options = {}) {
+                return (`https://sheets.googleapis.com/v4/spreadsheets/${sheetKey}/values/` +
+                    (options.onlyColumnNames ?
+                        'A1:Z1' :
+                        buildQueryRange(options)) +
+                    '?alt=json' +
+                    (options.onlyColumnNames ?
+                        '' :
+                        '&dateTimeRenderOption=FORMATTED_STRING' +
+                            '&majorDimension=COLUMNS' +
+                            '&valueRenderOption=UNFORMATTED_VALUE') +
+                    '&prettyPrint=false' +
+                    `&key=${apiKey}`);
+            }
+            GoogleSheetsConnector.buildFetchURL = buildFetchURL;
+            /**
+             * Creates sheets range.
+             * @private
+             */
+            function buildQueryRange(options = {}) {
+                const { endColumn, endRow, googleSpreadsheetRange, startColumn, startRow } = options;
+                return googleSpreadsheetRange || ((alphabet[startColumn || 0] || 'A') +
+                    (Math.max((startRow || 0), 0) + 1) +
+                    ':' +
+                    (alphabet[pick(endColumn, 25)] || 'Z') +
+                    (endRow ?
+                        Math.max(endRow, 0) :
+                        'Z'));
+            }
+            GoogleSheetsConnector.buildQueryRange = buildQueryRange;
+        })(GoogleSheetsConnector || (GoogleSheetsConnector = {}));
+        DataConnector.registerType('GoogleSheets', GoogleSheetsConnector);
         /* *
          *
          *  Default Export
          *
          * */
 
-        return JSONConnector;
+        return GoogleSheetsConnector;
     });
     _registerModule(_modules, 'Data/Converters/HTMLTableConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
@@ -15484,7 +15415,7 @@
 
         return HTMLTableConnector;
     });
-    _registerModule(_modules, 'Data/Converters/GoogleSheetsConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
+    _registerModule(_modules, 'Data/Converters/JSONConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataConverter, DataTable, U) {
         /* *
          *
          *  (c) 2009-2023 Highsoft AS
@@ -15494,41 +15425,45 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Torstein Hønsi
-         *  - Gøran Slettemark
-         *  - Wojciech Chmiel
-         *  - Sophie Bremer
+         *  - Pawel Lysy
          *
          * */
-        const { merge, uniqueKey } = U;
+        const { merge, isArray } = U;
         /* *
          *
          *  Class
          *
          * */
         /**
-         * Handles parsing and transformation of an Google Sheets to a table.
+         * Handles parsing and transforming JSON to a table.
          *
          * @private
          */
-        class GoogleSheetsConverter extends DataConverter {
+        class JSONConverter extends DataConverter {
             /* *
              *
              *  Constructor
              *
              * */
             /**
-             * Constructs an instance of the GoogleSheetsConverter.
+             * Constructs an instance of the JSON parser.
              *
-             * @param {GoogleSheetsConverter.UserOptions} [options]
-             * Options for the GoogleSheetsConverter.
+             * @param {JSONConverter.UserOptions} [options]
+             * Options for the JSON parser.
              */
             constructor(options) {
-                const mergedOptions = merge(GoogleSheetsConverter.defaultOptions, options);
+                const mergedOptions = merge(JSONConverter.defaultOptions, options);
                 super(mergedOptions);
+                /* *
+                 *
+                 *  Properties
+                 *
+                 * */
                 this.columns = [];
-                this.header = [];
+                this.headers = [];
+                this.dataTypes = [];
                 this.options = mergedOptions;
+                this.table = new DataTable();
             }
             /* *
              *
@@ -15536,63 +15471,77 @@
              *
              * */
             /**
-             * Initiates the parsing of the Google Sheet
+             * Initiates parsing of JSON structure.
              *
-             * @param {GoogleSheetsConverter.UserOptions}[options]
+             * @param {JSONConverter.UserOptions}[options]
              * Options for the parser
              *
              * @param {DataEvent.Detail} [eventDetail]
              * Custom information for pending events.
              *
-             * @emits GoogleSheetsParser#parse
-             * @emits GoogleSheetsParser#afterParse
+             * @emits JSONConverter#parse
+             * @emits JSONConverter#afterParse
              */
             parse(options, eventDetail) {
-                const converter = this, parseOptions = merge(converter.options, options), columns = ((parseOptions.json &&
-                    parseOptions.json.values) || []).map((column) => column.slice());
-                if (columns.length === 0) {
-                    return false;
+                const converter = this;
+                options = merge(converter.options, options);
+                const { beforeParse, orientation, firstRowAsNames, columnNames } = options;
+                let data = options.data;
+                if (!data) {
+                    return;
                 }
-                converter.header = [];
-                converter.columns = [];
-                converter.emit({
-                    type: 'parse',
-                    columns: converter.columns,
-                    detail: eventDetail,
-                    headers: converter.header
-                });
-                converter.columns = columns;
-                let column;
-                for (let i = 0, iEnd = columns.length; i < iEnd; i++) {
-                    column = columns[i];
-                    converter.header[i] = (parseOptions.firstRowAsNames ?
-                        `${column.shift()}` :
-                        uniqueKey());
-                    for (let j = 0, jEnd = column.length; j < jEnd; ++j) {
-                        if (column[j] && typeof column[j] === 'string') {
-                            let cellValue = converter.asGuessedType(column[j]);
-                            if (cellValue instanceof Date) {
-                                cellValue = cellValue.getTime();
+                if (beforeParse) {
+                    data = beforeParse(data);
+                }
+                data = data.slice();
+                if (orientation === 'columns') {
+                    for (let i = 0, iEnd = data.length; i < iEnd; i++) {
+                        const item = data[i];
+                        if (!(item instanceof Array)) {
+                            return;
+                        }
+                        if (firstRowAsNames) {
+                            converter.headers.push(`${item.shift()}`);
+                        }
+                        else if (columnNames) {
+                            converter.headers.push(columnNames[i]);
+                        }
+                        converter.table.setColumn(converter.headers[i] || i.toString(), item);
+                    }
+                }
+                else if (orientation === 'rows') {
+                    if (firstRowAsNames) {
+                        converter.headers = data.shift();
+                    }
+                    else if (columnNames) {
+                        converter.headers = columnNames;
+                    }
+                    for (let rowIndex = 0, iEnd = data.length; rowIndex < iEnd; rowIndex++) {
+                        const row = data[rowIndex];
+                        if (isArray(row)) {
+                            for (let columnIndex = 0, jEnd = row.length; columnIndex < jEnd; columnIndex++) {
+                                if (converter.columns.length < columnIndex + 1) {
+                                    converter.columns.push([]);
+                                }
+                                converter.columns[columnIndex].push(row[columnIndex]);
+                                this.table.setCell(converter.headers[columnIndex] ||
+                                    rowIndex.toString(), rowIndex, row[columnIndex]);
                             }
-                            converter.columns[i][j] = cellValue;
+                        }
+                        else {
+                            this.table.setRows([row], rowIndex);
                         }
                     }
                 }
-                converter.emit({
-                    type: 'afterParse',
-                    columns: converter.columns,
-                    detail: eventDetail,
-                    headers: converter.header
-                });
             }
             /**
              * Handles converting the parsed data to a table.
              *
              * @return {DataTable}
-             * Table from the parsed Google Sheet
+             * Table from the parsed CSV.
              */
             getTable() {
-                return DataConverter.getTableFromColumns(this.columns, this.header);
+                return this.table;
             }
         }
         /* *
@@ -15603,16 +15552,16 @@
         /**
          * Default options
          */
-        GoogleSheetsConverter.defaultOptions = Object.assign({}, DataConverter.defaultOptions);
+        JSONConverter.defaultOptions = Object.assign(Object.assign({}, DataConverter.defaultOptions), { data: [], orientation: 'columns' });
         /* *
          *
          *  Default Export
          *
          * */
 
-        return GoogleSheetsConverter;
+        return JSONConverter;
     });
-    _registerModule(_modules, 'Data/Connectors/GoogleSheetsConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/GoogleSheetsConverter.js'], _modules['Core/Utilities.js']], function (DataConnector, GoogleSheetsConverter, U) {
+    _registerModule(_modules, 'Data/Connectors/JSONConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Core/Utilities.js'], _modules['Data/Converters/JSONConverter.js']], function (DataConnector, U, JSONConverter) {
         /* *
          *
          *  (c) 2009-2023 Highsoft AS
@@ -15622,55 +15571,40 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Torstein Hønsi
-         *  - Gøran Slettemark
-         *  - Wojciech Chmiel
-         *  - Sophie Bremer
+         *  - Pawel Lysy
          *
          * */
-        const { merge, pick } = U;
-        /* *
-         *
-         *  Functions
-         *
-         * */
-        /**
-         * Tests Google's response for error.
-         * @private
-         */
-        function isGoogleError(json) {
-            return (typeof json === 'object' && json &&
-                typeof json.error === 'object' && json.error &&
-                typeof json.error.code === 'number' &&
-                typeof json.error.message === 'string' &&
-                typeof json.error.status === 'string');
-        }
+        const { merge } = U;
         /* *
          *
          *  Class
          *
          * */
         /**
+         * Class that handles creating a DataConnector from JSON structure
+         *
          * @private
-         * @todo implement save, requires oauth2
          */
-        class GoogleSheetsConnector extends DataConnector {
+        class JSONConnector extends DataConnector {
             /* *
              *
              *  Constructor
              *
              * */
             /**
-             * Constructs an instance of GoogleSheetsConnector
+             * Constructs an instance of JSONConnector.
              *
-             * @param {GoogleSheetsConnector.UserOptions} [options]
+             * @param {JSONConnector.UserOptions} [options]
              * Options for the connector and converter.
              */
             constructor(options) {
-                const mergedOptions = merge(GoogleSheetsConnector.defaultOptions, options);
+                const mergedOptions = merge(JSONConnector.defaultOptions, options);
                 super(mergedOptions);
-                this.converter = new GoogleSheetsConverter(mergedOptions);
+                this.converter = new JSONConverter(mergedOptions);
                 this.options = mergedOptions;
+                if (mergedOptions.enablePolling) {
+                    this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
+                }
             }
             /* *
              *
@@ -15678,48 +15612,45 @@
              *
              * */
             /**
-             * Loads data from a Google Spreadsheet.
+             * Initiates the loading of the JSON source to the connector
              *
              * @param {DataEvent.Detail} [eventDetail]
              * Custom information for pending events.
              *
-             * @return {Promise<this>}
-             * Same connector instance with modified table.
+             * @emits JSONConnector#load
+             * @emits JSONConnector#afterLoad
              */
             load(eventDetail) {
-                const connector = this, converter = connector.converter, table = connector.table, { dataModifier, dataRefreshRate, enablePolling, firstRowAsNames, googleAPIKey, googleSpreadsheetKey } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
+                const connector = this, converter = connector.converter, table = connector.table, { data, dataUrl, dataModifier } = connector.options;
                 connector.emit({
                     type: 'load',
+                    data,
                     detail: eventDetail,
-                    table,
-                    url
+                    table
                 });
-                // If already loaded, clear the current table
-                table.deleteColumns();
-                return fetch(url)
-                    .then((response) => (response.json()))
-                    .then((json) => {
-                    if (isGoogleError(json)) {
-                        throw new Error(json.error.message);
+                // If already loaded, clear the current rows
+                table.deleteRows();
+                return Promise.resolve(dataUrl ?
+                    fetch(dataUrl).then((json) => json.json()) :
+                    data ?
+                        data :
+                        [])
+                    .then((data) => {
+                    if (data) {
+                        converter.parse({ data });
+                        table.setColumns(converter.getTable().getColumns());
                     }
-                    converter.parse({
-                        firstRowAsNames,
-                        json
-                    });
-                    table.setColumns(converter.getTable().getColumns());
-                    return connector.setModifierOptions(dataModifier);
+                    return connector
+                        .setModifierOptions(dataModifier)
+                        .then(() => data);
                 })
-                    .then(() => {
+                    .then((data) => {
                     connector.emit({
                         type: 'afterLoad',
+                        data,
                         detail: eventDetail,
-                        table,
-                        url
+                        table
                     });
-                    // Polling
-                    if (enablePolling) {
-                        setTimeout(() => connector.load(), Math.max(dataRefreshRate || 0, 1) * 1000);
-                    }
                     return connector;
                 })['catch']((error) => {
                     connector.emit({
@@ -15737,79 +15668,21 @@
          *  Static Properties
          *
          * */
-        GoogleSheetsConnector.defaultOptions = {
-            googleAPIKey: '',
-            googleSpreadsheetKey: '',
-            worksheet: 1,
+        JSONConnector.defaultOptions = {
+            data: [],
             enablePolling: false,
-            dataRefreshRate: 2,
-            firstRowAsNames: true
+            dataRefreshRate: 0,
+            firstRowAsNames: true,
+            orientation: 'rows'
         };
-        /* *
-         *
-         *  Class Namespace
-         *
-         * */
-        (function (GoogleSheetsConnector) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Creates GoogleSheets API v4 URL.
-             * @private
-             */
-            function buildFetchURL(apiKey, sheetKey, options = {}) {
-                return (`https://sheets.googleapis.com/v4/spreadsheets/${sheetKey}/values/` +
-                    (options.onlyColumnNames ?
-                        'A1:Z1' :
-                        buildQueryRange(options)) +
-                    '?alt=json' +
-                    (options.onlyColumnNames ?
-                        '' :
-                        '&dateTimeRenderOption=FORMATTED_STRING' +
-                            '&majorDimension=COLUMNS' +
-                            '&valueRenderOption=UNFORMATTED_VALUE') +
-                    '&prettyPrint=false' +
-                    `&key=${apiKey}`);
-            }
-            GoogleSheetsConnector.buildFetchURL = buildFetchURL;
-            /**
-             * Creates sheets range.
-             * @private
-             */
-            function buildQueryRange(options = {}) {
-                const { endColumn, endRow, googleSpreadsheetRange, startColumn, startRow } = options;
-                return googleSpreadsheetRange || ((alphabet[startColumn || 0] || 'A') +
-                    (Math.max((startRow || 0), 0) + 1) +
-                    ':' +
-                    (alphabet[pick(endColumn, 25)] || 'Z') +
-                    (endRow ?
-                        Math.max(endRow, 0) :
-                        'Z'));
-            }
-            GoogleSheetsConnector.buildQueryRange = buildQueryRange;
-        })(GoogleSheetsConnector || (GoogleSheetsConnector = {}));
-        DataConnector.registerType('GoogleSheets', GoogleSheetsConnector);
+        DataConnector.registerType('JSON', JSONConnector);
         /* *
          *
          *  Default Export
          *
          * */
 
-        return GoogleSheetsConnector;
+        return JSONConnector;
     });
     _registerModule(_modules, 'Data/Modifiers/ChainModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
         /* *
