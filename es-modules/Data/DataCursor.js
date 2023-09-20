@@ -205,6 +205,16 @@ class DataCursor {
 }
 /* *
  *
+ *  Static Properties
+ *
+ * */
+/**
+ * Semantic version string of the DataCursor class.
+ * @internal
+ */
+DataCursor.version = '1.0.0';
+/* *
+ *
  *  Class Namespace
  *
  * */
@@ -351,65 +361,3 @@ class DataCursor {
  *
  * */
 export default DataCursor;
-/* *
- *
- *  API Declarations
- *
- * */
-/**
- * @typedef {
- *     Data.DataCursor.Position|
- *     Data.DataCursor.Range
- * } Data.DataCursor.Type
- */
-/**
- * @interface Data.DataCursor.Position
- */
-/**
- * @name Data.DataCursor.Position#type
- * @type {'position'}
- */
-/**
- * @name Data.DataCursor.Position#column
- * @type {string|undefined}
- */
-/**
- * @name Data.DataCursor.Position#row
- * @type {number|undefined}
- */
-/**
- * @name Data.DataCursor.Position#state
- * @type {string}
- */
-/**
- * @name Data.DataCursor.Position#tableScope
- * @type {'original'|'modified'}
- */
-/**
- * @interface Data.DataCursor.Range
- */
-/**
- * @name Data.DataCursor.Range#type
- * @type {'range'}
- */
-/**
- * @name Data.DataCursor.Range#columns
- * @type {Array<string>|undefined}
- */
-/**
- * @name Data.DataCursor.Range#firstRow
- * @type {number}
- */
-/**
- * @name Data.DataCursor.Range#lastRow
- * @type {number}
- */
-/**
- * @name Data.DataCursor.Range#state
- * @type {string}
- */
-/**
- * @name Data.DataCursor.Range#tableScope
- * @type {'original'|'modified'}
- */
-'';

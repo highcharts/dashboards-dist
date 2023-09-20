@@ -230,6 +230,16 @@ class DataPool {
 }
 /* *
  *
+ *  Static Properties
+ *
+ * */
+/**
+ * Semantic version string of the DataPool class.
+ * @internal
+ */
+DataPool.version = '1.0.0';
+/* *
+ *
  *  Default Export
  *
  * */

@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.0 (2023-09-19)
+ * @license Highcharts Dashboards v1.1.1 (2023-09-20)
  * @module dashboards/dashboards
  *
  * (c) 2009-2023 Highsoft AS
@@ -25,10 +25,11 @@ import PluginHandler from '../Dashboards/PluginHandler.js';
 import Sync from '../Dashboards/Components/Sync/Sync.js';
 import Utilities from '../Dashboards/Utilities.js';
 // Fill registries
+import '../Dashboards/Components/HTMLComponent.js';
 import '../Data/Connectors/CSVConnector.js';
-import '../Data/Connectors/JSONConnector.js';
-import '../Data/Connectors/HTMLTableConnector.js';
 import '../Data/Connectors/GoogleSheetsConnector.js';
+import '../Data/Connectors/HTMLTableConnector.js';
+import '../Data/Connectors/JSONConnector.js';
 import '../Data/Modifiers/ChainModifier.js';
 import '../Data/Modifiers/InvertModifier.js';
 import '../Data/Modifiers/RangeModifier.js';

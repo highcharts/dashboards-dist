@@ -12,6 +12,11 @@ import DataConnector from './Connectors/DataConnector.js';
  * Pool options with all connectors.
  */
 declare class DataPool implements DataEvent.Emitter {
+    /**
+     * Semantic version string of the DataPool class.
+     * @internal
+     */
+    static readonly version: string;
     constructor(options?: (DataPoolOptions | undefined));
     /**
      * Internal dictionary with the connectors and their names.

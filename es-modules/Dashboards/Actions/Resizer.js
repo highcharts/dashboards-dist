@@ -61,9 +61,7 @@ class Resizer {
         this.snapRight = createElement('img', {
             className: EditGlobals.classNames.resizeSnap + ' ' +
                 EditGlobals.classNames.resizeSnapX,
-            // src: iconsURLPrefix + 'resize-handle.svg'
-            // eslint-disable-next-line max-len
-            src: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@b2d3673cfd596a9615e57233914836c78544884c/gfx/dashboards-icons/resize-handle.svg'
+            src: iconsURLPrefix + 'resize-handle.svg'
         }, {
             width: snapWidth + 'px',
             height: snapHeight + 'px',
@@ -73,9 +71,7 @@ class Resizer {
         this.snapBottom = createElement('img', {
             className: EditGlobals.classNames.resizeSnap + ' ' +
                 EditGlobals.classNames.resizeSnapY,
-            // src: iconsURLPrefix + 'resize-handle.svg'
-            // eslint-disable-next-line max-len
-            src: 'https://cdn.jsdelivr.net/gh/highcharts/highcharts@b2d3673cfd596a9615e57233914836c78544884c/gfx/dashboards-icons/resize-handle.svg'
+            src: iconsURLPrefix + 'resize-handle.svg'
         }, {
             width: snapWidth + 'px',
             height: snapHeight + 'px',
