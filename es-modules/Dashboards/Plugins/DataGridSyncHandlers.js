@@ -124,7 +124,7 @@ const configs = {
                 const cursor = e.cursor;
                 if (cursor.type === 'position' &&
                     this.dataGrid &&
-                    typeof (cursor === null || cursor === void 0 ? void 0 : cursor.row) === 'number') {
+                    typeof cursor?.row === 'number') {
                     const { row } = cursor;
                     this.dataGrid.scrollToRow(row);
                 }

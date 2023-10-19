@@ -49,7 +49,6 @@ class MenuItem {
         this.isActive ? { display: 'block' } : {}), this.menu.container);
     }
     setInnerElement() {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
         const item = this, options = item.options, container = item.container, langKey = options.langKey;
         if (options.type === 'toggle') {
             return EditRenderer.renderToggle(container, {
@@ -60,7 +59,7 @@ class MenuItem {
                     options.text,
                 value: !!(options.getValue && options.getValue(item)),
                 lang: this.menu.editMode.lang,
-                onchange: (_b = (_a = options.events) === null || _a === void 0 ? void 0 : _a.click) === null || _b === void 0 ? void 0 : _b.bind(item)
+                onchange: options.events?.click?.bind(item)
             });
         }
         if (options.type === 'text') {
@@ -74,13 +73,13 @@ class MenuItem {
         if (options.type === 'icon') {
             return EditRenderer.renderIcon(container, {
                 icon: options.icon || '',
-                mousedown: (_d = (_c = options.events) === null || _c === void 0 ? void 0 : _c.onmousedown) === null || _d === void 0 ? void 0 : _d.bind(item),
-                click: (_f = (_e = options.events) === null || _e === void 0 ? void 0 : _e.click) === null || _f === void 0 ? void 0 : _f.bind(item)
+                mousedown: options.events?.onmousedown?.bind(item),
+                click: options.events?.click?.bind(item)
             });
         }
         if (options.type === 'button') {
             return EditRenderer.renderButton(container, {
-                callback: (_h = (_g = options.events) === null || _g === void 0 ? void 0 : _g.click) === null || _h === void 0 ? void 0 : _h.bind(item),
+                callback: options.events?.click?.bind(item),
                 className: options.className || '',
                 style: options.style || {},
                 text: langKey ?

@@ -70,11 +70,10 @@ class JSONConnector extends DataConnector {
         });
         // If already loaded, clear the current rows
         table.deleteRows();
-        return Promise.resolve(dataUrl ?
+        return Promise
+            .resolve(dataUrl ?
             fetch(dataUrl).then((json) => json.json()) :
-            data ?
-                data :
-                [])
+            data || [])
             .then((data) => {
             if (data) {
                 converter.parse({ data });

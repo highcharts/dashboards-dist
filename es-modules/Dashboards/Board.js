@@ -252,14 +252,13 @@ class Board {
      * Destroy the whole dashboard, its layouts and elements.
      */
     destroy() {
-        var _a;
         const board = this;
         // Destroy layouts.
         for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
             board.layouts[i].destroy();
         }
         // Remove resizeObserver from the board
-        (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(board.container);
+        this.resizeObserver?.unobserve(board.container);
         // Destroy container.
         board.container.remove();
         // @ToDo Destroy bindings.
@@ -378,9 +377,13 @@ class Board {
                 components.push(board.mountedComponents[i].component.getOptions());
             }
         }
-        return Object.assign(Object.assign({}, this.options), { gui: {
+        return {
+            ...this.options,
+            gui: {
                 layouts
-            }, components: components });
+            },
+            components: components
+        };
     }
 }
 /* *

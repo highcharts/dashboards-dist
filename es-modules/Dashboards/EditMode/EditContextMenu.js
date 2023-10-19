@@ -70,15 +70,17 @@ class EditContextMenu extends Menu {
         });
     }
     setVisible(visible) {
-        const contextMenu = this;
-        if (contextMenu.container) {
+        const contextMenu = this, contextButtonElement = contextMenu.editMode.tools.contextButtonElement;
+        if (contextMenu.container && contextButtonElement) {
             if (visible) {
                 contextMenu.container.style.display = 'block';
                 contextMenu.isVisible = true;
+                contextButtonElement.setAttribute('aria-expanded', 'true');
             }
             else {
                 contextMenu.container.style.display = 'none';
                 contextMenu.isVisible = false;
+                contextButtonElement.setAttribute('aria-expanded', 'false');
             }
         }
     }

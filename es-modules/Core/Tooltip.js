@@ -916,7 +916,6 @@ class Tooltip {
          * @return {Highcharts.SVGElement} Returns the updated partial tooltip
          */
         function updatePartialTooltip(partialTooltip, point, str) {
-            var _a;
             let tt = partialTooltip;
             const { isHeader, series } = point;
             if (!tt) {
@@ -926,7 +925,7 @@ class Tooltip {
                 };
                 if (!styledMode) {
                     attribs.fill = options.backgroundColor;
-                    attribs['stroke-width'] = (_a = options.borderWidth) !== null && _a !== void 0 ? _a : 1;
+                    attribs['stroke-width'] = options.borderWidth ?? 1;
                 }
                 tt = ren
                     .label('', 0, 0, (options[isHeader ? 'headerShape' : 'shape']), void 0, void 0, options.useHTML)
@@ -1138,8 +1137,8 @@ class Tooltip {
         // Combine anchor and tooltip
         const anchorPos = this.getAnchor(points);
         const labelBBox = label.getBBox();
-        anchorPos[0] += chart.plotLeft - label.translateX;
-        anchorPos[1] += chart.plotTop - label.translateY;
+        anchorPos[0] += chart.plotLeft - (label.translateX || 0);
+        anchorPos[1] += chart.plotTop - (label.translateY || 0);
         // When the mouse pointer is between the anchor point and the label,
         // the label should stick.
         box.x = Math.min(0, anchorPos[0]);
@@ -1233,9 +1232,9 @@ class Tooltip {
      * @param {Highcharts.Point} point
      */
     updatePosition(point) {
-        const { chart, container, distance, options } = this, pointer = chart.pointer, label = this.getLabel(), 
+        const { chart, container, distance, options, renderer } = this, { height = 0, width = 0 } = this.getLabel(), pointer = chart.pointer, 
         // Needed for outside: true (#11688)
-        { left, top, scaleX, scaleY } = pointer.getChartPosition(), pos = (options.positioner || this.getPosition).call(this, label.width, label.height, point), renderer = this.renderer;
+        { left, top, scaleX, scaleY } = pointer.getChartPosition(), pos = (options.positioner || this.getPosition).call(this, width, height, point);
         let anchorX = (point.plotX || 0) + chart.plotLeft, anchorY = (point.plotY || 0) + chart.plotTop, pad;
         // Set the renderer size dynamically to prevent document size to change.
         // Renderer only exists when tooltip is outside.
@@ -1248,7 +1247,7 @@ class Tooltip {
             // Pad it by the border width and distance. Add 2 to make room for
             // the default shadow (#19314).
             pad = (options.borderWidth || 0) + 2 * distance + 2;
-            renderer.setSize(label.width + pad, label.height + pad, false);
+            renderer.setSize(width + pad, height + pad, false);
             // Anchor and tooltip container need scaling if chart container has
             // scale transform/css zoom. #11329.
             if (scaleX !== 1 || scaleY !== 1) {

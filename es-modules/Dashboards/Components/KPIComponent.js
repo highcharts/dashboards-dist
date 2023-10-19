@@ -14,15 +14,6 @@
  *
  * */
 'use strict';
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import AST from '../../Core/Renderer/HTML/AST.js';
 import Component from './Component.js';
 import Templating from '../../Core/Templating.js';
@@ -104,16 +95,11 @@ class KPIComponent extends Component {
      *
      * */
     /** @internal */
-    load() {
-        const _super = Object.create(null, {
-            load: { get: () => super.load }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            yield _super.load.call(this);
-            this.contentElement.style.display = 'flex';
-            this.contentElement.style.flexDirection = 'column';
-            return this;
-        });
+    async load() {
+        await super.load();
+        this.contentElement.style.display = 'flex';
+        this.contentElement.style.flexDirection = 'column';
+        return this;
     }
     resize(width, height) {
         super.resize(width, height);
@@ -155,18 +141,13 @@ class KPIComponent extends Component {
      * @param options
      * The options to apply.
      */
-    update(options, shouldRerender = true) {
-        const _super = Object.create(null, {
-            update: { get: () => super.update }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            yield _super.update.call(this, options);
-            this.setOptions();
-            if (options.chartOptions && this.chart) {
-                this.chart.update(options.chartOptions);
-            }
-            shouldRerender && this.render();
-        });
+    async update(options, shouldRerender = true) {
+        await super.update(options);
+        this.setOptions();
+        if (options.chartOptions && this.chart) {
+            this.chart.update(options.chartOptions);
+        }
+        shouldRerender && this.render();
     }
     /**
      * @internal
@@ -181,12 +162,11 @@ class KPIComponent extends Component {
      * The value that should be displayed in the KPI.
      */
     getValue() {
-        var _a;
         if (this.options.value) {
             return this.options.value;
         }
         if (this.connector && this.options.columnName) {
-            const table = (_a = this.connector) === null || _a === void 0 ? void 0 : _a.table.modified, column = table.getColumn(this.options.columnName), length = (column === null || column === void 0 ? void 0 : column.length) || 0;
+            const table = this.connector?.table.modified, column = table.getColumn(this.options.columnName), length = column?.length || 0;
             return table.getCellAsString(this.options.columnName, length - 1);
         }
     }
@@ -332,7 +312,21 @@ class KPIComponent extends Component {
      */
     toJSON() {
         const base = super.toJSON();
-        const json = Object.assign(Object.assign({}, base), { type: 'KPI', options: Object.assign(Object.assign({}, base.options), { type: 'KPI', value: this.options.value, subtitle: JSON.stringify(this.options.subtitle), title: JSON.stringify(this.options.title), threshold: this.options.threshold, thresholdColors: this.options.thresholdColors, chartOptions: JSON.stringify(this.options.chartOptions), valueFormat: this.options.valueFormat }) });
+        const json = {
+            ...base,
+            type: 'KPI',
+            options: {
+                ...base.options,
+                type: 'KPI',
+                value: this.options.value,
+                subtitle: JSON.stringify(this.options.subtitle),
+                title: JSON.stringify(this.options.title),
+                threshold: this.options.threshold,
+                thresholdColors: this.options.thresholdColors,
+                chartOptions: JSON.stringify(this.options.chartOptions),
+                valueFormat: this.options.valueFormat
+            }
+        };
         this.emit({ type: 'toJSON', json: base });
         return json;
     }
@@ -345,7 +339,10 @@ class KPIComponent extends Component {
      *
      */
     getOptions() {
-        return Object.assign(Object.assign({}, diffObjects(this.options, KPIComponent.defaultOptions)), { type: 'KPI' });
+        return {
+            ...diffObjects(this.options, KPIComponent.defaultOptions),
+            type: 'KPI'
+        };
     }
 }
 /* *

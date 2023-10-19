@@ -42,7 +42,10 @@ function onRegister(e) {
     ComponentRegistry.registerComponent('Highcharts', HighchartsComponent);
     ComponentRegistry.registerComponent('KPI', KPIComponent);
     ComponentRegistry.registerComponent('Navigator', NavigatorComponent);
-    Sync.defaultHandlers = Object.assign(Object.assign({}, Sync.defaultHandlers), HighchartsSyncHandlers);
+    Sync.defaultHandlers = {
+        ...Sync.defaultHandlers,
+        ...HighchartsSyncHandlers
+    };
 }
 /**
  * Callback function of the Dashboard plugin.

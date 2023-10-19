@@ -60,7 +60,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.1/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.2.0/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(
@@ -72,18 +72,25 @@ class EditMode {
             resize: {
                 enabled: true
             },
+            settings: {
+                enabled: true
+            },
             enabled: true,
             contextMenu: {
                 icon: this.iconsURLPrefix + 'menu.svg'
             },
             tools: {
                 addComponentBtn: {
+                    enabled: true,
                     icon: this.iconsURLPrefix + 'add.svg'
                 },
-                rwdIcons: {
-                    small: this.iconsURLPrefix + 'smartphone.svg',
-                    medium: this.iconsURLPrefix + 'tablet.svg',
-                    large: this.iconsURLPrefix + 'computer.svg'
+                rwdButtons: {
+                    enabled: true,
+                    icons: {
+                        small: this.iconsURLPrefix + 'smartphone.svg',
+                        medium: this.iconsURLPrefix + 'tablet.svg',
+                        large: this.iconsURLPrefix + 'computer.svg'
+                    }
                 }
             },
             confirmationPopup: {
@@ -160,18 +167,17 @@ class EditMode {
      * @internal
      */
     init() {
-        var _a, _b, _c, _d, _e;
         const editMode = this;
-        if ((_a = this.options.resize) === null || _a === void 0 ? void 0 : _a.enabled) {
+        if (this.options.resize?.enabled) {
             editMode.resizer = new Resizer(editMode, editMode.options.resize);
         }
         editMode.dragDrop = new DragDrop(editMode, editMode.options.dragDrop);
         // Init rowToolbar.
-        if (((_c = (_b = editMode.options.toolbars) === null || _b === void 0 ? void 0 : _b.row) === null || _c === void 0 ? void 0 : _c.enabled) && !editMode.rowToolbar) {
+        if (editMode.options.toolbars?.row?.enabled && !editMode.rowToolbar) {
             editMode.rowToolbar = new RowEditToolbar(editMode);
         }
         // Init cellToolbar.
-        if (((_e = (_d = editMode.options.toolbars) === null || _d === void 0 ? void 0 : _d.cell) === null || _e === void 0 ? void 0 : _e.enabled) && !editMode.cellToolbar) {
+        if (editMode.options.toolbars?.cell?.enabled && !editMode.cellToolbar) {
             editMode.cellToolbar = new CellEditToolbar(editMode);
         }
         // Init Sidebar.
@@ -443,7 +449,6 @@ class EditMode {
      * @internal
      */
     createTools() {
-        var _a, _b;
         const editMode = this;
         const options = this.options;
         // Create tools container
@@ -451,29 +456,33 @@ class EditMode {
         this.tools.container.classList.add(EditGlobals.classNames.editTools);
         this.board.layoutsWrapper.parentNode.insertBefore(this.tools.container, this.board.layoutsWrapper);
         // Create context menu button
-        if (options.contextMenu &&
-            options.contextMenu.enabled) {
+        if (options.contextMenu?.enabled) {
             this.tools.contextButtonElement = EditRenderer.renderContextButton(this.tools.container, editMode);
         }
         // Create rwd menu
-        this.createRwdMenu();
-        // Create add button
-        const addIconURL = (_b = (_a = options === null || options === void 0 ? void 0 : options.tools) === null || _a === void 0 ? void 0 : _a.addComponentBtn) === null || _b === void 0 ? void 0 : _b.icon;
-        this.addComponentBtn = EditRenderer.renderButton(this.tools.container, {
-            className: EditGlobals.classNames.editToolsBtn,
-            icon: addIconURL,
-            text: this.lang.addComponent,
-            callback: () => {
-                // Sidebar trigger
-                if (editMode.sidebar) {
-                    editMode.sidebar.show();
-                    editMode.setEditOverlay();
+        if (options.tools?.rwdButtons?.enabled) {
+            this.createRwdMenu();
+        }
+        // Create add component button
+        if (options.tools?.addComponentBtn?.enabled &&
+            options.toolbars?.cell?.enabled) {
+            const addIconURL = options.tools.addComponentBtn.icon;
+            this.addComponentBtn = EditRenderer.renderButton(this.tools.container, {
+                className: EditGlobals.classNames.editToolsBtn,
+                icon: addIconURL,
+                text: this.lang.addComponent,
+                callback: () => {
+                    // Sidebar trigger
+                    if (editMode.sidebar) {
+                        editMode.sidebar.show();
+                        editMode.setEditOverlay();
+                    }
+                },
+                style: {
+                    display: 'none'
                 }
-            },
-            style: {
-                display: 'none'
-            }
-        });
+            });
+        }
     }
     /**
      * Creates the responsive width buttons.
@@ -483,7 +492,7 @@ class EditMode {
         const rwdBreakingPoints = this.board.options.responsiveBreakpoints;
         const toolsContainer = this.tools.container;
         const options = this.options;
-        const rwdIcons = (options && options.tools && options.tools.rwdIcons) || {};
+        const rwdIcons = options?.tools?.rwdButtons?.icons || {};
         for (const key in rwdBreakingPoints) {
             if (toolsContainer) {
                 const btn = EditRenderer.renderButton(toolsContainer, {

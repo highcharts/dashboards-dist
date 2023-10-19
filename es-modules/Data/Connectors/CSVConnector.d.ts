@@ -27,14 +27,6 @@ declare class CSVConnector extends DataConnector {
      */
     readonly converter: CSVConverter;
     /**
-     * The URL to fetch if the source is external
-     */
-    private liveDataURL?;
-    /**
-     * The current timeout ID if polling is enabled
-     */
-    private liveDataTimeout?;
-    /**
      * Initiates the loading of the CSV source to the connector
      *
      * @param {DataEvent.Detail} [eventDetail]

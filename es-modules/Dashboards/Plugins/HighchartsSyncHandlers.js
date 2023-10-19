@@ -362,8 +362,10 @@ const configs = {
         },
         extremesHandler: function () {
             const { chart, board } = this;
-            if (chart && board) {
-                ['xAxis', 'yAxis'].forEach((dimension) => {
+            if (chart && board && chart.zooming?.type) {
+                const dimensions = chart.zooming.type.split('')
+                    .map((c) => c + 'Axis');
+                dimensions.forEach((dimension) => {
                     const callbacks = [];
                     const handleUpdateExtremes = (e) => {
                         const { cursor, event } = e;
@@ -374,17 +376,14 @@ const configs = {
                                 let didZoom = false;
                                 axes.forEach((axis) => {
                                     if (eventTarget.coll === axis.coll &&
-                                        eventTarget !== axis) {
-                                        if (eventTarget.min !== null && eventTarget.max !== null) {
-                                            if (axis.max !== eventTarget.max &&
-                                                axis.min !== eventTarget.min) {
-                                                axis
-                                                    .setExtremes(eventTarget.min, eventTarget.max, false, void 0, {
-                                                    trigger: 'dashboards-sync'
-                                                });
-                                                didZoom = true;
-                                            }
-                                        }
+                                        eventTarget !== axis &&
+                                        eventTarget.min !== null &&
+                                        eventTarget.max !== null && (axis.max !== eventTarget.max ||
+                                        axis.min !== eventTarget.min)) {
+                                        axis.setExtremes(eventTarget.min, eventTarget.max, false, void 0, {
+                                            trigger: 'dashboards-sync'
+                                        });
+                                        didZoom = true;
                                     }
                                 });
                                 if (didZoom && !chart.resetZoomButton) {

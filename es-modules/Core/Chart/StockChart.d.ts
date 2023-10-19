@@ -1,10 +1,12 @@
+import type Axis from '../Axis/Axis';
 import type { AxisCollectionKey } from '../Axis/AxisOptions';
 import type BBoxObject from '../Renderer/BBoxObject';
 import type { HTMLDOMElement } from '../Renderer/DOMElementType';
 import type Options from '../Options';
+import type Series from '../Series/Series';
 import type SVGElement from '../Renderer/SVG/SVGElement';
 import type SVGPath from '../Renderer/SVG/SVGPath';
-import Axis from '../Axis/Axis.js';
+import type SVGRenderer from '../Renderer/SVG/SVGRenderer';
 import Chart from '../Chart/Chart.js';
 import '../Pointer.js';
 declare module '../Axis/AxisLike' {
@@ -75,6 +77,8 @@ declare class StockChart extends Chart {
     createAxis(coll: AxisCollectionKey, options: Chart.CreateAxisOptionsObject): Axis;
 }
 declare namespace StockChart {
+    /** @private */
+    function compose(AxisClass: typeof Axis, SeriesClass: typeof Series, SVGRendererClass: typeof SVGRenderer): void;
     /**
      * Factory function for creating new stock charts. Creates a new
      * {@link Highcharts.StockChart|StockChart} object with different default

@@ -64,7 +64,7 @@ function toJSON(obj) {
             cursors = stateMap[tableId][state];
             stateMapJSON[tableId][state] = cursorsJSON = [];
             for (let k = 0, kEnd = cursors.length; k < kEnd; ++k) {
-                cursorsJSON.push(Object.assign({}, cursors[k]));
+                cursorsJSON.push({ ...cursors[k] });
             }
         }
     }

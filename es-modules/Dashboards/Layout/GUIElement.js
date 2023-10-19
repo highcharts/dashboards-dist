@@ -82,14 +82,11 @@ class GUIElement {
      */
     getElementContainer(options) {
         const guiElement = this;
-        let elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
+        let elem;
         if (options.render) {
             if (options.attribs && !options.attribs.id) {
                 delete options.attribs.id;
             }
-        }
-        else if (options.element instanceof HTMLElement) {
-            elem = options.element;
         }
         else if (typeof options.elementId === 'string') {
             const div = document.getElementById(options.elementId);
@@ -99,6 +96,12 @@ class GUIElement {
             else {
                 error('Element ' + options.elementId + ' does not exist');
             }
+        }
+        if (options.element instanceof HTMLElement) {
+            elem = options.element;
+        }
+        else {
+            elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
         }
         // Set bindedGUIElement event on GUIElement container.
         guiElement.removeBindedEventFn = addEvent(elem, 'bindedGUIElement', function (e) {

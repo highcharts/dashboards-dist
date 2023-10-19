@@ -11,15 +11,6 @@
  *
  * */
 'use strict';
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import Component from '../Components/Component.js';
 import DataConverter from '../../Data/Converters/DataConverter.js';
 import DataGridSyncHandlers from './DataGridSyncHandlers.js';
@@ -122,8 +113,7 @@ class DataGridComponent extends Component {
         });
     }
     onTableChanged() {
-        var _a;
-        if (this.dataGrid && !((_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.cellInputEl)) {
+        if (this.dataGrid && !this.dataGrid?.cellInputEl) {
             this.dataGrid.update({ dataTable: this.filterColumns() });
         }
     }
@@ -135,9 +125,8 @@ class DataGridComponent extends Component {
      * Attached connector
      */
     disableEditingModifiedColumns(connector) {
-        var _a;
         const options = this.getColumnOptions(connector);
-        (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ columns: options });
+        this.dataGrid?.update({ columns: options });
     }
     /**
      * Get the column options for the data grid.
@@ -170,52 +159,47 @@ class DataGridComponent extends Component {
      * Triggered on component initialization.
      * @private
      */
-    load() {
-        const _super = Object.create(null, {
-            load: { get: () => super.load }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            this.emit({ type: 'load' });
-            yield _super.load.call(this);
-            if (this.connector &&
-                !this.connectorListeners.length) {
-                const connectorListeners = this.connectorListeners;
-                // Reload the store when polling.
-                connectorListeners.push(this.connector
-                    .on('afterLoad', (e) => {
-                    if (e.table && this.connector) {
-                        this.connector.table.setColumns(e.table.getColumns());
+    async load() {
+        this.emit({ type: 'load' });
+        await super.load();
+        if (this.connector &&
+            !this.connectorListeners.length) {
+            const connectorListeners = this.connectorListeners;
+            // Reload the store when polling.
+            connectorListeners.push(this.connector
+                .on('afterLoad', (e) => {
+                if (e.table && this.connector) {
+                    this.connector.table.setColumns(e.table.getColumns());
+                }
+            }));
+            // Update the DataGrid when connector changed.
+            connectorListeners.push(this.connector.table
+                .on('afterSetCell', (e) => {
+                const dataGrid = this.dataGrid;
+                let shouldUpdateTheGrid = true;
+                if (dataGrid) {
+                    const row = dataGrid.rowElements[e.rowIndex];
+                    let cells = [];
+                    if (row) {
+                        cells = Array.prototype.slice.call(row.childNodes);
                     }
-                }));
-                // Update the DataGrid when connector changed.
-                connectorListeners.push(this.connector.table
-                    .on('afterSetCell', (e) => {
-                    const dataGrid = this.dataGrid;
-                    let shouldUpdateTheGrid = true;
-                    if (dataGrid) {
-                        const row = dataGrid.rowElements[e.rowIndex];
-                        let cells = [];
-                        if (row) {
-                            cells = Array.prototype.slice.call(row.childNodes);
-                        }
-                        cells.forEach((cell) => {
-                            if (cell.childElementCount > 0) {
-                                const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
-                                    input.value :
-                                    +input.value;
-                                if (cell.dataset.columnName === e.columnName &&
-                                    convertedInputValue === e.cellValue) {
-                                    shouldUpdateTheGrid = false;
-                                }
+                    cells.forEach((cell) => {
+                        if (cell.childElementCount > 0) {
+                            const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
+                                input.value :
+                                +input.value;
+                            if (cell.dataset.columnName === e.columnName &&
+                                convertedInputValue === e.cellValue) {
+                                shouldUpdateTheGrid = false;
                             }
-                        });
-                    }
-                    shouldUpdateTheGrid ? this.update({}) : void 0;
-                }));
-            }
-            this.emit({ type: 'afterLoad' });
-            return this;
-        });
+                        }
+                    });
+                }
+                shouldUpdateTheGrid ? this.update({}) : void 0;
+            }));
+        }
+        this.emit({ type: 'afterLoad' });
+        return this;
     }
     /** @private */
     render() {
@@ -239,36 +223,33 @@ class DataGridComponent extends Component {
             super.resize(width, height);
         }
     }
-    update(options) {
-        const _super = Object.create(null, {
-            update: { get: () => super.update }
-        });
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            if (((_a = options.connector) === null || _a === void 0 ? void 0 : _a.id) !== this.connectorId) {
-                const connectorListeners = this.connectorListeners;
-                for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
-                    connectorListeners[i]();
-                }
-                connectorListeners.length = 0;
+    async update(options) {
+        if (options.connector?.id !== this.connectorId) {
+            const connectorListeners = this.connectorListeners;
+            for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
+                connectorListeners[i]();
             }
-            yield _super.update.call(this, options);
-            if (this.dataGrid) {
-                this.filterAndAssignSyncOptions(DataGridSyncHandlers);
-                this.dataGrid.update(this.options.dataGridOptions || {});
-            }
-            this.emit({ type: 'afterUpdate' });
-        });
+            connectorListeners.length = 0;
+        }
+        await super.update(options);
+        if (this.dataGrid) {
+            this.filterAndAssignSyncOptions(DataGridSyncHandlers);
+            this.dataGrid.update(this.options.dataGridOptions || {});
+        }
+        this.emit({ type: 'afterUpdate' });
     }
     /** @private */
     constructDataGrid() {
-        var _a, _b;
         if (DataGridComponent.DataGridConstructor) {
             const columnOptions = this.connector ?
                 this.getColumnOptions(this.connector) :
                 {};
-            this.dataGrid = new DataGridComponent.DataGridConstructor(this.contentElement, Object.assign(Object.assign({}, this.options.dataGridOptions), { dataTable: ((_a = this.options.dataGridOptions) === null || _a === void 0 ? void 0 : _a.dataTable) ||
-                    this.filterColumns(), columns: merge(columnOptions, (_b = this.options.dataGridOptions) === null || _b === void 0 ? void 0 : _b.columns) }));
+            this.dataGrid = new DataGridComponent.DataGridConstructor(this.contentElement, {
+                ...this.options.dataGridOptions,
+                dataTable: this.options.dataGridOptions?.dataTable ||
+                    this.filterColumns(),
+                columns: merge(columnOptions, this.options.dataGridOptions?.columns)
+            });
             return this.dataGrid;
         }
         throw new Error('DataGrid not connected.');
@@ -289,16 +270,15 @@ class DataGridComponent extends Component {
      * @internal
      */
     filterColumns() {
-        var _a;
-        const table = (_a = this.connector) === null || _a === void 0 ? void 0 : _a.table.modified, visibleColumns = this.options.visibleColumns;
+        const table = this.connector?.table.modified, visibleColumns = this.options.visibleColumns;
         if (table) {
             // Show all columns if no visibleColumns is provided.
-            if (!(visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length)) {
+            if (!visibleColumns?.length) {
                 return table;
             }
             const columnsToDelete = table
                 .getColumnNames()
-                .filter((columnName) => ((visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length) > 0 &&
+                .filter((columnName) => (visibleColumns?.length > 0 &&
                 // Don't add columns that are not listed.
                 !visibleColumns.includes(columnName)
             // Else show the other columns.
@@ -313,7 +293,13 @@ class DataGridComponent extends Component {
     toJSON() {
         const dataGridOptions = JSON.stringify(this.options.dataGridOptions);
         const base = super.toJSON();
-        const json = Object.assign(Object.assign({}, base), { options: Object.assign(Object.assign({}, base.options), { dataGridOptions }) });
+        const json = {
+            ...base,
+            options: {
+                ...base.options,
+                dataGridOptions
+            }
+        };
         this.emit({ type: 'toJSON', json });
         return json;
     }
@@ -326,14 +312,16 @@ class DataGridComponent extends Component {
      *
      */
     getOptions() {
-        return Object.assign(Object.assign({}, diffObjects(this.options, DataGridComponent.defaultOptions)), { type: 'DataGrid' });
+        return {
+            ...diffObjects(this.options, DataGridComponent.defaultOptions),
+            type: 'DataGrid'
+        };
     }
     /**
      * Destroys the data grid component.
      */
     destroy() {
-        var _a;
-        (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.containerResizeObserver.disconnect();
+        this.dataGrid?.containerResizeObserver.disconnect();
         super.destroy();
     }
 }

@@ -23,27 +23,26 @@ const { merge, fireEvent, objectEach } = U;
  */
 class CellEditToolbar extends EditToolbar {
     static getItemsConfig(options, iconURLPrefix) {
-        var _a;
-        const dragOptions = ((_a = options.dragDrop) === null || _a === void 0 ? void 0 : _a.enabled) ?
-            [{
-                    id: 'drag',
-                    type: 'icon',
-                    icon: iconURLPrefix + 'drag.svg',
-                    events: {
-                        onmousedown: function (e) {
-                            const cellEditToolbar = this.menu
-                                .parent;
-                            const dragDrop = cellEditToolbar.editMode.dragDrop;
-                            if (dragDrop && cellEditToolbar.cell) {
-                                dragDrop.onDragStart(e, cellEditToolbar.cell);
-                            }
+        const items = [];
+        if (options.dragDrop?.enabled) {
+            items.push({
+                id: 'drag',
+                type: 'icon',
+                icon: iconURLPrefix + 'drag.svg',
+                events: {
+                    onmousedown: function (e) {
+                        const cellEditToolbar = this.menu
+                            .parent;
+                        const dragDrop = cellEditToolbar.editMode.dragDrop;
+                        if (dragDrop && cellEditToolbar.cell) {
+                            dragDrop.onDragStart(e, cellEditToolbar.cell);
                         }
                     }
-                }] :
-            [];
-        return [
-            ...dragOptions,
-            {
+                }
+            });
+        }
+        if (options.settings?.enabled) {
+            items.push({
                 id: 'settings',
                 type: 'icon',
                 icon: iconURLPrefix + 'settings.svg',
@@ -53,33 +52,34 @@ class CellEditToolbar extends EditToolbar {
                         this.menu.parent.onCellOptions();
                     }
                 }
-            },
-            {
-                id: 'destroy',
-                type: 'icon',
-                className: EditGlobals.classNames.menuDestroy,
-                icon: iconURLPrefix + 'destroy.svg',
-                events: {
-                    click: function (e) {
-                        const parentNode = this.menu.parent, editMode = this.menu.parent.editMode, popup = editMode.confirmationPopup;
-                        popup.show({
-                            confirmButton: {
-                                value: editMode.lang.confirmButton,
-                                callback: parentNode.onCellDestroy,
-                                context: parentNode
-                            },
-                            cancelButton: {
-                                value: editMode.lang.cancelButton,
-                                callback: () => {
-                                    popup.closePopup();
-                                }
-                            },
-                            text: editMode.lang.confirmDestroyCell
-                        });
-                    }
+            });
+        }
+        items.push({
+            id: 'destroy',
+            type: 'icon',
+            className: EditGlobals.classNames.menuDestroy,
+            icon: iconURLPrefix + 'destroy.svg',
+            events: {
+                click: function (e) {
+                    const parentNode = this.menu.parent, editMode = this.menu.parent.editMode, popup = editMode.confirmationPopup;
+                    popup.show({
+                        confirmButton: {
+                            value: editMode.lang.confirmButton,
+                            callback: parentNode.onCellDestroy,
+                            context: parentNode
+                        },
+                        cancelButton: {
+                            value: editMode.lang.cancelButton,
+                            callback: () => {
+                                popup.closePopup();
+                            }
+                        },
+                        text: editMode.lang.confirmDestroyCell
+                    });
                 }
             }
-        ];
+        });
+        return items;
     }
     /* *
      *
