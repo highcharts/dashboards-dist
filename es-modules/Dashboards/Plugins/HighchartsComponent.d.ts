@@ -36,11 +36,6 @@ declare class HighchartsComponent extends Component {
         chartOptions: {
             chart: {
                 styledMode: boolean;
-                zooming: {
-                    mouseWheel: {
-                        enabled: boolean;
-                    };
-                };
             };
             series: never[];
         };

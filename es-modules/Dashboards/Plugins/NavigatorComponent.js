@@ -11,15 +11,6 @@
  *
  * */
 'use strict';
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import Component from '../Components/Component.js';
 import DataModifier from '../../Data/Modifiers/DataModifier.js';
 const { Range: RangeModifier } = DataModifier.types;
@@ -49,7 +40,7 @@ const navigatorComponentSync = {
 /** @internal */
 function crossfilterEmitter() {
     const component = this;
-    const afterSetExtremes = (axis, extremes) => __awaiter(this, void 0, void 0, function* () {
+    const afterSetExtremes = async (axis, extremes) => {
         if (component.connector) {
             const table = component.connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = getAxisExtremes(axis, extremes);
             let modifier = table.getModifier();
@@ -65,7 +56,7 @@ function crossfilterEmitter() {
                         }]
                 });
             }
-            yield table.setModifier(modifier);
+            await table.setModifier(modifier);
             dataCursor.emitCursor(table, {
                 type: 'range',
                 columns: [filterColumn],
@@ -74,7 +65,7 @@ function crossfilterEmitter() {
                 state: 'crossfilter'
             }, extremes);
         }
-    });
+    };
     let delay;
     return addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
         clearTimeout(delay);
@@ -328,21 +319,19 @@ class NavigatorComponent extends Component {
      * @internal
      */
     getOptions() {
-        return Object.assign(Object.assign({}, diffObjects(this.options, NavigatorComponentDefaults)), { type: 'Navigator' });
+        return {
+            ...diffObjects(this.options, NavigatorComponentDefaults),
+            type: 'Navigator'
+        };
     }
     /** @private */
-    load() {
-        const _super = Object.create(null, {
-            load: { get: () => super.load }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            yield _super.load.call(this);
-            this.contentElement.appendChild(this.chartContainer);
-            this.parentElement.appendChild(this.element);
-            this.adjustNavigator();
-            this.emit({ type: 'afterLoad' });
-            return this;
-        });
+    async load() {
+        await super.load();
+        this.contentElement.appendChild(this.chartContainer);
+        this.parentElement.appendChild(this.element);
+        this.adjustNavigator();
+        this.emit({ type: 'afterLoad' });
+        return this;
     }
     onTableChanged() {
         this.renderNavigator();
@@ -425,34 +414,29 @@ class NavigatorComponent extends Component {
      * @param options
      * The options to apply.
      */
-    update(options, shouldRerender = true) {
-        const _super = Object.create(null, {
-            update: { get: () => super.update }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            const chart = this.chart;
-            yield _super.update.call(this, options, false);
-            if (options.sync) {
-                this.filterAndAssignSyncOptions(navigatorComponentSync);
-            }
-            if (options.chartOptions) {
-                chart.update(merge((this.options.sync.crossfilter ?
-                    {
-                        navigator: {
-                            xAxis: {
-                                labels: {
-                                    format: '{value}'
-                                }
+    async update(options, shouldRerender = true) {
+        const chart = this.chart;
+        await super.update(options, false);
+        if (options.sync) {
+            this.filterAndAssignSyncOptions(navigatorComponentSync);
+        }
+        if (options.chartOptions) {
+            chart.update(merge((this.options.sync.crossfilter ?
+                {
+                    navigator: {
+                        xAxis: {
+                            labels: {
+                                format: '{value}'
                             }
                         }
-                    } :
-                    {}), options.chartOptions), false);
-            }
-            this.emit({ type: 'afterUpdate' });
-            if (shouldRerender) {
-                this.render();
-            }
-        });
+                    }
+                } :
+                {}), options.chartOptions), false);
+        }
+        this.emit({ type: 'afterUpdate' });
+        if (shouldRerender) {
+            this.render();
+        }
     }
 }
 /**

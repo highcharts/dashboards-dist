@@ -1,7 +1,7 @@
 import type PluginHandler from '../PluginHandler';
 import type { Highcharts as H } from './HighchartsTypes';
 import HighchartsComponent from './HighchartsComponent.js';
-import KPIComponent from '../Components/KPIComponent.js';
+import KPIComponent from './KPIComponent.js';
 import NavigatorComponent from './NavigatorComponent.js';
 declare module '../Components/ComponentType' {
     interface ComponentTypeRegistry {

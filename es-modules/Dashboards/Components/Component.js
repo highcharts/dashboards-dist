@@ -14,15 +14,6 @@
  *
  * */
 'use strict';
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import CallbackRegistry from '../CallbackRegistry.js';
 import EditableOptions from './EditableOptions.js';
 import Globals from '../Globals.js';
@@ -62,7 +53,7 @@ class Component {
      * Creates HTML text element like header or title
      *
      * @param tagName
-     * HTML tag name used as wrapper of text like `h1`, `h2` or `p`.
+     * HTML tag name used as wrapper of text like `h2` or `p`.
      * @param elementName
      * Name of element
      * @param textOptions
@@ -188,18 +179,15 @@ class Component {
      * @returns
      * Promise resolving to the component.
      */
-    initConnector() {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            if (((_a = this.options.connector) === null || _a === void 0 ? void 0 : _a.id) &&
-                this.connectorId !== this.options.connector.id) {
-                this.cell.setLoadingState();
-                const connector = yield this.board.dataPool
-                    .getConnector(this.options.connector.id);
-                this.setConnector(connector);
-            }
-            return this;
-        });
+    async initConnector() {
+        if (this.options.connector?.id &&
+            this.connectorId !== this.options.connector.id) {
+            this.cell.setLoadingState();
+            const connector = await this.board.dataPool
+                .getConnector(this.options.connector.id);
+            this.setConnector(connector);
+        }
+        return this;
     }
     /**
     * Filter the sync options that are declared in the component options.
@@ -303,7 +291,10 @@ class Component {
                         .on(event, (e) => {
                         clearInterval(this.tableEventTimeout);
                         this.tableEventTimeout = Globals.win.setTimeout(() => {
-                            this.emit(Object.assign(Object.assign({}, e), { type: 'tableChanged' }));
+                            this.emit({
+                                ...e,
+                                type: 'tableChanged'
+                            });
                             this.tableEventTimeout = void 0;
                         }, 0);
                     }));
@@ -329,7 +320,10 @@ class Component {
         if (connector) {
             tableEvents.push(connector.table.on('afterSetModifier', (e) => {
                 if (e.type === 'afterSetModifier') {
-                    this.emit(Object.assign(Object.assign({}, e), { type: 'tableChanged' }));
+                    this.emit({
+                        ...e,
+                        type: 'tableChanged'
+                    });
                 }
             }));
         }
@@ -479,27 +473,24 @@ class Component {
      * @param shouldRerender
      * Set to true if the update should rerender the component.
      */
-    update(newOptions, shouldRerender = true) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            const eventObject = {
-                options: newOptions,
-                shouldForceRerender: false
-            };
-            // Update options
-            fireEvent(this, 'update', eventObject);
-            this.options = merge(this.options, newOptions);
-            if (((_a = this.options.connector) === null || _a === void 0 ? void 0 : _a.id) &&
-                this.connectorId !== this.options.connector.id) {
-                const connector = yield this.board.dataPool
-                    .getConnector(this.options.connector.id);
-                this.setConnector(connector);
-            }
-            this.options = merge(this.options, newOptions);
-            if (shouldRerender || eventObject.shouldForceRerender) {
-                this.render();
-            }
-        });
+    async update(newOptions, shouldRerender = true) {
+        const eventObject = {
+            options: newOptions,
+            shouldForceRerender: false
+        };
+        // Update options
+        fireEvent(this, 'update', eventObject);
+        this.options = merge(this.options, newOptions);
+        if (this.options.connector?.id &&
+            this.connectorId !== this.options.connector.id) {
+            const connector = await this.board.dataPool
+                .getConnector(this.options.connector.id);
+            this.setConnector(connector);
+        }
+        this.options = merge(this.options, newOptions);
+        if (shouldRerender || eventObject.shouldForceRerender) {
+            this.render();
+        }
     }
     /**
      * Private method which sets up event listeners for the component.
@@ -537,7 +528,7 @@ class Component {
         const titleElement = this.titleElement, shouldExist = titleOptions &&
             (typeof titleOptions === 'string' || titleOptions.text);
         if (shouldExist) {
-            const newTitle = Component.createTextElement('h1', 'title', titleOptions);
+            const newTitle = Component.createTextElement('h2', 'title', titleOptions);
             if (newTitle) {
                 if (!titleElement) {
                     this.element.insertBefore(newTitle, this.element.firstChild);
@@ -593,12 +584,10 @@ class Component {
      *
      * @internal
      */
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.initConnector();
-            this.render();
-            return this;
-        });
+    async load() {
+        await this.initConnector();
+        this.render();
+        return this;
     }
     /**
      * Renders the component.
@@ -625,6 +614,8 @@ class Component {
         while (this.element.firstChild) {
             this.element.firstChild.remove();
         }
+        // call unmount
+        fireEvent(this, 'unmount');
         // Unregister events
         this.tableEvents.forEach((eventCallback) => eventCallback());
         this.element.remove();

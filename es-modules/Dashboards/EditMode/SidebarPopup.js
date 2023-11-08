@@ -155,7 +155,6 @@ class SidebarPopup extends BaseForm {
                     };
                     sidebar.container.addEventListener('mouseleave', onMouseLeave);
                     sidebar.editMode.dragDrop.onDragStart(e, void 0, (dropContext) => {
-                        var _a, _b;
                         // Add component if there is no layout yet.
                         if (this.editMode.board.layouts.length === 0) {
                             const board = this.editMode.board, newLayoutName = GUIElement.createElementId('layout'), layout = new Layout(board, {
@@ -175,7 +174,7 @@ class SidebarPopup extends BaseForm {
                             const mountedComponent = newCell.mountedComponent;
                             // skip init connector when is not defined by
                             // options f.e HTML component.
-                            if ((_b = (_a = mountedComponent.options) === null || _a === void 0 ? void 0 : _a.connector) === null || _b === void 0 ? void 0 : _b.id) {
+                            if (mountedComponent.options?.connector?.id) {
                                 mountedComponent.initConnector();
                             }
                             sidebar.editMode.setEditCellContext(newCell);
@@ -252,6 +251,15 @@ class SidebarPopup extends BaseForm {
      * @returns Close button element
      */
     addCloseButton(className = EditGlobals.classNames.popupCloseButton) {
+        // close popup when click outside the popup
+        addEvent(document, 'click', (event) => {
+            event.stopPropagation();
+            if (this.container.style.display === 'block' &&
+                !this.container.contains(event.target) &&
+                this.container.classList.value.includes('show')) {
+                this.hide();
+            }
+        });
         return super.addCloseButton.call(this, className);
     }
     /**
@@ -335,9 +343,12 @@ SidebarPopup.components = [
                     }
                 };
                 if (connectorsIds.length) {
-                    options = Object.assign(Object.assign({}, options), { connector: {
+                    options = {
+                        ...options,
+                        connector: {
                             id: connectorsIds[0]
-                        } });
+                        }
+                    };
                 }
                 return sidebar.onDropNewComponent(dropContext, options);
             }
@@ -352,9 +363,12 @@ SidebarPopup.components = [
                     type: 'DataGrid'
                 };
                 if (connectorsIds.length) {
-                    options = Object.assign(Object.assign({}, options), { connector: {
+                    options = {
+                        ...options,
+                        connector: {
                             id: connectorsIds[0]
-                        } });
+                        }
+                    };
                 }
                 return sidebar.onDropNewComponent(dropContext, options);
             }
@@ -369,9 +383,12 @@ SidebarPopup.components = [
                     type: 'KPI'
                 };
                 if (connectorsIds.length) {
-                    options = Object.assign(Object.assign({}, options), { connector: {
+                    options = {
+                        ...options,
+                        connector: {
                             id: connectorsIds[0]
-                        } });
+                        }
+                    };
                 }
                 return sidebar.onDropNewComponent(dropContext, options);
             }

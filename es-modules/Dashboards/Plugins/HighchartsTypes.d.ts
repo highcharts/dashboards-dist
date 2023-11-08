@@ -6,7 +6,7 @@ export type { default as Globals } from 'highcharts/es-modules/Core/Globals';
 export type Highcharts = typeof H;
 export type { default as Options } from 'highcharts/es-modules/Core/Options';
 export type { default as OrdinalAxis } from 'highcharts/es-modules/Core/Axis/OrdinalAxis';
-export type { default as Pane } from 'highcharts/es-modules/Extensions/Pane';
+export type { default as Pane } from 'highcharts/es-modules/Extensions/Pane/Pane';
 export type { default as Point } from 'highcharts/es-modules/Core/Series/Point';
 export type { default as PolarComposition } from 'highcharts/es-modules/Series/PolarComposition';
 export type { default as Series } from 'highcharts/es-modules/Core/Series/Series';

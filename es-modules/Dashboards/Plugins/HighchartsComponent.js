@@ -14,15 +14,6 @@
  *
  * */
 'use strict';
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import Component from '../Components/Component.js';
 import DataConverter from '../../Data/Converters/DataConverter.js';
 import DataTable from '../../Data/DataTable.js';
@@ -117,16 +108,11 @@ class HighchartsComponent extends Component {
      *
      * */
     /** @private */
-    load() {
-        const _super = Object.create(null, {
-            load: { get: () => super.load }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            this.emit({ type: 'load' });
-            yield _super.load.call(this);
-            this.emit({ type: 'afterLoad' });
-            return this;
-        });
+    async load() {
+        this.emit({ type: 'load' });
+        await super.load();
+        this.emit({ type: 'afterLoad' });
+        return this;
     }
     render() {
         const hcComponent = this;
@@ -198,20 +184,15 @@ class HighchartsComponent extends Component {
      * The options to apply.
      *
      */
-    update(options, shouldRerender = true) {
-        const _super = Object.create(null, {
-            update: { get: () => super.update }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            yield _super.update.call(this, options, false);
-            this.setOptions();
-            this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
-            if (this.chart) {
-                this.chart.update(merge(this.options.chartOptions) || {});
-            }
-            this.emit({ type: 'afterUpdate' });
-            shouldRerender && this.render();
-        });
+    async update(options, shouldRerender = true) {
+        await super.update(options, false);
+        this.setOptions();
+        this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
+        if (this.chart) {
+            this.chart.update(merge(this.options.chartOptions) || {});
+        }
+        this.emit({ type: 'afterUpdate' });
+        shouldRerender && this.render();
     }
     /**
      * Updates chart's series when the data table is changed.
@@ -219,7 +200,6 @@ class HighchartsComponent extends Component {
      * @private
      */
     updateSeries() {
-        var _a;
         // Heuristically create series from the connector dataTable
         if (this.chart && this.connector) {
             this.presentationTable = this.presentationModifier ?
@@ -231,7 +211,7 @@ class HighchartsComponent extends Component {
                 this.presentationTable = this.presentationModifier
                     .modifyTable(this.presentationTable).modified;
             }
-            const table = this.presentationTable, modifierOptions = (_a = table.getModifier()) === null || _a === void 0 ? void 0 : _a.options;
+            const table = this.presentationTable, modifierOptions = table.getModifier()?.options;
             // Names/aliases that should be mapped to xAxis values
             const columnNames = table.modified.getColumnNames();
             const columnAssignment = this.options.columnAssignment ||
@@ -257,7 +237,6 @@ class HighchartsComponent extends Component {
             });
             // Create the series or get the already added series
             const seriesList = seriesNames.map((seriesName, index) => {
-                var _a;
                 let i = 0;
                 while (i < chart.series.length) {
                     const series = chart.series[i];
@@ -275,9 +254,9 @@ class HighchartsComponent extends Component {
                 }
                 // Disable dragging on series, which were created out of a
                 // columns which are created by MathModifier.
-                const shouldBeDraggable = !((modifierOptions === null || modifierOptions === void 0 ? void 0 : modifierOptions.type) === 'Math' &&
-                    ((_a = modifierOptions
-                        .columnFormulas) === null || _a === void 0 ? void 0 : _a.some((formula) => formula.column === seriesName)));
+                const shouldBeDraggable = !(modifierOptions?.type === 'Math' &&
+                    modifierOptions
+                        .columnFormulas?.some((formula) => formula.column === seriesName));
                 return chart.addSeries({
                     name: seriesName,
                     id: `${storeTableID}-series-${index}`,
@@ -327,12 +306,11 @@ class HighchartsComponent extends Component {
      *
      */
     getDefaultColumnAssignment(columnNames = []) {
-        var _a;
         const defaultColumnAssignment = {};
         for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
             defaultColumnAssignment[columnNames[i]] = 'y';
             if (i === 0) {
-                const firstColumnValues = (_a = this.presentationTable) === null || _a === void 0 ? void 0 : _a.getColumn(columnNames[i], true);
+                const firstColumnValues = this.presentationTable?.getColumn(columnNames[i], true);
                 if (firstColumnValues && isString(firstColumnValues[0])) {
                     defaultColumnAssignment[columnNames[i]] = 'x';
                 }
@@ -358,7 +336,7 @@ class HighchartsComponent extends Component {
                 try {
                     return factory(this.chartContainer, this.chartOptions);
                 }
-                catch (_a) {
+                catch {
                     error('The Highcharts component is misconfigured: `' +
                         this.cell.id + '`');
                 }
@@ -418,16 +396,15 @@ class HighchartsComponent extends Component {
         }
     }
     setConnector(connector) {
-        var _a;
         const chart = this.chart;
         if (this.connector &&
             chart &&
             chart.series &&
-            this.connector.table.id !== (connector === null || connector === void 0 ? void 0 : connector.table.id)) {
+            this.connector.table.id !== connector?.table.id) {
             const storeTableID = this.connector.table.id;
             for (let i = chart.series.length - 1; i >= 0; i--) {
                 const series = chart.series[i];
-                if (((_a = series.options.id) === null || _a === void 0 ? void 0 : _a.indexOf(storeTableID)) !== -1) {
+                if (series.options.id?.indexOf(storeTableID) !== -1) {
                     series.remove(false);
                 }
             }
@@ -447,11 +424,19 @@ class HighchartsComponent extends Component {
         const chartOptions = JSON.stringify(this.options.chartOptions), chartConstructor = this.options.chartConstructor;
         this.registerChartEvents();
         const base = super.toJSON();
-        const json = Object.assign(Object.assign({}, base), { type: 'Highcharts', options: Object.assign(Object.assign({}, base.options), { chartOptions,
-                chartConstructor, 
+        const json = {
+            ...base,
+            type: 'Highcharts',
+            options: {
+                ...base.options,
+                chartOptions,
+                chartConstructor,
                 // TODO: may need to handle callback functions
                 // Maybe have a sync.toJSON()
-                type: 'Highcharts', sync: {} }) });
+                type: 'Highcharts',
+                sync: {}
+            }
+        };
         this.emit({ type: 'toJSON', json });
         return json;
     }
@@ -464,15 +449,17 @@ class HighchartsComponent extends Component {
      *
      */
     getOptions() {
-        return Object.assign(Object.assign({}, diffObjects(this.options, HighchartsComponent.defaultOptions)), { type: 'Highcharts' });
+        return {
+            ...diffObjects(this.options, HighchartsComponent.defaultOptions),
+            type: 'Highcharts'
+        };
     }
     getEditableOptions() {
-        var _a;
         const component = this;
         const componentOptions = component.options;
         const chart = component.chart;
         const chartOptions = chart && chart.options;
-        const chartType = chartOptions && ((_a = chartOptions.chart) === null || _a === void 0 ? void 0 : _a.type) || 'line';
+        const chartType = chartOptions && chartOptions.chart?.type || 'line';
         return merge(componentOptions, {
             chartOptions
         }, {
@@ -517,12 +504,7 @@ HighchartsComponent.defaultOptions = merge(Component.defaultOptions, {
     chartID: 'chart-' + uniqueKey(),
     chartOptions: {
         chart: {
-            styledMode: true,
-            zooming: {
-                mouseWheel: {
-                    enabled: false
-                }
-            }
+            styledMode: true
         },
         series: []
     },

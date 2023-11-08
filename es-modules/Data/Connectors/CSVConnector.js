@@ -74,11 +74,9 @@ class CSVConnector extends DataConnector {
         // If already loaded, clear the current rows
         table.deleteRows();
         return Promise
-            .resolve(csv ?
-            csv :
-            csvURL ?
-                fetch(csvURL || '').then((response) => response.text()) :
-                '')
+            .resolve(csvURL ?
+            fetch(csvURL).then((response) => response.text()) :
+            csv || '')
             .then((csv) => {
             if (csv) {
                 converter.parse({ csv });

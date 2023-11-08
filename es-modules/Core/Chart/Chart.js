@@ -27,7 +27,8 @@ import SVGRenderer from '../Renderer/SVG/SVGRenderer.js';
 import Time from '../Time.js';
 import U from '../Utilities.js';
 import AST from '../Renderer/HTML/AST.js';
-const { addEvent, attr, createElement, css, defined, diffObjects, discardElement, erase, error, extend, find, fireEvent, getStyle, isArray, isNumber, isObject, isString, merge, objectEach, pick, pInt, relativeLength, removeEvent, splat, syncTimeout, uniqueKey } = U;
+import Tick from '../Axis/Tick.js';
+const { addEvent, attr, createElement, clamp, css, defined, diffObjects, discardElement, erase, error, extend, find, fireEvent, getStyle, isArray, isNumber, isObject, isString, merge, objectEach, pick, pInt, relativeLength, removeEvent, splat, syncTimeout, uniqueKey } = U;
 /* *
  *
  *  Class
@@ -172,7 +173,14 @@ class Chart {
      */
     setZoomOptions() {
         const chart = this, options = chart.options.chart, zooming = options.zooming;
-        chart.zooming = Object.assign(Object.assign({}, zooming), { type: pick(options.zoomType, zooming.type), key: pick(options.zoomKey, zooming.key), pinchType: pick(options.pinchType, zooming.pinchType), singleTouch: pick(options.zoomBySingleTouch, zooming.singleTouch, false), resetButton: merge(zooming.resetButton, options.resetZoomButton) });
+        chart.zooming = {
+            ...zooming,
+            type: pick(options.zoomType, zooming.type),
+            key: pick(options.zoomKey, zooming.key),
+            pinchType: pick(options.pinchType, zooming.pinchType),
+            singleTouch: pick(options.zoomBySingleTouch, zooming.singleTouch, false),
+            resetButton: merge(zooming.resetButton, options.resetZoomButton)
+        };
     }
     /**
      * Overridable function that initializes the chart. The constructor's
@@ -686,6 +694,10 @@ class Chart {
      *
      * @sample highcharts/plotoptions/series-allowpointselect-line/
      *         Get selected points
+     * @sample highcharts/members/point-select-lasso/
+     *         Lasso selection
+     * @sample highcharts/chart/events-selection-points/
+     *         Rectangle selection
      *
      * @function Highcharts.Chart#getSelectedPoints
      *
@@ -1239,8 +1251,7 @@ class Chart {
     setReflow() {
         const chart = this;
         const runReflow = (e) => {
-            var _a;
-            if (((_a = chart.options) === null || _a === void 0 ? void 0 : _a.chart.reflow) && chart.hasLoaded) {
+            if (chart.options?.chart.reflow && chart.hasLoaded) {
                 chart.reflow(e);
             }
         };
@@ -1646,60 +1657,71 @@ class Chart {
      * @function Highcharts.Chart#render
      */
     render() {
-        const chart = this, axes = chart.axes, colorAxis = chart.colorAxis, renderer = chart.renderer, renderAxes = function (axes) {
-            axes.forEach(function (axis) {
+        const chart = this, axes = chart.axes, colorAxis = chart.colorAxis, renderer = chart.renderer, renderAxes = (axes) => {
+            axes.forEach((axis) => {
                 if (axis.visible) {
                     axis.render();
                 }
             });
         };
-        let correction = 0; // correction for X axis labels
+        let expectedSpace = 0; // Correction for X axis labels
         // Title
         chart.setTitle();
         // Fire an event before the margins are computed. This is where the
         // legend is assigned.
         fireEvent(chart, 'beforeMargins');
         // Get stacks
-        if (chart.getStacks) {
-            chart.getStacks();
-        }
+        chart.getStacks?.();
         // Get chart margins
         chart.getMargins(true);
         chart.setChartSize();
         // Record preliminary dimensions for later comparison
         const tempWidth = chart.plotWidth;
-        axes.some(function (axis) {
+        for (const axis of axes) {
+            const { options } = axis, { labels } = options;
             if (axis.horiz &&
                 axis.visible &&
-                axis.options.labels.enabled &&
-                axis.series.length) {
-                // 21 is the most common correction for X axis labels
-                correction = 21;
-                return true;
+                labels.enabled &&
+                axis.series.length &&
+                axis.coll !== 'colorAxis' &&
+                !chart.polar) {
+                expectedSpace = options.tickLength;
+                axis.createGroups();
+                // Calculate extecped space based on dummy tick
+                const mockTick = new Tick(axis, 0, '', true), label = mockTick.createLabel('x', labels);
+                mockTick.destroy();
+                if (label &&
+                    pick(labels.reserveSpace, !isNumber(options.crossing))) {
+                    expectedSpace = label.getBBox().height +
+                        labels.distance +
+                        Math.max(options.offset || 0, 0);
+                }
+                if (expectedSpace) {
+                    label?.destroy();
+                    break;
+                }
             }
-        });
-        // use Math.max to prevent negative plotHeight
-        chart.plotHeight = Math.max(chart.plotHeight - correction, 0);
+        }
+        // Use Math.max to prevent negative plotHeight
+        chart.plotHeight = Math.max(chart.plotHeight - expectedSpace, 0);
         const tempHeight = chart.plotHeight;
         // Get margins by pre-rendering axes
-        axes.forEach(function (axis) {
-            axis.setScale();
-        });
+        axes.forEach((axis) => axis.setScale());
         chart.getAxisMargins();
         // If the plot area size has changed significantly, calculate tick
         // positions again
-        const redoHorizontal = tempWidth / chart.plotWidth > 1.1;
+        const redoHorizontal = tempWidth / chart.plotWidth > 1.1, 
         // Height is more sensitive, use lower threshold
-        const redoVertical = tempHeight / chart.plotHeight > 1.05;
+        redoVertical = tempHeight / chart.plotHeight > 1.05;
         if (redoHorizontal || redoVertical) {
-            axes.forEach(function (axis) {
+            axes.forEach((axis) => {
                 if ((axis.horiz && redoHorizontal) ||
                     (!axis.horiz && redoVertical)) {
-                    // update to reflect the new margins
+                    // Update to reflect the new margins
                     axis.setTickInterval(true);
                 }
             });
-            chart.getMargins(); // second pass to check for new labels
+            chart.getMargins(); // Second pass to check for new labels
         }
         // Draw the borders and backgrounds
         chart.drawChartBox();

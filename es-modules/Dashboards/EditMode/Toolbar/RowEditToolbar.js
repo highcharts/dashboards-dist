@@ -23,35 +23,37 @@ const { merge, objectEach } = U;
  */
 class RowEditToolbar extends EditToolbar {
     static getMenuItemsConfig(options, iconURLPrefix) {
-        var _a;
-        const dragDropElement = ((_a = options.dragDrop) === null || _a === void 0 ? void 0 : _a.enabled) ?
-            [{
-                    id: 'drag',
-                    type: 'icon',
-                    icon: iconURLPrefix + 'drag.svg',
-                    events: {
-                        onmousedown: function (e) {
-                            const rowEditToolbar = this.menu
-                                .parent, dragDrop = rowEditToolbar.editMode.dragDrop;
-                            if (dragDrop && rowEditToolbar.row) {
-                                dragDrop.onDragStart(e, rowEditToolbar.row);
-                            }
+        const items = [];
+        if (options.dragDrop?.enabled) {
+            items.push({
+                id: 'drag',
+                type: 'icon',
+                icon: iconURLPrefix + 'drag.svg',
+                events: {
+                    onmousedown: function (e) {
+                        const rowEditToolbar = this.menu
+                            .parent, dragDrop = rowEditToolbar.editMode.dragDrop;
+                        if (dragDrop && rowEditToolbar.row) {
+                            dragDrop.onDragStart(e, rowEditToolbar.row);
                         }
                     }
-                }] :
-            [];
-        const settingsElement = {
-            id: 'settings',
-            type: 'icon',
-            icon: iconURLPrefix + 'settings.svg',
-            events: {
-                click: function (e) {
-                    this.menu.parent.editMode.setEditOverlay();
-                    this.menu.parent.onRowOptions(e);
                 }
-            }
-        };
-        const destroyElement = {
+            });
+        }
+        if (options.settings?.enabled) {
+            items.push({
+                id: 'settings',
+                type: 'icon',
+                icon: iconURLPrefix + 'settings.svg',
+                events: {
+                    click: function (e) {
+                        this.menu.parent.editMode.setEditOverlay();
+                        this.menu.parent.onRowOptions(e);
+                    }
+                }
+            });
+        }
+        items.push({
             id: 'destroy',
             type: 'icon',
             className: EditGlobals.classNames.menuDestroy,
@@ -75,8 +77,8 @@ class RowEditToolbar extends EditToolbar {
                     });
                 }
             }
-        };
-        return [...dragDropElement, settingsElement, destroyElement];
+        });
+        return items;
     }
     /* *
      *

@@ -49,6 +49,7 @@ function renderContextButton(parentNode, editMode) {
                 ')'
         }, parentNode);
         ctxBtnElement.setAttribute('aria-label', editMode.lang.accessibility.contextMenu.button);
+        ctxBtnElement.setAttribute('aria-expanded', 'false');
     }
     return ctxBtnElement;
 }
@@ -65,7 +66,7 @@ function renderContextButton(parentNode, editMode) {
  * @returns the outer element and content in the collapsable div.
  */
 function renderCollapseHeader(parentElement, options) {
-    const { name, showToggle, onchange, isEnabled, isNested, iconsURLPrefix, lang } = options;
+    const { name, showToggle, onchange, isEnabled, isNested, lang } = options;
     const accordion = createElement('div', {
         className: EditGlobals.classNames[isNested ? 'accordionNestedWrapper' : 'accordionContainer'] + ' ' + EditGlobals.classNames.collapsableContentHeader
     }, {}, parentElement);
@@ -262,7 +263,11 @@ function renderText(parentElement, options) {
     const { title: text, className, isLabel } = options;
     if (parentElement) {
         const labelFor = isLabel ? { htmlFor: text } : {};
-        textElem = createElement(isLabel ? 'label' : 'div', Object.assign({ className: EditGlobals.classNames.labelText + ' ' + (className || ''), textContent: text }, labelFor), {}, parentElement);
+        textElem = createElement(isLabel ? 'label' : 'div', {
+            className: EditGlobals.classNames.labelText + ' ' + (className || ''),
+            textContent: text,
+            ...labelFor
+        }, {}, parentElement);
     }
     return textElem;
 }

@@ -14,15 +14,6 @@
  *
  * */
 'use strict';
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import AST from '../../Core/Renderer/HTML/AST.js';
 import Component from './Component.js';
 import U from '../../Core/Utilities.js';
@@ -118,38 +109,33 @@ class HTMLComponent extends Component {
      *
      * */
     /** @internal */
-    load() {
-        const _super = Object.create(null, {
-            load: { get: () => super.load }
+    async load() {
+        this.emit({
+            type: 'load'
         });
-        return __awaiter(this, void 0, void 0, function* () {
-            this.emit({
-                type: 'load'
+        await super.load();
+        const options = this.options;
+        let isError = false;
+        if (options.elements) {
+            this.elements = options.elements.map(function (element) {
+                if (typeof element === 'string') {
+                    return new AST(element).nodes[0];
+                }
+                if (!element.textContent &&
+                    !element.tagName &&
+                    element.attributes) {
+                    isError = true;
+                }
+                return element;
             });
-            yield _super.load.call(this);
-            const options = this.options;
-            let isError = false;
-            if (options.elements) {
-                this.elements = options.elements.map(function (element) {
-                    if (typeof element === 'string') {
-                        return new AST(element).nodes[0];
-                    }
-                    if (!element.textContent &&
-                        !element.tagName &&
-                        element.attributes) {
-                        isError = true;
-                    }
-                    return element;
-                });
-            }
-            this.constructTree();
-            this.emit({ type: 'afterLoad' });
-            if (isError) {
-                throw new Error('Missing tagName param in component: ' +
-                    options.cell);
-            }
-            return this;
-        });
+        }
+        this.constructTree();
+        this.emit({ type: 'afterLoad' });
+        if (isError) {
+            throw new Error('Missing tagName param in component: ' +
+                options.cell);
+        }
+        return this;
     }
     render() {
         super.render();
@@ -166,14 +152,9 @@ class HTMLComponent extends Component {
      * @param options
      * The options to apply.
      */
-    update(options) {
-        const _super = Object.create(null, {
-            update: { get: () => super.update }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            yield _super.update.call(this, options);
-            this.emit({ type: 'afterUpdate' });
-        });
+    async update(options) {
+        await super.update(options);
+        this.emit({ type: 'afterUpdate' });
     }
     /**
      * TODO: Could probably use the serialize function moved on
@@ -219,14 +200,16 @@ class HTMLComponent extends Component {
      *
      */
     getOptions() {
-        return Object.assign(Object.assign({}, diffObjects(this.options, HTMLComponent.defaultOptions)), { type: 'HTML' });
+        return {
+            ...diffObjects(this.options, HTMLComponent.defaultOptions),
+            type: 'HTML'
+        };
     }
     /**
      * @internal
      */
     onTableChanged(e) {
-        var _a;
-        if (((_a = e.detail) === null || _a === void 0 ? void 0 : _a.sender) !== this.id) {
+        if (e.detail?.sender !== this.id) {
             this.render();
         }
     }

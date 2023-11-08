@@ -13,7 +13,7 @@
 'use strict';
 import HighchartsComponent from './HighchartsComponent.js';
 import HighchartsSyncHandlers from './HighchartsSyncHandlers.js';
-import KPIComponent from '../Components/KPIComponent.js';
+import KPIComponent from './KPIComponent.js';
 import NavigatorComponent from './NavigatorComponent.js';
 /* *
  *
@@ -42,7 +42,10 @@ function onRegister(e) {
     ComponentRegistry.registerComponent('Highcharts', HighchartsComponent);
     ComponentRegistry.registerComponent('KPI', KPIComponent);
     ComponentRegistry.registerComponent('Navigator', NavigatorComponent);
-    Sync.defaultHandlers = Object.assign(Object.assign({}, Sync.defaultHandlers), HighchartsSyncHandlers);
+    Sync.defaultHandlers = {
+        ...Sync.defaultHandlers,
+        ...HighchartsSyncHandlers
+    };
 }
 /**
  * Callback function of the Dashboard plugin.

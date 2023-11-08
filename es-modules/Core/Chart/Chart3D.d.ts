@@ -1,7 +1,7 @@
 import type ColorType from '../Color/ColorType';
 import type Options from '../Options';
 import type Position3DObject from '../Renderer/Position3DObject';
-import type SVGElement3DLike from '../Renderer/SVG/SVGElement3DLike';
+import type SVGElement3D from '../Renderer/SVG/SVGElement3D';
 import Chart from './Chart.js';
 import Fx from '../Animation/Fx.js';
 import Series from '../Series/Series.js';
@@ -12,8 +12,8 @@ declare module '../Animation/FxLike' {
 }
 declare module '../Chart/ChartLike' {
     interface ChartLike {
-        chart3d?: Chart3D['chart3d'];
-        frameShapes?: Record<string, SVGElement3DLike>;
+        chart3d?: Chart3D.Additions;
+        frameShapes?: Record<string, SVGElement3D>;
         is3d(): boolean;
     }
 }
@@ -34,10 +34,10 @@ declare module '../Options' {
         viewDistance?: number;
     }
 }
-interface Chart3D extends Chart {
-    chart3d: Chart3D.Composition;
-}
 declare namespace Chart3D {
+    interface Composition extends Chart {
+        chart3d: Additions;
+    }
     interface Edge3DObject extends Position3DObject {
         xDir: Position3DObject;
     }
@@ -76,34 +76,6 @@ declare namespace Chart3D {
     interface Stack3DDictionaryObject {
         position: number;
         series: Array<Series>;
-    }
-    class Composition {
-        constructor(chart: Chart3D);
-        chart: Chart3D;
-        frame3d: Chart3D.FrameObject;
-        get3dFrame(): Chart3D.FrameObject;
-        /**
-         * Calculate scale of the 3D view. That is required to fit chart's 3D
-         * projection into the actual plotting area. Reported as #4933.
-         *
-         * **Note:**
-         * This function should ideally take the plot values instead of a chart
-         * object, but since the chart object is needed for perspective it is
-         * not practical. Possible to make both getScale and perspective more
-         * logical and also immutable.
-         *
-         * @private
-         * @function getScale
-         *
-         * @param {number} depth
-         * The depth of the chart
-         *
-         * @return {number}
-         * The scale to fit the 3D chart into the plotting area.
-         *
-         * @requires highcharts-3d
-         */
-        getScale(depth: number): number;
     }
     /**
      * @optionparent
@@ -275,5 +247,33 @@ declare namespace Chart3D {
      * @private
      */
     function compose(ChartClass: typeof Chart, FxClass: typeof Fx): void;
+    class Additions {
+        constructor(chart: Chart);
+        chart: Composition;
+        frame3d: FrameObject;
+        get3dFrame(): Chart3D.FrameObject;
+        /**
+         * Calculate scale of the 3D view. That is required to fit chart's 3D
+         * projection into the actual plotting area. Reported as #4933.
+         *
+         * **Note:**
+         * This function should ideally take the plot values instead of a chart
+         * object, but since the chart object is needed for perspective it is
+         * not practical. Possible to make both getScale and perspective more
+         * logical and also immutable.
+         *
+         * @private
+         * @function getScale
+         *
+         * @param {number} depth
+         * The depth of the chart
+         *
+         * @return {number}
+         * The scale to fit the 3D chart into the plotting area.
+         *
+         * @requires highcharts-3d
+         */
+        getScale(depth: number): number;
+    }
 }
 export default Chart3D;

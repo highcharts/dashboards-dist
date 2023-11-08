@@ -26,7 +26,7 @@ const configs = {
             const handleChangeExtremes = (e) => {
                 const cursor = e.cursor;
                 if (cursor.type === 'position' &&
-                    typeof (cursor === null || cursor === void 0 ? void 0 : cursor.row) === 'number' &&
+                    typeof cursor?.row === 'number' &&
                     defined(cursor.column) &&
                     this.connector &&
                     !defined(this.options.value)) {

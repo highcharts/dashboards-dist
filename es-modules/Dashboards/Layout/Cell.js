@@ -381,8 +381,7 @@ class Cell extends GUIElement {
      * @internal
      */
     setLoadingState(enabled = true) {
-        var _a, _b;
-        (_b = (_a = this.container) === null || _a === void 0 ? void 0 : _a.classList) === null || _b === void 0 ? void 0 : _b.toggle(Globals.classNames.cellLoading, enabled);
+        this.container?.classList?.toggle(Globals.classNames.cellLoading, enabled);
     }
     convertWidthToValue(width) {
         if (typeof width === 'number') {

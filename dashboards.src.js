@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.1 (2023-09-20)
+ * @license Highcharts Dashboards v1.1.2 (2023-11-08)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.1', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.2', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -1180,7 +1180,7 @@
                     for (i = loopLength; i > 0; i--) {
                         distance = xData[i] - xData[i - 1];
                         if (distance < 0 && !allowNegative) {
-                            onError === null || onError === void 0 ? void 0 : onError();
+                            onError?.();
                             // Only one call
                             onError = void 0;
                         }
@@ -1221,7 +1221,7 @@
                     if (isObject(parent)) {
                         thisProp = parent['@this'];
                     }
-                    return thisProp !== null && thisProp !== void 0 ? thisProp : parent;
+                    return thisProp ?? parent;
                 }
                 const child = parent[pathElement];
                 // Filter on the child
@@ -4063,15 +4063,6 @@
          *  - Sophie Bremer
          *
          * */
-        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-            return new (P || (P = Promise))(function (resolve, reject) {
-                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-                step((generator = generator.apply(thisArg, _arguments || [])).next());
-            });
-        };
         const { addEvent, fireEvent, error } = U;
         /* *
          *
@@ -4101,73 +4092,69 @@
                 }
                 return guiElement;
             }
-            function addComponent(options, cell) {
-                var _a, _b;
-                return __awaiter(this, void 0, void 0, function* () {
-                    const optionsStates = options.states;
-                    const optionsEvents = options.events;
-                    cell = cell || Bindings.getCell(options.cell || '');
-                    if (!(cell === null || cell === void 0 ? void 0 : cell.container) || !options.type) {
-                        error(`The component is misconfigured and is unable to find the
+            async function addComponent(options, cell) {
+                const optionsStates = options.states;
+                const optionsEvents = options.events;
+                cell = cell || Bindings.getCell(options.cell || '');
+                if (!cell?.container || !options.type) {
+                    error(`The component is misconfigured and is unable to find the
                         HTML cell element ${options.cell} to render the content.`);
-                        return;
-                    }
-                    const componentContainer = cell.container;
-                    let ComponentClass = ComponentRegistry.types[options.type];
-                    if (!ComponentClass) {
-                        error(`The component's type ${options.type} does not exist.`);
-                        ComponentClass =
-                            ComponentRegistry.types['HTML'];
-                        options.title = {
-                            text: (_b = (_a = cell.row.layout.board) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.lang.errorMessage,
+                    return;
+                }
+                const componentContainer = cell.container;
+                let ComponentClass = ComponentRegistry.types[options.type];
+                if (!ComponentClass) {
+                    error(`The component's type ${options.type} does not exist.`);
+                    ComponentClass =
+                        ComponentRegistry.types['HTML'];
+                    options.title = {
+                        text: cell.row.layout.board?.editMode?.lang.errorMessage,
+                        className: Globals.classNamePrefix + 'component-title-error ' +
+                            Globals.classNamePrefix + 'component-title'
+                    };
+                }
+                const component = new ComponentClass(cell, options);
+                const promise = component.load()['catch']((e) => {
+                    // eslint-disable-next-line no-console
+                    console.error(e);
+                    component.update({
+                        connector: {
+                            id: ''
+                        },
+                        title: {
+                            text: cell?.row.layout.board?.editMode?.lang.errorMessage,
                             className: Globals.classNamePrefix + 'component-title-error ' +
                                 Globals.classNamePrefix + 'component-title'
-                        };
-                    }
-                    const component = new ComponentClass(cell, options);
-                    const promise = component.load()['catch']((e) => {
-                        var _a, _b;
-                        // eslint-disable-next-line no-console
-                        console.error(e);
-                        component.update({
-                            connector: {
-                                id: ''
-                            },
-                            title: {
-                                text: (_b = (_a = cell === null || cell === void 0 ? void 0 : cell.row.layout.board) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.lang.errorMessage,
-                                className: Globals.classNamePrefix + 'component-title-error ' +
-                                    Globals.classNamePrefix + 'component-title'
-                            }
-                        });
+                        }
                     });
-                    fireEvent(component, 'mount');
-                    component.setCell(cell);
-                    cell.mountedComponent = component;
-                    cell.row.layout.board.mountedComponents.push({
-                        options: options,
-                        component: component,
-                        cell: cell
-                    });
-                    // events
-                    if (optionsEvents && optionsEvents.click) {
-                        addEvent(componentContainer, 'click', () => {
-                            optionsEvents.click();
-                            if (cell &&
-                                component &&
-                                componentContainer &&
-                                optionsStates &&
-                                optionsStates.active) {
-                                cell.setActiveState();
-                            }
-                        });
-                    }
-                    // states
-                    if (optionsStates === null || optionsStates === void 0 ? void 0 : optionsStates.hover) {
-                        componentContainer.classList.add(Globals.classNames.cellHover);
-                    }
-                    fireEvent(component, 'afterLoad');
-                    return promise;
                 });
+                fireEvent(component, 'mount');
+                component.setCell(cell);
+                cell.mountedComponent = component;
+                cell.row.layout.board.mountedComponents.push({
+                    options: options,
+                    component: component,
+                    cell: cell
+                });
+                // events
+                if (optionsEvents && optionsEvents.click) {
+                    addEvent(componentContainer, 'click', () => {
+                        optionsEvents.click();
+                        if (cell &&
+                            component &&
+                            componentContainer &&
+                            optionsStates &&
+                            optionsStates.active) {
+                            cell.setActiveState();
+                        }
+                    });
+                }
+                // states
+                if (optionsStates?.hover) {
+                    componentContainer.classList.add(Globals.classNames.cellHover);
+                }
+                fireEvent(component, 'afterLoad');
+                return promise;
             }
             Bindings.addComponent = addComponent;
             /** @internal */
@@ -4619,14 +4606,17 @@
              * @private
              */
             function toRange(cursor, defaultRange) {
-                var _a, _b, _c, _d;
                 if (cursor.type === 'range') {
                     return cursor;
                 }
                 const range = {
                     type: 'range',
-                    firstRow: ((_b = (_a = cursor.row) !== null && _a !== void 0 ? _a : (defaultRange && defaultRange.firstRow)) !== null && _b !== void 0 ? _b : 0),
-                    lastRow: ((_d = (_c = cursor.row) !== null && _c !== void 0 ? _c : (defaultRange && defaultRange.lastRow)) !== null && _d !== void 0 ? _d : Number.MAX_VALUE),
+                    firstRow: (cursor.row ??
+                        (defaultRange && defaultRange.firstRow) ??
+                        0),
+                    lastRow: (cursor.row ??
+                        (defaultRange && defaultRange.lastRow) ??
+                        Number.MAX_VALUE),
                     state: cursor.state
                 };
                 if (typeof cursor.column !== 'undefined') {
@@ -4856,7 +4846,7 @@
                     cursors = stateMap[tableId][state];
                     stateMapJSON[tableId][state] = cursorsJSON = [];
                     for (let k = 0, kEnd = cursors.length; k < kEnd; ++k) {
-                        cursorsJSON.push(Object.assign({}, cursors[k]));
+                        cursorsJSON.push({ ...cursors[k] });
                     }
                 }
             }
@@ -5352,6 +5342,7 @@
                         ')'
                 }, parentNode);
                 ctxBtnElement.setAttribute('aria-label', editMode.lang.accessibility.contextMenu.button);
+                ctxBtnElement.setAttribute('aria-expanded', 'false');
             }
             return ctxBtnElement;
         }
@@ -5368,7 +5359,7 @@
          * @returns the outer element and content in the collapsable div.
          */
         function renderCollapseHeader(parentElement, options) {
-            const { name, showToggle, onchange, isEnabled, isNested, iconsURLPrefix, lang } = options;
+            const { name, showToggle, onchange, isEnabled, isNested, lang } = options;
             const accordion = createElement('div', {
                 className: EditGlobals.classNames[isNested ? 'accordionNestedWrapper' : 'accordionContainer'] + ' ' + EditGlobals.classNames.collapsableContentHeader
             }, {}, parentElement);
@@ -5565,7 +5556,11 @@
             const { title: text, className, isLabel } = options;
             if (parentElement) {
                 const labelFor = isLabel ? { htmlFor: text } : {};
-                textElem = createElement(isLabel ? 'label' : 'div', Object.assign({ className: EditGlobals.classNames.labelText + ' ' + (className || ''), textContent: text }, labelFor), {}, parentElement);
+                textElem = createElement(isLabel ? 'label' : 'div', {
+                    className: EditGlobals.classNames.labelText + ' ' + (className || ''),
+                    textContent: text,
+                    ...labelFor
+                }, {}, parentElement);
             }
             return textElem;
         }
@@ -5814,7 +5809,6 @@
                 this.isActive ? { display: 'block' } : {}), this.menu.container);
             }
             setInnerElement() {
-                var _a, _b, _c, _d, _e, _f, _g, _h;
                 const item = this, options = item.options, container = item.container, langKey = options.langKey;
                 if (options.type === 'toggle') {
                     return EditRenderer.renderToggle(container, {
@@ -5825,7 +5819,7 @@
                             options.text,
                         value: !!(options.getValue && options.getValue(item)),
                         lang: this.menu.editMode.lang,
-                        onchange: (_b = (_a = options.events) === null || _a === void 0 ? void 0 : _a.click) === null || _b === void 0 ? void 0 : _b.bind(item)
+                        onchange: options.events?.click?.bind(item)
                     });
                 }
                 if (options.type === 'text') {
@@ -5839,13 +5833,13 @@
                 if (options.type === 'icon') {
                     return EditRenderer.renderIcon(container, {
                         icon: options.icon || '',
-                        mousedown: (_d = (_c = options.events) === null || _c === void 0 ? void 0 : _c.onmousedown) === null || _d === void 0 ? void 0 : _d.bind(item),
-                        click: (_f = (_e = options.events) === null || _e === void 0 ? void 0 : _e.click) === null || _f === void 0 ? void 0 : _f.bind(item)
+                        mousedown: options.events?.onmousedown?.bind(item),
+                        click: options.events?.click?.bind(item)
                     });
                 }
                 if (options.type === 'button') {
                     return EditRenderer.renderButton(container, {
-                        callback: (_h = (_g = options.events) === null || _g === void 0 ? void 0 : _g.click) === null || _h === void 0 ? void 0 : _h.bind(item),
+                        callback: options.events?.click?.bind(item),
                         className: options.className || '',
                         style: options.style || {},
                         text: langKey ?
@@ -6218,14 +6212,11 @@
              */
             getElementContainer(options) {
                 const guiElement = this;
-                let elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
+                let elem;
                 if (options.render) {
                     if (options.attribs && !options.attribs.id) {
                         delete options.attribs.id;
                     }
-                }
-                else if (options.element instanceof HTMLElement) {
-                    elem = options.element;
                 }
                 else if (typeof options.elementId === 'string') {
                     const div = document.getElementById(options.elementId);
@@ -6235,6 +6226,12 @@
                     else {
                         error('Element ' + options.elementId + ' does not exist');
                     }
+                }
+                if (options.element instanceof HTMLElement) {
+                    elem = options.element;
+                }
+                else {
+                    elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
                 }
                 // Set bindedGUIElement event on GUIElement container.
                 guiElement.removeBindedEventFn = addEvent(elem, 'bindedGUIElement', function (e) {
@@ -6312,27 +6309,26 @@
          */
         class CellEditToolbar extends EditToolbar {
             static getItemsConfig(options, iconURLPrefix) {
-                var _a;
-                const dragOptions = ((_a = options.dragDrop) === null || _a === void 0 ? void 0 : _a.enabled) ?
-                    [{
-                            id: 'drag',
-                            type: 'icon',
-                            icon: iconURLPrefix + 'drag.svg',
-                            events: {
-                                onmousedown: function (e) {
-                                    const cellEditToolbar = this.menu
-                                        .parent;
-                                    const dragDrop = cellEditToolbar.editMode.dragDrop;
-                                    if (dragDrop && cellEditToolbar.cell) {
-                                        dragDrop.onDragStart(e, cellEditToolbar.cell);
-                                    }
+                const items = [];
+                if (options.dragDrop?.enabled) {
+                    items.push({
+                        id: 'drag',
+                        type: 'icon',
+                        icon: iconURLPrefix + 'drag.svg',
+                        events: {
+                            onmousedown: function (e) {
+                                const cellEditToolbar = this.menu
+                                    .parent;
+                                const dragDrop = cellEditToolbar.editMode.dragDrop;
+                                if (dragDrop && cellEditToolbar.cell) {
+                                    dragDrop.onDragStart(e, cellEditToolbar.cell);
                                 }
                             }
-                        }] :
-                    [];
-                return [
-                    ...dragOptions,
-                    {
+                        }
+                    });
+                }
+                if (options.settings?.enabled) {
+                    items.push({
                         id: 'settings',
                         type: 'icon',
                         icon: iconURLPrefix + 'settings.svg',
@@ -6342,33 +6338,34 @@
                                 this.menu.parent.onCellOptions();
                             }
                         }
-                    },
-                    {
-                        id: 'destroy',
-                        type: 'icon',
-                        className: EditGlobals.classNames.menuDestroy,
-                        icon: iconURLPrefix + 'destroy.svg',
-                        events: {
-                            click: function (e) {
-                                const parentNode = this.menu.parent, editMode = this.menu.parent.editMode, popup = editMode.confirmationPopup;
-                                popup.show({
-                                    confirmButton: {
-                                        value: editMode.lang.confirmButton,
-                                        callback: parentNode.onCellDestroy,
-                                        context: parentNode
-                                    },
-                                    cancelButton: {
-                                        value: editMode.lang.cancelButton,
-                                        callback: () => {
-                                            popup.closePopup();
-                                        }
-                                    },
-                                    text: editMode.lang.confirmDestroyCell
-                                });
-                            }
+                    });
+                }
+                items.push({
+                    id: 'destroy',
+                    type: 'icon',
+                    className: EditGlobals.classNames.menuDestroy,
+                    icon: iconURLPrefix + 'destroy.svg',
+                    events: {
+                        click: function (e) {
+                            const parentNode = this.menu.parent, editMode = this.menu.parent.editMode, popup = editMode.confirmationPopup;
+                            popup.show({
+                                confirmButton: {
+                                    value: editMode.lang.confirmButton,
+                                    callback: parentNode.onCellDestroy,
+                                    context: parentNode
+                                },
+                                cancelButton: {
+                                    value: editMode.lang.cancelButton,
+                                    callback: () => {
+                                        popup.closePopup();
+                                    }
+                                },
+                                text: editMode.lang.confirmDestroyCell
+                            });
                         }
                     }
-                ];
+                });
+                return items;
             }
             /* *
              *
@@ -6487,35 +6484,37 @@
          */
         class RowEditToolbar extends EditToolbar {
             static getMenuItemsConfig(options, iconURLPrefix) {
-                var _a;
-                const dragDropElement = ((_a = options.dragDrop) === null || _a === void 0 ? void 0 : _a.enabled) ?
-                    [{
-                            id: 'drag',
-                            type: 'icon',
-                            icon: iconURLPrefix + 'drag.svg',
-                            events: {
-                                onmousedown: function (e) {
-                                    const rowEditToolbar = this.menu
-                                        .parent, dragDrop = rowEditToolbar.editMode.dragDrop;
-                                    if (dragDrop && rowEditToolbar.row) {
-                                        dragDrop.onDragStart(e, rowEditToolbar.row);
-                                    }
+                const items = [];
+                if (options.dragDrop?.enabled) {
+                    items.push({
+                        id: 'drag',
+                        type: 'icon',
+                        icon: iconURLPrefix + 'drag.svg',
+                        events: {
+                            onmousedown: function (e) {
+                                const rowEditToolbar = this.menu
+                                    .parent, dragDrop = rowEditToolbar.editMode.dragDrop;
+                                if (dragDrop && rowEditToolbar.row) {
+                                    dragDrop.onDragStart(e, rowEditToolbar.row);
                                 }
                             }
-                        }] :
-                    [];
-                const settingsElement = {
-                    id: 'settings',
-                    type: 'icon',
-                    icon: iconURLPrefix + 'settings.svg',
-                    events: {
-                        click: function (e) {
-                            this.menu.parent.editMode.setEditOverlay();
-                            this.menu.parent.onRowOptions(e);
                         }
-                    }
-                };
-                const destroyElement = {
+                    });
+                }
+                if (options.settings?.enabled) {
+                    items.push({
+                        id: 'settings',
+                        type: 'icon',
+                        icon: iconURLPrefix + 'settings.svg',
+                        events: {
+                            click: function (e) {
+                                this.menu.parent.editMode.setEditOverlay();
+                                this.menu.parent.onRowOptions(e);
+                            }
+                        }
+                    });
+                }
+                items.push({
                     id: 'destroy',
                     type: 'icon',
                     className: EditGlobals.classNames.menuDestroy,
@@ -6539,8 +6538,8 @@
                             });
                         }
                     }
-                };
-                return [...dragDropElement, settingsElement, destroyElement];
+                });
+                return items;
             }
             /* *
              *
@@ -6687,7 +6686,6 @@
              * The component to render the menu for.
              */
             renderContent(container, component) {
-                var _a, _b, _c;
                 const menu = this;
                 const editableOptions = component.editableOptions.getOptions();
                 let option, content;
@@ -6699,7 +6697,7 @@
                     content = EditRenderer.renderCollapseHeader(accordionContainer, {
                         name: option.name,
                         iconsURLPrefix: menu.iconsURLPrefix,
-                        lang: (((_a = component.board) === null || _a === void 0 ? void 0 : _a.editMode) || EditGlobals).lang
+                        lang: (component.board?.editMode || EditGlobals).lang
                     }).content;
                     this.renderAccordion(option, content, component);
                 }
@@ -6707,7 +6705,7 @@
                     className: EditGlobals.classNames.accordionMenuButtonsContainer
                 }, {}, accordionContainer);
                 EditRenderer.renderButton(buttonContainer, {
-                    text: (((_b = component.board) === null || _b === void 0 ? void 0 : _b.editMode) || EditGlobals)
+                    text: (component.board?.editMode || EditGlobals)
                         .lang.confirmButton,
                     className: EditGlobals.classNames.popupConfirmBtn,
                     callback: () => {
@@ -6722,7 +6720,7 @@
                     }
                 });
                 EditRenderer.renderButton(buttonContainer, {
-                    text: (((_c = component.board) === null || _c === void 0 ? void 0 : _c.editMode) || EditGlobals)
+                    text: (component.board?.editMode || EditGlobals)
                         .lang.cancelButton,
                     className: EditGlobals.classNames.popupCancelBtn,
                     callback: () => {
@@ -6785,7 +6783,12 @@
                 if (!renderFunction) {
                     return;
                 }
-                renderFunction(parentNode, Object.assign(Object.assign({}, options), { iconsURLPrefix: this.iconsURLPrefix, value: component.getEditableOptionValue(options.propertyPath), onchange: (value) => this.updateOptions(options.propertyPath || [], value) }));
+                renderFunction(parentNode, {
+                    ...options,
+                    iconsURLPrefix: this.iconsURLPrefix,
+                    value: component.getEditableOptionValue(options.propertyPath),
+                    onchange: (value) => this.updateOptions(options.propertyPath || [], value)
+                });
             }
             /**
              * Render nested menu for the component.
@@ -6798,7 +6801,6 @@
              * The component instance for the options should be rendered
              */
             renderNested(parentElement, options, component) {
-                var _a;
                 if (!parentElement || !options.nestedOptions) {
                     return;
                 }
@@ -6815,7 +6817,7 @@
                         showToggle: showToggle,
                         onchange: (value) => this.updateOptions(propertyPath, value),
                         isNested: true,
-                        lang: (((_a = component.board) === null || _a === void 0 ? void 0 : _a.editMode) || EditGlobals).lang
+                        lang: (component.board?.editMode || EditGlobals).lang
                     });
                     for (let j = 0, jEnd = accordionOptions.length; j < jEnd; ++j) {
                         this.renderAccordion(accordionOptions[j], collapsedHeader.content, component);
@@ -8024,8 +8026,7 @@
              * @internal
              */
             setLoadingState(enabled = true) {
-                var _a, _b;
-                (_b = (_a = this.container) === null || _a === void 0 ? void 0 : _a.classList) === null || _b === void 0 ? void 0 : _b.toggle(Globals.classNames.cellLoading, enabled);
+                this.container?.classList?.toggle(Globals.classNames.cellLoading, enabled);
             }
             convertWidthToValue(width) {
                 if (typeof width === 'number') {
@@ -8506,7 +8507,7 @@
                     render: board.guiEnabled,
                     parentContainer: parentContainer,
                     attribs: {
-                        id: options.id + (this.copyId ? '_' + this.copyId : ''),
+                        id: (options.id || '') + (this.copyId ? '_' + this.copyId : ''),
                         className: Globals.classNames.layout + ' ' +
                             layoutClassName
                     },
@@ -8852,7 +8853,6 @@
                             };
                             sidebar.container.addEventListener('mouseleave', onMouseLeave);
                             sidebar.editMode.dragDrop.onDragStart(e, void 0, (dropContext) => {
-                                var _a, _b;
                                 // Add component if there is no layout yet.
                                 if (this.editMode.board.layouts.length === 0) {
                                     const board = this.editMode.board, newLayoutName = GUIElement.createElementId('layout'), layout = new Layout(board, {
@@ -8872,7 +8872,7 @@
                                     const mountedComponent = newCell.mountedComponent;
                                     // skip init connector when is not defined by
                                     // options f.e HTML component.
-                                    if ((_b = (_a = mountedComponent.options) === null || _a === void 0 ? void 0 : _a.connector) === null || _b === void 0 ? void 0 : _b.id) {
+                                    if (mountedComponent.options?.connector?.id) {
                                         mountedComponent.initConnector();
                                     }
                                     sidebar.editMode.setEditCellContext(newCell);
@@ -8949,6 +8949,15 @@
              * @returns Close button element
              */
             addCloseButton(className = EditGlobals.classNames.popupCloseButton) {
+                // close popup when click outside the popup
+                addEvent(document, 'click', (event) => {
+                    event.stopPropagation();
+                    if (this.container.style.display === 'block' &&
+                        !this.container.contains(event.target) &&
+                        this.container.classList.value.includes('show')) {
+                        this.hide();
+                    }
+                });
                 return super.addCloseButton.call(this, className);
             }
             /**
@@ -9032,9 +9041,12 @@
                             }
                         };
                         if (connectorsIds.length) {
-                            options = Object.assign(Object.assign({}, options), { connector: {
+                            options = {
+                                ...options,
+                                connector: {
                                     id: connectorsIds[0]
-                                } });
+                                }
+                            };
                         }
                         return sidebar.onDropNewComponent(dropContext, options);
                     }
@@ -9049,9 +9061,12 @@
                             type: 'DataGrid'
                         };
                         if (connectorsIds.length) {
-                            options = Object.assign(Object.assign({}, options), { connector: {
+                            options = {
+                                ...options,
+                                connector: {
                                     id: connectorsIds[0]
-                                } });
+                                }
+                            };
                         }
                         return sidebar.onDropNewComponent(dropContext, options);
                     }
@@ -9066,9 +9081,12 @@
                             type: 'KPI'
                         };
                         if (connectorsIds.length) {
-                            options = Object.assign(Object.assign({}, options), { connector: {
+                            options = {
+                                ...options,
+                                connector: {
                                     id: connectorsIds[0]
-                                } });
+                                }
+                            };
                         }
                         return sidebar.onDropNewComponent(dropContext, options);
                     }
@@ -9114,6 +9132,8 @@
                 super(editMode.board.container, merge(EditContextMenu.defaultOptions, options || {}), editMode);
                 this.editMode = editMode;
                 this.options = merge(EditContextMenu.defaultOptions, options || {});
+                // Move it in the DOM after the edit tools so it is better accessible.
+                this.editMode.board.layoutsWrapper.parentNode.insertBefore(this.container, this.editMode.board.layoutsWrapper);
                 // Set the context menu container width.
                 this.container.style.width = this.options.width + 'px';
                 super.initItems(EditContextMenu.items);
@@ -9153,15 +9173,17 @@
                 });
             }
             setVisible(visible) {
-                const contextMenu = this;
-                if (contextMenu.container) {
+                const contextMenu = this, contextButtonElement = contextMenu.editMode.tools.contextButtonElement;
+                if (contextMenu.container && contextButtonElement) {
                     if (visible) {
                         contextMenu.container.style.display = 'block';
                         contextMenu.isVisible = true;
+                        contextButtonElement.setAttribute('aria-expanded', 'true');
                     }
                     else {
                         contextMenu.container.style.display = 'none';
                         contextMenu.isVisible = false;
+                        contextButtonElement.setAttribute('aria-expanded', 'false');
                     }
                 }
             }
@@ -10072,13 +10094,12 @@
              * Destroy resizer
              */
             destroy() {
-                var _a;
                 const snaps = ['snapRight', 'snapBottom'];
                 let snap;
                 // Unbind events
                 removeEvent(document, 'mousemove');
                 removeEvent(document, 'mouseup');
-                (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.editMode.board.container);
+                this.resizeObserver?.unobserve(this.editMode.board.container);
                 for (let i = 0, iEnd = snaps.length; i < iEnd; ++i) {
                     snap = this[snaps[i]];
                     // Unbind event
@@ -10324,7 +10345,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.1/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.2/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -10336,18 +10357,25 @@
                     resize: {
                         enabled: true
                     },
+                    settings: {
+                        enabled: true
+                    },
                     enabled: true,
                     contextMenu: {
                         icon: this.iconsURLPrefix + 'menu.svg'
                     },
                     tools: {
                         addComponentBtn: {
+                            enabled: true,
                             icon: this.iconsURLPrefix + 'add.svg'
                         },
-                        rwdIcons: {
-                            small: this.iconsURLPrefix + 'smartphone.svg',
-                            medium: this.iconsURLPrefix + 'tablet.svg',
-                            large: this.iconsURLPrefix + 'computer.svg'
+                        rwdButtons: {
+                            enabled: true,
+                            icons: {
+                                small: this.iconsURLPrefix + 'smartphone.svg',
+                                medium: this.iconsURLPrefix + 'tablet.svg',
+                                large: this.iconsURLPrefix + 'computer.svg'
+                            }
                         }
                     },
                     confirmationPopup: {
@@ -10394,11 +10422,7 @@
              */
             onContextBtnClick() {
                 const editMode = this;
-                // Init contextMenu if doesn't exist.
-                if (!editMode.tools.contextMenu) {
-                    editMode.tools.contextMenu = new EditContextMenu(editMode.board.container, editMode.options.contextMenu || {}, editMode);
-                }
-                // Show context menu.
+                // Toggle context menu visibility.
                 if (editMode.tools.contextMenu) {
                     if (!editMode.tools.contextMenu.isVisible) {
                         editMode.tools.contextMenu
@@ -10424,18 +10448,17 @@
              * @internal
              */
             init() {
-                var _a, _b, _c, _d, _e;
                 const editMode = this;
-                if ((_a = this.options.resize) === null || _a === void 0 ? void 0 : _a.enabled) {
+                if (this.options.resize?.enabled) {
                     editMode.resizer = new Resizer(editMode, editMode.options.resize);
                 }
                 editMode.dragDrop = new DragDrop(editMode, editMode.options.dragDrop);
                 // Init rowToolbar.
-                if (((_c = (_b = editMode.options.toolbars) === null || _b === void 0 ? void 0 : _b.row) === null || _c === void 0 ? void 0 : _c.enabled) && !editMode.rowToolbar) {
+                if (editMode.options.toolbars?.row?.enabled && !editMode.rowToolbar) {
                     editMode.rowToolbar = new RowEditToolbar(editMode);
                 }
                 // Init cellToolbar.
-                if (((_e = (_d = editMode.options.toolbars) === null || _d === void 0 ? void 0 : _d.cell) === null || _e === void 0 ? void 0 : _e.enabled) && !editMode.cellToolbar) {
+                if (editMode.options.toolbars?.cell?.enabled && !editMode.cellToolbar) {
                     editMode.cellToolbar = new CellEditToolbar(editMode);
                 }
                 // Init Sidebar.
@@ -10703,11 +10726,10 @@
             }
             /**
              * Creates the buttons such as `addComponent` button, rwd buttons and
-             * context menu button.
+             * context menu button and its container.
              * @internal
              */
             createTools() {
-                var _a, _b;
                 const editMode = this;
                 const options = this.options;
                 // Create tools container
@@ -10715,29 +10737,36 @@
                 this.tools.container.classList.add(EditGlobals.classNames.editTools);
                 this.board.layoutsWrapper.parentNode.insertBefore(this.tools.container, this.board.layoutsWrapper);
                 // Create context menu button
-                if (options.contextMenu &&
-                    options.contextMenu.enabled) {
+                if (options.contextMenu && options.contextMenu.enabled) {
                     this.tools.contextButtonElement = EditRenderer.renderContextButton(this.tools.container, editMode);
-                }
-                // Create rwd menu
-                this.createRwdMenu();
-                // Create add button
-                const addIconURL = (_b = (_a = options === null || options === void 0 ? void 0 : options.tools) === null || _a === void 0 ? void 0 : _a.addComponentBtn) === null || _b === void 0 ? void 0 : _b.icon;
-                this.addComponentBtn = EditRenderer.renderButton(this.tools.container, {
-                    className: EditGlobals.classNames.editToolsBtn,
-                    icon: addIconURL,
-                    text: this.lang.addComponent,
-                    callback: () => {
-                        // Sidebar trigger
-                        if (editMode.sidebar) {
-                            editMode.sidebar.show();
-                            editMode.setEditOverlay();
-                        }
-                    },
-                    style: {
-                        display: 'none'
+                    // Init contextMenu if doesn't exist.
+                    if (!editMode.tools.contextMenu) {
+                        editMode.tools.contextMenu = new EditContextMenu(editMode.board.container, editMode.options.contextMenu || {}, editMode);
                     }
-                });
+                }
+                if (options.tools?.rwdButtons?.enabled) {
+                    this.createRwdMenu();
+                }
+                // Create add component button
+                if (options.tools?.addComponentBtn?.enabled &&
+                    options.toolbars?.cell?.enabled) {
+                    const addIconURL = options.tools.addComponentBtn.icon;
+                    this.addComponentBtn = EditRenderer.renderButton(this.tools.container, {
+                        className: EditGlobals.classNames.editToolsBtn,
+                        icon: addIconURL,
+                        text: this.lang.addComponent,
+                        callback: () => {
+                            // Sidebar trigger
+                            if (editMode.sidebar) {
+                                editMode.sidebar.show();
+                                editMode.setEditOverlay();
+                            }
+                        },
+                        style: {
+                            display: 'none'
+                        }
+                    });
+                }
             }
             /**
              * Creates the responsive width buttons.
@@ -10747,7 +10776,7 @@
                 const rwdBreakingPoints = this.board.options.responsiveBreakpoints;
                 const toolsContainer = this.tools.container;
                 const options = this.options;
-                const rwdIcons = (options && options.tools && options.tools.rwdIcons) || {};
+                const rwdIcons = options?.tools?.rwdButtons?.icons || {};
                 for (const key in rwdBreakingPoints) {
                     if (toolsContainer) {
                         const btn = EditRenderer.renderButton(toolsContainer, {
@@ -11929,15 +11958,6 @@
          *  - Sophie Bremer
          *
          * */
-        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-            return new (P || (P = Promise))(function (resolve, reject) {
-                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-                step((generator = generator.apply(thisArg, _arguments || [])).next());
-            });
-        };
         const { classNamePrefix } = Globals;
         const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, relativeLength, diffObjects } = U;
         const { getMargins, getPaddings } = CU;
@@ -11969,7 +11989,7 @@
              * Creates HTML text element like header or title
              *
              * @param tagName
-             * HTML tag name used as wrapper of text like `h1`, `h2` or `p`.
+             * HTML tag name used as wrapper of text like `h2` or `p`.
              * @param elementName
              * Name of element
              * @param textOptions
@@ -12095,18 +12115,15 @@
              * @returns
              * Promise resolving to the component.
              */
-            initConnector() {
-                var _a;
-                return __awaiter(this, void 0, void 0, function* () {
-                    if (((_a = this.options.connector) === null || _a === void 0 ? void 0 : _a.id) &&
-                        this.connectorId !== this.options.connector.id) {
-                        this.cell.setLoadingState();
-                        const connector = yield this.board.dataPool
-                            .getConnector(this.options.connector.id);
-                        this.setConnector(connector);
-                    }
-                    return this;
-                });
+            async initConnector() {
+                if (this.options.connector?.id &&
+                    this.connectorId !== this.options.connector.id) {
+                    this.cell.setLoadingState();
+                    const connector = await this.board.dataPool
+                        .getConnector(this.options.connector.id);
+                    this.setConnector(connector);
+                }
+                return this;
             }
             /**
             * Filter the sync options that are declared in the component options.
@@ -12210,7 +12227,10 @@
                                 .on(event, (e) => {
                                 clearInterval(this.tableEventTimeout);
                                 this.tableEventTimeout = Globals.win.setTimeout(() => {
-                                    this.emit(Object.assign(Object.assign({}, e), { type: 'tableChanged' }));
+                                    this.emit({
+                                        ...e,
+                                        type: 'tableChanged'
+                                    });
                                     this.tableEventTimeout = void 0;
                                 }, 0);
                             }));
@@ -12236,7 +12256,10 @@
                 if (connector) {
                     tableEvents.push(connector.table.on('afterSetModifier', (e) => {
                         if (e.type === 'afterSetModifier') {
-                            this.emit(Object.assign(Object.assign({}, e), { type: 'tableChanged' }));
+                            this.emit({
+                                ...e,
+                                type: 'tableChanged'
+                            });
                         }
                     }));
                 }
@@ -12386,27 +12409,24 @@
              * @param shouldRerender
              * Set to true if the update should rerender the component.
              */
-            update(newOptions, shouldRerender = true) {
-                var _a;
-                return __awaiter(this, void 0, void 0, function* () {
-                    const eventObject = {
-                        options: newOptions,
-                        shouldForceRerender: false
-                    };
-                    // Update options
-                    fireEvent(this, 'update', eventObject);
-                    this.options = merge(this.options, newOptions);
-                    if (((_a = this.options.connector) === null || _a === void 0 ? void 0 : _a.id) &&
-                        this.connectorId !== this.options.connector.id) {
-                        const connector = yield this.board.dataPool
-                            .getConnector(this.options.connector.id);
-                        this.setConnector(connector);
-                    }
-                    this.options = merge(this.options, newOptions);
-                    if (shouldRerender || eventObject.shouldForceRerender) {
-                        this.render();
-                    }
-                });
+            async update(newOptions, shouldRerender = true) {
+                const eventObject = {
+                    options: newOptions,
+                    shouldForceRerender: false
+                };
+                // Update options
+                fireEvent(this, 'update', eventObject);
+                this.options = merge(this.options, newOptions);
+                if (this.options.connector?.id &&
+                    this.connectorId !== this.options.connector.id) {
+                    const connector = await this.board.dataPool
+                        .getConnector(this.options.connector.id);
+                    this.setConnector(connector);
+                }
+                this.options = merge(this.options, newOptions);
+                if (shouldRerender || eventObject.shouldForceRerender) {
+                    this.render();
+                }
             }
             /**
              * Private method which sets up event listeners for the component.
@@ -12444,7 +12464,7 @@
                 const titleElement = this.titleElement, shouldExist = titleOptions &&
                     (typeof titleOptions === 'string' || titleOptions.text);
                 if (shouldExist) {
-                    const newTitle = Component.createTextElement('h1', 'title', titleOptions);
+                    const newTitle = Component.createTextElement('h2', 'title', titleOptions);
                     if (newTitle) {
                         if (!titleElement) {
                             this.element.insertBefore(newTitle, this.element.firstChild);
@@ -12500,12 +12520,10 @@
              *
              * @internal
              */
-            load() {
-                return __awaiter(this, void 0, void 0, function* () {
-                    yield this.initConnector();
-                    this.render();
-                    return this;
-                });
+            async load() {
+                await this.initConnector();
+                this.render();
+                return this;
             }
             /**
              * Renders the component.
@@ -12532,6 +12550,8 @@
                 while (this.element.firstChild) {
                     this.element.firstChild.remove();
                 }
+                // call unmount
+                fireEvent(this, 'unmount');
                 // Unregister events
                 this.tableEvents.forEach((eventCallback) => eventCallback());
                 this.element.remove();
@@ -12666,15 +12686,6 @@
          *  - Sophie Bremer
          *
          * */
-        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-            return new (P || (P = Promise))(function (resolve, reject) {
-                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-                step((generator = generator.apply(thisArg, _arguments || [])).next());
-            });
-        };
         const { merge, diffObjects } = U;
         // TODO: This may affect the AST parsing in Highcharts
         // should look into adding these as options if possible
@@ -12767,38 +12778,33 @@
              *
              * */
             /** @internal */
-            load() {
-                const _super = Object.create(null, {
-                    load: { get: () => super.load }
+            async load() {
+                this.emit({
+                    type: 'load'
                 });
-                return __awaiter(this, void 0, void 0, function* () {
-                    this.emit({
-                        type: 'load'
+                await super.load();
+                const options = this.options;
+                let isError = false;
+                if (options.elements) {
+                    this.elements = options.elements.map(function (element) {
+                        if (typeof element === 'string') {
+                            return new AST(element).nodes[0];
+                        }
+                        if (!element.textContent &&
+                            !element.tagName &&
+                            element.attributes) {
+                            isError = true;
+                        }
+                        return element;
                     });
-                    yield _super.load.call(this);
-                    const options = this.options;
-                    let isError = false;
-                    if (options.elements) {
-                        this.elements = options.elements.map(function (element) {
-                            if (typeof element === 'string') {
-                                return new AST(element).nodes[0];
-                            }
-                            if (!element.textContent &&
-                                !element.tagName &&
-                                element.attributes) {
-                                isError = true;
-                            }
-                            return element;
-                        });
-                    }
-                    this.constructTree();
-                    this.emit({ type: 'afterLoad' });
-                    if (isError) {
-                        throw new Error('Missing tagName param in component: ' +
-                            options.cell);
-                    }
-                    return this;
-                });
+                }
+                this.constructTree();
+                this.emit({ type: 'afterLoad' });
+                if (isError) {
+                    throw new Error('Missing tagName param in component: ' +
+                        options.cell);
+                }
+                return this;
             }
             render() {
                 super.render();
@@ -12815,14 +12821,9 @@
              * @param options
              * The options to apply.
              */
-            update(options) {
-                const _super = Object.create(null, {
-                    update: { get: () => super.update }
-                });
-                return __awaiter(this, void 0, void 0, function* () {
-                    yield _super.update.call(this, options);
-                    this.emit({ type: 'afterUpdate' });
-                });
+            async update(options) {
+                await super.update(options);
+                this.emit({ type: 'afterUpdate' });
             }
             /**
              * TODO: Could probably use the serialize function moved on
@@ -12868,14 +12869,16 @@
              *
              */
             getOptions() {
-                return Object.assign(Object.assign({}, diffObjects(this.options, HTMLComponent.defaultOptions)), { type: 'HTML' });
+                return {
+                    ...diffObjects(this.options, HTMLComponent.defaultOptions),
+                    type: 'HTML'
+                };
             }
             /**
              * @internal
              */
             onTableChanged(e) {
-                var _a;
-                if (((_a = e.detail) === null || _a === void 0 ? void 0 : _a.sender) !== this.id) {
+                if (e.detail?.sender !== this.id) {
                     this.render();
                 }
             }
@@ -13141,14 +13144,13 @@
              * Destroy the whole dashboard, its layouts and elements.
              */
             destroy() {
-                var _a;
                 const board = this;
                 // Destroy layouts.
                 for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
                     board.layouts[i].destroy();
                 }
                 // Remove resizeObserver from the board
-                (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(board.container);
+                this.resizeObserver?.unobserve(board.container);
                 // Destroy container.
                 board.container.remove();
                 // @ToDo Destroy bindings.
@@ -13267,9 +13269,13 @@
                         components.push(board.mountedComponents[i].component.getOptions());
                     }
                 }
-                return Object.assign(Object.assign({}, this.options), { gui: {
+                return {
+                    ...this.options,
+                    gui: {
                         layouts
-                    }, components: components });
+                    },
+                    components: components
+                };
             }
         }
         /* *
@@ -14477,7 +14483,10 @@
         /**
          * Default options
          */
-        CSVConverter.defaultOptions = Object.assign(Object.assign({}, DataConverter.defaultOptions), { lineDelimiter: '\n' });
+        CSVConverter.defaultOptions = {
+            ...DataConverter.defaultOptions,
+            lineDelimiter: '\n'
+        };
         /* *
          *
          *  Default Export
@@ -14559,11 +14568,9 @@
                 // If already loaded, clear the current rows
                 table.deleteRows();
                 return Promise
-                    .resolve(csv ?
-                    csv :
-                    csvURL ?
-                        fetch(csvURL || '').then((response) => response.text()) :
-                        '')
+                    .resolve(csvURL ?
+                    fetch(csvURL).then((response) => response.text()) :
+                    csv || '')
                     .then((csv) => {
                     if (csv) {
                         converter.parse({ csv });
@@ -14732,7 +14739,9 @@
         /**
          * Default options
          */
-        GoogleSheetsConverter.defaultOptions = Object.assign({}, DataConverter.defaultOptions);
+        GoogleSheetsConverter.defaultOptions = {
+            ...DataConverter.defaultOptions
+        };
         /* *
          *
          *  Default Export
@@ -15288,7 +15297,11 @@
         /**
          * Default options
          */
-        HTMLTableConverter.defaultOptions = Object.assign(Object.assign({}, DataConverter.defaultOptions), { useRowspanHeaders: true, useMultiLevelHeaders: true });
+        HTMLTableConverter.defaultOptions = {
+            ...DataConverter.defaultOptions,
+            useRowspanHeaders: true,
+            useMultiLevelHeaders: true
+        };
         /* *
          *
          *  Default Export
@@ -15552,7 +15565,11 @@
         /**
          * Default options
          */
-        JSONConverter.defaultOptions = Object.assign(Object.assign({}, DataConverter.defaultOptions), { data: [], orientation: 'columns' });
+        JSONConverter.defaultOptions = {
+            ...DataConverter.defaultOptions,
+            data: [],
+            orientation: 'columns'
+        };
         /* *
          *
          *  Default Export
@@ -15630,11 +15647,10 @@
                 });
                 // If already loaded, clear the current rows
                 table.deleteRows();
-                return Promise.resolve(dataUrl ?
+                return Promise
+                    .resolve(dataUrl ?
                     fetch(dataUrl).then((json) => json.json()) :
-                    data ?
-                        data :
-                        [])
+                    data || [])
                     .then((data) => {
                     if (data) {
                         converter.parse({ data });

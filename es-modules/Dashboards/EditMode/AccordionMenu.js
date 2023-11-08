@@ -50,7 +50,6 @@ class AccordionMenu {
      * The component to render the menu for.
      */
     renderContent(container, component) {
-        var _a, _b, _c;
         const menu = this;
         const editableOptions = component.editableOptions.getOptions();
         let option, content;
@@ -62,7 +61,7 @@ class AccordionMenu {
             content = EditRenderer.renderCollapseHeader(accordionContainer, {
                 name: option.name,
                 iconsURLPrefix: menu.iconsURLPrefix,
-                lang: (((_a = component.board) === null || _a === void 0 ? void 0 : _a.editMode) || EditGlobals).lang
+                lang: (component.board?.editMode || EditGlobals).lang
             }).content;
             this.renderAccordion(option, content, component);
         }
@@ -70,7 +69,7 @@ class AccordionMenu {
             className: EditGlobals.classNames.accordionMenuButtonsContainer
         }, {}, accordionContainer);
         EditRenderer.renderButton(buttonContainer, {
-            text: (((_b = component.board) === null || _b === void 0 ? void 0 : _b.editMode) || EditGlobals)
+            text: (component.board?.editMode || EditGlobals)
                 .lang.confirmButton,
             className: EditGlobals.classNames.popupConfirmBtn,
             callback: () => {
@@ -85,7 +84,7 @@ class AccordionMenu {
             }
         });
         EditRenderer.renderButton(buttonContainer, {
-            text: (((_c = component.board) === null || _c === void 0 ? void 0 : _c.editMode) || EditGlobals)
+            text: (component.board?.editMode || EditGlobals)
                 .lang.cancelButton,
             className: EditGlobals.classNames.popupCancelBtn,
             callback: () => {
@@ -148,7 +147,12 @@ class AccordionMenu {
         if (!renderFunction) {
             return;
         }
-        renderFunction(parentNode, Object.assign(Object.assign({}, options), { iconsURLPrefix: this.iconsURLPrefix, value: component.getEditableOptionValue(options.propertyPath), onchange: (value) => this.updateOptions(options.propertyPath || [], value) }));
+        renderFunction(parentNode, {
+            ...options,
+            iconsURLPrefix: this.iconsURLPrefix,
+            value: component.getEditableOptionValue(options.propertyPath),
+            onchange: (value) => this.updateOptions(options.propertyPath || [], value)
+        });
     }
     /**
      * Render nested menu for the component.
@@ -161,7 +165,6 @@ class AccordionMenu {
      * The component instance for the options should be rendered
      */
     renderNested(parentElement, options, component) {
-        var _a;
         if (!parentElement || !options.nestedOptions) {
             return;
         }
@@ -178,7 +181,7 @@ class AccordionMenu {
                 showToggle: showToggle,
                 onchange: (value) => this.updateOptions(propertyPath, value),
                 isNested: true,
-                lang: (((_a = component.board) === null || _a === void 0 ? void 0 : _a.editMode) || EditGlobals).lang
+                lang: (component.board?.editMode || EditGlobals).lang
             });
             for (let j = 0, jEnd = accordionOptions.length; j < jEnd; ++j) {
                 this.renderAccordion(accordionOptions[j], collapsedHeader.content, component);

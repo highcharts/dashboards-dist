@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 1.1.1 (2023-09-20)
+ * @license Highcharts Dashboards Math 1.1.2 (2023-11-08)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -1009,7 +1009,7 @@
                 try {
                     return processor(formulaFunction.args, table);
                 }
-                catch (_a) {
+                catch {
                     return NaN;
                 }
             }
@@ -2445,7 +2445,11 @@
          * Formula engine to make use of spreadsheet formula strings.
          * @internal
          */
-        const Formula = Object.assign(Object.assign(Object.assign({}, FormulaParser), FormulaProcessor), FormulaType);
+        const Formula = {
+            ...FormulaParser,
+            ...FormulaProcessor,
+            ...FormulaType
+        };
 
         return Formula;
     });
@@ -2483,7 +2487,10 @@
              * */
             constructor(options) {
                 super();
-                this.options = Object.assign(Object.assign({}, MathModifier.defaultOptions), options);
+                this.options = {
+                    ...MathModifier.defaultOptions,
+                    ...options
+                };
             }
             /* *
              *
@@ -2543,7 +2550,7 @@
                             column[i] =
                                 FormulaProcessor.processFormula(cacheFormula, table);
                         }
-                        catch (_a) {
+                        catch {
                             column[i] = NaN;
                         }
                     }
@@ -2579,7 +2586,7 @@
                     try {
                         column[i] = FormulaProcessor.processFormula(formula, modified);
                     }
-                    catch (_a) {
+                    catch {
                         column[i] = NaN;
                     }
                     finally {

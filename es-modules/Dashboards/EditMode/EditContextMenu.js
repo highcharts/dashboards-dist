@@ -31,6 +31,8 @@ class EditContextMenu extends Menu {
         super(editMode.board.container, merge(EditContextMenu.defaultOptions, options || {}), editMode);
         this.editMode = editMode;
         this.options = merge(EditContextMenu.defaultOptions, options || {});
+        // Move it in the DOM after the edit tools so it is better accessible.
+        this.editMode.board.layoutsWrapper.parentNode.insertBefore(this.container, this.editMode.board.layoutsWrapper);
         // Set the context menu container width.
         this.container.style.width = this.options.width + 'px';
         super.initItems(EditContextMenu.items);
@@ -70,15 +72,17 @@ class EditContextMenu extends Menu {
         });
     }
     setVisible(visible) {
-        const contextMenu = this;
-        if (contextMenu.container) {
+        const contextMenu = this, contextButtonElement = contextMenu.editMode.tools.contextButtonElement;
+        if (contextMenu.container && contextButtonElement) {
             if (visible) {
                 contextMenu.container.style.display = 'block';
                 contextMenu.isVisible = true;
+                contextButtonElement.setAttribute('aria-expanded', 'true');
             }
             else {
                 contextMenu.container.style.display = 'none';
                 contextMenu.isVisible = false;
+                contextButtonElement.setAttribute('aria-expanded', 'false');
             }
         }
     }

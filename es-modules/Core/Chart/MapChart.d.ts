@@ -1,4 +1,6 @@
 import type { HTMLDOMElement } from '../Renderer/DOMElementType';
+import type MapPoint from '../../Series/Map/MapPoint';
+import type MapPointer from '../../Maps/MapPointer';
 import type MapView from '../../Maps/MapView';
 import type Options from '../Options';
 import type SVGPath from '../Renderer/SVG/SVGPath';
@@ -37,6 +39,42 @@ declare class MapChart extends Chart {
      * @emits Highcharts.MapChart#event:afterInit
      */
     init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction): void;
+    /**
+     * Highcharts Maps only. Zoom in or out of the map. See also
+     * {@link Point#zoomTo}. See {@link Chart#fromLatLonToPoint} for how to get
+     * the `centerX` and `centerY` parameters for a geographic location.
+     *
+     * Deprecated as of v9.3 in favor of [MapView.zoomBy](https://api.highcharts.com/class-reference/Highcharts.MapView#zoomBy).
+     *
+     * @deprecated
+     * @function Highcharts.Chart#mapZoom
+     *
+     * @param {number} [howMuch]
+     *        How much to zoom the map. Values less than 1 zooms in. 0.5 zooms
+     *        in to half the current view. 2 zooms to twice the current view. If
+     *        omitted, the zoom is reset.
+     *
+     * @param {number} [xProjected]
+     *        The projected x position to keep stationary when zooming, if
+     *        available space.
+     *
+     * @param {number} [yProjected]
+     *        The projected y position to keep stationary when zooming, if
+     *        available space.
+     *
+     * @param {number} [chartX]
+     *        Keep this chart position stationary if possible. This is used for
+     *        example in `mousewheel` events, where the area under the mouse
+     *        should be fixed as we zoom in.
+     *
+     * @param {number} [chartY]
+     *        Keep this chart position stationary if possible.
+     */
+    mapZoom(howMuch?: number, xProjected?: number, yProjected?: number, chartX?: number, chartY?: number): void;
+}
+interface MapChart extends Chart {
+    hoverPoint?: MapPoint;
+    pointer: MapPointer;
 }
 declare namespace MapChart {
     /**
@@ -74,7 +112,7 @@ declare namespace MapChart {
      * @return {Highcharts.MapChart}
      * The chart object.
      */
-    function mapChart(a: (string | HTMLDOMElement | Options), b?: (Chart.CallbackFunction | Options), c?: Chart.CallbackFunction): MapChart;
+    function mapChart(a: (string | HTMLDOMElement | Partial<Options>), b?: (Chart.CallbackFunction | Partial<Options>), c?: Chart.CallbackFunction): MapChart;
     /**
      * Utility for reading SVG paths directly.
      *
@@ -82,11 +120,12 @@ declare namespace MapChart {
      *
      * @function Highcharts.splitPath
      *
-     * @param {string|Array<string|number>} path
+     * @param {string|Array<(string|number)>} path
+     *        Path to split.
      *
      * @return {Highcharts.SVGPathArray}
      * Splitted SVG path
      */
-    function splitPath(path: string | Array<string | number>): SVGPath;
+    function splitPath(path: (string | Array<(string | number)>)): SVGPath;
 }
 export default MapChart;

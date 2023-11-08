@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.1 (2023-09-20)
+ * @license Highcharts Dashboards v1.1.2 (2023-11-08)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -158,7 +158,7 @@
                         const cursor = e.cursor;
                         if (cursor.type === 'position' &&
                             this.dataGrid &&
-                            typeof (cursor === null || cursor === void 0 ? void 0 : cursor.row) === 'number') {
+                            typeof cursor?.row === 'number') {
                             const { row } = cursor;
                             this.dataGrid.scrollToRow(row);
                         }
@@ -254,15 +254,6 @@
          *  - Karol Kolodziej
          *
          * */
-        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-            return new (P || (P = Promise))(function (resolve, reject) {
-                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-                step((generator = generator.apply(thisArg, _arguments || [])).next());
-            });
-        };
         const { diffObjects, merge, uniqueKey } = U;
         /* *
          *
@@ -361,8 +352,7 @@
                 });
             }
             onTableChanged() {
-                var _a;
-                if (this.dataGrid && !((_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.cellInputEl)) {
+                if (this.dataGrid && !this.dataGrid?.cellInputEl) {
                     this.dataGrid.update({ dataTable: this.filterColumns() });
                 }
             }
@@ -374,9 +364,8 @@
              * Attached connector
              */
             disableEditingModifiedColumns(connector) {
-                var _a;
                 const options = this.getColumnOptions(connector);
-                (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.update({ columns: options });
+                this.dataGrid?.update({ columns: options });
             }
             /**
              * Get the column options for the data grid.
@@ -409,52 +398,47 @@
              * Triggered on component initialization.
              * @private
              */
-            load() {
-                const _super = Object.create(null, {
-                    load: { get: () => super.load }
-                });
-                return __awaiter(this, void 0, void 0, function* () {
-                    this.emit({ type: 'load' });
-                    yield _super.load.call(this);
-                    if (this.connector &&
-                        !this.connectorListeners.length) {
-                        const connectorListeners = this.connectorListeners;
-                        // Reload the store when polling.
-                        connectorListeners.push(this.connector
-                            .on('afterLoad', (e) => {
-                            if (e.table && this.connector) {
-                                this.connector.table.setColumns(e.table.getColumns());
+            async load() {
+                this.emit({ type: 'load' });
+                await super.load();
+                if (this.connector &&
+                    !this.connectorListeners.length) {
+                    const connectorListeners = this.connectorListeners;
+                    // Reload the store when polling.
+                    connectorListeners.push(this.connector
+                        .on('afterLoad', (e) => {
+                        if (e.table && this.connector) {
+                            this.connector.table.setColumns(e.table.getColumns());
+                        }
+                    }));
+                    // Update the DataGrid when connector changed.
+                    connectorListeners.push(this.connector.table
+                        .on('afterSetCell', (e) => {
+                        const dataGrid = this.dataGrid;
+                        let shouldUpdateTheGrid = true;
+                        if (dataGrid) {
+                            const row = dataGrid.rowElements[e.rowIndex];
+                            let cells = [];
+                            if (row) {
+                                cells = Array.prototype.slice.call(row.childNodes);
                             }
-                        }));
-                        // Update the DataGrid when connector changed.
-                        connectorListeners.push(this.connector.table
-                            .on('afterSetCell', (e) => {
-                            const dataGrid = this.dataGrid;
-                            let shouldUpdateTheGrid = true;
-                            if (dataGrid) {
-                                const row = dataGrid.rowElements[e.rowIndex];
-                                let cells = [];
-                                if (row) {
-                                    cells = Array.prototype.slice.call(row.childNodes);
-                                }
-                                cells.forEach((cell) => {
-                                    if (cell.childElementCount > 0) {
-                                        const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
-                                            input.value :
-                                            +input.value;
-                                        if (cell.dataset.columnName === e.columnName &&
-                                            convertedInputValue === e.cellValue) {
-                                            shouldUpdateTheGrid = false;
-                                        }
+                            cells.forEach((cell) => {
+                                if (cell.childElementCount > 0) {
+                                    const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
+                                        input.value :
+                                        +input.value;
+                                    if (cell.dataset.columnName === e.columnName &&
+                                        convertedInputValue === e.cellValue) {
+                                        shouldUpdateTheGrid = false;
                                     }
-                                });
-                            }
-                            shouldUpdateTheGrid ? this.update({}) : void 0;
-                        }));
-                    }
-                    this.emit({ type: 'afterLoad' });
-                    return this;
-                });
+                                }
+                            });
+                        }
+                        shouldUpdateTheGrid ? this.update({}) : void 0;
+                    }));
+                }
+                this.emit({ type: 'afterLoad' });
+                return this;
             }
             /** @private */
             render() {
@@ -478,36 +462,33 @@
                     super.resize(width, height);
                 }
             }
-            update(options) {
-                const _super = Object.create(null, {
-                    update: { get: () => super.update }
-                });
-                var _a;
-                return __awaiter(this, void 0, void 0, function* () {
-                    if (((_a = options.connector) === null || _a === void 0 ? void 0 : _a.id) !== this.connectorId) {
-                        const connectorListeners = this.connectorListeners;
-                        for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
-                            connectorListeners[i]();
-                        }
-                        connectorListeners.length = 0;
+            async update(options) {
+                if (options.connector?.id !== this.connectorId) {
+                    const connectorListeners = this.connectorListeners;
+                    for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
+                        connectorListeners[i]();
                     }
-                    yield _super.update.call(this, options);
-                    if (this.dataGrid) {
-                        this.filterAndAssignSyncOptions(DataGridSyncHandlers);
-                        this.dataGrid.update(this.options.dataGridOptions || {});
-                    }
-                    this.emit({ type: 'afterUpdate' });
-                });
+                    connectorListeners.length = 0;
+                }
+                await super.update(options);
+                if (this.dataGrid) {
+                    this.filterAndAssignSyncOptions(DataGridSyncHandlers);
+                    this.dataGrid.update(this.options.dataGridOptions || {});
+                }
+                this.emit({ type: 'afterUpdate' });
             }
             /** @private */
             constructDataGrid() {
-                var _a, _b;
                 if (DataGridComponent.DataGridConstructor) {
                     const columnOptions = this.connector ?
                         this.getColumnOptions(this.connector) :
                         {};
-                    this.dataGrid = new DataGridComponent.DataGridConstructor(this.contentElement, Object.assign(Object.assign({}, this.options.dataGridOptions), { dataTable: ((_a = this.options.dataGridOptions) === null || _a === void 0 ? void 0 : _a.dataTable) ||
-                            this.filterColumns(), columns: merge(columnOptions, (_b = this.options.dataGridOptions) === null || _b === void 0 ? void 0 : _b.columns) }));
+                    this.dataGrid = new DataGridComponent.DataGridConstructor(this.contentElement, {
+                        ...this.options.dataGridOptions,
+                        dataTable: this.options.dataGridOptions?.dataTable ||
+                            this.filterColumns(),
+                        columns: merge(columnOptions, this.options.dataGridOptions?.columns)
+                    });
                     return this.dataGrid;
                 }
                 throw new Error('DataGrid not connected.');
@@ -528,16 +509,15 @@
              * @internal
              */
             filterColumns() {
-                var _a;
-                const table = (_a = this.connector) === null || _a === void 0 ? void 0 : _a.table.modified, visibleColumns = this.options.visibleColumns;
+                const table = this.connector?.table.modified, visibleColumns = this.options.visibleColumns;
                 if (table) {
                     // Show all columns if no visibleColumns is provided.
-                    if (!(visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length)) {
+                    if (!visibleColumns?.length) {
                         return table;
                     }
                     const columnsToDelete = table
                         .getColumnNames()
-                        .filter((columnName) => ((visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length) > 0 &&
+                        .filter((columnName) => (visibleColumns?.length > 0 &&
                         // Don't add columns that are not listed.
                         !visibleColumns.includes(columnName)
                     // Else show the other columns.
@@ -552,7 +532,13 @@
             toJSON() {
                 const dataGridOptions = JSON.stringify(this.options.dataGridOptions);
                 const base = super.toJSON();
-                const json = Object.assign(Object.assign({}, base), { options: Object.assign(Object.assign({}, base.options), { dataGridOptions }) });
+                const json = {
+                    ...base,
+                    options: {
+                        ...base.options,
+                        dataGridOptions
+                    }
+                };
                 this.emit({ type: 'toJSON', json });
                 return json;
             }
@@ -565,14 +551,16 @@
              *
              */
             getOptions() {
-                return Object.assign(Object.assign({}, diffObjects(this.options, DataGridComponent.defaultOptions)), { type: 'DataGrid' });
+                return {
+                    ...diffObjects(this.options, DataGridComponent.defaultOptions),
+                    type: 'DataGrid'
+                };
             }
             /**
              * Destroys the data grid component.
              */
             destroy() {
-                var _a;
-                (_a = this.dataGrid) === null || _a === void 0 ? void 0 : _a.containerResizeObserver.disconnect();
+                this.dataGrid?.containerResizeObserver.disconnect();
                 super.destroy();
             }
         }
@@ -1028,8 +1016,10 @@
                 },
                 extremesHandler: function () {
                     const { chart, board } = this;
-                    if (chart && board) {
-                        ['xAxis', 'yAxis'].forEach((dimension) => {
+                    if (chart && board && chart.zooming?.type) {
+                        const dimensions = chart.zooming.type.split('')
+                            .map((c) => c + 'Axis');
+                        dimensions.forEach((dimension) => {
                             const callbacks = [];
                             const handleUpdateExtremes = (e) => {
                                 const { cursor, event } = e;
@@ -1040,17 +1030,14 @@
                                         let didZoom = false;
                                         axes.forEach((axis) => {
                                             if (eventTarget.coll === axis.coll &&
-                                                eventTarget !== axis) {
-                                                if (eventTarget.min !== null && eventTarget.max !== null) {
-                                                    if (axis.max !== eventTarget.max &&
-                                                        axis.min !== eventTarget.min) {
-                                                        axis
-                                                            .setExtremes(eventTarget.min, eventTarget.max, false, void 0, {
-                                                            trigger: 'dashboards-sync'
-                                                        });
-                                                        didZoom = true;
-                                                    }
-                                                }
+                                                eventTarget !== axis &&
+                                                eventTarget.min !== null &&
+                                                eventTarget.max !== null && (axis.max !== eventTarget.max ||
+                                                axis.min !== eventTarget.min)) {
+                                                axis.setExtremes(eventTarget.min, eventTarget.max, false, void 0, {
+                                                    trigger: 'dashboards-sync'
+                                                });
+                                                didZoom = true;
                                             }
                                         });
                                         if (didZoom && !chart.resetZoomButton) {
@@ -1123,15 +1110,6 @@
          *  - Sophie Bremer
          *
          * */
-        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-            return new (P || (P = Promise))(function (resolve, reject) {
-                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-                step((generator = generator.apply(thisArg, _arguments || [])).next());
-            });
-        };
         const { addEvent, createElement, error, diffObjects, isString, merge, splat, uniqueKey } = U;
         /* *
          *
@@ -1220,16 +1198,11 @@
              *
              * */
             /** @private */
-            load() {
-                const _super = Object.create(null, {
-                    load: { get: () => super.load }
-                });
-                return __awaiter(this, void 0, void 0, function* () {
-                    this.emit({ type: 'load' });
-                    yield _super.load.call(this);
-                    this.emit({ type: 'afterLoad' });
-                    return this;
-                });
+            async load() {
+                this.emit({ type: 'load' });
+                await super.load();
+                this.emit({ type: 'afterLoad' });
+                return this;
             }
             render() {
                 const hcComponent = this;
@@ -1301,20 +1274,15 @@
              * The options to apply.
              *
              */
-            update(options, shouldRerender = true) {
-                const _super = Object.create(null, {
-                    update: { get: () => super.update }
-                });
-                return __awaiter(this, void 0, void 0, function* () {
-                    yield _super.update.call(this, options, false);
-                    this.setOptions();
-                    this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
-                    if (this.chart) {
-                        this.chart.update(merge(this.options.chartOptions) || {});
-                    }
-                    this.emit({ type: 'afterUpdate' });
-                    shouldRerender && this.render();
-                });
+            async update(options, shouldRerender = true) {
+                await super.update(options, false);
+                this.setOptions();
+                this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
+                if (this.chart) {
+                    this.chart.update(merge(this.options.chartOptions) || {});
+                }
+                this.emit({ type: 'afterUpdate' });
+                shouldRerender && this.render();
             }
             /**
              * Updates chart's series when the data table is changed.
@@ -1322,7 +1290,6 @@
              * @private
              */
             updateSeries() {
-                var _a;
                 // Heuristically create series from the connector dataTable
                 if (this.chart && this.connector) {
                     this.presentationTable = this.presentationModifier ?
@@ -1334,7 +1301,7 @@
                         this.presentationTable = this.presentationModifier
                             .modifyTable(this.presentationTable).modified;
                     }
-                    const table = this.presentationTable, modifierOptions = (_a = table.getModifier()) === null || _a === void 0 ? void 0 : _a.options;
+                    const table = this.presentationTable, modifierOptions = table.getModifier()?.options;
                     // Names/aliases that should be mapped to xAxis values
                     const columnNames = table.modified.getColumnNames();
                     const columnAssignment = this.options.columnAssignment ||
@@ -1360,7 +1327,6 @@
                     });
                     // Create the series or get the already added series
                     const seriesList = seriesNames.map((seriesName, index) => {
-                        var _a;
                         let i = 0;
                         while (i < chart.series.length) {
                             const series = chart.series[i];
@@ -1378,9 +1344,9 @@
                         }
                         // Disable dragging on series, which were created out of a
                         // columns which are created by MathModifier.
-                        const shouldBeDraggable = !((modifierOptions === null || modifierOptions === void 0 ? void 0 : modifierOptions.type) === 'Math' &&
-                            ((_a = modifierOptions
-                                .columnFormulas) === null || _a === void 0 ? void 0 : _a.some((formula) => formula.column === seriesName)));
+                        const shouldBeDraggable = !(modifierOptions?.type === 'Math' &&
+                            modifierOptions
+                                .columnFormulas?.some((formula) => formula.column === seriesName));
                         return chart.addSeries({
                             name: seriesName,
                             id: `${storeTableID}-series-${index}`,
@@ -1430,12 +1396,11 @@
              *
              */
             getDefaultColumnAssignment(columnNames = []) {
-                var _a;
                 const defaultColumnAssignment = {};
                 for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
                     defaultColumnAssignment[columnNames[i]] = 'y';
                     if (i === 0) {
-                        const firstColumnValues = (_a = this.presentationTable) === null || _a === void 0 ? void 0 : _a.getColumn(columnNames[i], true);
+                        const firstColumnValues = this.presentationTable?.getColumn(columnNames[i], true);
                         if (firstColumnValues && isString(firstColumnValues[0])) {
                             defaultColumnAssignment[columnNames[i]] = 'x';
                         }
@@ -1461,7 +1426,7 @@
                         try {
                             return factory(this.chartContainer, this.chartOptions);
                         }
-                        catch (_a) {
+                        catch {
                             error('The Highcharts component is misconfigured: `' +
                                 this.cell.id + '`');
                         }
@@ -1521,16 +1486,15 @@
                 }
             }
             setConnector(connector) {
-                var _a;
                 const chart = this.chart;
                 if (this.connector &&
                     chart &&
                     chart.series &&
-                    this.connector.table.id !== (connector === null || connector === void 0 ? void 0 : connector.table.id)) {
+                    this.connector.table.id !== connector?.table.id) {
                     const storeTableID = this.connector.table.id;
                     for (let i = chart.series.length - 1; i >= 0; i--) {
                         const series = chart.series[i];
-                        if (((_a = series.options.id) === null || _a === void 0 ? void 0 : _a.indexOf(storeTableID)) !== -1) {
+                        if (series.options.id?.indexOf(storeTableID) !== -1) {
                             series.remove(false);
                         }
                     }
@@ -1550,11 +1514,19 @@
                 const chartOptions = JSON.stringify(this.options.chartOptions), chartConstructor = this.options.chartConstructor;
                 this.registerChartEvents();
                 const base = super.toJSON();
-                const json = Object.assign(Object.assign({}, base), { type: 'Highcharts', options: Object.assign(Object.assign({}, base.options), { chartOptions,
-                        chartConstructor, 
+                const json = {
+                    ...base,
+                    type: 'Highcharts',
+                    options: {
+                        ...base.options,
+                        chartOptions,
+                        chartConstructor,
                         // TODO: may need to handle callback functions
                         // Maybe have a sync.toJSON()
-                        type: 'Highcharts', sync: {} }) });
+                        type: 'Highcharts',
+                        sync: {}
+                    }
+                };
                 this.emit({ type: 'toJSON', json });
                 return json;
             }
@@ -1567,15 +1539,17 @@
              *
              */
             getOptions() {
-                return Object.assign(Object.assign({}, diffObjects(this.options, HighchartsComponent.defaultOptions)), { type: 'Highcharts' });
+                return {
+                    ...diffObjects(this.options, HighchartsComponent.defaultOptions),
+                    type: 'Highcharts'
+                };
             }
             getEditableOptions() {
-                var _a;
                 const component = this;
                 const componentOptions = component.options;
                 const chart = component.chart;
                 const chartOptions = chart && chart.options;
-                const chartType = chartOptions && ((_a = chartOptions.chart) === null || _a === void 0 ? void 0 : _a.type) || 'line';
+                const chartType = chartOptions && chartOptions.chart?.type || 'line';
                 return merge(componentOptions, {
                     chartOptions
                 }, {
@@ -1620,12 +1594,7 @@
             chartID: 'chart-' + uniqueKey(),
             chartOptions: {
                 chart: {
-                    styledMode: true,
-                    zooming: {
-                        mouseWheel: {
-                            enabled: false
-                        }
-                    }
+                    styledMode: true
                 },
                 series: []
             },
@@ -3058,420 +3027,6 @@
 
         return ChartDefaults;
     });
-    _registerModule(_modules, 'Core/Color/Color.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
-        /* *
-         *
-         *  (c) 2010-2021 Torstein Honsi
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        const { isNumber, merge, pInt } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /* eslint-disable valid-jsdoc */
-        /**
-         * Handle color operations. Some object methods are chainable.
-         *
-         * @class
-         * @name Highcharts.Color
-         *
-         * @param {Highcharts.ColorType} input
-         * The input color in either rbga or hex format
-         */
-        class Color {
-            /* *
-             *
-             *  Static Functions
-             *
-             * */
-            /**
-             * Creates a color instance out of a color string or object.
-             *
-             * @function Highcharts.Color.parse
-             *
-             * @param {Highcharts.ColorType} [input]
-             * The input color in either rbga or hex format.
-             *
-             * @return {Highcharts.Color}
-             * Color instance.
-             */
-            static parse(input) {
-                return input ? new Color(input) : Color.None;
-            }
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            constructor(input) {
-                this.rgba = [NaN, NaN, NaN, NaN];
-                this.input = input;
-                const GlobalColor = H.Color;
-                // Backwards compatibility, allow class overwrite
-                if (GlobalColor && GlobalColor !== Color) {
-                    return new GlobalColor(input);
-                }
-                this.init(input);
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Parse the input color to rgba array
-             *
-             * @private
-             * @function Highcharts.Color#init
-             *
-             * @param {Highcharts.ColorType} input
-             * The input color in either rbga or hex format
-             */
-            init(input) {
-                let result, rgba, i, parser;
-                // Gradients
-                if (typeof input === 'object' &&
-                    typeof input.stops !== 'undefined') {
-                    this.stops = input.stops.map((stop) => new Color(stop[1]));
-                    // Solid colors
-                }
-                else if (typeof input === 'string') {
-                    this.input = input = (Color.names[input.toLowerCase()] || input);
-                    // Bitmasking as input[0] is not working for legacy IE.
-                    if (input.charAt(0) === '#') {
-                        const len = input.length, col = parseInt(input.substr(1), 16);
-                        // Handle long-form, e.g. #AABBCC
-                        if (len === 7) {
-                            rgba = [
-                                (col & 0xFF0000) >> 16,
-                                (col & 0xFF00) >> 8,
-                                (col & 0xFF),
-                                1
-                            ];
-                            // Handle short-form, e.g. #ABC
-                            // In short form, the value is assumed to be the same
-                            // for both nibbles for each component. e.g. #ABC = #AABBCC
-                        }
-                        else if (len === 4) {
-                            rgba = [
-                                (((col & 0xF00) >> 4) |
-                                    (col & 0xF00) >> 8),
-                                (((col & 0xF0) >> 4) |
-                                    (col & 0xF0)),
-                                ((col & 0xF) << 4) | (col & 0xF),
-                                1
-                            ];
-                        }
-                    }
-                    // Otherwise, check regex parsers
-                    if (!rgba) {
-                        i = Color.parsers.length;
-                        while (i-- && !rgba) {
-                            parser = Color.parsers[i];
-                            result = parser.regex.exec(input);
-                            if (result) {
-                                rgba = parser.parse(result);
-                            }
-                        }
-                    }
-                }
-                if (rgba) {
-                    this.rgba = rgba;
-                }
-            }
-            /**
-             * Return the color or gradient stops in the specified format
-             *
-             * @function Highcharts.Color#get
-             *
-             * @param {string} [format]
-             * Possible values are 'a', 'rgb', 'rgba' (default).
-             *
-             * @return {Highcharts.ColorType}
-             * This color as a string or gradient stops.
-             */
-            get(format) {
-                const input = this.input, rgba = this.rgba;
-                if (typeof input === 'object' &&
-                    typeof this.stops !== 'undefined') {
-                    const ret = merge(input);
-                    ret.stops = [].slice.call(ret.stops);
-                    this.stops.forEach((stop, i) => {
-                        ret.stops[i] = [
-                            ret.stops[i][0],
-                            stop.get(format)
-                        ];
-                    });
-                    return ret;
-                }
-                // it's NaN if gradient colors on a column chart
-                if (rgba && isNumber(rgba[0])) {
-                    if (format === 'rgb' || (!format && rgba[3] === 1)) {
-                        return 'rgb(' + rgba[0] + ',' + rgba[1] + ',' + rgba[2] + ')';
-                    }
-                    if (format === 'a') {
-                        return `${rgba[3]}`;
-                    }
-                    return 'rgba(' + rgba.join(',') + ')';
-                }
-                return input;
-            }
-            /**
-             * Brighten the color instance.
-             *
-             * @function Highcharts.Color#brighten
-             *
-             * @param {number} alpha
-             * The alpha value.
-             *
-             * @return {Highcharts.Color}
-             * This color with modifications.
-             */
-            brighten(alpha) {
-                const rgba = this.rgba;
-                if (this.stops) {
-                    this.stops.forEach(function (stop) {
-                        stop.brighten(alpha);
-                    });
-                }
-                else if (isNumber(alpha) && alpha !== 0) {
-                    for (let i = 0; i < 3; i++) {
-                        rgba[i] += pInt(alpha * 255);
-                        if (rgba[i] < 0) {
-                            rgba[i] = 0;
-                        }
-                        if (rgba[i] > 255) {
-                            rgba[i] = 255;
-                        }
-                    }
-                }
-                return this;
-            }
-            /**
-             * Set the color's opacity to a given alpha value.
-             *
-             * @function Highcharts.Color#setOpacity
-             *
-             * @param {number} alpha
-             *        Opacity between 0 and 1.
-             *
-             * @return {Highcharts.Color}
-             *         Color with modifications.
-             */
-            setOpacity(alpha) {
-                this.rgba[3] = alpha;
-                return this;
-            }
-            /**
-             * Return an intermediate color between two colors.
-             *
-             * @function Highcharts.Color#tweenTo
-             *
-             * @param {Highcharts.Color} to
-             * The color object to tween to.
-             *
-             * @param {number} pos
-             * The intermediate position, where 0 is the from color (current color
-             * item), and 1 is the `to` color.
-             *
-             * @return {Highcharts.ColorType}
-             * The intermediate color in rgba notation, or unsupported type.
-             */
-            tweenTo(to, pos) {
-                const fromRgba = this.rgba, toRgba = to.rgba;
-                // Unsupported color, return to-color (#3920, #7034)
-                if (!isNumber(fromRgba[0]) || !isNumber(toRgba[0])) {
-                    return to.input || 'none';
-                }
-                // Check for has alpha, because rgba colors perform worse due to
-                // lack of support in WebKit.
-                const hasAlpha = (toRgba[3] !== 1 || fromRgba[3] !== 1);
-                return (hasAlpha ? 'rgba(' : 'rgb(') +
-                    Math.round(toRgba[0] + (fromRgba[0] - toRgba[0]) * (1 - pos)) +
-                    ',' +
-                    Math.round(toRgba[1] + (fromRgba[1] - toRgba[1]) * (1 - pos)) +
-                    ',' +
-                    Math.round(toRgba[2] + (fromRgba[2] - toRgba[2]) * (1 - pos)) +
-                    (hasAlpha ?
-                        (',' +
-                            (toRgba[3] + (fromRgba[3] - toRgba[3]) * (1 - pos))) :
-                        '') +
-                    ')';
-            }
-        }
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        /**
-         * Collection of named colors. Can be extended from the outside by adding
-         * colors to Highcharts.Color.names.
-         * @private
-         */
-        Color.names = {
-            white: '#ffffff',
-            black: '#000000'
-        };
-        /**
-         * Collection of parsers. This can be extended from the outside by pushing
-         * parsers to `Color.parsers`.
-         */
-        Color.parsers = [{
-                // RGBA color
-                // eslint-disable-next-line max-len
-                regex: /rgba\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]?(?:\.[0-9]+)?)\s*\)/,
-                parse: function (result) {
-                    return [
-                        pInt(result[1]),
-                        pInt(result[2]),
-                        pInt(result[3]),
-                        parseFloat(result[4], 10)
-                    ];
-                }
-            }, {
-                // RGB color
-                regex: /rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/,
-                parse: function (result) {
-                    return [pInt(result[1]), pInt(result[2]), pInt(result[3]), 1];
-                }
-            }];
-        // Must be last static member for init cycle
-        Color.None = new Color('');
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-        /* *
-         *
-         *  API Declarations
-         *
-         * */
-        /**
-         * A valid color to be parsed and handled by Highcharts. Highcharts internally
-         * supports hex colors like `#ffffff`, rgb colors like `rgb(255,255,255)` and
-         * rgba colors like `rgba(255,255,255,1)`. Other colors may be supported by the
-         * browsers and displayed correctly, but Highcharts is not able to process them
-         * and apply concepts like opacity and brightening.
-         *
-         * @typedef {string} Highcharts.ColorString
-         */
-        /**
-         * A valid color type than can be parsed and handled by Highcharts. It can be a
-         * color string, a gradient object, or a pattern object.
-         *
-         * @typedef {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject} Highcharts.ColorType
-         */
-        /**
-         * Gradient options instead of a solid color.
-         *
-         * @example
-         * // Linear gradient used as a color option
-         * color: {
-         *     linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
-         *     stops: [
-         *         [0, '#003399'], // start
-         *         [0.5, '#ffffff'], // middle
-         *         [1, '#3366AA'] // end
-         *     ]
-         * }
-         *
-         * @interface Highcharts.GradientColorObject
-         */ /**
-        * Holds an object that defines the start position and the end position relative
-        * to the shape.
-        * @name Highcharts.GradientColorObject#linearGradient
-        * @type {Highcharts.LinearGradientColorObject|undefined}
-        */ /**
-        * Holds an object that defines the center position and the radius.
-        * @name Highcharts.GradientColorObject#radialGradient
-        * @type {Highcharts.RadialGradientColorObject|undefined}
-        */ /**
-        * The first item in each tuple is the position in the gradient, where 0 is the
-        * start of the gradient and 1 is the end of the gradient. Multiple stops can be
-        * applied. The second item is the color for each stop. This color can also be
-        * given in the rgba format.
-        * @name Highcharts.GradientColorObject#stops
-        * @type {Array<Highcharts.GradientColorStopObject>}
-        */
-        /**
-         * Color stop tuple.
-         *
-         * @see Highcharts.GradientColorObject
-         *
-         * @interface Highcharts.GradientColorStopObject
-         */ /**
-        * @name Highcharts.GradientColorStopObject#0
-        * @type {number}
-        */ /**
-        * @name Highcharts.GradientColorStopObject#1
-        * @type {Highcharts.ColorString}
-        */ /**
-        * @name Highcharts.GradientColorStopObject#color
-        * @type {Highcharts.Color|undefined}
-        */
-        /**
-         * Defines the start position and the end position for a gradient relative
-         * to the shape. Start position (x1, y1) and end position (x2, y2) are relative
-         * to the shape, where 0 means top/left and 1 is bottom/right.
-         *
-         * @interface Highcharts.LinearGradientColorObject
-         */ /**
-        * Start horizontal position of the gradient. Float ranges 0-1.
-        * @name Highcharts.LinearGradientColorObject#x1
-        * @type {number}
-        */ /**
-        * End horizontal position of the gradient. Float ranges 0-1.
-        * @name Highcharts.LinearGradientColorObject#x2
-        * @type {number}
-        */ /**
-        * Start vertical position of the gradient. Float ranges 0-1.
-        * @name Highcharts.LinearGradientColorObject#y1
-        * @type {number}
-        */ /**
-        * End vertical position of the gradient. Float ranges 0-1.
-        * @name Highcharts.LinearGradientColorObject#y2
-        * @type {number}
-        */
-        /**
-         * Defines the center position and the radius for a gradient.
-         *
-         * @interface Highcharts.RadialGradientColorObject
-         */ /**
-        * Center horizontal position relative to the shape. Float ranges 0-1.
-        * @name Highcharts.RadialGradientColorObject#cx
-        * @type {number}
-        */ /**
-        * Center vertical position relative to the shape. Float ranges 0-1.
-        * @name Highcharts.RadialGradientColorObject#cy
-        * @type {number}
-        */ /**
-        * Radius relative to the shape. Float ranges 0-1.
-        * @name Highcharts.RadialGradientColorObject#r
-        * @type {number}
-        */
-        /**
-         * Creates a color instance out of a color string.
-         *
-         * @function Highcharts.color
-         *
-         * @param {Highcharts.ColorType} input
-         *        The input color in either rbga or hex format
-         *
-         * @return {Highcharts.Color}
-         *         Color instance
-         */
-        (''); // detach doclets above
-
-        return Color;
-    });
     _registerModule(_modules, 'Core/Color/Palettes.js', [], function () {
         /**
          * Series palettes for Highcharts. Series colors are defined in highcharts.css.
@@ -3914,7 +3469,7 @@
                     // Lower case AM or PM
                     P: hours < 12 ? 'am' : 'pm',
                     // Two digits seconds, 00 through  59
-                    S: pad(date.getSeconds()),
+                    S: pad(this.get('Seconds', date)),
                     // Milliseconds (naming from Ruby)
                     L: pad(Math.floor(timestamp % 1000), 3)
                 }, H.dateFormats);
@@ -4236,7 +3791,7 @@
 
         return Time;
     });
-    _registerModule(_modules, 'Core/Defaults.js', [_modules['Core/Chart/ChartDefaults.js'], _modules['Core/Color/Color.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palettes.js'], _modules['Core/Time.js'], _modules['Core/Utilities.js']], function (ChartDefaults, Color, H, Palettes, Time, U) {
+    _registerModule(_modules, 'Core/Defaults.js', [_modules['Core/Chart/ChartDefaults.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palettes.js'], _modules['Core/Time.js'], _modules['Core/Utilities.js']], function (ChartDefaults, H, Palettes, Time, U) {
         /* *
          *
          *  (c) 2010-2021 Torstein Honsi
@@ -4246,7 +3801,6 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        const { parse: color } = Color;
         const { isTouchDevice, svg } = H;
         const { merge } = U;
         /* *
@@ -5380,6 +4934,12 @@
                  * exported images. One way of working around that is to
                  * [increase the chart height in
                  * export](https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/highcharts/legend/navigation-enabled-false/).
+                 *
+                 * @sample highcharts/legend/scrollable-vertical/
+                 *         Legend with vertical scrollable extension
+                 * @sample highcharts/legend/scrollable-horizontal/
+                 *         Legend with horizontal scrollable extension
+                 *
                  */
                 navigation: {
                     /**
@@ -5721,6 +5281,11 @@
                  *
                  * Prior to 4.1.7, when using HTML, [legend.navigation](
                  * #legend.navigation) was disabled.
+                 *
+                 * @sample highcharts/legend/scrollable-vertical/
+                 *         Legend with vertical scrollable extension
+                 * @sample highcharts/legend/scrollable-horizontal/
+                 *         Legend with horizontal scrollable extension
                  *
                  * @type      {boolean}
                  * @default   false
@@ -7177,7 +6742,7 @@
                     matches.push(currentMatch);
                 }
                 // Evaluate sub-matches one by one to prevent orphaned block closers
-                if (subMatch && !(currentMatch === null || currentMatch === void 0 ? void 0 : currentMatch.isBlock)) {
+                if (subMatch && !currentMatch?.isBlock) {
                     break;
                 }
             }
@@ -7361,7 +6926,7 @@
                     const handleChangeExtremes = (e) => {
                         const cursor = e.cursor;
                         if (cursor.type === 'position' &&
-                            typeof (cursor === null || cursor === void 0 ? void 0 : cursor.row) === 'number' &&
+                            typeof cursor?.row === 'number' &&
                             defined(cursor.column) &&
                             this.connector &&
                             !defined(this.options.value)) {
@@ -7402,7 +6967,7 @@
 
         return defaults;
     });
-    _registerModule(_modules, 'Dashboards/Components/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Core/Templating.js'], _modules['Dashboards/Plugins/KPISyncHandlers.js'], _modules['Core/Utilities.js']], function (AST, Component, Templating, KPISyncHandlers, U) {
+    _registerModule(_modules, 'Dashboards/Plugins/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Core/Templating.js'], _modules['Dashboards/Plugins/KPISyncHandlers.js'], _modules['Core/Utilities.js']], function (AST, Component, Templating, KPISyncHandlers, U) {
         /* *
          *
          *  (c) 2009 - 2023 Highsoft AS
@@ -7418,15 +6983,6 @@
          *  - Sophie Bremer
          *
          * */
-        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-            return new (P || (P = Promise))(function (resolve, reject) {
-                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-                step((generator = generator.apply(thisArg, _arguments || [])).next());
-            });
-        };
         const { format } = Templating;
         const { createElement, css, defined, getStyle, isArray, isNumber, merge, diffObjects } = U;
         /* *
@@ -7503,16 +7059,11 @@
              *
              * */
             /** @internal */
-            load() {
-                const _super = Object.create(null, {
-                    load: { get: () => super.load }
-                });
-                return __awaiter(this, void 0, void 0, function* () {
-                    yield _super.load.call(this);
-                    this.contentElement.style.display = 'flex';
-                    this.contentElement.style.flexDirection = 'column';
-                    return this;
-                });
+            async load() {
+                await super.load();
+                this.contentElement.style.display = 'flex';
+                this.contentElement.style.flexDirection = 'column';
+                return this;
             }
             resize(width, height) {
                 super.resize(width, height);
@@ -7554,18 +7105,13 @@
              * @param options
              * The options to apply.
              */
-            update(options, shouldRerender = true) {
-                const _super = Object.create(null, {
-                    update: { get: () => super.update }
-                });
-                return __awaiter(this, void 0, void 0, function* () {
-                    yield _super.update.call(this, options);
-                    this.setOptions();
-                    if (options.chartOptions && this.chart) {
-                        this.chart.update(options.chartOptions);
-                    }
-                    shouldRerender && this.render();
-                });
+            async update(options, shouldRerender = true) {
+                await super.update(options);
+                this.setOptions();
+                if (options.chartOptions && this.chart) {
+                    this.chart.update(options.chartOptions);
+                }
+                shouldRerender && this.render();
             }
             /**
              * @internal
@@ -7580,12 +7126,11 @@
              * The value that should be displayed in the KPI.
              */
             getValue() {
-                var _a;
                 if (this.options.value) {
                     return this.options.value;
                 }
                 if (this.connector && this.options.columnName) {
-                    const table = (_a = this.connector) === null || _a === void 0 ? void 0 : _a.table.modified, column = table.getColumn(this.options.columnName), length = (column === null || column === void 0 ? void 0 : column.length) || 0;
+                    const table = this.connector?.table.modified, column = table.getColumn(this.options.columnName), length = column?.length || 0;
                     return table.getCellAsString(this.options.columnName, length - 1);
                 }
             }
@@ -7731,7 +7276,21 @@
              */
             toJSON() {
                 const base = super.toJSON();
-                const json = Object.assign(Object.assign({}, base), { type: 'KPI', options: Object.assign(Object.assign({}, base.options), { type: 'KPI', value: this.options.value, subtitle: JSON.stringify(this.options.subtitle), title: JSON.stringify(this.options.title), threshold: this.options.threshold, thresholdColors: this.options.thresholdColors, chartOptions: JSON.stringify(this.options.chartOptions), valueFormat: this.options.valueFormat }) });
+                const json = {
+                    ...base,
+                    type: 'KPI',
+                    options: {
+                        ...base.options,
+                        type: 'KPI',
+                        value: this.options.value,
+                        subtitle: JSON.stringify(this.options.subtitle),
+                        title: JSON.stringify(this.options.title),
+                        threshold: this.options.threshold,
+                        thresholdColors: this.options.thresholdColors,
+                        chartOptions: JSON.stringify(this.options.chartOptions),
+                        valueFormat: this.options.valueFormat
+                    }
+                };
                 this.emit({ type: 'toJSON', json: base });
                 return json;
             }
@@ -7744,7 +7303,10 @@
              *
              */
             getOptions() {
-                return Object.assign(Object.assign({}, diffObjects(this.options, KPIComponent.defaultOptions)), { type: 'KPI' });
+                return {
+                    ...diffObjects(this.options, KPIComponent.defaultOptions),
+                    type: 'KPI'
+                };
             }
         }
         /* *
@@ -7948,15 +7510,6 @@
          *  - Sophie Bremer
          *
          * */
-        var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-            function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-            return new (P || (P = Promise))(function (resolve, reject) {
-                function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-                function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-                function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-                step((generator = generator.apply(thisArg, _arguments || [])).next());
-            });
-        };
         const { Range: RangeModifier } = DataModifier.types;
         const { addEvent, diffObjects, isNumber, merge, pick } = U;
         /* *
@@ -7981,7 +7534,7 @@
         /** @internal */
         function crossfilterEmitter() {
             const component = this;
-            const afterSetExtremes = (axis, extremes) => __awaiter(this, void 0, void 0, function* () {
+            const afterSetExtremes = async (axis, extremes) => {
                 if (component.connector) {
                     const table = component.connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = getAxisExtremes(axis, extremes);
                     let modifier = table.getModifier();
@@ -7997,7 +7550,7 @@
                                 }]
                         });
                     }
-                    yield table.setModifier(modifier);
+                    await table.setModifier(modifier);
                     dataCursor.emitCursor(table, {
                         type: 'range',
                         columns: [filterColumn],
@@ -8006,7 +7559,7 @@
                         state: 'crossfilter'
                     }, extremes);
                 }
-            });
+            };
             let delay;
             return addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
                 clearTimeout(delay);
@@ -8260,21 +7813,19 @@
              * @internal
              */
             getOptions() {
-                return Object.assign(Object.assign({}, diffObjects(this.options, NavigatorComponentDefaults)), { type: 'Navigator' });
+                return {
+                    ...diffObjects(this.options, NavigatorComponentDefaults),
+                    type: 'Navigator'
+                };
             }
             /** @private */
-            load() {
-                const _super = Object.create(null, {
-                    load: { get: () => super.load }
-                });
-                return __awaiter(this, void 0, void 0, function* () {
-                    yield _super.load.call(this);
-                    this.contentElement.appendChild(this.chartContainer);
-                    this.parentElement.appendChild(this.element);
-                    this.adjustNavigator();
-                    this.emit({ type: 'afterLoad' });
-                    return this;
-                });
+            async load() {
+                await super.load();
+                this.contentElement.appendChild(this.chartContainer);
+                this.parentElement.appendChild(this.element);
+                this.adjustNavigator();
+                this.emit({ type: 'afterLoad' });
+                return this;
             }
             onTableChanged() {
                 this.renderNavigator();
@@ -8357,34 +7908,29 @@
              * @param options
              * The options to apply.
              */
-            update(options, shouldRerender = true) {
-                const _super = Object.create(null, {
-                    update: { get: () => super.update }
-                });
-                return __awaiter(this, void 0, void 0, function* () {
-                    const chart = this.chart;
-                    yield _super.update.call(this, options, false);
-                    if (options.sync) {
-                        this.filterAndAssignSyncOptions(navigatorComponentSync);
-                    }
-                    if (options.chartOptions) {
-                        chart.update(merge((this.options.sync.crossfilter ?
-                            {
-                                navigator: {
-                                    xAxis: {
-                                        labels: {
-                                            format: '{value}'
-                                        }
+            async update(options, shouldRerender = true) {
+                const chart = this.chart;
+                await super.update(options, false);
+                if (options.sync) {
+                    this.filterAndAssignSyncOptions(navigatorComponentSync);
+                }
+                if (options.chartOptions) {
+                    chart.update(merge((this.options.sync.crossfilter ?
+                        {
+                            navigator: {
+                                xAxis: {
+                                    labels: {
+                                        format: '{value}'
                                     }
                                 }
-                            } :
-                            {}), options.chartOptions), false);
-                    }
-                    this.emit({ type: 'afterUpdate' });
-                    if (shouldRerender) {
-                        this.render();
-                    }
-                });
+                            }
+                        } :
+                        {}), options.chartOptions), false);
+                }
+                this.emit({ type: 'afterUpdate' });
+                if (shouldRerender) {
+                    this.render();
+                }
             }
         }
         /**
@@ -8399,7 +7945,7 @@
 
         return NavigatorComponent;
     });
-    _registerModule(_modules, 'Dashboards/Plugins/HighchartsPlugin.js', [_modules['Dashboards/Plugins/HighchartsComponent.js'], _modules['Dashboards/Plugins/HighchartsSyncHandlers.js'], _modules['Dashboards/Components/KPIComponent.js'], _modules['Dashboards/Plugins/NavigatorComponent.js']], function (HighchartsComponent, HighchartsSyncHandlers, KPIComponent, NavigatorComponent) {
+    _registerModule(_modules, 'Dashboards/Plugins/HighchartsPlugin.js', [_modules['Dashboards/Plugins/HighchartsComponent.js'], _modules['Dashboards/Plugins/HighchartsSyncHandlers.js'], _modules['Dashboards/Plugins/KPIComponent.js'], _modules['Dashboards/Plugins/NavigatorComponent.js']], function (HighchartsComponent, HighchartsSyncHandlers, KPIComponent, NavigatorComponent) {
         /* *
          *
          *  (c) 2009-2023 Highsoft AS
@@ -8439,7 +7985,10 @@
             ComponentRegistry.registerComponent('Highcharts', HighchartsComponent);
             ComponentRegistry.registerComponent('KPI', KPIComponent);
             ComponentRegistry.registerComponent('Navigator', NavigatorComponent);
-            Sync.defaultHandlers = Object.assign(Object.assign({}, Sync.defaultHandlers), HighchartsSyncHandlers);
+            Sync.defaultHandlers = {
+                ...Sync.defaultHandlers,
+                ...HighchartsSyncHandlers
+            };
         }
         /**
          * Callback function of the Dashboard plugin.

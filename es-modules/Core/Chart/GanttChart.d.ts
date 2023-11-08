@@ -1,7 +1,6 @@
 import type { HTMLDOMElement } from '../Renderer/DOMElementType';
 import type Options from '../Options';
 import Chart from './Chart.js';
-import '../../Series/Gantt/GanttSeries.js';
 declare module '../Options' {
     interface Options {
         isGantt?: boolean;

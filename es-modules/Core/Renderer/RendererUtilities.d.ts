@@ -21,6 +21,6 @@ declare namespace RendererUtilities {
      * labels if necessary.
      * @private
      */
-    function distribute<T extends BoxObject>(boxes: Array<T>, len: number, maxDistance?: number): DistributedBoxArray<T>;
+    function distribute<T extends BoxObject>(boxes: DistributedBoxArray<T>, len: number, maxDistance?: number): DistributedBoxArray<T>;
 }
 export default RendererUtilities;

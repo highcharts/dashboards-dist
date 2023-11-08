@@ -197,7 +197,7 @@ declare class EditMode {
     showToolbars(toolbarTypes?: Array<string>, currentCell?: Cell): void;
     /**
      * Creates the buttons such as `addComponent` button, rwd buttons and
-     * context menu button.
+     * context menu button and its container.
      * @internal
      */
     createTools(): void;
@@ -300,6 +300,10 @@ declare namespace EditMode {
          */
         resize?: Resizer.Options;
         /**
+         * Settings options.
+         */
+        settings?: SettingsOptions;
+        /**
          * Toolbar options.
          *
          * Try it:
@@ -308,9 +312,20 @@ declare namespace EditMode {
          */
         toolbars?: Toolbars;
         /**
-         * @internal
+         * Tools options.
          */
         tools?: Tools;
+    }
+    /**
+     * Settings options
+     */
+    interface SettingsOptions {
+        /**
+         * Whether the toolbar settings buttons should be enabled.
+         *
+         * @default true
+         */
+        enabled?: boolean;
     }
     /**
     * Toolbar options.
@@ -318,6 +333,9 @@ declare namespace EditMode {
     interface Toolbars {
         /**
         * Options of the cell toolbar.
+        *
+        * When the cell toolbar is disabled, the Add Component button is not
+        * displayed.
         */
         cell?: CellEditToolbar.Options;
         /**
@@ -330,27 +348,80 @@ declare namespace EditMode {
         sidebar?: SidebarPopup.Options;
     }
     /**
-    * @internal
+    * Tools options.
     */
     interface Tools {
-        contextMenu?: EditContextMenu;
-        contextButtonElement?: HTMLDOMElement;
+        /**
+        * Add Component button options.
+        */
         addComponentBtn?: AddComponentBtn;
+        /**
+         * RWD buttons options.
+         */
+        rwdButtons?: RwdButtons;
+        /**
+        * @internal
+        */
+        contextMenu?: EditContextMenu;
+        /**
+        * @internal
+        */
+        contextButtonElement?: HTMLDOMElement;
+        /**
+        * @internal
+        */
         container?: HTMLDOMElement;
-        rwdIcons?: RwdIcons;
     }
     /**
-    * @internal
+    * Add Component Button options.
     */
     interface AddComponentBtn {
+        /**
+         * Whether the Add Component button should be visible.
+         *
+         * Note that the Add Component button is always disabled when cell
+         * toolbars are disabled.
+         *
+         * @default true
+         *
+         */
+        enabled?: boolean;
+        /**
+         * URL to the Add Component button icon.
+         */
         icon: string;
     }
     /**
-    * @internal
-    */
+     * RWD buttons options.
+     */
+    interface RwdButtons {
+        /**
+         * Whether the RWD buttons should be visible.
+         *
+         * @default true
+         *
+         */
+        enabled?: boolean;
+        /**
+         * RWD buttons icons options.
+         */
+        icons: RwdIcons;
+    }
+    /**
+     * RWD Buttons icons options.
+     */
     interface RwdIcons {
+        /**
+         * URL to small RWD button icon.
+         */
         small: string;
+        /**
+         * URL to medium RWD button icon.
+         */
         medium: string;
+        /**
+         * URL to large RWD button icon.
+         */
         large: string;
     }
     /**

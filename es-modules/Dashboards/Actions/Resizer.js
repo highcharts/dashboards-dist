@@ -284,13 +284,12 @@ class Resizer {
      * Destroy resizer
      */
     destroy() {
-        var _a;
         const snaps = ['snapRight', 'snapBottom'];
         let snap;
         // Unbind events
         removeEvent(document, 'mousemove');
         removeEvent(document, 'mouseup');
-        (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.editMode.board.container);
+        this.resizeObserver?.unobserve(this.editMode.board.container);
         for (let i = 0, iEnd = snaps.length; i < iEnd; ++i) {
             snap = this[snaps[i]];
             // Unbind event
