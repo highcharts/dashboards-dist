@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.2 (2023-11-08)
+ * @license Highcharts Dashboards v1.1.3 (2023-11-29)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -2168,6 +2168,30 @@
              * @apioption chart.numberFormatter
              */
             /**
+             * When a chart with an x and a y-axis is rendered, we first pre-render the
+             * labels of both in order to measure them. Then, if either of the axis
+             * labels take up so much space that it significantly affects the length of
+             * the other axis, we repeat the process.
+             *
+             * By default we stop at two axis layout runs, but it may be that the second
+             * run also alter the space required by either axis, for example if it
+             * causes the labels to rotate. In this situation, a subsequent redraw of
+             * the chart may cause the tick and label placement to change for apparently
+             * no reason.
+             *
+             * Use the `axisLayoutRuns` option to set the maximum allowed number of
+             * repetitions. But keep in mind that the default value of 2 is set because
+             * every run costs performance time.
+             *
+             * **Note:** Changing that option to higher than the default might decrease
+             * performance significantly, especially with bigger sets of data.
+             *
+             * @type      {number}
+             * @default   2
+             * @since     @next
+             * @apioption chart.axisLayoutRuns
+             */
+            /**
              * Allows setting a key to switch between zooming and panning. Can be
              * one of `alt`, `ctrl`, `meta` (the command key on Mac and Windows
              * key on Windows) or `shift`. The keys are mapped directly to the key
@@ -2836,6 +2860,10 @@
                     },
                     /**
                      * The position of the button.
+                     *
+                     * Note: Adjusting position values might cause overlap with chart
+                     * elements. Ensure coordinates do not obstruct other components or
+                     * data visibility.
                      *
                      * @sample {highcharts} highcharts/chart/resetzoombutton-position/
                      *         Above the plot area
@@ -6984,7 +7012,7 @@
          *
          * */
         const { format } = Templating;
-        const { createElement, css, defined, getStyle, isArray, isNumber, merge, diffObjects } = U;
+        const { createElement, css, defined, diffObjects, isArray, isNumber, merge } = U;
         /* *
          *
          *  Class
@@ -7063,6 +7091,7 @@
                 await super.load();
                 this.contentElement.style.display = 'flex';
                 this.contentElement.style.flexDirection = 'column';
+                this.linkValueToChart();
                 return this;
             }
             resize(width, height) {
@@ -7126,7 +7155,7 @@
              * The value that should be displayed in the KPI.
              */
             getValue() {
-                if (this.options.value) {
+                if (defined(this.options.value)) {
                     return this.options.value;
                 }
                 if (this.connector && this.options.columnName) {
@@ -7143,8 +7172,8 @@
                 const { valueFormat, valueFormatter } = this.options;
                 if (defined(value)) {
                     let prevValue;
-                    if (isNumber(value)) {
-                        prevValue = value;
+                    if (isNumber(+value)) {
+                        prevValue = +value;
                     }
                     if (valueFormatter) {
                         value = valueFormatter.call(this, value);
@@ -7156,8 +7185,41 @@
                         value = value.toLocaleString();
                     }
                     AST.setElementHTML(this.value, '' + value);
+                    this.linkValueToChart(prevValue);
                     this.prevValue = prevValue;
                 }
+            }
+            /**
+             * Handles updating chart point value.
+             *
+             * @internal
+             */
+            linkValueToChart(value = this.getValue()) {
+                const chart = this.chart;
+                const linkedValueTo = this.options.linkedValueTo;
+                if (!chart || !linkedValueTo.enabled ||
+                    !defined(value) || !isNumber(+value)) {
+                    return;
+                }
+                value = +value;
+                const targetSeries = chart.series[linkedValueTo.seriesIndex ?? 0], targetPoint = targetSeries?.points[linkedValueTo.pointIndex ?? 0];
+                if (targetSeries) {
+                    if (targetPoint) {
+                        targetPoint.update({
+                            y: value
+                        });
+                        return;
+                    }
+                    targetSeries.addPoint({
+                        y: value
+                    });
+                    return;
+                }
+                chart.addSeries({
+                    data: [{
+                            y: value
+                        }]
+                });
             }
             /**
              * Handles updating elements via options
@@ -7339,7 +7401,12 @@
                     name: 'Value format',
                     type: 'input',
                     propertyPath: ['valueFormat']
-                }])
+                }]),
+            linkedValueTo: {
+                enabled: true,
+                seriesIndex: 0,
+                pointIndex: 0
+            }
         });
         /* *
          *

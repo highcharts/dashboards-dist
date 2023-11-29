@@ -76,7 +76,7 @@ function getDeferredAnimation(chart, animation, series) {
     let defer = 0, duration = 0;
     s.forEach((series) => {
         const seriesAnim = animObject(series.options.animation);
-        defer = animation && defined(animation.defer) ?
+        defer = isObject(animation) && defined(animation.defer) ?
             labelAnimation.defer :
             Math.max(defer, seriesAnim.duration + seriesAnim.defer);
         duration = Math.min(labelAnimation.duration, seriesAnim.duration);

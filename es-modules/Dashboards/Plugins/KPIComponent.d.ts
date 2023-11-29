@@ -38,6 +38,11 @@ declare class KPIComponent extends Component {
         syncHandlers: import("../Components/Sync/Sync").default.OptionsRecord;
         thresholdColors: string[];
         editableOptions: import("../Components/EditableOptions").default.Options[];
+        linkedValueTo: {
+            enabled: boolean;
+            seriesIndex: number;
+            pointIndex: number;
+        };
     };
     /**
      * Default options of the KPI component.
@@ -120,6 +125,12 @@ declare class KPIComponent extends Component {
      * The value to display in the KPI.
      */
     setValue(value?: number | string | undefined): void;
+    /**
+     * Handles updating chart point value.
+     *
+     * @internal
+     */
+    linkValueToChart(value?: number | string | undefined): void;
     /**
      * Handles updating elements via options
      *
@@ -247,6 +258,26 @@ declare namespace KPIComponent {
          * Callback function to format the text of the value from scratch.
          */
         valueFormatter?: ValueFormatterCallbackFunction;
+        /**
+         * This option allows user to toggle the KPI value connection with the
+         * chart and set the specific point for the connection.
+         *
+         * Linking is enabled by default for the first point of the first
+         * series.
+         *
+         * Try it:
+         *
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/kpi-component/linked-value-to | Linking KPI value to a specific point}
+         *
+         * @example
+         * ```js
+         * linkedValueTo: {
+         *     seriesIndex: 1,
+         *     pointIndex: 2
+         * }
+         * ```
+         */
+        linkedValueTo: LinkedValueToOptions;
     }
     /** @internal */
     interface SubtitleOptions extends TextOptions {
@@ -257,6 +288,33 @@ declare namespace KPIComponent {
     /** @internal */
     interface ValueFormatterCallbackFunction {
         (this: KPIComponent, value: (number | string)): string;
+    }
+    /**
+     * Options for linking KPI value to the chart point.
+     *
+     * Try it:
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/kpi-component/linked-value-to | Linking KPI value to a specific point}
+     */
+    interface LinkedValueToOptions {
+        /**
+         * Enable or disable linking KPI value to a point on the chart.
+         *
+         * @default true
+         */
+        enabled?: boolean;
+        /**
+         * Index of the point that is to receiving the KPI value as its Y.
+         *
+         * @default 0
+         */
+        pointIndex?: number;
+        /**
+         * Index of the series with the point receiving the KPI value.
+         *
+         * @default 0
+         */
+        seriesIndex?: number;
     }
 }
 declare module '../../Dashboards/Components/ComponentType' {

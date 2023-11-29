@@ -54,7 +54,7 @@ declare function animObject(animation?: (boolean | DeepPartial<AnimationOptions>
  * @return {number}
  *        The numeric value.
  */
-declare function getDeferredAnimation(chart: Chart, animation: (false | Partial<AnimationOptions>), series?: Series): Partial<AnimationOptions>;
+declare function getDeferredAnimation(chart: Chart, animation: (boolean | Partial<AnimationOptions> | undefined), series?: Series): Partial<AnimationOptions>;
 /**
  * The global animate method, which uses Fx to create individual animators.
  *

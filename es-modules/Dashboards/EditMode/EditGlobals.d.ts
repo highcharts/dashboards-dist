@@ -27,6 +27,7 @@ declare namespace EditGlobals {
         contextDetectionPointer: string;
         contextMenu: string;
         contextMenuBtn: string;
+        contextMenuBtnText: string;
         contextMenuItem: string;
         currentEditedElement: string;
         customSelect: string;
@@ -209,12 +210,21 @@ declare namespace EditGlobals {
     }
     interface LangAccessibilityOptions {
         contextMenu: LangAccessibilityOptionsContextMenu;
+        editMode: LangAccessibilityOptionsEditMode;
     }
     interface LangAccessibilityOptionsContextMenu {
+        [key: string]: string;
         /**
          * @default 'Context menu'
          */
         button: string;
+    }
+    interface LangAccessibilityOptionsEditMode {
+        [key: string]: string;
+        /**
+         * @default 'Edit mode'
+         */
+        editMode: string;
     }
     type TLangKeys = 'editMode' | 'verticalSeparator';
 }

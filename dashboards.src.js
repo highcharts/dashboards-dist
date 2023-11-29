@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.2 (2023-11-08)
+ * @license Highcharts Dashboards v1.1.3 (2023-11-29)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.2', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.3', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -5176,6 +5176,7 @@
                 resizeSnapY: PREFIX + 'resize-snap-y',
                 separator: PREFIX + 'separator',
                 contextMenuBtn: PREFIX + 'context-menu-btn',
+                contextMenuBtnText: PREFIX + 'context-menu-btn-text',
                 contextMenu: PREFIX + 'context-menu',
                 contextMenuItem: PREFIX + 'context-menu-item',
                 editModeEnabled: PREFIX + 'enabled',
@@ -5259,6 +5260,9 @@
                 accessibility: {
                     contextMenu: {
                         button: 'Context menu'
+                    },
+                    editMode: {
+                        editMode: 'Edit mode toggle button'
                     }
                 },
                 addComponent: 'Add component',
@@ -5329,22 +5333,34 @@
          * Context button element.
          */
         function renderContextButton(parentNode, editMode) {
-            let ctxBtnElement;
-            if (editMode.options.contextMenu) {
-                ctxBtnElement = createElement('button', {
+            const contextMenuOptions = editMode.options.contextMenu;
+            let contextButton;
+            if (contextMenuOptions) {
+                contextButton = createElement('button', {
                     className: EditGlobals.classNames.contextMenuBtn,
-                    onclick: function () {
+                    onclick: function (event) {
+                        event.stopPropagation();
                         editMode.onContextBtnClick();
                     }
-                }, {
-                    'background-image': 'url(' +
-                        editMode.options.contextMenu.icon +
-                        ')'
-                }, parentNode);
-                ctxBtnElement.setAttribute('aria-label', editMode.lang.accessibility.contextMenu.button);
-                ctxBtnElement.setAttribute('aria-expanded', 'false');
+                }, {}, parentNode);
+                // Add the icon if defined.
+                if (contextMenuOptions.icon) {
+                    createElement('img', {
+                        src: contextMenuOptions.icon,
+                        className: EditGlobals.classNames.icon
+                    }, {}, contextButton);
+                }
+                // Add text next to the icon if defined.
+                if (contextMenuOptions.text) {
+                    createElement('span', {
+                        className: EditGlobals.classNames.contextMenuBtnText,
+                        textContent: contextMenuOptions.text
+                    }, {}, contextButton);
+                }
+                contextButton.setAttribute('aria-label', editMode.lang.accessibility.contextMenu.button);
+                contextButton.setAttribute('aria-expanded', 'false');
             }
-            return ctxBtnElement;
+            return contextButton;
         }
         /**
          * Creates the collapsable header element.
@@ -5490,23 +5506,28 @@
          * The element to which the new element should be appended.
          *
          * @param options
-         * Form field options
+         * Form field options.
          *
          * @returns
-         * Toggle element
+         * Toggle element.
          */
         function renderToggle(parentElement, options) {
             if (!parentElement) {
                 return;
             }
-            const { value, lang } = options;
-            const title = options.title || options.name;
-            const toggleContainer = createElement('div', { className: EditGlobals.classNames.toggleContainer }, {}, parentElement);
+            const lang = options.lang, value = options.value, title = options.title || options.name, langKey = options.langKey;
+            const toggleContainer = createElement('button', {
+                className: EditGlobals.classNames.toggleContainer,
+                type: 'button',
+                role: 'switch',
+                ariaChecked: false,
+                ariaLabel: langKey ? lang.accessibility[langKey][options.name] : ''
+            }, {}, parentElement);
             if (title) {
                 renderText(toggleContainer, { title });
             }
             if (options.enabledOnOffLabels) {
-                EditRenderer.renderText(toggleContainer, {
+                renderText(toggleContainer, {
                     title: lang.off,
                     className: EditGlobals.classNames.toggleLabels
                 });
@@ -5515,14 +5536,13 @@
                 className: EditGlobals.classNames.toggleWrapper +
                     ' ' + (options.className || '')
             }, {}, toggleContainer);
-            const input = renderCheckbox(toggle, value);
-            const callbackFn = options.onchange;
-            if (input && callbackFn) {
-                toggleContainer.addEventListener('click', (e) => {
-                    callbackFn(!input.checked);
-                    input.checked = !input.checked;
-                });
-            }
+            const input = renderCheckbox(toggle, value), callbackFn = options.onchange;
+            callbackFn && toggleContainer.addEventListener('click', (e) => {
+                callbackFn(!input.checked);
+                input.checked = !input.checked;
+                toggleContainer.setAttribute('aria-checked', input.checked);
+                e.stopPropagation();
+            });
             const slider = createElement('span', {
                 className: EditGlobals.classNames.toggleSlider
             }, {}, toggle);
@@ -5530,7 +5550,7 @@
                 e.preventDefault();
             });
             if (options.enabledOnOffLabels) {
-                EditRenderer.renderText(toggleContainer, {
+                renderText(toggleContainer, {
                     title: lang.on,
                     className: EditGlobals.classNames.toggleLabels
                 });
@@ -5819,6 +5839,7 @@
                             options.text,
                         value: !!(options.getValue && options.getValue(item)),
                         lang: this.menu.editMode.lang,
+                        langKey: langKey,
                         onchange: options.events?.click?.bind(item)
                     });
                 }
@@ -10345,7 +10366,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.2/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.3/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -12622,11 +12643,11 @@
                 }
                 let result = component.getEditableOptions();
                 for (let i = 0, end = propertyPath.length; i < end; i++) {
-                    if (!result) {
-                        return;
-                    }
                     if (isArray(result)) {
                         result = result[0];
+                    }
+                    if (!result) {
+                        return;
                     }
                     result = result[propertyPath[i]];
                 }

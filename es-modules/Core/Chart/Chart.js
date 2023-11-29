@@ -675,7 +675,7 @@ class Chart {
      * @emits Highcharts.Chart#event:getAxes
      */
     getAxes() {
-        const options = this.options;
+        const options = this.userOptions;
         fireEvent(this, 'getAxes');
         for (const coll of ['xAxis', 'yAxis']) {
             const arr = options[coll] = splat(options[coll] || {});
@@ -1657,14 +1657,17 @@ class Chart {
      * @function Highcharts.Chart#render
      */
     render() {
-        const chart = this, axes = chart.axes, colorAxis = chart.colorAxis, renderer = chart.renderer, renderAxes = (axes) => {
+        const chart = this, axes = chart.axes, colorAxis = chart.colorAxis, renderer = chart.renderer, axisLayoutRuns = chart.options.chart.axisLayoutRuns || 2, renderAxes = (axes) => {
             axes.forEach((axis) => {
                 if (axis.visible) {
                     axis.render();
                 }
             });
         };
-        let expectedSpace = 0; // Correction for X axis labels
+        let expectedSpace = 0, // Correction for X axis labels
+        // If the plot area size has changed significantly, calculate tick
+        // positions again
+        redoHorizontal = true, redoVertical, run = 0;
         // Title
         chart.setTitle();
         // Fire an event before the margins are computed. This is where the
@@ -1675,8 +1678,6 @@ class Chart {
         // Get chart margins
         chart.getMargins(true);
         chart.setChartSize();
-        // Record preliminary dimensions for later comparison
-        const tempWidth = chart.plotWidth;
         for (const axis of axes) {
             const { options } = axis, { labels } = options;
             if (axis.horiz &&
@@ -1704,24 +1705,31 @@ class Chart {
         }
         // Use Math.max to prevent negative plotHeight
         chart.plotHeight = Math.max(chart.plotHeight - expectedSpace, 0);
-        const tempHeight = chart.plotHeight;
-        // Get margins by pre-rendering axes
-        axes.forEach((axis) => axis.setScale());
-        chart.getAxisMargins();
-        // If the plot area size has changed significantly, calculate tick
-        // positions again
-        const redoHorizontal = tempWidth / chart.plotWidth > 1.1, 
-        // Height is more sensitive, use lower threshold
-        redoVertical = tempHeight / chart.plotHeight > 1.05;
-        if (redoHorizontal || redoVertical) {
-            axes.forEach((axis) => {
-                if ((axis.horiz && redoHorizontal) ||
+        while ((redoHorizontal || redoVertical || axisLayoutRuns > 1) &&
+            run < axisLayoutRuns // #19794
+        ) {
+            const tempWidth = chart.plotWidth, tempHeight = chart.plotHeight;
+            for (const axis of axes) {
+                if (run === 0) {
+                    // Get margins by pre-rendering axes
+                    axis.setScale();
+                }
+                else if ((axis.horiz && redoHorizontal) ||
                     (!axis.horiz && redoVertical)) {
                     // Update to reflect the new margins
                     axis.setTickInterval(true);
                 }
-            });
-            chart.getMargins(); // Second pass to check for new labels
+            }
+            if (run === 0) {
+                chart.getAxisMargins();
+            }
+            else {
+                // Check again for new, rotated or moved labels
+                chart.getMargins();
+            }
+            redoHorizontal = (tempWidth / chart.plotWidth) > (run ? 1 : 1.1);
+            redoVertical = (tempHeight / chart.plotHeight) > (run ? 1 : 1.05);
+            run++;
         }
         // Draw the borders and backgrounds
         chart.drawChartBox();

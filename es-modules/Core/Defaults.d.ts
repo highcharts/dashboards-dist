@@ -1,8 +1,8 @@
-import type { Options } from './Options';
+import type { DefaultOptions, Options } from './Options';
 import Time from './Time.js';
 declare module './GlobalsLike' {
     interface GlobalsLike {
-        defaultOptions: Options;
+        defaultOptions: DefaultOptions;
         time: Time;
     }
 }
@@ -16,7 +16,7 @@ declare module './GlobalsLike' {
  * @return {Highcharts.Options}
  * Default options.
  */
-declare function getOptions(): Options;
+declare function getOptions(): DefaultOptions;
 /**
  * Merge the default options with custom options and return the new options
  * structure. Commonly used for defining reusable templates.
@@ -32,9 +32,9 @@ declare function getOptions(): Options;
  * @return {Highcharts.Options}
  * Updated options.
  */
-declare function setOptions(options: DeepPartial<Options>): Options;
+declare function setOptions(options: DeepPartial<DefaultOptions>): Options;
 declare const DefaultOptions: {
-    defaultOptions: Options;
+    defaultOptions: DefaultOptions;
     defaultTime: Time;
     getOptions: typeof getOptions;
     setOptions: typeof setOptions;

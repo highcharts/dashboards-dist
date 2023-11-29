@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.2 (2023-11-08)
+ * @license Highcharts Dashboards v1.1.3 (2023-11-29)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -542,6 +542,30 @@
              * @type {Highcharts.NumberFormatterCallbackFunction}
              * @since 8.0.0
              * @apioption chart.numberFormatter
+             */
+            /**
+             * When a chart with an x and a y-axis is rendered, we first pre-render the
+             * labels of both in order to measure them. Then, if either of the axis
+             * labels take up so much space that it significantly affects the length of
+             * the other axis, we repeat the process.
+             *
+             * By default we stop at two axis layout runs, but it may be that the second
+             * run also alter the space required by either axis, for example if it
+             * causes the labels to rotate. In this situation, a subsequent redraw of
+             * the chart may cause the tick and label placement to change for apparently
+             * no reason.
+             *
+             * Use the `axisLayoutRuns` option to set the maximum allowed number of
+             * repetitions. But keep in mind that the default value of 2 is set because
+             * every run costs performance time.
+             *
+             * **Note:** Changing that option to higher than the default might decrease
+             * performance significantly, especially with bigger sets of data.
+             *
+             * @type      {number}
+             * @default   2
+             * @since     @next
+             * @apioption chart.axisLayoutRuns
              */
             /**
              * Allows setting a key to switch between zooming and panning. Can be
@@ -1212,6 +1236,10 @@
                     },
                     /**
                      * The position of the button.
+                     *
+                     * Note: Adjusting position values might cause overlap with chart
+                     * elements. Ensure coordinates do not obstruct other components or
+                     * data visibility.
                      *
                      * @sample {highcharts} highcharts/chart/resetzoombutton-position/
                      *         Above the plot area

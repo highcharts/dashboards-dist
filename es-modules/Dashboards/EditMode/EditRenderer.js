@@ -36,22 +36,34 @@ const { merge, createElement, defined } = U;
  * Context button element.
  */
 function renderContextButton(parentNode, editMode) {
-    let ctxBtnElement;
-    if (editMode.options.contextMenu) {
-        ctxBtnElement = createElement('button', {
+    const contextMenuOptions = editMode.options.contextMenu;
+    let contextButton;
+    if (contextMenuOptions) {
+        contextButton = createElement('button', {
             className: EditGlobals.classNames.contextMenuBtn,
-            onclick: function () {
+            onclick: function (event) {
+                event.stopPropagation();
                 editMode.onContextBtnClick();
             }
-        }, {
-            'background-image': 'url(' +
-                editMode.options.contextMenu.icon +
-                ')'
-        }, parentNode);
-        ctxBtnElement.setAttribute('aria-label', editMode.lang.accessibility.contextMenu.button);
-        ctxBtnElement.setAttribute('aria-expanded', 'false');
+        }, {}, parentNode);
+        // Add the icon if defined.
+        if (contextMenuOptions.icon) {
+            createElement('img', {
+                src: contextMenuOptions.icon,
+                className: EditGlobals.classNames.icon
+            }, {}, contextButton);
+        }
+        // Add text next to the icon if defined.
+        if (contextMenuOptions.text) {
+            createElement('span', {
+                className: EditGlobals.classNames.contextMenuBtnText,
+                textContent: contextMenuOptions.text
+            }, {}, contextButton);
+        }
+        contextButton.setAttribute('aria-label', editMode.lang.accessibility.contextMenu.button);
+        contextButton.setAttribute('aria-expanded', 'false');
     }
-    return ctxBtnElement;
+    return contextButton;
 }
 /**
  * Creates the collapsable header element.
@@ -197,23 +209,28 @@ function renderSelectElement(option, dropdown, placeholder, id, dropdownPointer,
  * The element to which the new element should be appended.
  *
  * @param options
- * Form field options
+ * Form field options.
  *
  * @returns
- * Toggle element
+ * Toggle element.
  */
 function renderToggle(parentElement, options) {
     if (!parentElement) {
         return;
     }
-    const { value, lang } = options;
-    const title = options.title || options.name;
-    const toggleContainer = createElement('div', { className: EditGlobals.classNames.toggleContainer }, {}, parentElement);
+    const lang = options.lang, value = options.value, title = options.title || options.name, langKey = options.langKey;
+    const toggleContainer = createElement('button', {
+        className: EditGlobals.classNames.toggleContainer,
+        type: 'button',
+        role: 'switch',
+        ariaChecked: false,
+        ariaLabel: langKey ? lang.accessibility[langKey][options.name] : ''
+    }, {}, parentElement);
     if (title) {
         renderText(toggleContainer, { title });
     }
     if (options.enabledOnOffLabels) {
-        EditRenderer.renderText(toggleContainer, {
+        renderText(toggleContainer, {
             title: lang.off,
             className: EditGlobals.classNames.toggleLabels
         });
@@ -222,14 +239,13 @@ function renderToggle(parentElement, options) {
         className: EditGlobals.classNames.toggleWrapper +
             ' ' + (options.className || '')
     }, {}, toggleContainer);
-    const input = renderCheckbox(toggle, value);
-    const callbackFn = options.onchange;
-    if (input && callbackFn) {
-        toggleContainer.addEventListener('click', (e) => {
-            callbackFn(!input.checked);
-            input.checked = !input.checked;
-        });
-    }
+    const input = renderCheckbox(toggle, value), callbackFn = options.onchange;
+    callbackFn && toggleContainer.addEventListener('click', (e) => {
+        callbackFn(!input.checked);
+        input.checked = !input.checked;
+        toggleContainer.setAttribute('aria-checked', input.checked);
+        e.stopPropagation();
+    });
     const slider = createElement('span', {
         className: EditGlobals.classNames.toggleSlider
     }, {}, toggle);
@@ -237,7 +253,7 @@ function renderToggle(parentElement, options) {
         e.preventDefault();
     });
     if (options.enabledOnOffLabels) {
-        EditRenderer.renderText(toggleContainer, {
+        renderText(toggleContainer, {
             title: lang.on,
             className: EditGlobals.classNames.toggleLabels
         });

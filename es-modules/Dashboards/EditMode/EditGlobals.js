@@ -26,6 +26,7 @@ const EditGlobals = {
         resizeSnapY: PREFIX + 'resize-snap-y',
         separator: PREFIX + 'separator',
         contextMenuBtn: PREFIX + 'context-menu-btn',
+        contextMenuBtnText: PREFIX + 'context-menu-btn-text',
         contextMenu: PREFIX + 'context-menu',
         contextMenuItem: PREFIX + 'context-menu-item',
         editModeEnabled: PREFIX + 'enabled',
@@ -109,6 +110,9 @@ const EditGlobals = {
         accessibility: {
             contextMenu: {
                 button: 'Context menu'
+            },
+            editMode: {
+                editMode: 'Edit mode toggle button'
             }
         },
         addComponent: 'Add component',

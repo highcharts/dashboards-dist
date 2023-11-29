@@ -20,7 +20,7 @@ import Templating from '../../Core/Templating.js';
 import KPISyncHandlers from './KPISyncHandlers.js';
 const { format } = Templating;
 import U from '../../Core/Utilities.js';
-const { createElement, css, defined, getStyle, isArray, isNumber, merge, diffObjects } = U;
+const { createElement, css, defined, diffObjects, isArray, isNumber, merge } = U;
 /* *
  *
  *  Class
@@ -99,6 +99,7 @@ class KPIComponent extends Component {
         await super.load();
         this.contentElement.style.display = 'flex';
         this.contentElement.style.flexDirection = 'column';
+        this.linkValueToChart();
         return this;
     }
     resize(width, height) {
@@ -162,7 +163,7 @@ class KPIComponent extends Component {
      * The value that should be displayed in the KPI.
      */
     getValue() {
-        if (this.options.value) {
+        if (defined(this.options.value)) {
             return this.options.value;
         }
         if (this.connector && this.options.columnName) {
@@ -179,8 +180,8 @@ class KPIComponent extends Component {
         const { valueFormat, valueFormatter } = this.options;
         if (defined(value)) {
             let prevValue;
-            if (isNumber(value)) {
-                prevValue = value;
+            if (isNumber(+value)) {
+                prevValue = +value;
             }
             if (valueFormatter) {
                 value = valueFormatter.call(this, value);
@@ -192,8 +193,41 @@ class KPIComponent extends Component {
                 value = value.toLocaleString();
             }
             AST.setElementHTML(this.value, '' + value);
+            this.linkValueToChart(prevValue);
             this.prevValue = prevValue;
         }
+    }
+    /**
+     * Handles updating chart point value.
+     *
+     * @internal
+     */
+    linkValueToChart(value = this.getValue()) {
+        const chart = this.chart;
+        const linkedValueTo = this.options.linkedValueTo;
+        if (!chart || !linkedValueTo.enabled ||
+            !defined(value) || !isNumber(+value)) {
+            return;
+        }
+        value = +value;
+        const targetSeries = chart.series[linkedValueTo.seriesIndex ?? 0], targetPoint = targetSeries?.points[linkedValueTo.pointIndex ?? 0];
+        if (targetSeries) {
+            if (targetPoint) {
+                targetPoint.update({
+                    y: value
+                });
+                return;
+            }
+            targetSeries.addPoint({
+                y: value
+            });
+            return;
+        }
+        chart.addSeries({
+            data: [{
+                    y: value
+                }]
+        });
     }
     /**
      * Handles updating elements via options
@@ -375,7 +409,12 @@ KPIComponent.defaultOptions = merge(Component.defaultOptions, {
             name: 'Value format',
             type: 'input',
             propertyPath: ['valueFormat']
-        }])
+        }]),
+    linkedValueTo: {
+        enabled: true,
+        seriesIndex: 0,
+        pointIndex: 0
+    }
 });
 /* *
  *

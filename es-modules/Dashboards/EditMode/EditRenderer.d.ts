@@ -52,10 +52,10 @@ declare function renderSelect(parentElement: HTMLElement, options: SelectFormFie
  * The element to which the new element should be appended.
  *
  * @param options
- * Form field options
+ * Form field options.
  *
  * @returns
- * Toggle element
+ * Toggle element.
  */
 declare function renderToggle(parentElement: HTMLElement, options: ToggleFormFieldOptions): HTMLElement | undefined;
 /**
@@ -218,6 +218,7 @@ export interface ToggleFormFieldOptions {
     id: string;
     name: string;
     lang: EditGlobals.LangOptions;
+    langKey?: string;
 }
 export interface NestedHeaderFormFieldOptions {
     name: string;
