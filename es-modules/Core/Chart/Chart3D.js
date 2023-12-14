@@ -1233,7 +1233,6 @@ var Chart3D;
          *
          * */
         constructor(chart) {
-            this.frame3d = void 0;
             this.chart = chart;
         }
         /* *

@@ -28,7 +28,7 @@ declare class MSPointer extends Pointer {
      */
     private batchMSEvents;
     destroy(): void;
-    init(chart: Chart, options: Options): void;
+    constructor(chart: Chart, options: Options);
     /**
      * @private
      * @function Highcharts.Pointer#onContainerPointerDown

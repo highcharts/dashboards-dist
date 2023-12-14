@@ -2,14 +2,6 @@ import type Cell from '../Layout/Cell';
 import type { Chart, Options as ChartOptions, Highcharts as H } from './HighchartsTypes';
 import Component from '../Components/Component.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
-declare module '../../Core/GlobalsLike' {
-    interface GlobalsLike {
-        chart: typeof Chart.chart;
-        ganttChart: typeof Chart.chart;
-        mapChart: typeof Chart.chart;
-        stockChart: typeof Chart.chart;
-    }
-}
 /**
  *
  * Class that represents a Highcharts component.
@@ -17,7 +9,7 @@ declare module '../../Core/GlobalsLike' {
  */
 declare class HighchartsComponent extends Component {
     /** @private */
-    static charter?: H;
+    static charter: H;
     /** @private */
     static syncHandlers: import("../Components/Sync/Sync").default.OptionsRecord;
     /**
@@ -264,8 +256,29 @@ declare namespace HighchartsComponent {
          * }
          * ```
          */
-        columnAssignment?: Record<string, string | null>;
+        columnAssignment?: Record<string, string | Record<string, string>>;
     }
+    /**
+     * Names that should be mapped to point values or props. You can
+     * declare which columns will be parameter of the point. It is useful for
+     * series like OHLC, candlestick, columnrange or arearange.
+     *
+     * The seriesName field is mandatory for displaying series (for instance in
+     * the legend) properly.
+     *
+     * ```
+     * Example
+     * columnAssignment: {
+     *      'Dates': 'x',
+     *      'mySeriesName': {
+     *             'open': 'myOpen',
+     *             'high': 'myHigh',
+     *             'low': 'myLow',
+     *             'close': 'myClose'
+     *      }
+     * }
+     * ```
+    */
     /** @private */
     interface OptionsJSON extends Component.ComponentOptionsJSON {
         chartOptions?: string;

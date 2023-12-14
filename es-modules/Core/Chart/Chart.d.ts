@@ -168,19 +168,6 @@ declare class Chart {
     yAxis: Array<AxisType>;
     zooming: ChartZoomingOptions;
     /**
-     * Handle the arguments passed to the constructor.
-     *
-     * @private
-     * @function Highcharts.Chart#getArgs
-     *
-     * @param {...Array<*>} arguments
-     * All arguments for the constructor.
-     *
-     * @emits Highcharts.Chart#event:init
-     * @emits Highcharts.Chart#event:afterInit
-     */
-    getArgs(a: (string | globalThis.HTMLElement | Partial<Options>), b?: (Chart.CallbackFunction | Partial<Options>), c?: Chart.CallbackFunction): void;
-    /**
      * Function setting zoom options after chart init and after chart update.
      * Offers support for deprecated options.
      *

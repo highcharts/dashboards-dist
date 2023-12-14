@@ -42,16 +42,6 @@ declare class Color implements ColorLike {
     rgba: Color.RGBA;
     stops?: Array<Color>;
     /**
-     * Parse the input color to rgba array
-     *
-     * @private
-     * @function Highcharts.Color#init
-     *
-     * @param {Highcharts.ColorType} input
-     * The input color in either rbga or hex format
-     */
-    private init;
-    /**
      * Return the color or gradient stops in the specified format
      *
      * @function Highcharts.Color#get

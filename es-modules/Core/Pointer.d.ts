@@ -39,7 +39,6 @@ declare class Pointer {
     static hoverChartIndex: (number | undefined);
     static unbindDocumentMouseUp: (Function | undefined);
     static unbindDocumentTouchEnd: (Function | undefined);
-    constructor(chart: Chart, options: Options);
     chart: Chart;
     chartPosition?: Pointer.ChartPositionObject;
     hasDragged: (false | number);
@@ -54,7 +53,7 @@ declare class Pointer {
     options: Options;
     pinchDown: Array<any>;
     res?: boolean;
-    runChartClick: boolean;
+    runChartClick?: boolean;
     selectionMarker?: SVGElement;
     tooltipTimeout?: number;
     eventsToUnbind: Array<Function>;
@@ -234,7 +233,7 @@ declare class Pointer {
      * The root options object. The pointer uses options from the chart and
      * tooltip structures.
      */
-    init(chart: Chart, options: Options): void;
+    constructor(chart: Chart, options: Options);
     /**
      * Takes a browser event object and extends it with custom Highcharts
      * properties `chartX` and `chartY` in order to work on the internal
@@ -443,9 +442,5 @@ declare namespace Pointer {
      * @private
      */
     function compose(ChartClass: typeof Chart): void;
-    /**
-     * @private
-     */
-    function dissolve(): void;
 }
 export default Pointer;

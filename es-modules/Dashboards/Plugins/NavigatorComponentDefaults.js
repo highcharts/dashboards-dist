@@ -84,7 +84,8 @@ const NavigatorComponentDefaults = {
             enabled: false
         },
         xAxis: {
-            visible: false
+            visible: false,
+            minRange: Number.MIN_VALUE
         },
         yAxis: {
             visible: false

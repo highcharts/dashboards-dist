@@ -83,17 +83,6 @@ class Board {
      * The options for the dashboard.
      */
     constructor(renderTo, options) {
-        /**
-         * The container referenced by the `renderTo` option when creating the
-         * dashboard.
-         * @internal
-         * */
-        this.boardWrapper = void 0;
-        /**
-         * The main container for the dashboard. Created inside the element
-         * specified by user when creating the dashboard.
-         * */
-        this.container = void 0;
         this.options = merge(Board.defaultOptions, options);
         this.dataPool = new DataPool(options.dataPool);
         this.id = uniqueKey();
@@ -297,8 +286,14 @@ class Board {
         const board = this, cntSize = board.getLayoutContainerSize();
         let layout;
         if (board.editMode) {
+            const editModeTools = board.editMode.tools;
             board.editMode.hideToolbars(['cell', 'row']);
             board.editMode.hideContextPointer();
+            // update expanded context menu container
+            if (editModeTools.contextMenu) {
+                editModeTools.contextMenu
+                    .updatePosition(editModeTools.contextButtonElement);
+            }
         }
         for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
             this.reflowLayout(board.layouts[i], cntSize);

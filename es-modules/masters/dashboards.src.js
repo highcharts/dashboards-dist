@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.3 (2023-11-29)
+ * @license Highcharts Dashboards v1.2.0 (2023-12-14)
  * @module dashboards/dashboards
  *
  * (c) 2009-2023 Highsoft AS

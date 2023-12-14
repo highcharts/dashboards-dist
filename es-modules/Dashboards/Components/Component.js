@@ -115,12 +115,6 @@ class Component {
          */
         this.cellListeners = [];
         /**
-         * The active group of the component. Used for sync.
-         *
-         * @internal
-         */
-        this.activeGroup = void 0;
-        /**
          * Timeouts for calls to `Component.resizeTo()`.
          *
          * @internal
@@ -203,12 +197,24 @@ class Component {
         const syncHandlers = Object.keys(sync)
             .reduce((carry, handlerName) => {
             if (handlerName) {
-                const handler = sync[handlerName];
-                if (handler && typeof handler === 'object') {
-                    carry[handlerName] = handler;
-                }
-                if (handler && typeof handler === 'boolean') {
-                    carry[handlerName] = defaultHandlers[handlerName];
+                const handler = sync[handlerName], defaultHandler = defaultHandlers[handlerName];
+                if (defaultHandler) {
+                    if (handler === true) {
+                        carry[handlerName] = defaultHandler;
+                    }
+                    else if (handler && handler.enabled) {
+                        const keys = [
+                            'emitter', 'handler'
+                        ];
+                        carry[handlerName] = {};
+                        for (const key of keys) {
+                            if (handler[key] === true ||
+                                handler[key] === void 0) {
+                                carry[handlerName][key] =
+                                    defaultHandler[key];
+                            }
+                        }
+                    }
                 }
             }
             return carry;

@@ -314,13 +314,22 @@ const configs = {
                 if (chart && chart.series.length) {
                     const cursor = e.cursor;
                     if (cursor.type === 'position') {
-                        const [series] = chart.series.length > 1 && cursor.column ?
-                            chart.series.filter((series) => series.name === cursor.column) :
-                            chart.series;
-                        if (series && series.visible && cursor.row !== void 0) {
-                            const point = series.points[cursor.row - offset];
+                        let [series] = chart.series;
+                        // #20133 - Highcharts dashboards don't sync
+                        // tooltips when charts have multiple series
+                        if (chart.series.length > 1 && cursor.column) {
+                            const relatedSeries = chart.series.filter((series) => series.name === cursor.column);
+                            if (relatedSeries.length > 0) {
+                                [series] = relatedSeries;
+                            }
+                        }
+                        if (series?.visible && cursor.row !== void 0) {
+                            const point = series.points[cursor.row - offset], useSharedTooltip = chart.tooltip?.shared;
                             if (point) {
-                                chart.tooltip && chart.tooltip.refresh(point);
+                                const hoverPoint = chart.hoverPoint, hoverSeries = hoverPoint?.series ||
+                                    chart.hoverSeries, points = chart.pointer.getHoverData(point, hoverSeries, chart.series, true, true);
+                                chart.tooltip && chart.tooltip.refresh(useSharedTooltip ?
+                                    points.hoverPoints : point);
                             }
                         }
                     }

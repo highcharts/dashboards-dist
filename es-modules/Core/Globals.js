@@ -24,7 +24,7 @@ var Globals;
      *  Constants
      *
      * */
-    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.3', Globals.win = (typeof window !== 'undefined' ?
+    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.2.0', Globals.win = (typeof window !== 'undefined' ?
         window :
         {}), // eslint-disable-line node/no-unsupported-features/es-builtins
     Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -63,6 +63,12 @@ var Globals;
      * @type {Array<Highcharts.Chart|undefined>}
      */
     Globals.charts = [];
+    /**
+     * A shared registry between all bundles to keep track of applied
+     * compositions.
+     * @private
+     */
+    Globals.composed = [];
     /**
      * A hook for defining additional date format specifiers. New
      * specifiers are defined as key-value pairs by using the

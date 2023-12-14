@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.3 (2023-11-29)
+ * @license Highcharts Dashboards v1.2.0 (2023-12-14)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -968,13 +968,22 @@
                         if (chart && chart.series.length) {
                             const cursor = e.cursor;
                             if (cursor.type === 'position') {
-                                const [series] = chart.series.length > 1 && cursor.column ?
-                                    chart.series.filter((series) => series.name === cursor.column) :
-                                    chart.series;
-                                if (series && series.visible && cursor.row !== void 0) {
-                                    const point = series.points[cursor.row - offset];
+                                let [series] = chart.series;
+                                // #20133 - Highcharts dashboards don't sync
+                                // tooltips when charts have multiple series
+                                if (chart.series.length > 1 && cursor.column) {
+                                    const relatedSeries = chart.series.filter((series) => series.name === cursor.column);
+                                    if (relatedSeries.length > 0) {
+                                        [series] = relatedSeries;
+                                    }
+                                }
+                                if (series?.visible && cursor.row !== void 0) {
+                                    const point = series.points[cursor.row - offset], useSharedTooltip = chart.tooltip?.shared;
                                     if (point) {
-                                        chart.tooltip && chart.tooltip.refresh(point);
+                                        const hoverPoint = chart.hoverPoint, hoverSeries = hoverPoint?.series ||
+                                            chart.hoverSeries, points = chart.pointer.getHoverData(point, hoverSeries, chart.series, true, true);
+                                        chart.tooltip && chart.tooltip.refresh(useSharedTooltip ?
+                                            points.hoverPoints : point);
                                     }
                                 }
                             }
@@ -1110,7 +1119,7 @@
          *  - Sophie Bremer
          *
          * */
-        const { addEvent, createElement, error, diffObjects, isString, merge, splat, uniqueKey } = U;
+        const { addEvent, createElement, diffObjects, isString, merge, splat, uniqueKey, isObject } = U;
         /* *
          *
          *  Class
@@ -1325,6 +1334,12 @@
                         }
                         return true;
                     });
+                    // create empty series for mapping custom props of data
+                    Object.keys(columnAssignment).forEach(function (key) {
+                        if (isObject(columnAssignment[key])) {
+                            seriesNames.push(key);
+                        }
+                    });
                     // Create the series or get the already added series
                     const seriesList = seriesNames.map((seriesName, index) => {
                         let i = 0;
@@ -1333,8 +1348,7 @@
                             const seriesFromConnector = series.options.id === `${storeTableID}-series-${index}`;
                             const existingSeries = seriesNames.indexOf(series.name) !== -1;
                             i++;
-                            if (existingSeries &&
-                                seriesFromConnector) {
+                            if (existingSeries && seriesFromConnector) {
                                 return series;
                             }
                             if (!existingSeries &&
@@ -1347,26 +1361,49 @@
                         const shouldBeDraggable = !(modifierOptions?.type === 'Math' &&
                             modifierOptions
                                 .columnFormulas?.some((formula) => formula.column === seriesName));
-                        return chart.addSeries({
+                        const seriesOptions = {
                             name: seriesName,
                             id: `${storeTableID}-series-${index}`,
                             dragDrop: {
                                 draggableY: shouldBeDraggable
                             }
-                        }, false);
+                        };
+                        const relatedSeries = chart.series.find((series) => series.name === seriesName);
+                        if (relatedSeries) {
+                            relatedSeries.update(seriesOptions, false);
+                            return relatedSeries;
+                        }
+                        return chart.addSeries(seriesOptions, false);
                     });
                     // Insert the data
                     seriesList.forEach((series) => {
-                        const xKey = Object.keys(xKeyMap)[0];
+                        const xKey = Object.keys(xKeyMap)[0], isSeriesColumnMap = isObject(columnAssignment[series.name]), pointColumnMapValues = [];
+                        if (isSeriesColumnMap) {
+                            const pointColumns = columnAssignment[series.name];
+                            Object.keys(pointColumns).forEach((key) => {
+                                pointColumnMapValues.push(pointColumns[key]);
+                            });
+                        }
+                        const columnKeys = isSeriesColumnMap ?
+                            [xKey].concat(pointColumnMapValues) : [xKey, series.name];
                         const seriesTable = new DataTable({
-                            columns: table.modified.getColumns([xKey, series.name])
+                            columns: table.modified.getColumns(columnKeys)
                         });
-                        seriesTable.renameColumn(series.name, 'y');
+                        if (!isSeriesColumnMap) {
+                            seriesTable.renameColumn(series.name, 'y');
+                        }
                         if (xKey) {
                             seriesTable.renameColumn(xKey, 'x');
                         }
                         const seriesData = seriesTable.getRowObjects().reduce((arr, row) => {
-                            arr.push([row.x, row.y]);
+                            if (isSeriesColumnMap) {
+                                arr.push([row.x].concat(pointColumnMapValues.map(function (value) {
+                                    return row[value];
+                                })));
+                            }
+                            else {
+                                arr.push([row.x, row.y]);
+                            }
                             return arr;
                         }, []);
                         series.setData(seriesData);
@@ -1418,24 +1455,26 @@
              *
              */
             createChart() {
-                const charter = (HighchartsComponent.charter ||
-                    Globals.win.Highcharts);
-                if (this.chartConstructor !== 'chart') {
-                    const factory = charter[this.chartConstructor];
-                    if (factory) {
-                        try {
-                            return factory(this.chartContainer, this.chartOptions);
+                const charter = HighchartsComponent.charter || Globals.win.Highcharts;
+                if (!this.chartConstructor) {
+                    this.chartConstructor = 'chart';
+                }
+                const Factory = charter[this.chartConstructor];
+                if (Factory) {
+                    try {
+                        if (this.chartConstructor === 'chart') {
+                            return charter.Chart.chart(this.chartContainer, this.chartOptions);
                         }
-                        catch {
-                            error('The Highcharts component is misconfigured: `' +
-                                this.cell.id + '`');
-                        }
+                        return new Factory(this.chartContainer, this.chartOptions);
+                    }
+                    catch {
+                        throw new Error('The Highcharts component is misconfigured: `' +
+                            this.cell.id + '`');
                     }
                 }
                 if (typeof charter.chart !== 'function') {
                     throw new Error('Chart constructor not found');
                 }
-                this.chart = charter.chart(this.chartContainer, this.chartOptions);
                 return this.chart;
             }
             /**
@@ -1772,6 +1811,74 @@
          * */
 
         return HighchartsComponent;
+    });
+    _registerModule(_modules, 'Dashboards/Plugins/KPISyncHandlers.js', [_modules['Core/Utilities.js']], function (U) {
+        /* *
+         *
+         *  (c) 2009-2023 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Pawel Lysy
+         *
+         * */
+        const { defined } = U;
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        const configs = {
+            emitters: {},
+            handlers: {
+                extremesHandler: function () {
+                    const { board } = this;
+                    const handleChangeExtremes = (e) => {
+                        const cursor = e.cursor;
+                        if (cursor.type === 'position' &&
+                            typeof cursor?.row === 'number' &&
+                            defined(cursor.column) &&
+                            this.connector &&
+                            !defined(this.options.value)) {
+                            const value = this.connector.table.modified.getCellAsString(cursor.column, cursor.row);
+                            this.setValue(value);
+                        }
+                    };
+                    const registerCursorListeners = () => {
+                        const { dataCursor: cursor } = board;
+                        if (!cursor) {
+                            return;
+                        }
+                        const table = this.connector && this.connector.table;
+                        if (!table) {
+                            return;
+                        }
+                        cursor.addListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
+                    };
+                    const unregisterCursorListeners = () => {
+                        const table = this.connector && this.connector.table;
+                        const { dataCursor: cursor } = board;
+                        if (!table) {
+                            return;
+                        }
+                        cursor.removeListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
+                    };
+                    if (board) {
+                        registerCursorListeners();
+                        this.on('setConnector', () => unregisterCursorListeners());
+                        this.on('afterSetConnector', () => registerCursorListeners());
+                    }
+                }
+            }
+        };
+        const defaults = {
+            extremes: { handler: configs.handlers.extremesHandler }
+        };
+
+        return defaults;
     });
     _registerModule(_modules, 'Core/Chart/ChartDefaults.js', [], function () {
         /* *
@@ -2343,8 +2450,7 @@
              * @productdesc {highcharts}
              * If a bar series is present in the chart, it will be inverted
              * automatically. Inverting the chart doesn't have an effect if there
-             * are no cartesian series in the chart, or if the chart is
-             * [polar](#chart.polar).
+             * are no cartesian series in the chart.
              *
              * @sample {highcharts} highcharts/chart/inverted/
              *         Inverted line
@@ -4004,7 +4110,7 @@
                  * [Metric prefixes](https://en.wikipedia.org/wiki/Metric_prefix) used
                  * to shorten high numbers in axis labels. Replacing any of the
                  * positions with `null` causes the full number to be written. Setting
-                 * `numericSymbols` to `null` disables shortening altogether.
+                 * `numericSymbols` to `undefined` disables shortening altogether.
                  *
                  * @sample {highcharts} highcharts/lang/numericsymbols/
                  *         Replacing the symbols with text
@@ -5558,16 +5664,19 @@
                  * The color of the tooltip border. When `undefined`, the border takes
                  * the color of the corresponding series or point.
                  *
-                 * @sample {highcharts} highcharts/tooltip/bordercolor-default/
-                 *         Follow series by default
-                 * @sample {highcharts} highcharts/tooltip/bordercolor-black/
-                 *         Black border
-                 * @sample {highstock} stock/tooltip/general/
-                 *         Styled tooltip
-                 * @sample {highmaps} maps/tooltip/background-border/
-                 *         Background and border demo
+                 * Note that the [borderWidth](#tooltip.borderWidth) is usually 0 by
+                 * default, so the border color may not be visible until a border width
+                 * is set.
                  *
-                 * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+                 * @sample {highcharts} highcharts/tooltip/bordercolor-default/ Follow
+                 *         series by default
+                 * @sample {highcharts} highcharts/tooltip/bordercolor-black/ Black
+                 *         border
+                 * @sample {highstock} stock/tooltip/general/ Styled tooltip
+                 * @sample {highmaps} maps/tooltip/background-border/ Background and
+                 *         border demo
+                 *
+                 * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
                  * @apioption tooltip.borderColor
                  */
                 /**
@@ -6927,75 +7036,7 @@
 
         return Templating;
     });
-    _registerModule(_modules, 'Dashboards/Plugins/KPISyncHandlers.js', [_modules['Core/Utilities.js']], function (U) {
-        /* *
-         *
-         *  (c) 2009-2023 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Pawel Lysy
-         *
-         * */
-        const { defined } = U;
-        /* *
-         *
-         *  Constants
-         *
-         * */
-        const configs = {
-            emitters: {},
-            handlers: {
-                extremesHandler: function () {
-                    const { board } = this;
-                    const handleChangeExtremes = (e) => {
-                        const cursor = e.cursor;
-                        if (cursor.type === 'position' &&
-                            typeof cursor?.row === 'number' &&
-                            defined(cursor.column) &&
-                            this.connector &&
-                            !defined(this.options.value)) {
-                            const value = this.connector.table.modified.getCellAsString(cursor.column, cursor.row);
-                            this.setValue(value);
-                        }
-                    };
-                    const registerCursorListeners = () => {
-                        const { dataCursor: cursor } = board;
-                        if (!cursor) {
-                            return;
-                        }
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.addListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
-                    };
-                    const unregisterCursorListeners = () => {
-                        const table = this.connector && this.connector.table;
-                        const { dataCursor: cursor } = board;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.removeListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
-                    };
-                    if (board) {
-                        registerCursorListeners();
-                        this.on('setConnector', () => unregisterCursorListeners());
-                        this.on('afterSetConnector', () => registerCursorListeners());
-                    }
-                }
-            }
-        };
-        const defaults = {
-            extremes: { handler: configs.handlers.extremesHandler }
-        };
-
-        return defaults;
-    });
-    _registerModule(_modules, 'Dashboards/Plugins/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Core/Templating.js'], _modules['Dashboards/Plugins/KPISyncHandlers.js'], _modules['Core/Utilities.js']], function (AST, Component, Templating, KPISyncHandlers, U) {
+    _registerModule(_modules, 'Dashboards/Plugins/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Plugins/KPISyncHandlers.js'], _modules['Core/Templating.js'], _modules['Core/Utilities.js']], function (AST, Component, KPISyncHandlers, Templating, U) {
         /* *
          *
          *  (c) 2009 - 2023 Highsoft AS
@@ -7075,11 +7116,6 @@
                 this.subtitle = createElement('span', {
                     className: this.getSubtitleClassName()
                 }, {}, this.contentElement);
-                if (this.options.chartOptions) {
-                    this.chartContainer = createElement('div', {
-                        className: `${options.className}-chart-container`
-                    }, {}, this.contentElement);
-                }
             }
             /* *
              *
@@ -7104,11 +7140,23 @@
             render() {
                 super.render();
                 this.updateElements();
-                const charter = KPIComponent.charter;
+                const charter = KPIComponent.charter?.Chart;
                 if (charter &&
                     this.options.chartOptions &&
-                    !this.chart &&
-                    this.chartContainer) {
+                    !this.chart) {
+                    if (!this.chartContainer) {
+                        this.chartContainer = createElement('div', {
+                            className: `${this.options.className}-chart-container`
+                        }, {
+                            height: '100%'
+                        }, this.contentElement);
+                        if (!this.cell.container.style.height) {
+                            // If the cell height is specified, clear dimensions to make
+                            // the container to adjust to the chart height.
+                            this.contentElement.style.height = '100%';
+                            super.resize(null, null);
+                        }
+                    }
                     this.chart = charter.chart(this.chartContainer, merge(KPIComponent.defaultChartOptions, this.options.chartOptions));
                 }
                 else if (this.chart &&
@@ -7548,7 +7596,8 @@
                     enabled: false
                 },
                 xAxis: {
-                    visible: false
+                    visible: false,
+                    minRange: Number.MIN_VALUE
                 },
                 yAxis: {
                     visible: false
@@ -7578,7 +7627,7 @@
          *
          * */
         const { Range: RangeModifier } = DataModifier.types;
-        const { addEvent, diffObjects, isNumber, merge, pick } = U;
+        const { addEvent, defined, diffObjects, isNumber, isObject, merge, pick } = U;
         /* *
          *
          *  Constants
@@ -7800,7 +7849,7 @@
             constructor(cell, options) {
                 super(cell, options);
                 this.options = merge(NavigatorComponent.defaultOptions, options);
-                const charter = (NavigatorComponent.charter ||
+                const charter = (NavigatorComponent.charter.Chart ||
                     Globals.win.Highcharts);
                 this.chartContainer = Globals.win.document.createElement('div');
                 this.chart = charter
@@ -7809,7 +7858,8 @@
                     .add(Globals.classNamePrefix + 'navigator');
                 this.filterAndAssignSyncOptions(navigatorComponentSync);
                 this.sync = new NavigatorComponent.Sync(this, this.syncHandlers);
-                if (this.options.sync.crossfilter) {
+                const crossfilterOptions = this.options.sync.crossfilter;
+                if (crossfilterOptions === true || (isObject(crossfilterOptions) && crossfilterOptions.enabled)) {
                     this.chart.update({ navigator: { xAxis: { labels: { format: '{value}' } } } }, false);
                 }
             }
@@ -7922,12 +7972,55 @@
             renderNavigator() {
                 const chart = this.chart;
                 if (this.connector) {
-                    const table = this.connector.table, options = this.options, column = this.getColumnAssignment(), values = (table.getColumn(column[0], true) || []);
-                    let data;
-                    if (options.sync.crossfilter) {
-                        const seriesData = [], xData = [];
-                        let index;
-                        for (let value of values) {
+                    const table = this.connector.table, options = this.options, column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [], crossfilterOptions = options.sync.crossfilter;
+                    let values = [], data;
+                    if (crossfilterOptions === true || (isObject(crossfilterOptions) && crossfilterOptions.enabled)) {
+                        const seriesData = [], xData = [], modifierOptions = table.getModifier()?.options;
+                        let index, max = void 0, min = void 0;
+                        if (crossfilterOptions !== true &&
+                            crossfilterOptions.affectNavigator &&
+                            modifierOptions?.type === 'Range') {
+                            const appliedRanges = [], rangedColumns = [], { ranges } = modifierOptions;
+                            for (let i = 0, iEnd = ranges.length; i < iEnd; i++) {
+                                if (ranges[i].column !== column[0]) {
+                                    appliedRanges.push(ranges[i]);
+                                    rangedColumns.push(table.getColumn(ranges[i].column, true) || []);
+                                }
+                            }
+                            const appliedRagesLength = appliedRanges.length;
+                            for (let i = 0, iEnd = columnValues.length; i < iEnd; i++) {
+                                let value = columnValues[i];
+                                if (!defined(value) || !isNumber(+value)) {
+                                    continue;
+                                }
+                                value = +value;
+                                if (max === void 0 || max < value) {
+                                    max = value;
+                                }
+                                if (min === void 0 || min > value) {
+                                    min = value;
+                                }
+                                let allConditionsMet = true;
+                                for (let j = 0; j < appliedRagesLength; j++) {
+                                    const range = appliedRanges[j];
+                                    if (!(rangedColumns[j][i] >=
+                                        (range.minValue ?? -Infinity) &&
+                                        rangedColumns[j][i] <=
+                                            (range.maxValue ?? Infinity))) {
+                                        allConditionsMet = false;
+                                        break;
+                                    }
+                                }
+                                if (allConditionsMet) {
+                                    values.push(value);
+                                }
+                            }
+                        }
+                        else {
+                            values = columnValues;
+                        }
+                        for (let i = 0, iEnd = values.length; i < iEnd; i++) {
+                            let value = values[i];
                             if (value === null) {
                                 continue;
                             }
@@ -7947,6 +8040,15 @@
                         seriesData.sort((pointA, pointB) => (pick(pointA[0], NaN) < pick(pointB[0], NaN) ? -1 :
                             pointA[0] === pointB[0] ? 0 : 1));
                         data = seriesData;
+                        // Add a minimum and maximum of the unmodified column with null
+                        // values to maintain the correct extremes without having to
+                        // refresh them.
+                        if (min !== void 0) {
+                            data.unshift([min, null]);
+                        }
+                        if (max !== void 0) {
+                            data.push([max, null]);
+                        }
                     }
                     else if (typeof values[0] === 'string') {
                         data = values.slice();
@@ -7976,13 +8078,14 @@
              * The options to apply.
              */
             async update(options, shouldRerender = true) {
-                const chart = this.chart;
+                const chart = this.chart, crossfilterOptions = this.options.sync.crossfilter;
                 await super.update(options, false);
                 if (options.sync) {
                     this.filterAndAssignSyncOptions(navigatorComponentSync);
                 }
                 if (options.chartOptions) {
-                    chart.update(merge((this.options.sync.crossfilter ?
+                    chart.update(merge((crossfilterOptions === true || (isObject(crossfilterOptions) &&
+                        crossfilterOptions.enabled) ?
                         {
                             navigator: {
                                 xAxis: {

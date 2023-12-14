@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.3 (2023-11-29)
+ * @license Highcharts Dashboards v1.2.0 (2023-12-14)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -8,7 +8,7 @@
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) {
         factory['default'] = factory;
-        module.exports = root.document ?
+        module.exports = (root && root.document) ?
             factory(root) :
             factory;
     } else if (typeof define === 'function' && define.amd) {
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.1.3', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.2.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -101,6 +101,12 @@
              * @type {Array<Highcharts.Chart|undefined>}
              */
             Globals.charts = [];
+            /**
+             * A shared registry between all bundles to keep track of applied
+             * compositions.
+             * @private
+             */
+            Globals.composed = [];
             /**
              * A hook for defining additional date format specifiers. New
              * specifiers are defined as key-value pairs by using the
@@ -10366,7 +10372,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.1.3/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.2.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -12072,12 +12078,6 @@
                  */
                 this.cellListeners = [];
                 /**
-                 * The active group of the component. Used for sync.
-                 *
-                 * @internal
-                 */
-                this.activeGroup = void 0;
-                /**
                  * Timeouts for calls to `Component.resizeTo()`.
                  *
                  * @internal
@@ -12160,12 +12160,24 @@
                 const syncHandlers = Object.keys(sync)
                     .reduce((carry, handlerName) => {
                     if (handlerName) {
-                        const handler = sync[handlerName];
-                        if (handler && typeof handler === 'object') {
-                            carry[handlerName] = handler;
-                        }
-                        if (handler && typeof handler === 'boolean') {
-                            carry[handlerName] = defaultHandlers[handlerName];
+                        const handler = sync[handlerName], defaultHandler = defaultHandlers[handlerName];
+                        if (defaultHandler) {
+                            if (handler === true) {
+                                carry[handlerName] = defaultHandler;
+                            }
+                            else if (handler && handler.enabled) {
+                                const keys = [
+                                    'emitter', 'handler'
+                                ];
+                                carry[handlerName] = {};
+                                for (const key of keys) {
+                                    if (handler[key] === true ||
+                                        handler[key] === void 0) {
+                                        carry[handlerName][key] =
+                                            defaultHandler[key];
+                                    }
+                                }
+                            }
                         }
                     }
                     return carry;
@@ -12996,17 +13008,6 @@
              * The options for the dashboard.
              */
             constructor(renderTo, options) {
-                /**
-                 * The container referenced by the `renderTo` option when creating the
-                 * dashboard.
-                 * @internal
-                 * */
-                this.boardWrapper = void 0;
-                /**
-                 * The main container for the dashboard. Created inside the element
-                 * specified by user when creating the dashboard.
-                 * */
-                this.container = void 0;
                 this.options = merge(Board.defaultOptions, options);
                 this.dataPool = new DataPool(options.dataPool);
                 this.id = uniqueKey();
@@ -13210,8 +13211,14 @@
                 const board = this, cntSize = board.getLayoutContainerSize();
                 let layout;
                 if (board.editMode) {
+                    const editModeTools = board.editMode.tools;
                     board.editMode.hideToolbars(['cell', 'row']);
                     board.editMode.hideContextPointer();
+                    // update expanded context menu container
+                    if (editModeTools.contextMenu) {
+                        editModeTools.contextMenu
+                            .updatePosition(editModeTools.contextButtonElement);
+                    }
                 }
                 for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
                     this.reflowLayout(board.layouts[i], cntSize);

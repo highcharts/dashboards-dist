@@ -545,7 +545,11 @@ class DataGrid {
      * The number rows to render.
      */
     getNumRowsToDraw() {
-        return Math.min(this.dataTable.modified.getRowCount(), Math.ceil(this.outerContainer.offsetHeight / this.options.cellHeight));
+        return Math.min(this.dataTable.modified.getRowCount(), Math.ceil((this.outerContainer.offsetHeight ||
+            this.options.defaultHeight // when datagrid is hidden,
+        // offsetHeight is 0, so we need to get defaultValue to
+        // avoid empty rows
+        ) / this.options.cellHeight));
     }
     /**
      * Internal method that calculates the data grid height. If the container

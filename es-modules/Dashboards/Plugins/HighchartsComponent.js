@@ -20,7 +20,7 @@ import DataTable from '../../Data/DataTable.js';
 import Globals from '../../Dashboards/Globals.js';
 import HighchartsSyncHandlers from './HighchartsSyncHandlers.js';
 import U from '../../Core/Utilities.js';
-const { addEvent, createElement, error, diffObjects, isString, merge, splat, uniqueKey } = U;
+const { addEvent, createElement, diffObjects, isString, merge, splat, uniqueKey, isObject } = U;
 /* *
  *
  *  Class
@@ -235,6 +235,12 @@ class HighchartsComponent extends Component {
                 }
                 return true;
             });
+            // create empty series for mapping custom props of data
+            Object.keys(columnAssignment).forEach(function (key) {
+                if (isObject(columnAssignment[key])) {
+                    seriesNames.push(key);
+                }
+            });
             // Create the series or get the already added series
             const seriesList = seriesNames.map((seriesName, index) => {
                 let i = 0;
@@ -243,8 +249,7 @@ class HighchartsComponent extends Component {
                     const seriesFromConnector = series.options.id === `${storeTableID}-series-${index}`;
                     const existingSeries = seriesNames.indexOf(series.name) !== -1;
                     i++;
-                    if (existingSeries &&
-                        seriesFromConnector) {
+                    if (existingSeries && seriesFromConnector) {
                         return series;
                     }
                     if (!existingSeries &&
@@ -257,26 +262,49 @@ class HighchartsComponent extends Component {
                 const shouldBeDraggable = !(modifierOptions?.type === 'Math' &&
                     modifierOptions
                         .columnFormulas?.some((formula) => formula.column === seriesName));
-                return chart.addSeries({
+                const seriesOptions = {
                     name: seriesName,
                     id: `${storeTableID}-series-${index}`,
                     dragDrop: {
                         draggableY: shouldBeDraggable
                     }
-                }, false);
+                };
+                const relatedSeries = chart.series.find((series) => series.name === seriesName);
+                if (relatedSeries) {
+                    relatedSeries.update(seriesOptions, false);
+                    return relatedSeries;
+                }
+                return chart.addSeries(seriesOptions, false);
             });
             // Insert the data
             seriesList.forEach((series) => {
-                const xKey = Object.keys(xKeyMap)[0];
+                const xKey = Object.keys(xKeyMap)[0], isSeriesColumnMap = isObject(columnAssignment[series.name]), pointColumnMapValues = [];
+                if (isSeriesColumnMap) {
+                    const pointColumns = columnAssignment[series.name];
+                    Object.keys(pointColumns).forEach((key) => {
+                        pointColumnMapValues.push(pointColumns[key]);
+                    });
+                }
+                const columnKeys = isSeriesColumnMap ?
+                    [xKey].concat(pointColumnMapValues) : [xKey, series.name];
                 const seriesTable = new DataTable({
-                    columns: table.modified.getColumns([xKey, series.name])
+                    columns: table.modified.getColumns(columnKeys)
                 });
-                seriesTable.renameColumn(series.name, 'y');
+                if (!isSeriesColumnMap) {
+                    seriesTable.renameColumn(series.name, 'y');
+                }
                 if (xKey) {
                     seriesTable.renameColumn(xKey, 'x');
                 }
                 const seriesData = seriesTable.getRowObjects().reduce((arr, row) => {
-                    arr.push([row.x, row.y]);
+                    if (isSeriesColumnMap) {
+                        arr.push([row.x].concat(pointColumnMapValues.map(function (value) {
+                            return row[value];
+                        })));
+                    }
+                    else {
+                        arr.push([row.x, row.y]);
+                    }
                     return arr;
                 }, []);
                 series.setData(seriesData);
@@ -328,24 +356,26 @@ class HighchartsComponent extends Component {
      *
      */
     createChart() {
-        const charter = (HighchartsComponent.charter ||
-            Globals.win.Highcharts);
-        if (this.chartConstructor !== 'chart') {
-            const factory = charter[this.chartConstructor];
-            if (factory) {
-                try {
-                    return factory(this.chartContainer, this.chartOptions);
+        const charter = HighchartsComponent.charter || Globals.win.Highcharts;
+        if (!this.chartConstructor) {
+            this.chartConstructor = 'chart';
+        }
+        const Factory = charter[this.chartConstructor];
+        if (Factory) {
+            try {
+                if (this.chartConstructor === 'chart') {
+                    return charter.Chart.chart(this.chartContainer, this.chartOptions);
                 }
-                catch {
-                    error('The Highcharts component is misconfigured: `' +
-                        this.cell.id + '`');
-                }
+                return new Factory(this.chartContainer, this.chartOptions);
+            }
+            catch {
+                throw new Error('The Highcharts component is misconfigured: `' +
+                    this.cell.id + '`');
             }
         }
         if (typeof charter.chart !== 'function') {
             throw new Error('Chart constructor not found');
         }
-        this.chart = charter.chart(this.chartContainer, this.chartOptions);
         return this.chart;
     }
     /**

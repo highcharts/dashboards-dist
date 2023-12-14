@@ -26,8 +26,8 @@ declare module '../SVG/SVGElementLike' {
         /** @requires Core/Renderer/HTML/HTMLElement */
         setSpanRotation(rotation: number, alignCorrection: number, baseline: number): void;
         textSetter(value: string): void;
-        translateXSetter(value: any, key: string): void;
-        translateYSetter(value: any, key: string): void;
+        translateXSetter(value: number, key: string): void;
+        translateYSetter(value: number, key: string): void;
     }
 }
 declare class HTMLElement extends SVGElement {
@@ -49,7 +49,7 @@ declare class HTMLElement extends SVGElement {
      */
     htmlCss(styles: CSSObject): HTMLElement;
     /**
-     * useHTML method for calculating the bounding box based on offsets.
+     * The useHTML method for calculating the bounding box based on offsets.
      */
     htmlGetBBox(): BBoxObject;
     /**

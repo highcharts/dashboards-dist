@@ -99,71 +99,19 @@ class Chart {
         return new Chart(a, b, c);
     }
     constructor(a, b, c) {
-        this.axes = void 0;
-        this.axisOffset = void 0;
-        this.bounds = void 0;
-        this.chartHeight = void 0;
-        this.chartWidth = void 0;
-        this.clipBox = void 0;
-        this.colorCounter = void 0;
-        this.container = void 0;
-        this.eventOptions = void 0;
-        this.index = void 0;
-        this.isResizing = void 0;
-        this.labelCollectors = void 0;
-        this.margin = void 0;
-        this.numberFormatter = void 0;
-        this.options = void 0;
-        this.plotBox = void 0;
-        this.plotHeight = void 0;
-        this.plotLeft = void 0;
-        this.plotTop = void 0;
-        this.plotWidth = void 0;
-        this.pointCount = void 0;
-        this.pointer = void 0;
-        this.renderer = void 0;
-        this.renderTo = void 0;
-        this.series = void 0;
         this.sharedClips = {};
-        this.spacing = void 0;
-        this.spacingBox = void 0;
-        this.symbolCounter = void 0;
-        this.time = void 0;
-        this.titleOffset = void 0;
-        this.userOptions = void 0;
-        this.xAxis = void 0;
-        this.yAxis = void 0;
-        this.zooming = void 0;
-        this.getArgs(a, b, c);
+        const args = [...arguments];
+        // Remove the optional first argument, renderTo, and set it on this.
+        if (isString(a) || a.nodeName) {
+            this.renderTo = args.shift();
+        }
+        this.init(args[0], args[1]);
     }
     /* *
      *
      *  Functions
      *
      * */
-    /**
-     * Handle the arguments passed to the constructor.
-     *
-     * @private
-     * @function Highcharts.Chart#getArgs
-     *
-     * @param {...Array<*>} arguments
-     * All arguments for the constructor.
-     *
-     * @emits Highcharts.Chart#event:init
-     * @emits Highcharts.Chart#event:afterInit
-     */
-    getArgs(a, b, c) {
-        // Remove the optional first argument, renderTo, and
-        // set it on this.
-        if (isString(a) || a.nodeName) {
-            this.renderTo = a;
-            this.init(b, c);
-        }
-        else {
-            this.init(a, b);
-        }
-    }
     /**
      * Function setting zoom options after chart init and after chart update.
      * Offers support for deprecated options.
@@ -1617,22 +1565,33 @@ class Chart {
         });
         // Apply new links
         chartSeries.forEach(function (series) {
-            let linkedTo = series.options.linkedTo;
+            const { linkedTo } = series.options;
             if (isString(linkedTo)) {
+                let linkedParent;
                 if (linkedTo === ':previous') {
-                    linkedTo = chart.series[series.index - 1];
+                    linkedParent = chart.series[series.index - 1];
                 }
                 else {
-                    linkedTo = chart.get(linkedTo);
+                    linkedParent = chart.get(linkedTo);
                 }
                 // #3341 avoid mutual linking
-                if (linkedTo && linkedTo.linkedParent !== series) {
-                    linkedTo.linkedSeries.push(series);
-                    series.linkedParent = linkedTo;
-                    if (linkedTo.enabledDataSorting) {
+                if (linkedParent &&
+                    linkedParent.linkedParent !== series) {
+                    linkedParent.linkedSeries.push(series);
+                    /**
+                     * The parent series of the current series, if the current
+                     * series has a [linkedTo](https://api.highcharts.com/highcharts/series.line.linkedTo)
+                     * setting.
+                     *
+                     * @name Highcharts.Series#linkedParent
+                     * @type {Highcharts.Series}
+                     * @readonly
+                     */
+                    series.linkedParent = linkedParent;
+                    if (linkedParent.enabledDataSorting) {
                         series.setDataSortingOptions();
                     }
-                    series.visible = pick(series.options.visible, linkedTo.options.visible, series.visible); // #3879
+                    series.visible = pick(series.options.visible, linkedParent.options.visible, series.visible); // #3879
                 }
             }
         });

@@ -8,8 +8,10 @@
  *
  * */
 'use strict';
+import H from './Globals.js';
+const { composed } = H;
 import U from './Utilities.js';
-const { diffObjects, extend, find, isArray, isObject, merge, objectEach, pick, splat, uniqueKey } = U;
+const { diffObjects, extend, find, merge, pick, pushUnique, uniqueKey } = U;
 /* *
  *
  *  Composition
@@ -24,12 +26,6 @@ var Responsive;
      * */
     /* *
      *
-     *  Constants
-     *
-     * */
-    const composedMembers = [];
-    /* *
-     *
      *  Functions
      *
      * */
@@ -37,7 +33,7 @@ var Responsive;
      * @private
      */
     function compose(ChartClass) {
-        if (U.pushUnique(composedMembers, ChartClass)) {
+        if (pushUnique(composed, compose)) {
             extend(ChartClass.prototype, {
                 matchResponsiveRule,
                 setResponsive

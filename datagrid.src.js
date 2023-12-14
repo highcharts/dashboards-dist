@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.1.3 (2023-11-29)
+ * @license Highcharts Dashboards v1.2.0 (2023-12-14)
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -719,8 +719,7 @@
              * @productdesc {highcharts}
              * If a bar series is present in the chart, it will be inverted
              * automatically. Inverting the chart doesn't have an effect if there
-             * are no cartesian series in the chart, or if the chart is
-             * [polar](#chart.polar).
+             * are no cartesian series in the chart.
              *
              * @sample {highcharts} highcharts/chart/inverted/
              *         Inverted line
@@ -2380,7 +2379,7 @@
                  * [Metric prefixes](https://en.wikipedia.org/wiki/Metric_prefix) used
                  * to shorten high numbers in axis labels. Replacing any of the
                  * positions with `null` causes the full number to be written. Setting
-                 * `numericSymbols` to `null` disables shortening altogether.
+                 * `numericSymbols` to `undefined` disables shortening altogether.
                  *
                  * @sample {highcharts} highcharts/lang/numericsymbols/
                  *         Replacing the symbols with text
@@ -3934,16 +3933,19 @@
                  * The color of the tooltip border. When `undefined`, the border takes
                  * the color of the corresponding series or point.
                  *
-                 * @sample {highcharts} highcharts/tooltip/bordercolor-default/
-                 *         Follow series by default
-                 * @sample {highcharts} highcharts/tooltip/bordercolor-black/
-                 *         Black border
-                 * @sample {highstock} stock/tooltip/general/
-                 *         Styled tooltip
-                 * @sample {highmaps} maps/tooltip/background-border/
-                 *         Background and border demo
+                 * Note that the [borderWidth](#tooltip.borderWidth) is usually 0 by
+                 * default, so the border color may not be visible until a border width
+                 * is set.
                  *
-                 * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+                 * @sample {highcharts} highcharts/tooltip/bordercolor-default/ Follow
+                 *         series by default
+                 * @sample {highcharts} highcharts/tooltip/bordercolor-black/ Black
+                 *         border
+                 * @sample {highstock} stock/tooltip/general/ Styled tooltip
+                 * @sample {highmaps} maps/tooltip/background-border/ Background and
+                 *         border demo
+                 *
+                 * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
                  * @apioption tooltip.borderColor
                  */
                 /**
@@ -5889,7 +5891,11 @@
              * The number rows to render.
              */
             getNumRowsToDraw() {
-                return Math.min(this.dataTable.modified.getRowCount(), Math.ceil(this.outerContainer.offsetHeight / this.options.cellHeight));
+                return Math.min(this.dataTable.modified.getRowCount(), Math.ceil((this.outerContainer.offsetHeight ||
+                    this.options.defaultHeight // when datagrid is hidden,
+                // offsetHeight is 0, so we need to get defaultValue to
+                // avoid empty rows
+                ) / this.options.cellHeight));
             }
             /**
              * Internal method that calculates the data grid height. If the container
