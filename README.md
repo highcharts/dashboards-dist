@@ -2,7 +2,7 @@
 A JavaScript library for interactive dashboards. Allows you to create dynamic dashboards with charts, tables, KPI, and more.  
 
 Utilize all different ways to synchronize data between components and visualize it in one place.  
-Allows you to import data from multiple sources, for example, CSV and Google Spreadsheet.
+Allows you to import data from multiple sources, for example, JSON, CSV or Google Spreadsheet.
 
 ## License
 Highcharts Dashboards is free to use for non-commercial and demonstration purposes. For commercial usage the license is needed. Please see the [Highcharts license page](https://shop.highsoft.com/highcharts) for details.
@@ -10,7 +10,7 @@ Highcharts Dashboards is free to use for non-commercial and demonstration purpos
 ## Useful links
 - [Documentation](https://highcharts.com/docs/dashboards/installation)
 - [API Reference](https://api.highcharts.com/dashboards)
-- [Demo examples](https://www.highcharts.com/demo)
+- [Demo examples](https://www.highcharts.com/demo/dashboards#highcharts-dashboards-demo-general)
 - [Report a bug](https://github.com/highcharts/highcharts/issues)
 - [Shop](https://shop.highcharts.com/)
 - [FAQ](https://highcharts.com/docs/dashboards/frequently-asked-questions)
@@ -44,7 +44,7 @@ Below is an example of what a component configuration might look like:
 ``` JS
 {
     type: 'Highcharts',
-    cell: 'cell-id-2',
+    cell: 'cell-id-0',
     chartOptions: {
         series: [{
             type: 'pie',
