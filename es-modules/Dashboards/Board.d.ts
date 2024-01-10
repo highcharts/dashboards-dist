@@ -96,6 +96,11 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * */
     container: HTMLElement;
     /**
+     * All types of components available in the dashboard.
+     * @internal
+     */
+    componentTypes: import("./Components/ComponentType").ComponentTypeRegistry;
+    /**
      * The data cursor instance used for interacting with the data.
      * @internal
      * */
@@ -412,10 +417,6 @@ declare namespace Board {
      *
      */
     const defaultOptions: Board.Options;
-    /**
-     * @internal
-     */
-    const componentTypes: import("./Components/ComponentType").ComponentTypeRegistry;
     /**
      * Import layouts from the local storage.
      *

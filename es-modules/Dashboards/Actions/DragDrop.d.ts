@@ -183,25 +183,32 @@ declare namespace DragDrop {
         /**
          * Offset how far from the cell edge the context (dragged element)
          * should be detectable.
+         *
+         * @default 30
          */
-        cellDropOffset: number;
+        cellDropOffset?: number;
         /**
          * Size of the drop pointer in pixels.
+         *
+         * @default 16
          */
-        dropPointerSize: number;
+        dropPointerSize?: number;
         /**
          * Whether the drag and drop is enabled.
          *
          * Try it:
-         *
          * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/edit-mode/dragdrop-disabled/ | Drag drop disabled}
+         *
+         * @default true
          */
-        enabled: boolean;
+        enabled?: boolean;
         /**
          * Offset how far from the row edge the context (dragged element) should
          * be detectable.
+         *
+         * @default 30
          */
-        rowDropOffset: number;
+        rowDropOffset?: number;
     }
     /**
      * @internal

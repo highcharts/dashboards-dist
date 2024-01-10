@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -220,7 +220,7 @@ class DragDrop {
      * Context details (cell, side)
      */
     onRowDrag(e, contextDetails) {
-        const dragDrop = this, mouseCellContext = dragDrop.mouseCellContext, dropPointerSize = dragDrop.options.dropPointerSize, offset = dragDrop.options.rowDropOffset;
+        const dragDrop = this, mouseCellContext = dragDrop.mouseCellContext, dropPointerSize = dragDrop.options.dropPointerSize || 0, offset = dragDrop.options.rowDropOffset || 0;
         let updateDropPointer = false;
         if (mouseCellContext) {
             const context = (contextDetails ||
@@ -282,7 +282,7 @@ class DragDrop {
      * Context details (cell, side)
      */
     onCellDrag(e, contextDetails) {
-        const dragDrop = this, mouseCellContext = dragDrop.mouseCellContext, offset = dragDrop.options.cellDropOffset;
+        const dragDrop = this, mouseCellContext = dragDrop.mouseCellContext, offset = dragDrop.options.cellDropOffset || 0;
         if (mouseCellContext || contextDetails) {
             dragDrop.onCellDragCellCtx(e, contextDetails ||
                 ContextDetection.getContext(mouseCellContext, e, offset));
@@ -302,7 +302,7 @@ class DragDrop {
      * Context details (cell, side)
      */
     onCellDragCellCtx(e, context) {
-        const dragDrop = this, dropPointerSize = dragDrop.options.dropPointerSize, align = context.side;
+        const dragDrop = this, dropPointerSize = dragDrop.options.dropPointerSize || 0, align = context.side;
         let updateDropPointer = false;
         if (dragDrop.dropPointer.align !== align ||
             dragDrop.dropContext !== context.cell) {
@@ -352,7 +352,7 @@ class DragDrop {
      * Row context.
      */
     onCellDragRowCtx(e, mouseRowContext) {
-        const dragDrop = this, dropPointerSize = dragDrop.options.dropPointerSize, rowOffsets = GUIElement.getOffsets(mouseRowContext), rowLevelInfo = mouseRowContext.getRowLevelInfo(e.clientY);
+        const dragDrop = this, dropPointerSize = dragDrop.options.dropPointerSize || 0, rowOffsets = GUIElement.getOffsets(mouseRowContext), rowLevelInfo = mouseRowContext.getRowLevelInfo(e.clientY);
         let cell, cellOffsets;
         if (rowLevelInfo) {
             for (let i = 0, iEnd = rowLevelInfo.rowLevel.cells.length; i < iEnd; ++i) {

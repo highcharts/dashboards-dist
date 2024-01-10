@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -141,7 +141,14 @@ const EditGlobals = {
         small: 'Small',
         style: 'Styles',
         title: 'Title',
-        viewFullscreen: 'View in full screen'
+        viewFullscreen: 'View in full screen',
+        sidebar: {
+            HTML: 'HTML',
+            layout: 'Layout',
+            Highcharts: 'Highcharts',
+            DataGrid: 'DataGrid',
+            KPI: 'KPI'
+        }
     }
 };
 export default EditGlobals;

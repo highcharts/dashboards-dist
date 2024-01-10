@@ -204,9 +204,9 @@ declare class Chart {
      * Internal function to set data for all series with enabled sorting.
      *
      * @private
-     * @function Highcharts.Chart#setSeriesData
+     * @function Highcharts.Chart#setSortedData
      */
-    setSeriesData(): void;
+    setSortedData(): void;
     /**
      * Sort and return chart series in order depending on the number of linked
      * series.

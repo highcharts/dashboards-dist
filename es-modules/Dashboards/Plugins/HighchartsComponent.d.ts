@@ -1,5 +1,6 @@
 import type Cell from '../Layout/Cell';
 import type { Chart, Options as ChartOptions, Highcharts as H } from './HighchartsTypes';
+import type SidebarPopup from '../EditMode/SidebarPopup';
 import Component from '../Components/Component.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
 /**
@@ -174,6 +175,7 @@ declare class HighchartsComponent extends Component {
      */
     private registerChartEvents;
     setConnector(connector: DataConnector | undefined): this;
+    getOptionsOnDrop(sidebar: SidebarPopup): Partial<HighchartsComponent.Options>;
     /**
      * Converts the class instance to a class JSON.
      *

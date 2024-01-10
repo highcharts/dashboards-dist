@@ -191,6 +191,10 @@ declare namespace EditGlobals {
          */
         settings: string;
         /**
+         * Options for the sidebar and its components.
+         */
+        sidebar: SidebarLangOptions;
+        /**
          * @default 'Small'
          */
         small: string;
@@ -207,6 +211,29 @@ declare namespace EditGlobals {
          */
         viewFullscreen: string;
         [key: string]: any;
+    }
+    interface SidebarLangOptions {
+        [key: string]: string;
+        /**
+         * @default 'HTML'
+         */
+        HTML: string;
+        /**
+         * @default 'Layout'
+         */
+        layout: string;
+        /**
+         * @default 'Highcharts'
+         */
+        Highcharts: string;
+        /**
+         * @default 'DataGrid'
+         */
+        DataGrid: string;
+        /**
+         * @default 'KPI'
+         */
+        KPI: string;
     }
     interface LangAccessibilityOptions {
         contextMenu: LangAccessibilityOptionsContextMenu;

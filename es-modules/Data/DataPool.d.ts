@@ -19,7 +19,7 @@ declare class DataPool implements DataEvent.Emitter {
     static readonly version: string;
     constructor(options?: (DataPoolOptions | undefined));
     /**
-     * Internal dictionary with the connectors and their names.
+     * Internal dictionary with the connectors and their IDs.
      * @private
      */
     protected readonly connectors: Record<string, DataConnector>;
@@ -50,15 +50,15 @@ declare class DataPool implements DataEvent.Emitter {
      *
      * @function Data.DataPool#getConnector
      *
-     * @param {string} name
-     * Name of the connector.
+     * @param {string} connectorId
+     * ID of the connector.
      *
      * @return {Promise<Data.DataConnector>}
      * Returns the connector.
      */
-    getConnector(name: string): Promise<DataConnector>;
+    getConnector(connectorId: string): Promise<DataConnector>;
     /**
-     * Returns the names of all connectors.
+     * Returns the IDs of all connectors.
      *
      * @private
      *
@@ -71,25 +71,36 @@ declare class DataPool implements DataEvent.Emitter {
      *
      * @private
      *
-     * @param {string} id
-     * Name of the connector.
+     * @param {string} connectorId
+     * ID of the connector.
      *
      * @return {DataPoolConnectorOptions|undefined}
      * Returns the options of the connector, or `undefined` if not found.
      */
-    protected getConnectorOptions(id: string): (DataPoolConnectorOptions | undefined);
+    protected getConnectorOptions(connectorId: string): (DataPoolConnectorOptions | undefined);
     /**
      * Loads the connector table.
      *
      * @function Data.DataPool#getConnectorTable
      *
      * @param {string} connectorId
-     * Name of the connector.
+     * ID of the connector.
      *
      * @return {Promise<Data.DataTable>}
      * Returns the connector table.
      */
     getConnectorTable(connectorId: string): Promise<DataTable>;
+    /**
+     * Tests whether the connector has never been requested.
+     *
+     * @param {string} connectorId
+     * Name of the connector.
+     *
+     * @return {boolean}
+     * Returns `true`, if the connector has never been requested, otherwise
+     * `false`.
+     */
+    isNewConnector(connectorId: string): boolean;
     /**
      * Creates and loads the connector.
      *
@@ -118,7 +129,7 @@ declare class DataPool implements DataEvent.Emitter {
      */
     on<E extends DataEvent>(type: E['type'], callback: DataEvent.Callback<this, E>): Function;
     /**
-     * Sets connector options with a specific name.
+     * Sets connector options under the specified `options.id`.
      *
      * @param {Data.DataPoolConnectorOptions} options
      * Connector options to set.

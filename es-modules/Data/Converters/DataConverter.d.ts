@@ -1,5 +1,6 @@
 import type DataEvent from '../DataEvent';
 import type DataConnector from '../Connectors/DataConnector';
+import type { ColumnNamesOptions } from '../Connectors/JSONConnectorOptions';
 import DataTable from '../DataTable.js';
 /**
  * Base class providing an interface and basic methods for a DataConverter
@@ -192,7 +193,7 @@ declare namespace DataConverter {
         readonly type: ('export' | 'afterExport' | 'exportError' | 'parse' | 'afterParse' | 'parseError');
         readonly columns: Array<DataTable.Column>;
         readonly error?: (string | Error);
-        readonly headers: string[];
+        readonly headers: string[] | ColumnNamesOptions;
     }
     interface DateFormatCallbackFunction {
         (match: ReturnType<string['match']>): number;

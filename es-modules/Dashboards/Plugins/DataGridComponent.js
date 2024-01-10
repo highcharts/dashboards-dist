@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -288,6 +288,22 @@ class DataGridComponent extends Component {
             filteredTable.deleteColumns(columnsToDelete);
             return filteredTable;
         }
+    }
+    getOptionsOnDrop(sidebar) {
+        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+        let options = {
+            cell: '',
+            type: 'DataGrid'
+        };
+        if (connectorsIds.length) {
+            options = {
+                ...options,
+                connector: {
+                    id: connectorsIds[0]
+                }
+            };
+        }
+        return options;
     }
     /** @private */
     toJSON() {

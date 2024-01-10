@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -162,6 +162,15 @@ class Component {
             this.cell.setLoadingState(false);
         });
     }
+    /**
+     * Returns the component's options when it is dropped from the sidebar.
+     *
+     * @param sidebar
+     * The sidebar popup.
+     */
+    getOptionsOnDrop(sidebar) {
+        return {};
+    }
     /* *
      *
      *  Functions
@@ -174,11 +183,12 @@ class Component {
      * Promise resolving to the component.
      */
     async initConnector() {
-        if (this.options.connector?.id &&
-            this.connectorId !== this.options.connector.id) {
+        const connectorId = this.options.connector?.id, dataPool = this.board.dataPool;
+        if (connectorId &&
+            (this.connectorId !== connectorId ||
+                dataPool.isNewConnector(connectorId))) {
             this.cell.setLoadingState();
-            const connector = await this.board.dataPool
-                .getConnector(this.options.connector.id);
+            const connector = await dataPool.getConnector(connectorId);
             this.setConnector(connector);
         }
         return this;

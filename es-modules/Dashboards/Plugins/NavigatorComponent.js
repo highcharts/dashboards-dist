@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -248,7 +248,7 @@ class NavigatorComponent extends Component {
             .add(Globals.classNamePrefix + 'navigator');
         this.filterAndAssignSyncOptions(navigatorComponentSync);
         this.sync = new NavigatorComponent.Sync(this, this.syncHandlers);
-        const crossfilterOptions = this.options.sync.crossfilter;
+        const crossfilterOptions = this.options.sync?.crossfilter;
         if (crossfilterOptions === true || (isObject(crossfilterOptions) && crossfilterOptions.enabled)) {
             this.chart.update({ navigator: { xAxis: { labels: { format: '{value}' } } } }, false);
         }
@@ -362,7 +362,7 @@ class NavigatorComponent extends Component {
     renderNavigator() {
         const chart = this.chart;
         if (this.connector) {
-            const table = this.connector.table, options = this.options, column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [], crossfilterOptions = options.sync.crossfilter;
+            const table = this.connector.table, options = this.options, column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [], crossfilterOptions = options.sync?.crossfilter;
             let values = [], data;
             if (crossfilterOptions === true || (isObject(crossfilterOptions) && crossfilterOptions.enabled)) {
                 const seriesData = [], xData = [], modifierOptions = table.getModifier()?.options;
@@ -468,7 +468,7 @@ class NavigatorComponent extends Component {
      * The options to apply.
      */
     async update(options, shouldRerender = true) {
-        const chart = this.chart, crossfilterOptions = this.options.sync.crossfilter;
+        const chart = this.chart, crossfilterOptions = this.options.sync?.crossfilter;
         await super.update(options, false);
         if (options.sync) {
             this.filterAndAssignSyncOptions(navigatorComponentSync);
@@ -491,6 +491,9 @@ class NavigatorComponent extends Component {
         if (shouldRerender) {
             this.render();
         }
+    }
+    getOptionsOnDrop(sidebar) {
+        return {};
     }
 }
 /**

@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2021 Torstein Honsi
+ *  (c) 2010-2024 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -100,7 +100,10 @@ class Chart {
     }
     constructor(a, b, c) {
         this.sharedClips = {};
-        const args = [...arguments];
+        const args = [
+            // ES5 builds fail unless we cast it to an Array
+            ...arguments
+        ];
         // Remove the optional first argument, renderTo, and set it on this.
         if (isString(a) || a.nodeName) {
             this.renderTo = args.shift();
@@ -297,9 +300,9 @@ class Chart {
      * Internal function to set data for all series with enabled sorting.
      *
      * @private
-     * @function Highcharts.Chart#setSeriesData
+     * @function Highcharts.Chart#setSortedData
      */
-    setSeriesData() {
+    setSortedData() {
         this.getSeriesOrderByLinks().forEach(function (series) {
             // We need to set data for series with sorting after series init
             if (!series.points && !series.data && series.enabledDataSorting) {
@@ -1249,7 +1252,7 @@ class Chart {
         const chart = this, renderer = chart.renderer;
         // Handle the isResizing counter
         chart.isResizing += 1;
-        // set the animation for the current process
+        // Set the animation for the current process
         setAnimation(animation, chart);
         const globalAnimation = renderer.globalAnimation;
         chart.oldChartHeight = chart.chartHeight;
@@ -1261,38 +1264,44 @@ class Chart {
             chart.options.chart.height = height;
         }
         chart.getChartSize();
-        // Resize the container with the global animation applied if enabled
-        // (#2503)
-        if (!chart.styledMode) {
-            (globalAnimation ? animate : css)(chart.container, {
-                width: chart.chartWidth + 'px',
-                height: chart.chartHeight + 'px'
-            }, globalAnimation);
-        }
-        chart.setChartSize(true);
-        renderer.setSize(chart.chartWidth, chart.chartHeight, globalAnimation);
-        // handle axes
-        chart.axes.forEach(function (axis) {
-            axis.isDirty = true;
-            axis.setScale();
-        });
-        chart.isDirtyLegend = true; // force legend redraw
-        chart.isDirtyBox = true; // force redraw of plot and chart border
-        chart.layOutTitles(); // #2857
-        chart.getMargins();
-        chart.redraw(globalAnimation);
-        chart.oldChartHeight = null;
-        fireEvent(chart, 'resize');
-        // Fire endResize and set isResizing back. If animation is disabled,
-        // fire without delay, but in a new thread to avoid triggering the
-        // resize observer (#19027).
-        setTimeout(() => {
-            if (chart) {
-                fireEvent(chart, 'endResize', void 0, () => {
-                    chart.isResizing -= 1;
-                });
+        const { chartWidth, chartHeight, scrollablePixelsX = 0, scrollablePixelsY = 0 } = chart;
+        // Avoid expensive redrawing if the computed size didn't change
+        if (chart.isDirtyBox ||
+            chartWidth !== chart.oldChartWidth ||
+            chartHeight !== chart.oldChartHeight) {
+            // Resize the container with the global animation applied if enabled
+            // (#2503)
+            if (!chart.styledMode) {
+                (globalAnimation ? animate : css)(chart.container, {
+                    width: `${chartWidth + scrollablePixelsX}px`,
+                    height: `${chartHeight + scrollablePixelsY}px`
+                }, globalAnimation);
             }
-        }, animObject(globalAnimation).duration);
+            chart.setChartSize(true);
+            renderer.setSize(chartWidth, chartHeight, globalAnimation);
+            // Handle axes
+            chart.axes.forEach(function (axis) {
+                axis.isDirty = true;
+                axis.setScale();
+            });
+            chart.isDirtyLegend = true; // Force legend redraw
+            chart.isDirtyBox = true; // Force redraw of plot and chart border
+            chart.layOutTitles(); // #2857
+            chart.getMargins();
+            chart.redraw(globalAnimation);
+            chart.oldChartHeight = void 0;
+            fireEvent(chart, 'resize');
+            // Fire endResize and set isResizing back. If animation is disabled,
+            // fire without delay, but in a new thread to avoid triggering the
+            // resize observer (#19027).
+            setTimeout(() => {
+                if (chart) {
+                    fireEvent(chart, 'endResize', void 0, () => {
+                        chart.isResizing -= 1;
+                    });
+                }
+            }, animObject(globalAnimation).duration);
+        }
     }
     /**
      * Set the public chart properties. This is done before and after the
@@ -1859,7 +1868,7 @@ class Chart {
             chart.initSeries(serieOptions);
         });
         chart.linkSeries();
-        chart.setSeriesData();
+        chart.setSortedData();
         // Run an event after axes and series are initialized, but before
         // render. At this stage, the series data is indexed and cached in the
         // xData and yData arrays, so we can access those before rendering. Used
@@ -2266,10 +2275,8 @@ class Chart {
                 }
                 // Chart setSize
                 if (chart.propsRequireReflow.indexOf(key) !== -1) {
-                    if (isResponsiveOptions) {
-                        chart.isDirtyBox = true;
-                    }
-                    else {
+                    chart.isDirtyBox = true;
+                    if (!isResponsiveOptions) {
                         runSetSize = true;
                     }
                 }

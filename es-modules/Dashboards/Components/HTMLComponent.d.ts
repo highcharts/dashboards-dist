@@ -60,6 +60,7 @@ declare class HTMLComponent extends Component {
      * The options to apply.
      */
     update(options: Partial<HTMLComponent.HTMLComponentOptions>): Promise<void>;
+    getOptionsOnDrop(): Partial<HTMLComponent.HTMLComponentOptions>;
     /**
      * TODO: Could probably use the serialize function moved on
      * the exportdata branch

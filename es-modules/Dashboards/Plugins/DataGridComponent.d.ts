@@ -1,6 +1,7 @@
 import type Cell from '../Layout/Cell';
 import type DataGrid from '../../DataGrid/DataGrid';
 import type BaseDataGridOptions from '../../DataGrid/DataGridOptions';
+import type SidebarPopup from '../EditMode/SidebarPopup';
 import Component from '../Components/Component.js';
 /**
  * DataGrid component for Highcharts Dashboards.
@@ -84,6 +85,7 @@ declare class DataGridComponent extends Component {
      * @internal
      */
     private filterColumns;
+    getOptionsOnDrop(sidebar: SidebarPopup): Partial<DataGridComponent.ComponentOptions>;
     /** @private */
     toJSON(): DataGridComponent.ClassJSON;
     /**

@@ -46,12 +46,6 @@ declare namespace JSONConnector {
      */
     type Event = (ErrorEvent | LoadEvent);
     /**
-     * Parse the data before passing it to the JSON parser.
-     */
-    interface DataBeforeParseCallbackFunction {
-        (data: JSONConverter.Data): JSONConverter.Data;
-    }
-    /**
      * The event object that is provided on errors within JSONConnector.
      */
     interface ErrorEvent extends DataConnector.ErrorEvent {

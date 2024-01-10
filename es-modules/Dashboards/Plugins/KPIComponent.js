@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -92,8 +92,6 @@ class KPIComponent extends Component {
     /** @internal */
     async load() {
         await super.load();
-        this.contentElement.style.display = 'flex';
-        this.contentElement.style.flexDirection = 'column';
         this.linkValueToChart();
         return this;
     }
@@ -342,6 +340,22 @@ class KPIComponent extends Component {
             return thresholdColors[0];
         }
         return '';
+    }
+    getOptionsOnDrop(sidebar) {
+        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+        let options = {
+            cell: '',
+            type: 'KPI'
+        };
+        if (connectorsIds.length) {
+            options = {
+                ...options,
+                connector: {
+                    id: connectorsIds[0]
+                }
+            };
+        }
+        return options;
     }
     /**
      * Converts the class instance to a class JSON.

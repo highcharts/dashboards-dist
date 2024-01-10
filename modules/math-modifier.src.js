@@ -1,7 +1,7 @@
 /**
- * @license Highcharts Dashboards Math 1.2.0 (2023-12-14)
+ * @license Highcharts Dashboards Math 1.2.1 (2024-01-10)
  *
- * (c) 2009-2023 Highsoft AS
+ * (c) 2009-2024 Highsoft AS
  *
  * License: www.highcharts.com/license
  */
@@ -36,7 +36,7 @@
     _registerModule(_modules, 'Data/Formula/FormulaParser.js', [], function () {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -494,7 +494,7 @@
     _registerModule(_modules, 'Data/Formula/FormulaTypes.js', [], function () {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -631,7 +631,7 @@
     _registerModule(_modules, 'Data/Formula/FormulaProcessor.js', [_modules['Data/Formula/FormulaTypes.js']], function (FormulaTypes) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1107,7 +1107,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/ABS.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1175,7 +1175,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/AND.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1235,7 +1235,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/AVERAGE.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1310,7 +1310,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/AVERAGEA.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1401,7 +1401,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/COUNT.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1467,7 +1467,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/COUNTA.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1539,7 +1539,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/IF.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1594,7 +1594,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/ISNA.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1647,7 +1647,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MAX.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1717,7 +1717,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MEDIAN.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1796,7 +1796,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MIN.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1866,7 +1866,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MOD.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1930,7 +1930,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MODE.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2080,7 +2080,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/NOT.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2141,7 +2141,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/OR.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2204,7 +2204,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/PRODUCT.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2273,7 +2273,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/SUM.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2339,7 +2339,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/XOR.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2421,7 +2421,7 @@
     _registerModule(_modules, 'Data/Formula/Formula.js', [_modules['Data/Formula/FormulaParser.js'], _modules['Data/Formula/FormulaProcessor.js'], _modules['Data/Formula/FormulaTypes.js']], function (FormulaParser, FormulaProcessor, FormulaType) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2456,7 +2456,7 @@
     _registerModule(_modules, 'Data/Modifiers/MathModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/Formula/FormulaParser.js'], _modules['Data/Formula/FormulaProcessor.js']], function (DataModifier, FormulaParser, FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *

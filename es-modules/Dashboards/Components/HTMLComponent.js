@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -155,6 +155,18 @@ class HTMLComponent extends Component {
     async update(options) {
         await super.update(options);
         this.emit({ type: 'afterUpdate' });
+    }
+    getOptionsOnDrop() {
+        return {
+            cell: '',
+            type: 'HTML',
+            elements: [{
+                    tagName: 'img',
+                    attributes: {
+                        src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
+                    }
+                }]
+        };
     }
     /**
      * TODO: Could probably use the serialize function moved on

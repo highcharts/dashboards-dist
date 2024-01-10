@@ -1,7 +1,7 @@
 /**
- * @license Highcharts Dashboards v1.2.0 (2023-12-14)
+ * @license Highcharts Dashboards v1.2.1 (2024-01-10)
  *
- * (c) 2009-2023 Highsoft AS
+ * (c) 2009-2024 Highsoft AS
  *
  * License: www.highcharts.com/license
  */
@@ -39,7 +39,7 @@
     _registerModule(_modules, 'Core/Globals.js', [], function () {
         /* *
          *
-         *  (c) 2010-2021 Torstein Honsi
+         *  (c) 2010-2024 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.2.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.2.1', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -165,7 +165,7 @@
     _registerModule(_modules, 'Core/Utilities.js', [_modules['Core/Globals.js']], function (H) {
         /* *
          *
-         *  (c) 2010-2021 Torstein Honsi
+         *  (c) 2010-2024 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -2252,7 +2252,7 @@
     _registerModule(_modules, 'Data/Modifiers/DataModifier.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2524,7 +2524,7 @@
     _registerModule(_modules, 'Data/DataTable.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3636,7 +3636,7 @@
     _registerModule(_modules, 'Data/Connectors/DataConnector.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataModifier, DataTable, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3913,7 +3913,7 @@
     _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3972,7 +3972,7 @@
     _registerModule(_modules, 'Dashboards/Globals.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4056,7 +4056,7 @@
     _registerModule(_modules, 'Dashboards/Actions/Bindings.js', [_modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (ComponentRegistry, Globals, U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4217,7 +4217,7 @@
     _registerModule(_modules, 'Dashboards/Accessibility/DashboardsAccessibility.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4275,7 +4275,7 @@
     _registerModule(_modules, 'Data/DataCursor.js', [], function () {
         /* *
          *
-         *  (c) 2020-2023 Highsoft AS
+         *  (c) 2020-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4643,7 +4643,7 @@
     _registerModule(_modules, 'Dashboards/Serializable.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4791,7 +4791,7 @@
     _registerModule(_modules, 'Dashboards/SerializeHelper/DataCursorHelper.js', [_modules['Data/DataCursor.js'], _modules['Dashboards/Serializable.js']], function (DataCursor, Serializable) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4884,7 +4884,7 @@
     _registerModule(_modules, 'Data/DataPoolDefaults.js', [], function () {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4913,7 +4913,7 @@
     _registerModule(_modules, 'Data/DataPool.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/DataPoolDefaults.js'], _modules['Core/Utilities.js']], function (DataConnector, DataPoolDefaults, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4970,36 +4970,36 @@
              *
              * @function Data.DataPool#getConnector
              *
-             * @param {string} name
-             * Name of the connector.
+             * @param {string} connectorId
+             * ID of the connector.
              *
              * @return {Promise<Data.DataConnector>}
              * Returns the connector.
              */
-            getConnector(name) {
-                const connector = this.connectors[name];
+            getConnector(connectorId) {
+                const connector = this.connectors[connectorId];
                 // already loaded
                 if (connector) {
                     return Promise.resolve(connector);
                 }
-                let waitingList = this.waiting[name];
+                let waitingList = this.waiting[connectorId];
                 // start loading
                 if (!waitingList) {
-                    waitingList = this.waiting[name] = [];
-                    const connectorOptions = this.getConnectorOptions(name);
+                    waitingList = this.waiting[connectorId] = [];
+                    const connectorOptions = this.getConnectorOptions(connectorId);
                     if (!connectorOptions) {
-                        throw new Error(`Connector not found. (${name})`);
+                        throw new Error(`Connector not found. (${connectorId})`);
                     }
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this
                         .loadConnector(connectorOptions)
                         .then((connector) => {
-                        delete this.waiting[name];
+                        delete this.waiting[connectorId];
                         for (let i = 0, iEnd = waitingList.length; i < iEnd; ++i) {
                             waitingList[i][0](connector);
                         }
                     })['catch']((error) => {
-                        delete this.waiting[name];
+                        delete this.waiting[connectorId];
                         for (let i = 0, iEnd = waitingList.length; i < iEnd; ++i) {
                             waitingList[i][1](error);
                         }
@@ -5011,7 +5011,7 @@
                 });
             }
             /**
-             * Returns the names of all connectors.
+             * Returns the IDs of all connectors.
              *
              * @private
              *
@@ -5030,16 +5030,16 @@
              *
              * @private
              *
-             * @param {string} id
-             * Name of the connector.
+             * @param {string} connectorId
+             * ID of the connector.
              *
              * @return {DataPoolConnectorOptions|undefined}
              * Returns the options of the connector, or `undefined` if not found.
              */
-            getConnectorOptions(id) {
+            getConnectorOptions(connectorId) {
                 const connectors = this.options.connectors;
                 for (let i = 0, iEnd = connectors.length; i < iEnd; ++i) {
-                    if (connectors[i].id === id) {
+                    if (connectors[i].id === connectorId) {
                         return connectors[i];
                     }
                 }
@@ -5050,7 +5050,7 @@
              * @function Data.DataPool#getConnectorTable
              *
              * @param {string} connectorId
-             * Name of the connector.
+             * ID of the connector.
              *
              * @return {Promise<Data.DataTable>}
              * Returns the connector table.
@@ -5059,6 +5059,19 @@
                 return this
                     .getConnector(connectorId)
                     .then((connector) => connector.table);
+            }
+            /**
+             * Tests whether the connector has never been requested.
+             *
+             * @param {string} connectorId
+             * Name of the connector.
+             *
+             * @return {boolean}
+             * Returns `true`, if the connector has never been requested, otherwise
+             * `false`.
+             */
+            isNewConnector(connectorId) {
+                return !this.connectors[connectorId];
             }
             /**
              * Creates and loads the connector.
@@ -5113,13 +5126,13 @@
                 return U.addEvent(this, type, callback);
             }
             /**
-             * Sets connector options with a specific name.
+             * Sets connector options under the specified `options.id`.
              *
              * @param {Data.DataPoolConnectorOptions} options
              * Connector options to set.
              */
             setConnectorOptions(options) {
-                const connectors = this.options.connectors;
+                const connectors = this.options.connectors, instances = this.connectors;
                 this.emit({
                     type: 'setConnectorOptions',
                     options
@@ -5129,6 +5142,10 @@
                         connectors.splice(i, 1);
                         break;
                     }
+                }
+                if (instances[options.id]) {
+                    instances[options.id].stopPolling();
+                    delete instances[options.id];
                 }
                 connectors.push(options);
                 this.emit({
@@ -5158,7 +5175,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/EditGlobals.js', [_modules['Dashboards/Globals.js']], function (DG) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5297,7 +5314,14 @@
                 small: 'Small',
                 style: 'Styles',
                 title: 'Title',
-                viewFullscreen: 'View in full screen'
+                viewFullscreen: 'View in full screen',
+                sidebar: {
+                    HTML: 'HTML',
+                    layout: 'Layout',
+                    Highcharts: 'Highcharts',
+                    DataGrid: 'DataGrid',
+                    KPI: 'KPI'
+                }
             }
         };
 
@@ -5306,7 +5330,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/EditRenderer.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Core/Utilities.js']], function (EditGlobals, U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5789,7 +5813,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Menu/MenuItem.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditRenderer.js']], function (EditGlobals, U, EditRenderer) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5914,7 +5938,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Menu/MenuItemBindings.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5953,7 +5977,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Menu/Menu.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/Menu/MenuItem.js'], _modules['Dashboards/EditMode/Menu/MenuItemBindings.js']], function (EditGlobals, U, MenuItem, MenuItemBindings) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6078,7 +6102,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Toolbar/EditToolbar.js', [_modules['Core/Utilities.js'], _modules['Dashboards/EditMode/Menu/Menu.js']], function (U, Menu) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6159,7 +6183,7 @@
     _registerModule(_modules, 'Dashboards/Layout/GUIElement.js', [_modules['Core/Utilities.js'], _modules['Dashboards/Globals.js']], function (U, Globals) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6317,7 +6341,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Toolbar/CellEditToolbar.js', [_modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/Toolbar/EditToolbar.js'], _modules['Dashboards/Layout/GUIElement.js']], function (U, EditGlobals, EditToolbar, GUIElement) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6492,7 +6516,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Toolbar/RowEditToolbar.js', [_modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/Toolbar/EditToolbar.js'], _modules['Dashboards/Layout/GUIElement.js']], function (U, EditGlobals, EditToolbar, GUIElement) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6667,7 +6691,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/AccordionMenu.js', [_modules['Dashboards/EditMode/EditRenderer.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js']], function (EditRenderer, U, EditGlobals) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6864,7 +6888,7 @@
     _registerModule(_modules, 'Core/Renderer/HTML/AST.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
          *
-         *  (c) 2010-2020 Torstein Honsi
+         *  (c) 2010-2024 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -7421,7 +7445,7 @@
     _registerModule(_modules, 'Shared/BaseForm.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Utilities.js']], function (AST, U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -7544,7 +7568,7 @@
     _registerModule(_modules, 'Dashboards/Utilities.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -7678,7 +7702,7 @@
     _registerModule(_modules, 'Dashboards/Layout/Cell.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (Bindings, EditGlobals, Globals, GUIElement, U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -8076,7 +8100,7 @@
     _registerModule(_modules, 'Dashboards/Layout/Row.js', [_modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js']], function (Globals, Cell, GUIElement, U, EditGlobals) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -8440,7 +8464,7 @@
     _registerModule(_modules, 'Dashboards/Layout/Layout.js', [_modules['Dashboards/Utilities.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Layout/Row.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Globals.js']], function (DU, U, Row, GUIElement, Globals) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -8734,7 +8758,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/SidebarPopup.js', [_modules['Dashboards/EditMode/AccordionMenu.js'], _modules['Shared/BaseForm.js'], _modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Layout/Layout.js'], _modules['Core/Utilities.js']], function (AccordionMenu, BaseForm, Bindings, EditGlobals, EditRenderer, GUIElement, Layout, U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -8751,7 +8775,9 @@
          *
          * */
         /**
-         * Class which creates the sidebar and handles its behaviour.
+         * Class which creates the sidebar and handles its behavior.
+         *
+         * @internal
          */
         class SidebarPopup extends BaseForm {
             /* *
@@ -8764,18 +8790,32 @@
              *
              * @param parentDiv
              * Element to which the sidebar will be appended.
+             *
              * @param iconsURL
              * URL to the icons.
+             *
              * @param editMode
              * Instance of EditMode.
              */
             constructor(parentDiv, iconsURL, editMode) {
                 super(parentDiv, iconsURL);
                 /**
+                 * Options used in the sidebar.
+                 */
+                this.options = {
+                    components: ['HTML', 'layout', 'Highcharts', 'DataGrid', 'KPI']
+                };
+                /**
                  * Whether the sidebar is visible.
                  */
                 this.isVisible = false;
+                /**
+                 * List of components that can be added to the board.
+                 */
+                this.componentsList = [];
                 this.editMode = editMode;
+                this.options = merge(this.options, editMode.options.toolbars?.sidebar || {});
+                this.componentsList = this.getComponentsList(this.options.components || []);
                 this.accordionMenu = new AccordionMenu(this.iconsURL, this.hide.bind(this));
             }
             /* *
@@ -8788,6 +8828,7 @@
              *
              * @param context
              * The cell or row which is the context of the sidebar.
+             *
              * @returns
              * Whether the sidebar should be on the right side of the screen.
              */
@@ -8865,7 +8906,7 @@
             }
             renderAddComponentsList() {
                 const sidebar = this;
-                const components = SidebarPopup.components;
+                const components = this.componentsList;
                 let gridElement;
                 const gridWrapper = createElement('div', {
                     className: EditGlobals.classNames.editGridItems
@@ -8969,6 +9010,36 @@
                 }
             }
             /**
+             * Based on the provided components list, it returns the list of components
+             * with its names and functions that are called when the component is
+             * dropped.
+             *
+             * @param components
+             * List of components that can be added to the board.
+             */
+            getComponentsList(components) {
+                const sidebar = this, editMode = sidebar.editMode, componentTypes = editMode.board.componentTypes, componentList = [];
+                components.forEach((componentName) => {
+                    const component = componentTypes[componentName];
+                    if (component) {
+                        componentList.push({
+                            text: editMode.lang?.sidebar[componentName] ||
+                                component.name,
+                            onDrop: function (sidebar, dropContext) {
+                                const options = component.prototype.getOptionsOnDrop(sidebar);
+                                if (options) {
+                                    return sidebar.onDropNewComponent(dropContext, options);
+                                }
+                            }
+                        });
+                    }
+                    else if (componentName === 'layout') {
+                        componentList.push(SidebarPopup.addLayout);
+                    }
+                });
+                return componentList;
+            }
+            /**
              * Function to create and add the close button to the sidebar.
              *
              * @param className
@@ -9000,126 +9071,40 @@
                 return super.createPopupContainer.call(this, parentDiv, className);
             }
         }
-        SidebarPopup.components = [
-            {
-                text: 'HTML',
-                onDrop: function (sidebar, dropContext) {
-                    if (sidebar && dropContext) {
-                        return sidebar.onDropNewComponent(dropContext, {
-                            cell: '',
-                            type: 'HTML',
-                            elements: [{
-                                    tagName: 'img',
-                                    attributes: {
-                                        src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
-                                    }
+        SidebarPopup.addLayout = {
+            text: 'layout',
+            onDrop: function (sidebar, dropContext) {
+                if (!dropContext) {
+                    return;
+                }
+                const row = (dropContext.getType() === 'cell' ?
+                    dropContext.row :
+                    dropContext), board = row.layout.board, newLayoutName = GUIElement.createElementId('layout'), cellName = GUIElement.createElementId('cell'), layout = new Layout(board, {
+                    id: newLayoutName,
+                    copyId: '',
+                    parentContainerId: board.container.id,
+                    rows: [{
+                            cells: [{
+                                    id: cellName
                                 }]
-                        });
-                    }
+                        }],
+                    style: {}
+                });
+                if (layout) {
+                    board.layouts.push(layout);
                 }
-            }, {
-                text: 'layout',
-                onDrop: function (sidebar, dropContext) {
-                    if (!dropContext) {
-                        return;
-                    }
-                    const row = (dropContext.getType() === 'cell' ?
-                        dropContext.row :
-                        dropContext), board = row.layout.board, newLayoutName = GUIElement.createElementId('layout'), cellName = GUIElement.createElementId('cell'), layout = new Layout(board, {
-                        id: newLayoutName,
-                        copyId: '',
-                        parentContainerId: board.container.id,
-                        rows: [{
-                                cells: [{
-                                        id: cellName
-                                    }]
-                            }],
-                        style: {}
-                    });
-                    if (layout) {
-                        board.layouts.push(layout);
-                    }
-                    Bindings.addComponent({
-                        type: 'HTML',
-                        cell: cellName,
-                        elements: [
-                            {
-                                tagName: 'div',
-                                style: { 'text-align': 'center' },
-                                textContent: 'Placeholder text'
-                            }
-                        ]
-                    });
-                }
-            }, {
-                text: 'chart',
-                onDrop: function (sidebar, dropContext) {
-                    if (sidebar && dropContext) {
-                        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
-                        let options = {
-                            cell: '',
-                            type: 'Highcharts',
-                            chartOptions: {
-                                chart: {
-                                    animation: false,
-                                    type: 'column',
-                                    zooming: {}
-                                }
-                            }
-                        };
-                        if (connectorsIds.length) {
-                            options = {
-                                ...options,
-                                connector: {
-                                    id: connectorsIds[0]
-                                }
-                            };
+                Bindings.addComponent({
+                    type: 'HTML',
+                    cell: cellName,
+                    elements: [
+                        {
+                            tagName: 'div',
+                            textContent: 'Placeholder text'
                         }
-                        return sidebar.onDropNewComponent(dropContext, options);
-                    }
-                }
-            }, {
-                text: 'datagrid',
-                onDrop: function (sidebar, dropContext) {
-                    if (sidebar && dropContext) {
-                        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
-                        let options = {
-                            cell: '',
-                            type: 'DataGrid'
-                        };
-                        if (connectorsIds.length) {
-                            options = {
-                                ...options,
-                                connector: {
-                                    id: connectorsIds[0]
-                                }
-                            };
-                        }
-                        return sidebar.onDropNewComponent(dropContext, options);
-                    }
-                }
-            }, {
-                text: 'KPI',
-                onDrop: function (sidebar, dropContext) {
-                    if (sidebar && dropContext) {
-                        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
-                        let options = {
-                            cell: '',
-                            type: 'KPI'
-                        };
-                        if (connectorsIds.length) {
-                            options = {
-                                ...options,
-                                connector: {
-                                    id: connectorsIds[0]
-                                }
-                            };
-                        }
-                        return sidebar.onDropNewComponent(dropContext, options);
-                    }
-                }
+                    ]
+                });
             }
-        ];
+        };
         /* *
          *
          *  Default Export
@@ -9131,7 +9116,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/EditContextMenu.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/Menu/Menu.js']], function (EditGlobals, U, Menu) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -9260,7 +9245,7 @@
     _registerModule(_modules, 'Dashboards/Actions/ContextDetection.js', [_modules['Core/Utilities.js'], _modules['Dashboards/Layout/GUIElement.js']], function (U, GUIElement) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -9363,7 +9348,7 @@
     _registerModule(_modules, 'Dashboards/Actions/DragDrop.js', [_modules['Core/Utilities.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Actions/ContextDetection.js']], function (U, Globals, EditGlobals, GUIElement, ContextDetection) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -9578,7 +9563,7 @@
              * Context details (cell, side)
              */
             onRowDrag(e, contextDetails) {
-                const dragDrop = this, mouseCellContext = dragDrop.mouseCellContext, dropPointerSize = dragDrop.options.dropPointerSize, offset = dragDrop.options.rowDropOffset;
+                const dragDrop = this, mouseCellContext = dragDrop.mouseCellContext, dropPointerSize = dragDrop.options.dropPointerSize || 0, offset = dragDrop.options.rowDropOffset || 0;
                 let updateDropPointer = false;
                 if (mouseCellContext) {
                     const context = (contextDetails ||
@@ -9640,7 +9625,7 @@
              * Context details (cell, side)
              */
             onCellDrag(e, contextDetails) {
-                const dragDrop = this, mouseCellContext = dragDrop.mouseCellContext, offset = dragDrop.options.cellDropOffset;
+                const dragDrop = this, mouseCellContext = dragDrop.mouseCellContext, offset = dragDrop.options.cellDropOffset || 0;
                 if (mouseCellContext || contextDetails) {
                     dragDrop.onCellDragCellCtx(e, contextDetails ||
                         ContextDetection.getContext(mouseCellContext, e, offset));
@@ -9660,7 +9645,7 @@
              * Context details (cell, side)
              */
             onCellDragCellCtx(e, context) {
-                const dragDrop = this, dropPointerSize = dragDrop.options.dropPointerSize, align = context.side;
+                const dragDrop = this, dropPointerSize = dragDrop.options.dropPointerSize || 0, align = context.side;
                 let updateDropPointer = false;
                 if (dragDrop.dropPointer.align !== align ||
                     dragDrop.dropContext !== context.cell) {
@@ -9710,7 +9695,7 @@
              * Row context.
              */
             onCellDragRowCtx(e, mouseRowContext) {
-                const dragDrop = this, dropPointerSize = dragDrop.options.dropPointerSize, rowOffsets = GUIElement.getOffsets(mouseRowContext), rowLevelInfo = mouseRowContext.getRowLevelInfo(e.clientY);
+                const dragDrop = this, dropPointerSize = dragDrop.options.dropPointerSize || 0, rowOffsets = GUIElement.getOffsets(mouseRowContext), rowLevelInfo = mouseRowContext.getRowLevelInfo(e.clientY);
                 let cell, cellOffsets;
                 if (rowLevelInfo) {
                     for (let i = 0, iEnd = rowLevelInfo.rowLevel.cells.length; i < iEnd; ++i) {
@@ -10179,7 +10164,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/ConfirmationPopup.js', [_modules['Core/Utilities.js'], _modules['Shared/BaseForm.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js']], function (U, BaseForm, EditGlobals, EditRenderer) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -10321,10 +10306,10 @@
 
         return ConfirmationPopup;
     });
-    _registerModule(_modules, 'Dashboards/EditMode/EditMode.js', [_modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js'], _modules['Dashboards/EditMode/Toolbar/CellEditToolbar.js'], _modules['Dashboards/EditMode/Toolbar/RowEditToolbar.js'], _modules['Dashboards/EditMode/SidebarPopup.js'], _modules['Dashboards/EditMode/EditContextMenu.js'], _modules['Dashboards/Actions/DragDrop.js'], _modules['Dashboards/Actions/Resizer.js'], _modules['Dashboards/EditMode/ConfirmationPopup.js'], _modules['Dashboards/Actions/ContextDetection.js'], _modules['Dashboards/Layout/GUIElement.js']], function (U, EditGlobals, EditRenderer, CellEditToolbar, RowEditToolbar, SidebarPopup, EditContextMenu, DragDrop, Resizer, ConfirmationPopup, ContextDetection, GUIElement) {
+    _registerModule(_modules, 'Dashboards/EditMode/EditMode.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js'], _modules['Dashboards/EditMode/Toolbar/CellEditToolbar.js'], _modules['Dashboards/EditMode/Toolbar/RowEditToolbar.js'], _modules['Dashboards/EditMode/SidebarPopup.js'], _modules['Dashboards/EditMode/EditContextMenu.js'], _modules['Dashboards/Actions/DragDrop.js'], _modules['Dashboards/Actions/Resizer.js'], _modules['Dashboards/EditMode/ConfirmationPopup.js'], _modules['Dashboards/Actions/ContextDetection.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (EditGlobals, EditRenderer, CellEditToolbar, RowEditToolbar, SidebarPopup, EditContextMenu, DragDrop, Resizer, ConfirmationPopup, ContextDetection, GUIElement, U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -10372,24 +10357,37 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.2.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.2.1/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
                 // Default options.
                 {
+                    confirmationPopup: {
+                        close: {
+                            icon: this.iconsURLPrefix + 'close.svg'
+                        }
+                    },
+                    contextMenu: {
+                        icon: this.iconsURLPrefix + 'menu.svg'
+                    },
                     dragDrop: {
                         enabled: true
                     },
+                    enabled: true,
                     resize: {
                         enabled: true
                     },
                     settings: {
                         enabled: true
                     },
-                    enabled: true,
-                    contextMenu: {
-                        icon: this.iconsURLPrefix + 'menu.svg'
+                    toolbars: {
+                        cell: {
+                            enabled: true
+                        },
+                        row: {
+                            enabled: true
+                        }
                     },
                     tools: {
                         addComponentBtn: {
@@ -10403,19 +10401,6 @@
                                 medium: this.iconsURLPrefix + 'tablet.svg',
                                 large: this.iconsURLPrefix + 'computer.svg'
                             }
-                        }
-                    },
-                    confirmationPopup: {
-                        close: {
-                            icon: this.iconsURLPrefix + 'close.svg'
-                        }
-                    },
-                    toolbars: {
-                        cell: {
-                            enabled: true
-                        },
-                        row: {
-                            enabled: true
                         }
                     }
                 }, options || {});
@@ -10986,7 +10971,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Fullscreen.js', [_modules['Core/Utilities.js'], _modules['Dashboards/Globals.js']], function (U, Globals) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11117,7 +11102,7 @@
     _registerModule(_modules, 'Dashboards/Components/EditableOptions.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11137,6 +11122,9 @@
             }
             getOptions() {
                 const options = this.component.options.editableOptions;
+                if (!options) {
+                    return [];
+                }
                 for (let i = 0, iEnd = options.length; i < iEnd; i++) {
                     const option = options[i];
                     if (option.name === 'connectorName') {
@@ -11178,7 +11166,7 @@
     _registerModule(_modules, 'Dashboards/Components/ComponentUtilities.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11253,7 +11241,7 @@
     _registerModule(_modules, 'Dashboards/Components/SharedComponentState.js', [_modules['Dashboards/Serializable.js'], _modules['Core/Utilities.js']], function (Serializable, U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11514,7 +11502,7 @@
     _registerModule(_modules, 'Dashboards/Components/ComponentGroup.js', [_modules['Dashboards/Components/SharedComponentState.js']], function (SharedState) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11595,7 +11583,7 @@
     _registerModule(_modules, 'Dashboards/Components/Sync/Emitter.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11672,7 +11660,7 @@
     _registerModule(_modules, 'Dashboards/Components/Sync/Handler.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11696,9 +11684,10 @@
          */
         class SyncHandler {
             /**
-             * Adds a handler to the handler regisitry.
+             * Adds a handler to the handler registry.
              *
-             * @param handler The handler to add to the registry.
+             * @param handler
+             * The handler to add to the registry.
              */
             static register(handler) {
                 const { id } = handler;
@@ -11707,7 +11696,8 @@
             /**
              * Gets a handler from handler registry.
              *
-             * @param handlerID The ID of the handler to get.
+             * @param handlerID
+             * The ID of the handler to get.
              */
             static get(handlerID) {
                 return this.registry[handlerID];
@@ -11715,45 +11705,23 @@
             /**
              * Creates a new handler instance.
              *
-             * @param id an unique ID for the handler.
-             *
-             * @param trigger The id of the presentationState that should trigger
-             * this handler. Should be `undefined` when DataCursor is used.
+             * @param id
+             * An unique ID for the handler.
              *
              * @param func
              * The function to be called when the handler is activated.
              */
-            constructor(id, trigger, func) {
+            constructor(id, func) {
                 this.id = id;
-                this.presentationStateTrigger = trigger;
                 this.func = func;
                 SyncHandler.register(this);
-            }
-            /**
-             * Attaches the handler to a component and presentationState.
-             *
-             * @deprecated use {@link register}
-             * @param component The component to attach to.
-             */
-            create(component) {
-                const { activeGroup } = component;
-                const { func } = this;
-                if (activeGroup && this.presentationStateTrigger) {
-                    this.callback = activeGroup
-                        .getSharedState()
-                        .on(this.presentationStateTrigger, function (e) {
-                        if (component.id !==
-                            (e.detail ? e.detail.sender : void 0)) {
-                            func.call(component, e);
-                        }
-                    });
-                }
             }
             /**
              * Calls the activation function on the component and sets the callback to
              * the return function.
              *
-             * @param component The component to register on.
+             * @param component
+             * The component to register on.
              */
             register(component) {
                 const { func } = this;
@@ -11785,7 +11753,7 @@
     _registerModule(_modules, 'Dashboards/Components/Sync/Sync.js', [_modules['Dashboards/Components/Sync/Emitter.js'], _modules['Dashboards/Components/Sync/Handler.js']], function (SyncEmitter, SyncHandler) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11810,14 +11778,6 @@
              * Constructor
              *
              * */
-            constructor(component, syncHandlers = Sync.defaultHandlers) {
-                this.component = component;
-                this.syncConfig = syncHandlers;
-                this.registeredSyncHandlers = {};
-                this.registeredSyncEmitters = {};
-                this.isSyncing = false;
-                this.listeners = [];
-            }
             /**
              * Creates an instance of the sync class.
              *
@@ -11827,6 +11787,14 @@
              * @param syncHandlers
              * The emitters and handlers to use for each event.
              */
+            constructor(component, syncHandlers = Sync.defaultHandlers) {
+                this.component = component;
+                this.syncConfig = syncHandlers;
+                this.registeredSyncHandlers = {};
+                this.registeredSyncEmitters = {};
+                this.isSyncing = false;
+                this.listeners = [];
+            }
             /* *
              *
              *  Functions
@@ -11834,8 +11802,9 @@
              * */
             /**
              * Add new emitter to the registered emitters.
+             *
              * @param emitter
-             The emitter to register.
+             * The emitter to register.
              */
             registerSyncEmitter(emitter) {
                 const { id } = emitter;
@@ -11893,22 +11862,14 @@
                                 Sync.defaultHandlers[id]
                                     .handler;
                         }
-                        // TODO: should rework the SyncHandler constructor when
-                        // all handlers are updated
+                        // Create a tuple if the handler is a function.
                         if (typeof handlerConfig === 'function') {
-                            handlerConfig = [id, void 0, handlerConfig];
+                            handlerConfig = [id, handlerConfig];
                         }
                         const handler = new SyncHandler(...handlerConfig);
                         if (!this.isRegisteredHandler(handler.id)) {
                             this.registerSyncHandler(handler);
-                            // TODO: workaround for now
-                            // we should only use register in the future
-                            if (handlerConfig[1] !== void 0) {
-                                handler.create(component);
-                            }
-                            else {
-                                handler.register(component);
-                            }
+                            handler.register(component);
                         }
                     }
                     if (emitterConfig) {
@@ -11972,7 +11933,7 @@
     _registerModule(_modules, 'Dashboards/Components/Component.js', [_modules['Dashboards/CallbackRegistry.js'], _modules['Dashboards/Components/EditableOptions.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/ComponentUtilities.js'], _modules['Dashboards/Components/ComponentGroup.js'], _modules['Dashboards/Utilities.js'], _modules['Dashboards/Components/Sync/Sync.js']], function (CallbackRegistry, EditableOptions, Globals, U, CU, ComponentGroup, DU, Sync) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -12125,6 +12086,15 @@
                     this.cell.setLoadingState(false);
                 });
             }
+            /**
+             * Returns the component's options when it is dropped from the sidebar.
+             *
+             * @param sidebar
+             * The sidebar popup.
+             */
+            getOptionsOnDrop(sidebar) {
+                return {};
+            }
             /* *
              *
              *  Functions
@@ -12137,11 +12107,12 @@
              * Promise resolving to the component.
              */
             async initConnector() {
-                if (this.options.connector?.id &&
-                    this.connectorId !== this.options.connector.id) {
+                const connectorId = this.options.connector?.id, dataPool = this.board.dataPool;
+                if (connectorId &&
+                    (this.connectorId !== connectorId ||
+                        dataPool.isNewConnector(connectorId))) {
                     this.cell.setLoadingState();
-                    const connector = await this.board.dataPool
-                        .getConnector(this.options.connector.id);
+                    const connector = await dataPool.getConnector(connectorId);
                     this.setConnector(connector);
                 }
                 return this;
@@ -12706,7 +12677,7 @@
     _registerModule(_modules, 'Dashboards/Components/HTMLComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Core/Utilities.js']], function (AST, Component, U) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -12858,6 +12829,18 @@
                 await super.update(options);
                 this.emit({ type: 'afterUpdate' });
             }
+            getOptionsOnDrop() {
+                return {
+                    cell: '',
+                    type: 'HTML',
+                    elements: [{
+                            tagName: 'img',
+                            attributes: {
+                                src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
+                            }
+                        }]
+                };
+            }
             /**
              * TODO: Could probably use the serialize function moved on
              * the exportdata branch
@@ -12939,7 +12922,7 @@
     _registerModule(_modules, 'Dashboards/Board.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Accessibility/DashboardsAccessibility.js'], _modules['Data/DataCursor.js'], _modules['Dashboards/SerializeHelper/DataCursorHelper.js'], _modules['Data/DataPool.js'], _modules['Dashboards/EditMode/EditMode.js'], _modules['Dashboards/EditMode/Fullscreen.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/Layout.js'], _modules['Dashboards/Serializable.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/HTMLComponent.js']], function (Bindings, ComponentRegistry, DashboardsAccessibility, DataCursor, DataCursorHelper, DataPool, EditMode, Fullscreen, Globals, Layout, Serializable, U, HTMLComponent) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -13008,6 +12991,11 @@
              * The options for the dashboard.
              */
             constructor(renderTo, options) {
+                /**
+                 * All types of components available in the dashboard.
+                 * @internal
+                 */
+                this.componentTypes = ComponentRegistry.types;
                 this.options = merge(Board.defaultOptions, options);
                 this.dataPool = new DataPool(options.dataPool);
                 this.id = uniqueKey();
@@ -13343,10 +13331,6 @@
                     large: 1200
                 }
             };
-            /**
-             * @internal
-             */
-            Board.componentTypes = ComponentRegistry.types;
             /* *
              *
              *  Functions
@@ -13392,7 +13376,7 @@
     _registerModule(_modules, 'Dashboards/PluginHandler.js', [_modules['Dashboards/Board.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Components/ComponentRegistry.js']], function (Board, Sync, ComponentRegistry) {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -13493,7 +13477,7 @@
     _registerModule(_modules, 'Data/Converters/DataConverter.js', [_modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataTable, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14084,7 +14068,7 @@
     _registerModule(_modules, 'Data/Converters/CSVConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14526,7 +14510,7 @@
     _registerModule(_modules, 'Data/Connectors/CSVConnector.js', [_modules['Data/Converters/CSVConverter.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Core/Utilities.js']], function (CSVConverter, DataConnector, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14651,7 +14635,7 @@
     _registerModule(_modules, 'Data/Converters/GoogleSheetsConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14781,7 +14765,7 @@
     _registerModule(_modules, 'Data/Connectors/GoogleSheetsConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/GoogleSheetsConverter.js'], _modules['Core/Utilities.js']], function (DataConnector, GoogleSheetsConverter, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14980,7 +14964,7 @@
     _registerModule(_modules, 'Data/Converters/HTMLTableConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15341,7 +15325,7 @@
     _registerModule(_modules, 'Data/Connectors/HTMLTableConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Core/Globals.js'], _modules['Data/Converters/HTMLTableConverter.js'], _modules['Core/Utilities.js']], function (DataConnector, H, HTMLTableConverter, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15459,7 +15443,7 @@
     _registerModule(_modules, 'Data/Converters/JSONConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataConverter, DataTable, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15469,7 +15453,7 @@
          *  - Pawel Lysy
          *
          * */
-        const { merge, isArray } = U;
+        const { error, isArray, merge, objectEach } = U;
         /* *
          *
          *  Class
@@ -15502,7 +15486,6 @@
                  * */
                 this.columns = [];
                 this.headers = [];
-                this.dataTypes = [];
                 this.options = mergedOptions;
                 this.table = new DataTable();
             }
@@ -15531,6 +15514,12 @@
                 if (!data) {
                     return;
                 }
+                converter.emit({
+                    type: 'parse',
+                    columns: converter.columns,
+                    detail: eventDetail,
+                    headers: converter.headers
+                });
                 if (beforeParse) {
                     data = beforeParse(data);
                 }
@@ -15541,13 +15530,18 @@
                         if (!(item instanceof Array)) {
                             return;
                         }
-                        if (firstRowAsNames) {
-                            converter.headers.push(`${item.shift()}`);
+                        if (converter.headers instanceof Array) {
+                            if (firstRowAsNames) {
+                                converter.headers.push(`${item.shift()}`);
+                            }
+                            else if (columnNames && columnNames instanceof Array) {
+                                converter.headers.push(columnNames[i]);
+                            }
+                            converter.table.setColumn(converter.headers[i] || i.toString(), item);
                         }
-                        else if (columnNames) {
-                            converter.headers.push(columnNames[i]);
+                        else {
+                            error('JSONConverter: Invalid `columnNames` option.', false);
                         }
-                        converter.table.setColumn(converter.headers[i] || i.toString(), item);
                     }
                 }
                 else if (orientation === 'rows') {
@@ -15558,22 +15552,41 @@
                         converter.headers = columnNames;
                     }
                     for (let rowIndex = 0, iEnd = data.length; rowIndex < iEnd; rowIndex++) {
-                        const row = data[rowIndex];
+                        let row = data[rowIndex];
                         if (isArray(row)) {
                             for (let columnIndex = 0, jEnd = row.length; columnIndex < jEnd; columnIndex++) {
                                 if (converter.columns.length < columnIndex + 1) {
                                     converter.columns.push([]);
                                 }
                                 converter.columns[columnIndex].push(row[columnIndex]);
-                                this.table.setCell(converter.headers[columnIndex] ||
-                                    rowIndex.toString(), rowIndex, row[columnIndex]);
+                                if (converter.headers instanceof Array) {
+                                    this.table.setColumn(converter.headers[columnIndex] ||
+                                        columnIndex.toString(), converter.columns[columnIndex]);
+                                }
+                                else {
+                                    error('JSONConverter: Invalid `columnNames` option.', false);
+                                }
                             }
                         }
                         else {
+                            const columnNames = converter.headers;
+                            if (columnNames && !(columnNames instanceof Array)) {
+                                const newRow = {};
+                                objectEach(columnNames, (arrayWithPath, name) => {
+                                    newRow[name] = arrayWithPath.reduce((acc, key) => acc[key], row);
+                                });
+                                row = newRow;
+                            }
                             this.table.setRows([row], rowIndex);
                         }
                     }
                 }
+                converter.emit({
+                    type: 'afterParse',
+                    columns: converter.columns,
+                    detail: eventDetail,
+                    headers: converter.headers
+                });
             }
             /**
              * Handles converting the parsed data to a table.
@@ -15596,7 +15609,7 @@
         JSONConverter.defaultOptions = {
             ...DataConverter.defaultOptions,
             data: [],
-            orientation: 'columns'
+            orientation: 'rows'
         };
         /* *
          *
@@ -15609,7 +15622,7 @@
     _registerModule(_modules, 'Data/Connectors/JSONConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Core/Utilities.js'], _modules['Data/Converters/JSONConverter.js']], function (DataConnector, U, JSONConverter) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15731,7 +15744,7 @@
     _registerModule(_modules, 'Data/Modifiers/ChainModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16063,7 +16076,7 @@
     _registerModule(_modules, 'Data/Modifiers/InvertModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16296,7 +16309,7 @@
     _registerModule(_modules, 'Data/Modifiers/RangeModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16426,7 +16439,7 @@
     _registerModule(_modules, 'Data/Modifiers/SortModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataModifier, DataTable, U) {
         /* *
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *

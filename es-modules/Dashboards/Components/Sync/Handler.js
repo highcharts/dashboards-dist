@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -25,9 +25,10 @@
  */
 class SyncHandler {
     /**
-     * Adds a handler to the handler regisitry.
+     * Adds a handler to the handler registry.
      *
-     * @param handler The handler to add to the registry.
+     * @param handler
+     * The handler to add to the registry.
      */
     static register(handler) {
         const { id } = handler;
@@ -36,7 +37,8 @@ class SyncHandler {
     /**
      * Gets a handler from handler registry.
      *
-     * @param handlerID The ID of the handler to get.
+     * @param handlerID
+     * The ID of the handler to get.
      */
     static get(handlerID) {
         return this.registry[handlerID];
@@ -44,45 +46,23 @@ class SyncHandler {
     /**
      * Creates a new handler instance.
      *
-     * @param id an unique ID for the handler.
-     *
-     * @param trigger The id of the presentationState that should trigger
-     * this handler. Should be `undefined` when DataCursor is used.
+     * @param id
+     * An unique ID for the handler.
      *
      * @param func
      * The function to be called when the handler is activated.
      */
-    constructor(id, trigger, func) {
+    constructor(id, func) {
         this.id = id;
-        this.presentationStateTrigger = trigger;
         this.func = func;
         SyncHandler.register(this);
-    }
-    /**
-     * Attaches the handler to a component and presentationState.
-     *
-     * @deprecated use {@link register}
-     * @param component The component to attach to.
-     */
-    create(component) {
-        const { activeGroup } = component;
-        const { func } = this;
-        if (activeGroup && this.presentationStateTrigger) {
-            this.callback = activeGroup
-                .getSharedState()
-                .on(this.presentationStateTrigger, function (e) {
-                if (component.id !==
-                    (e.detail ? e.detail.sender : void 0)) {
-                    func.call(component, e);
-                }
-            });
-        }
     }
     /**
      * Calls the activation function on the component and sets the callback to
      * the return function.
      *
-     * @param component The component to register on.
+     * @param component
+     * The component to register on.
      */
     register(component) {
         const { func } = this;

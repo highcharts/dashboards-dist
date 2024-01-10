@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -441,6 +441,29 @@ class HighchartsComponent extends Component {
         }
         super.setConnector(connector);
         return this;
+    }
+    getOptionsOnDrop(sidebar) {
+        const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
+        let options = {
+            cell: '',
+            type: 'Highcharts',
+            chartOptions: {
+                chart: {
+                    animation: false,
+                    type: 'column',
+                    zooming: {}
+                }
+            }
+        };
+        if (connectorsIds.length) {
+            options = {
+                ...options,
+                connector: {
+                    id: connectorsIds[0]
+                }
+            };
+        }
+        return options;
     }
     /**
      * Converts the class instance to a class JSON.

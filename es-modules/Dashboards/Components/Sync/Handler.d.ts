@@ -1,5 +1,4 @@
 import type ComponentType from '../ComponentType';
-import type SharedState from '../SharedComponentState';
 /**
  * Class responsible for storing handler callbacks used in component sync.
  * @internal
@@ -11,15 +10,17 @@ declare class SyncHandler {
      */
     static registry: Record<string, SyncHandler>;
     /**
-     * Adds a handler to the handler regisitry.
+     * Adds a handler to the handler registry.
      *
-     * @param handler The handler to add to the registry.
+     * @param handler
+     * The handler to add to the registry.
      */
     static register(handler: SyncHandler): void;
     /**
      * Gets a handler from handler registry.
      *
-     * @param handlerID The ID of the handler to get.
+     * @param handlerID
+     * The ID of the handler to get.
      */
     static get(handlerID: string): SyncHandler | undefined;
     /**
@@ -27,10 +28,6 @@ declare class SyncHandler {
      * @remark Can be any string, but should be unique.
      */
     id: string;
-    /**
-     * @deprecated replaced by {@link Data.DataCursor}.
-     */
-    presentationStateTrigger?: SharedState.eventTypes;
     /**
      * The function to be called when the handler is activated.
      */
@@ -43,27 +40,19 @@ declare class SyncHandler {
     /**
      * Creates a new handler instance.
      *
-     * @param id an unique ID for the handler.
-     *
-     * @param trigger The id of the presentationState that should trigger
-     * this handler. Should be `undefined` when DataCursor is used.
+     * @param id
+     * An unique ID for the handler.
      *
      * @param func
      * The function to be called when the handler is activated.
      */
-    constructor(id: string, trigger: SharedState.eventTypes | undefined, func: Function);
-    /**
-     * Attaches the handler to a component and presentationState.
-     *
-     * @deprecated use {@link register}
-     * @param component The component to attach to.
-     */
-    create(component: ComponentType): void;
+    constructor(id: string, func: Function);
     /**
      * Calls the activation function on the component and sets the callback to
      * the return function.
      *
-     * @param component The component to register on.
+     * @param component
+     * The component to register on.
      */
     register(component: ComponentType): void;
     /**

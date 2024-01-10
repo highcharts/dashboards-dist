@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -26,7 +26,9 @@ const { addEvent, createElement, merge } = U;
  *
  * */
 /**
- * Class which creates the sidebar and handles its behaviour.
+ * Class which creates the sidebar and handles its behavior.
+ *
+ * @internal
  */
 class SidebarPopup extends BaseForm {
     /* *
@@ -39,18 +41,32 @@ class SidebarPopup extends BaseForm {
      *
      * @param parentDiv
      * Element to which the sidebar will be appended.
+     *
      * @param iconsURL
      * URL to the icons.
+     *
      * @param editMode
      * Instance of EditMode.
      */
     constructor(parentDiv, iconsURL, editMode) {
         super(parentDiv, iconsURL);
         /**
+         * Options used in the sidebar.
+         */
+        this.options = {
+            components: ['HTML', 'layout', 'Highcharts', 'DataGrid', 'KPI']
+        };
+        /**
          * Whether the sidebar is visible.
          */
         this.isVisible = false;
+        /**
+         * List of components that can be added to the board.
+         */
+        this.componentsList = [];
         this.editMode = editMode;
+        this.options = merge(this.options, editMode.options.toolbars?.sidebar || {});
+        this.componentsList = this.getComponentsList(this.options.components || []);
         this.accordionMenu = new AccordionMenu(this.iconsURL, this.hide.bind(this));
     }
     /* *
@@ -63,6 +79,7 @@ class SidebarPopup extends BaseForm {
      *
      * @param context
      * The cell or row which is the context of the sidebar.
+     *
      * @returns
      * Whether the sidebar should be on the right side of the screen.
      */
@@ -140,7 +157,7 @@ class SidebarPopup extends BaseForm {
     }
     renderAddComponentsList() {
         const sidebar = this;
-        const components = SidebarPopup.components;
+        const components = this.componentsList;
         let gridElement;
         const gridWrapper = createElement('div', {
             className: EditGlobals.classNames.editGridItems
@@ -244,6 +261,36 @@ class SidebarPopup extends BaseForm {
         }
     }
     /**
+     * Based on the provided components list, it returns the list of components
+     * with its names and functions that are called when the component is
+     * dropped.
+     *
+     * @param components
+     * List of components that can be added to the board.
+     */
+    getComponentsList(components) {
+        const sidebar = this, editMode = sidebar.editMode, componentTypes = editMode.board.componentTypes, componentList = [];
+        components.forEach((componentName) => {
+            const component = componentTypes[componentName];
+            if (component) {
+                componentList.push({
+                    text: editMode.lang?.sidebar[componentName] ||
+                        component.name,
+                    onDrop: function (sidebar, dropContext) {
+                        const options = component.prototype.getOptionsOnDrop(sidebar);
+                        if (options) {
+                            return sidebar.onDropNewComponent(dropContext, options);
+                        }
+                    }
+                });
+            }
+            else if (componentName === 'layout') {
+                componentList.push(SidebarPopup.addLayout);
+            }
+        });
+        return componentList;
+    }
+    /**
      * Function to create and add the close button to the sidebar.
      *
      * @param className
@@ -275,126 +322,40 @@ class SidebarPopup extends BaseForm {
         return super.createPopupContainer.call(this, parentDiv, className);
     }
 }
-SidebarPopup.components = [
-    {
-        text: 'HTML',
-        onDrop: function (sidebar, dropContext) {
-            if (sidebar && dropContext) {
-                return sidebar.onDropNewComponent(dropContext, {
-                    cell: '',
-                    type: 'HTML',
-                    elements: [{
-                            tagName: 'img',
-                            attributes: {
-                                src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
-                            }
+SidebarPopup.addLayout = {
+    text: 'layout',
+    onDrop: function (sidebar, dropContext) {
+        if (!dropContext) {
+            return;
+        }
+        const row = (dropContext.getType() === 'cell' ?
+            dropContext.row :
+            dropContext), board = row.layout.board, newLayoutName = GUIElement.createElementId('layout'), cellName = GUIElement.createElementId('cell'), layout = new Layout(board, {
+            id: newLayoutName,
+            copyId: '',
+            parentContainerId: board.container.id,
+            rows: [{
+                    cells: [{
+                            id: cellName
                         }]
-                });
-            }
+                }],
+            style: {}
+        });
+        if (layout) {
+            board.layouts.push(layout);
         }
-    }, {
-        text: 'layout',
-        onDrop: function (sidebar, dropContext) {
-            if (!dropContext) {
-                return;
-            }
-            const row = (dropContext.getType() === 'cell' ?
-                dropContext.row :
-                dropContext), board = row.layout.board, newLayoutName = GUIElement.createElementId('layout'), cellName = GUIElement.createElementId('cell'), layout = new Layout(board, {
-                id: newLayoutName,
-                copyId: '',
-                parentContainerId: board.container.id,
-                rows: [{
-                        cells: [{
-                                id: cellName
-                            }]
-                    }],
-                style: {}
-            });
-            if (layout) {
-                board.layouts.push(layout);
-            }
-            Bindings.addComponent({
-                type: 'HTML',
-                cell: cellName,
-                elements: [
-                    {
-                        tagName: 'div',
-                        style: { 'text-align': 'center' },
-                        textContent: 'Placeholder text'
-                    }
-                ]
-            });
-        }
-    }, {
-        text: 'chart',
-        onDrop: function (sidebar, dropContext) {
-            if (sidebar && dropContext) {
-                const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
-                let options = {
-                    cell: '',
-                    type: 'Highcharts',
-                    chartOptions: {
-                        chart: {
-                            animation: false,
-                            type: 'column',
-                            zooming: {}
-                        }
-                    }
-                };
-                if (connectorsIds.length) {
-                    options = {
-                        ...options,
-                        connector: {
-                            id: connectorsIds[0]
-                        }
-                    };
+        Bindings.addComponent({
+            type: 'HTML',
+            cell: cellName,
+            elements: [
+                {
+                    tagName: 'div',
+                    textContent: 'Placeholder text'
                 }
-                return sidebar.onDropNewComponent(dropContext, options);
-            }
-        }
-    }, {
-        text: 'datagrid',
-        onDrop: function (sidebar, dropContext) {
-            if (sidebar && dropContext) {
-                const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
-                let options = {
-                    cell: '',
-                    type: 'DataGrid'
-                };
-                if (connectorsIds.length) {
-                    options = {
-                        ...options,
-                        connector: {
-                            id: connectorsIds[0]
-                        }
-                    };
-                }
-                return sidebar.onDropNewComponent(dropContext, options);
-            }
-        }
-    }, {
-        text: 'KPI',
-        onDrop: function (sidebar, dropContext) {
-            if (sidebar && dropContext) {
-                const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
-                let options = {
-                    cell: '',
-                    type: 'KPI'
-                };
-                if (connectorsIds.length) {
-                    options = {
-                        ...options,
-                        connector: {
-                            id: connectorsIds[0]
-                        }
-                    };
-                }
-                return sidebar.onDropNewComponent(dropContext, options);
-            }
-        }
+            ]
+        });
     }
-];
+};
 /* *
  *
  *  Default Export

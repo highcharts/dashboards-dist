@@ -5,35 +5,54 @@ import type Row from '../Layout/Row';
 import AccordionMenu from './AccordionMenu.js';
 import BaseForm from '../../Shared/BaseForm.js';
 /**
- * Class which creates the sidebar and handles its behaviour.
+ * Class which creates the sidebar and handles its behavior.
+ *
+ * @internal
  */
 declare class SidebarPopup extends BaseForm {
-    static components: Array<SidebarPopup.AddComponentDetails>;
+    static readonly addLayout: {
+        text: string;
+        onDrop: (sidebar: SidebarPopup, dropContext: Cell | Row) => Cell | void;
+    };
     /**
      * Constructor of the SidebarPopup class.
      *
      * @param parentDiv
      * Element to which the sidebar will be appended.
+     *
      * @param iconsURL
      * URL to the icons.
+     *
      * @param editMode
      * Instance of EditMode.
      */
     constructor(parentDiv: HTMLElement, iconsURL: string, editMode: EditMode);
     /**
+     * Reference to the AccordionMenu.
+     */
+    accordionMenu: AccordionMenu;
+    /**
      * Instance of EditMode.
      */
     editMode: EditMode;
     /**
+     * Options used in the sidebar.
+     */
+    options: SidebarPopup.Options;
+    /**
      * Whether the sidebar is visible.
      */
     isVisible: boolean;
-    accordionMenu: AccordionMenu;
+    /**
+     * List of components that can be added to the board.
+     */
+    private componentsList;
     /**
      * Function to detect on which side of the screen should the sidebar be.
      *
      * @param context
      * The cell or row which is the context of the sidebar.
+     *
      * @returns
      * Whether the sidebar should be on the right side of the screen.
      */
@@ -70,6 +89,15 @@ declare class SidebarPopup extends BaseForm {
     closeButtonEvents(): void;
     renderHeader(title: string, iconURL: string): void;
     /**
+     * Based on the provided components list, it returns the list of components
+     * with its names and functions that are called when the component is
+     * dropped.
+     *
+     * @param components
+     * List of components that can be added to the board.
+     */
+    private getComponentsList;
+    /**
      * Function to create and add the close button to the sidebar.
      *
      * @param className
@@ -89,8 +117,16 @@ declare class SidebarPopup extends BaseForm {
     protected createPopupContainer(parentDiv: HTMLElement, className?: string): HTMLElement;
 }
 declare namespace SidebarPopup {
+    /**
+     * Options used to configure the sidebar.
+     */
     interface Options {
+        components?: Array<string>;
     }
+    /**
+     * Contains the name of the component and the function that is called when
+     * the component is dropped.
+     */
     interface AddComponentDetails {
         text: string;
         onDrop: Function;

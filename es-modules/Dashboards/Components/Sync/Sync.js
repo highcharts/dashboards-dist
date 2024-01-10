@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -28,14 +28,6 @@ class Sync {
      * Constructor
      *
      * */
-    constructor(component, syncHandlers = Sync.defaultHandlers) {
-        this.component = component;
-        this.syncConfig = syncHandlers;
-        this.registeredSyncHandlers = {};
-        this.registeredSyncEmitters = {};
-        this.isSyncing = false;
-        this.listeners = [];
-    }
     /**
      * Creates an instance of the sync class.
      *
@@ -45,6 +37,14 @@ class Sync {
      * @param syncHandlers
      * The emitters and handlers to use for each event.
      */
+    constructor(component, syncHandlers = Sync.defaultHandlers) {
+        this.component = component;
+        this.syncConfig = syncHandlers;
+        this.registeredSyncHandlers = {};
+        this.registeredSyncEmitters = {};
+        this.isSyncing = false;
+        this.listeners = [];
+    }
     /* *
      *
      *  Functions
@@ -52,8 +52,9 @@ class Sync {
      * */
     /**
      * Add new emitter to the registered emitters.
+     *
      * @param emitter
-     The emitter to register.
+     * The emitter to register.
      */
     registerSyncEmitter(emitter) {
         const { id } = emitter;
@@ -111,22 +112,14 @@ class Sync {
                         Sync.defaultHandlers[id]
                             .handler;
                 }
-                // TODO: should rework the SyncHandler constructor when
-                // all handlers are updated
+                // Create a tuple if the handler is a function.
                 if (typeof handlerConfig === 'function') {
-                    handlerConfig = [id, void 0, handlerConfig];
+                    handlerConfig = [id, handlerConfig];
                 }
                 const handler = new SyncHandler(...handlerConfig);
                 if (!this.isRegisteredHandler(handler.id)) {
                     this.registerSyncHandler(handler);
-                    // TODO: workaround for now
-                    // we should only use register in the future
-                    if (handlerConfig[1] !== void 0) {
-                        handler.create(component);
-                    }
-                    else {
-                        handler.register(component);
-                    }
+                    handler.register(component);
                 }
             }
             if (emitterConfig) {

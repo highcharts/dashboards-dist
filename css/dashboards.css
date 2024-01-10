@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.2.0
+ * @license Highcharts Dashboards v1.2.1
  *
  * (c) 2009-2023 Highsoft AS
  *
@@ -281,6 +281,11 @@
 
 .highcharts-dashboards-component-kpi-subtitle {
     font-size: 2em;
+}
+
+.highcharts-dashboards-component-kpi-content {
+    display: flex;
+    flex-direction: column;
 }
 
 .highcharts-dashboards-component-title {

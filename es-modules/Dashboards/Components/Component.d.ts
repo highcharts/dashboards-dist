@@ -1,11 +1,12 @@
 import type Board from '../Board';
 import type Cell from '../Layout/Cell';
 import type { ComponentConnectorOptions } from './ComponentOptions';
-import type { ComponentTypeRegistry } from './ComponentType';
+import type { ComponentType, ComponentTypeRegistry } from './ComponentType';
 import type JSON from '../JSON';
 import type Serializable from '../Serializable';
 import type DataModifier from '../../Data/Modifiers/DataModifier';
 import type TextOptions from './TextOptions';
+import type SidebarPopup from '../EditMode/SidebarPopup';
 import CallbackRegistry from '../CallbackRegistry.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
 import DataTable from '../../Data/DataTable.js';
@@ -196,6 +197,13 @@ declare abstract class Component {
      * @internal
      */
     abstract onTableChanged(e?: Component.EventTypes): void;
+    /**
+     * Returns the component's options when it is dropped from the sidebar.
+     *
+     * @param sidebar
+     * The sidebar popup.
+     */
+    getOptionsOnDrop(sidebar: SidebarPopup): Partial<ComponentType['options']>;
     /**
      * Inits connectors for the component and rerenders it.
      *
@@ -525,9 +533,9 @@ declare namespace Component {
         /**
          * Set of options that are available for editing through sidebar.
          */
-        editableOptions: Array<EditableOptions.Options>;
+        editableOptions?: Array<EditableOptions.Options>;
         /** @internal */
-        editableOptionsBindings: EditableOptions.OptionsBindings;
+        editableOptionsBindings?: EditableOptions.OptionsBindings;
         /** @internal */
         presentationModifier?: DataModifier;
         /**
@@ -548,7 +556,7 @@ declare namespace Component {
          *
          * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/crossfilter | Crossfilter Sync } (Navigator Component only)
          */
-        sync: SyncOptions;
+        sync?: SyncOptions;
         /**
          * Connector options
          */

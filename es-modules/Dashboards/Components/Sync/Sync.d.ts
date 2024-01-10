@@ -3,6 +3,15 @@ import SyncEmitter from './Emitter.js';
 import SyncHandler from './Handler.js';
 /** @internal */
 declare class Sync {
+    /**
+     * Creates an instance of the sync class.
+     *
+     * @param component
+     * The component to which the emitters and handlers are attached.
+     *
+     * @param syncHandlers
+     * The emitters and handlers to use for each event.
+     */
     constructor(component: ComponentType, syncHandlers?: Sync.OptionsRecord);
     /**
      * Array of listeners that should be removed when the sync is stopped.
@@ -35,18 +44,10 @@ declare class Sync {
      */
     isSyncing: boolean;
     /**
-     * Creates an instance of the sync class.
-     *
-     * @param component
-     * The component to which the emitters and handlers are attached.
-     *
-     * @param syncHandlers
-     * The emitters and handlers to use for each event.
-     */
-    /**
      * Add new emitter to the registered emitters.
+     *
      * @param emitter
-     The emitter to register.
+     * The emitter to register.
      */
     registerSyncEmitter(emitter: SyncEmitter): void;
     /**
@@ -92,7 +93,6 @@ declare namespace Sync {
     /** @internal */
     type HandlerConfig = ([
         SyncHandler['id'],
-        SyncHandler['presentationStateTrigger'],
         SyncHandler['func']
     ] | SyncHandler['func']);
     interface OptionsEntry {

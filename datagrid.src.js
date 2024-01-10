@@ -1,7 +1,7 @@
 /**
- * @license Highcharts Dashboards v1.2.0 (2023-12-14)
+ * @license Highcharts Dashboards v1.2.1 (2024-01-10)
  *
- * (c) 2009-2023 Highsoft AS
+ * (c) 2009-2024 Highsoft AS
  *
  * License: www.highcharts.com/license
  */
@@ -36,7 +36,7 @@
     _registerModule(_modules, 'DataGrid/Globals.js', [], function () {
         /* *
          *
-         *  (c) 2009 - 2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -104,7 +104,7 @@
          *
          *  Data Grid utilities
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -152,7 +152,7 @@
     _registerModule(_modules, 'Core/Chart/ChartDefaults.js', [], function () {
         /* *
          *
-         *  (c) 2010-2021 Torstein Honsi
+         *  (c) 2010-2024 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -1458,7 +1458,7 @@
     _registerModule(_modules, 'Core/Time.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
          *
-         *  (c) 2010-2021 Torstein Honsi
+         *  (c) 2010-2024 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -1466,7 +1466,7 @@
          *
          * */
         const { win } = H;
-        const { defined, error, extend, isObject, merge, objectEach, pad, pick, splat, timeUnits } = U;
+        const { defined, error, extend, isNumber, isObject, merge, objectEach, pad, pick, splat, timeUnits } = U;
         /* *
          *
          *  Constants
@@ -1738,34 +1738,39 @@
              *         A getTimezoneOffset function
              */
             timezoneOffsetFunction() {
-                const time = this, options = this.options, getTimezoneOffset = options.getTimezoneOffset, moment = options.moment || win.moment;
+                const time = this, options = this.options, getTimezoneOffset = options.getTimezoneOffset;
                 if (!this.useUTC) {
-                    return function (timestamp) {
-                        return new Date(timestamp.toString()).getTimezoneOffset() * 60000;
-                    };
+                    return (timestamp) => new Date(timestamp.toString()).getTimezoneOffset() * 60000;
                 }
                 if (options.timezone) {
-                    if (!moment) {
-                        // getTimezoneOffset-function stays undefined because it depends
-                        // on Moment.js
-                        error(25);
-                    }
-                    else {
-                        return function (timestamp) {
-                            return -moment.tz(timestamp, options.timezone).utcOffset() * 60000;
-                        };
-                    }
+                    return (timestamp) => {
+                        try {
+                            const [date, gmt, hours, colon, minutes = 0] = 
+                            // eslint-disable-next-line new-cap
+                            Intl.DateTimeFormat('en', {
+                                timeZone: options.timezone,
+                                timeZoneName: 'shortOffset'
+                            })
+                                .format(timestamp)
+                                .split(/(GMT|:)/)
+                                .map(Number), offset = -(hours + minutes / 60) * 60 * 60000;
+                            // Possible future NaNs stop here
+                            if (isNumber(offset)) {
+                                return offset;
+                            }
+                        }
+                        catch (e) {
+                            error(34);
+                        }
+                        return 0;
+                    };
                 }
                 // If not timezone is set, look for the getTimezoneOffset callback
                 if (this.useUTC && getTimezoneOffset) {
-                    return function (timestamp) {
-                        return getTimezoneOffset(timestamp.valueOf()) * 60000;
-                    };
+                    return (timestamp) => getTimezoneOffset(timestamp.valueOf()) * 60000;
                 }
                 // Last, use the `timezoneOffset` option if set
-                return function () {
-                    return (time.timezoneOffset || 0) * 60000;
-                };
+                return () => (time.timezoneOffset || 0) * 60000;
             }
             /**
              * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970)
@@ -2180,16 +2185,6 @@
          * @return {number}
          * Timezone offset in minutes.
          */
-        /**
-         * Allows to manually load the `moment.js` library from Highcharts options
-         * instead of the `window`.
-         * In case of loading the library from a `script` tag,
-         * this option is not needed, it will be loaded from there by default.
-         *
-         * @type      {Function}
-         * @since     8.2.0
-         * @apioption time.moment
-         */
         ''; // keeps doclets above in JS file
 
         return Time;
@@ -2197,7 +2192,7 @@
     _registerModule(_modules, 'Core/Defaults.js', [_modules['Core/Chart/ChartDefaults.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palettes.js'], _modules['Core/Time.js'], _modules['Core/Utilities.js']], function (ChartDefaults, H, Palettes, Time, U) {
         /* *
          *
-         *  (c) 2010-2021 Torstein Honsi
+         *  (c) 2010-2024 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -2594,17 +2589,18 @@
                  */
                 getTimezoneOffset: void 0,
                 /**
-                 * Requires [moment.js](https://momentjs.com/). If the timezone option
-                 * is specified, it creates a default
-                 * [getTimezoneOffset](#time.getTimezoneOffset) function that looks
-                 * up the specified timezone in moment.js. If moment.js is not included,
-                 * this throws a Highcharts error in the console, but does not crash the
-                 * chart.
+                 * A named time zone. Supported time zone names rely on the browser
+                 * implementations, as described in the [mdn
+                 * docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timezone).
+                 * If the given time zone is not recognized by the browser, Highcharts
+                 * provides a warning and falls back to returning a 0 offset,
+                 * corresponding to the UCT time zone.
+                 *
+                 * Until v11.2.0, this option depended on moment.js.
                  *
                  * @see [getTimezoneOffset](#time.getTimezoneOffset)
                  *
-                 * @sample {highcharts|highstock} highcharts/time/timezone/
-                 *         Europe/Oslo
+                 * @sample {highcharts|highstock} highcharts/time/timezone/ Europe/Oslo
                  *
                  * @type      {string}
                  * @since     5.0.7
@@ -3629,6 +3625,10 @@
                  * The pixel height of the symbol for series types that use a rectangle
                  * in the legend. Defaults to the font size of legend items.
                  *
+                 * Note: This option is a default source of color axis height, if the
+                 * [colorAxis.height](https://api.highcharts.com/highcharts/colorAxis.height)
+                 * option is not set.
+                 *
                  * @productdesc {highmaps}
                  * In Highmaps, when the symbol is the gradient of a vertical color
                  * axis, the height defaults to 200.
@@ -3663,6 +3663,10 @@
                 /**
                  * The pixel width of the legend item symbol. When the `squareSymbol`
                  * option is set, this defaults to the `symbolHeight`, otherwise 16.
+                 *
+                 * Note: This option is a default source of color axis width, if the
+                 * [colorAxis.width](https://api.highcharts.com/highcharts/colorAxis.width)
+                 * option is not set.
                  *
                  * @productdesc {highmaps}
                  * In Highmaps, when the symbol is the gradient of a horizontal color
@@ -4941,7 +4945,7 @@
     _registerModule(_modules, 'Core/Templating.js', [_modules['Core/Defaults.js'], _modules['Core/Utilities.js']], function (D, U) {
         /* *
          *
-         *  (c) 2010-2021 Torstein Honsi
+         *  (c) 2010-2024 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -5310,7 +5314,7 @@
          *
          *  Data Grid class
          *
-         *  (c) 2009-2023 Highsoft AS
+         *  (c) 2009-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5356,7 +5360,7 @@
          *
          *  Data Grid class
          *
-         *  (c) 2020-2023 Highsoft AS
+         *  (c) 2020-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *

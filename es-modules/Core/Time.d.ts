@@ -272,7 +272,6 @@ declare namespace Time {
         timezone?: string;
         timezoneOffset?: number;
         useUTC?: boolean;
-        moment?: any;
     }
     interface TimeFormatCallbackFunction {
         (timestamp: number): string;

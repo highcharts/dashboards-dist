@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -83,6 +83,11 @@ class Board {
      * The options for the dashboard.
      */
     constructor(renderTo, options) {
+        /**
+         * All types of components available in the dashboard.
+         * @internal
+         */
+        this.componentTypes = ComponentRegistry.types;
         this.options = merge(Board.defaultOptions, options);
         this.dataPool = new DataPool(options.dataPool);
         this.id = uniqueKey();
@@ -418,10 +423,6 @@ class Board {
             large: 1200
         }
     };
-    /**
-     * @internal
-     */
-    Board.componentTypes = ComponentRegistry.types;
     /* *
      *
      *  Functions

@@ -1,6 +1,7 @@
 import type Cell from '../Layout/Cell';
 import type CSSObject from '../../Core/Renderer/CSSObject';
-import type { Chart, Options, Highcharts as H } from './HighchartsTypes';
+import type { Chart, Options as ChartOptions, Highcharts as H } from './HighchartsTypes';
+import type SidebarPopup from '../EditMode/SidebarPopup';
 import type TextOptions from '../Components/TextOptions';
 import type Types from '../../Shared/Types';
 import Component from '../Components/Component.js';
@@ -47,7 +48,7 @@ declare class KPIComponent extends Component {
     /**
      * Default options of the KPI component.
      */
-    static defaultChartOptions: Types.DeepPartial<Options>;
+    static defaultChartOptions: Types.DeepPartial<ChartOptions>;
     /**
      * KPI component's options.
      */
@@ -164,6 +165,7 @@ declare class KPIComponent extends Component {
      * @internal
      */
     private getValueColor;
+    getOptionsOnDrop(sidebar: SidebarPopup): Partial<KPIComponent.ComponentOptions>;
     /**
      * Converts the class instance to a class JSON.
      *
@@ -209,7 +211,7 @@ declare namespace KPIComponent {
          *
          * [Highcharts API](https://api.highcharts.com/highcharts/)
          */
-        chartOptions?: Options;
+        chartOptions?: ChartOptions;
         style?: CSSObject;
         /**
          * The threshold declares the value when color is applied
@@ -315,11 +317,6 @@ declare namespace KPIComponent {
          * @default 0
          */
         seriesIndex?: number;
-    }
-}
-declare module '../../Dashboards/Components/ComponentType' {
-    interface ComponentTypeRegistry {
-        KPI: typeof KPIComponent;
     }
 }
 export default KPIComponent;

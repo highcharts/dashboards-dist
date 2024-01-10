@@ -31,7 +31,6 @@ export interface DataPoolConnectorOptions<T extends keyof DataConnectorTypes = k
     /**
      * The options of the given connector type.
      * @example
-     * ```TS
      * dataPool: {
      *      connectors: [{
      *      id: 'my-csv-connector',

@@ -1,4 +1,3 @@
-import type HTMLAttributes from './Renderer/HTML/HTMLAttributes';
 import type JSON from './JSON';
 export interface AjaxErrorCallbackFunction {
     (request: XMLHttpRequest, error: (string | Error)): void;
@@ -51,10 +50,10 @@ declare function getJSON(url: string, success: AjaxSuccessCallbackFunction): voi
  * @param {Object} data
  * Post data
  *
- * @param {Highcharts.Dictionary<string>} [formAttributes]
+ * @param {RequestInit} [fetchOptions]
  * Additional attributes for the post request
  */
-declare function post(url: string, data: object, formAttributes?: HTMLAttributes): void;
+declare function post(url: string, data: Record<string, any>, fetchOptions?: RequestInit): Promise<void>;
 declare const HttpUtilities: {
     ajax: typeof ajax;
     getJSON: typeof getJSON;

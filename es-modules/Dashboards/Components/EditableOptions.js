@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009 - 2023 Highsoft AS
+ *  (c) 2009-2024 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -20,6 +20,9 @@ class EditableOptions {
     }
     getOptions() {
         const options = this.component.options.editableOptions;
+        if (!options) {
+            return [];
+        }
         for (let i = 0, iEnd = options.length; i < iEnd; i++) {
             const option = options[i];
             if (option.name === 'connectorName') {

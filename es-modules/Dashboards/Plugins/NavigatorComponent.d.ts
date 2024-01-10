@@ -2,6 +2,7 @@ import type { Chart, Highcharts as H } from './HighchartsTypes';
 import type Cell from '../Layout/Cell';
 import type { NavigatorComponentOptions } from './NavigatorComponentOptions';
 import type Sync from '../Components/Sync/Sync';
+import type SidebarPopup from '../EditMode/SidebarPopup';
 import Component from '../Components/Component.js';
 /**
  * Setup a component with data navigation.
@@ -76,5 +77,6 @@ declare class NavigatorComponent extends Component {
      * The options to apply.
      */
     update(options: Partial<NavigatorComponentOptions>, shouldRerender?: boolean): Promise<void>;
+    getOptionsOnDrop(sidebar: SidebarPopup): Partial<NavigatorComponentOptions>;
 }
 export default NavigatorComponent;

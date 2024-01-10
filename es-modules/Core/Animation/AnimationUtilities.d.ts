@@ -95,7 +95,7 @@ declare function animate(el: (HTMLDOMElement | SVGElement), params: (CSSObject |
  * improvement in all cases where we stop the animation from .attr. Instead of
  * stopping everything, we can just stop the actual attributes we're setting.
  */
-declare function stop(el: SVGElement, prop?: string): void;
+declare function stop(el: SVGElement | HTMLElement, prop?: string): void;
 declare const animationExports: {
     animate: typeof animate;
     animObject: typeof animObject;
