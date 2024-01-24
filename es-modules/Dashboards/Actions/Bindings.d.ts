@@ -7,7 +7,7 @@ declare namespace Bindings {
     interface MountedComponent {
         cell: Cell;
         component: ComponentType;
-        options: Partial<Component.ComponentOptions>;
+        options: Partial<Component.Options>;
     }
     function addComponent(options: Partial<ComponentType['options']>, cell?: Cell): Promise<(Component | void)>;
     /** @internal */

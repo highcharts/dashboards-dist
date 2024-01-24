@@ -218,13 +218,14 @@ addEvent(Chart, 'update', function (e) {
      *
      * */
     /** @private */
-    function compose(AxisClass, SeriesClass, SVGRendererClass) {
+    function compose(ChartClass, AxisClass, SeriesClass, SVGRendererClass) {
         if (pushUnique(composed, compose)) {
             addEvent(AxisClass, 'afterDrawCrosshair', onAxisAfterDrawCrosshair);
             addEvent(AxisClass, 'afterHideCrosshair', onAxisAfterHideCrosshair);
             addEvent(AxisClass, 'autoLabelAlign', onAxisAutoLabelAlign);
             addEvent(AxisClass, 'destroy', onAxisDestroy);
             addEvent(AxisClass, 'getPlotLinePath', onAxisGetPlotLinePath);
+            ChartClass.prototype.setFixedRange = setFixedRange;
             SeriesClass.prototype.forceCropping = seriesForceCropping;
             addEvent(SeriesClass, 'setOptions', onSeriesSetOptions);
             SVGRendererClass.prototype.crispPolyLine = svgRendererCrispPolyLine;
@@ -587,6 +588,26 @@ addEvent(Chart, 'update', function (e) {
             dataGroupingOptions &&
             pick(dataGroupingOptions.enabled, chart.options.isStock));
         return groupingEnabled;
+    }
+    /**
+     * Sets the chart.fixedRange to the specified value. If the value is larger
+     * than actual range, sets it to the maximum possible range. (#20327)
+     *
+     * @private
+     * @function Highcharts.StockChart#setFixedRange
+     * @param {number|undefined} range
+     *        Range to set in axis units.
+     */
+    function setFixedRange(range) {
+        const xAxis = this.xAxis[0];
+        if (defined(xAxis.dataMax) &&
+            defined(xAxis.dataMin) &&
+            range) {
+            this.fixedRange = Math.min(range, xAxis.dataMax - xAxis.dataMin);
+        }
+        else {
+            this.fixedRange = range;
+        }
     }
     /* eslint-disable jsdoc/check-param-names */
     /**

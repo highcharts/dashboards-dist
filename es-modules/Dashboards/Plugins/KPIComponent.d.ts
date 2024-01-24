@@ -32,7 +32,7 @@ declare class KPIComponent extends Component {
     /**
      * Default options of the KPI component.
      */
-    static defaultOptions: Partial<Component.ComponentOptions> & {
+    static defaultOptions: Partial<Component.Options> & {
         type: string;
         className: string;
         minFontSize: number;
@@ -47,12 +47,52 @@ declare class KPIComponent extends Component {
     };
     /**
      * Default options of the KPI component.
+     *
+     * @default {
+        chart: {
+            type: 'spline',
+            styledMode: true,
+            zooming: {
+                mouseWheel: {
+                    enabled: false
+                }
+            }
+        },
+        title: {
+            text: void 0
+        },
+        xAxis: {
+            visible: false
+        },
+        yAxis: {
+            visible: false,
+            title: {
+                text: null
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        credits: {
+            enabled: false
+        },
+        tooltip: {
+            outside: true
+        },
+        plotOptions: {
+            series: {
+                marker: {
+                    enabled: false
+                }
+            }
+        }
+    }
      */
     static defaultChartOptions: Types.DeepPartial<ChartOptions>;
     /**
      * KPI component's options.
      */
-    options: KPIComponent.ComponentOptions;
+    options: KPIComponent.Options;
     /**
      * HTML element where the value is created.
      *
@@ -92,7 +132,7 @@ declare class KPIComponent extends Component {
      * @param options
      * The options for the component.
      */
-    constructor(cell: Cell, options: Partial<KPIComponent.ComponentOptions>);
+    constructor(cell: Cell, options: Partial<KPIComponent.Options>);
     /** @internal */
     load(): Promise<this>;
     resize(width?: number | string | null, height?: number | string | null): this;
@@ -108,7 +148,7 @@ declare class KPIComponent extends Component {
      * @param options
      * The options to apply.
      */
-    update(options: Partial<KPIComponent.ComponentOptions>, shouldRerender?: boolean): Promise<void>;
+    update(options: Partial<KPIComponent.Options>, shouldRerender?: boolean): Promise<void>;
     /**
      * @internal
      */
@@ -165,7 +205,7 @@ declare class KPIComponent extends Component {
      * @internal
      */
     private getValueColor;
-    getOptionsOnDrop(sidebar: SidebarPopup): Partial<KPIComponent.ComponentOptions>;
+    getOptionsOnDrop(sidebar: SidebarPopup): Partial<KPIComponent.Options>;
     /**
      * Converts the class instance to a class JSON.
      *
@@ -183,7 +223,7 @@ declare class KPIComponent extends Component {
      * @internal
      *
      */
-    getOptions(): Partial<KPIComponent.ComponentOptions>;
+    getOptions(): Partial<KPIComponent.Options>;
 }
 declare namespace KPIComponent {
     /** @internal */
@@ -203,11 +243,13 @@ declare namespace KPIComponent {
         subtitle?: string;
         valueFormat?: string;
     }
-    interface ComponentOptions extends Component.ComponentOptions {
+    interface Options extends Component.Options {
         columnName: string;
         /**
          * A full set of chart options applied into KPI chart that is displayed
          * below the value.
+         *
+         * Some of the chart options are already set, you can find them in {@link KPIComponent.defaultChartOptions}
          *
          * [Highcharts API](https://api.highcharts.com/highcharts/)
          */

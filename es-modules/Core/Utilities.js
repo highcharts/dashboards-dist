@@ -613,11 +613,6 @@ function pick() {
  * @return {void}
  */
 function css(el, styles) {
-    if (H.isMS && !H.svg) { // #2686
-        if (styles && defined(styles.opacity)) {
-            styles.filter = `alpha(opacity=${styles.opacity * 100})`;
-        }
-    }
     extend(el.style, styles);
 }
 /**
@@ -931,15 +926,17 @@ function arrayMax(data) {
  * @param {*} [except]
  *        Exception, do not destroy this property, only delete it.
  */
-function destroyObjectProperties(obj, except) {
+function destroyObjectProperties(obj, except, destructablesOnly) {
     objectEach(obj, function (val, n) {
         // If the object is non-null and destroy is defined
-        if (val && val !== except && val.destroy) {
+        if (val !== except && val?.destroy) {
             // Invoke the destroy
             val.destroy();
         }
-        // Delete the property from the object.
-        delete obj[n];
+        // Delete the property from the object
+        if (val?.destroy || !destructablesOnly) {
+            delete obj[n];
+        }
     });
 }
 /**

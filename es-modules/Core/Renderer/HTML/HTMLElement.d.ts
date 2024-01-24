@@ -1,69 +1,79 @@
 import type BBoxObject from '../BBoxObject';
 import type CSSObject from '../CSSObject';
-import type { DOMElementType, HTMLDOMElement } from '../DOMElementType';
-import type HTMLRenderer from './HTMLRenderer';
+import type { HTMLDOMElement } from '../DOMElementType';
 import type SVGRenderer from '../SVG/SVGRenderer.js';
 import SVGElement from '../SVG/SVGElement.js';
-declare module '../SVG/SVGElementLike' {
-    interface SVGElementLike {
+declare module '../SVG/SVGRendererLike' {
+    interface SVGRendererLike {
         /** @requires Core/Renderer/HTML/HTMLElement */
-        appendChild: HTMLDOMElement['appendChild'];
-        element: DOMElementType;
-        parentGroup?: (HTMLElement | SVGElement);
-        renderer: (HTMLRenderer | SVGRenderer);
-        style: (CSSObject & CSSStyleDeclaration);
-        xCorr: number;
-        yCorr: number;
-        afterSetters(): void;
-        /** @requires Core/Renderer/HTML/HTMLElement */
-        getSpanCorrection(width: number, baseline: number, alignCorrection: number): void;
-        /** @requires Core/Renderer/HTML/HTMLElement */
-        htmlCss(styles: CSSObject): HTMLElement;
-        /** @requires Core/Renderer/HTML/HTMLElement */
-        htmlGetBBox(): BBoxObject;
-        /** @requires Core/Renderer/HTML/HTMLElement */
-        htmlUpdateTransform(): void;
-        /** @requires Core/Renderer/HTML/HTMLElement */
-        setSpanRotation(rotation: number, alignCorrection: number, baseline: number): void;
-        textSetter(value: string): void;
-        translateXSetter(value: number, key: string): void;
-        translateYSetter(value: number, key: string): void;
+        html(str: string, x: number, y: number): HTMLElement;
     }
 }
 declare class HTMLElement extends SVGElement {
     /**
-     * Modifies SVGElement to support HTML elements.
+     * Compose
      * @private
      */
-    static compose<T extends typeof SVGElement>(SVGElementClass: T): (T & typeof HTMLElement);
+    static compose<T extends typeof SVGRenderer>(SVGRendererClass: T): void;
     div?: HTMLDOMElement;
-    parentGroup?: HTMLElement;
+    parentGroup?: SVGElement;
+    xCorr?: number;
+    yCorr?: number;
+    constructor(renderer: SVGRenderer, nodeName: 'span');
     /**
      * Get the correction in X and Y positioning as the element is rotated.
      * @private
      */
-    getSpanCorrection(width: number, baseline: number, alignCorrection: number): void;
+    private getSpanCorrection;
     /**
      * Apply CSS to HTML elements. This is used in text within SVG rendering.
      * @private
      */
-    htmlCss(styles: CSSObject): HTMLElement;
+    css(styles: CSSObject): this;
     /**
      * The useHTML method for calculating the bounding box based on offsets.
+     * Called internally from the `SVGElement.getBBox` function and subsequently
+     * rotated.
+     *
+     * @private
      */
     htmlGetBBox(): BBoxObject;
     /**
+     * Batch update styles and attributes related to transform
+     *
      * @private
      */
-    htmlUpdateTransform(): void;
+    updateTransform(): void;
     /**
      * Set the rotation of an individual HTML span.
      * @private
      */
-    setSpanRotation(rotation: number, alignCorrection: number, baseline: number): void;
+    private setSpanRotation;
+    /**
+     * Add the element to a group wrapper. For HTML elements, a parallel div
+     * will be created for each ancenstor SVG `g` element.
+     *
+     * @private
+     */
+    add(parentGroup?: SVGElement): this;
+    /**
+     * Text setter
+     * @private
+     */
+    textSetter(value: string): void;
+    /**
+     * Align setter
+     *
+     * @private
+     */
+    alignSetter(value: 'left' | 'center' | 'right'): void;
+    /**
+     * Various setters which rely on update transform
+     * @private
+     */
+    xSetter(value: number, key: string): void;
 }
 interface HTMLElement {
     element: HTMLDOMElement;
-    renderer: HTMLRenderer;
 }
 export default HTMLElement;

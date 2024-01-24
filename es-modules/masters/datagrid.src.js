@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.2.1 (2024-01-10)
+ * @license Highcharts Dashboards v1.3.0 (2024-01-24)
  * @module dashboards/datagrid
  * @requires dashboards
  *

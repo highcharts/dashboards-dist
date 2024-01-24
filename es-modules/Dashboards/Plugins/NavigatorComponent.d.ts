@@ -1,6 +1,6 @@
 import type { Chart, Highcharts as H } from './HighchartsTypes';
 import type Cell from '../Layout/Cell';
-import type { NavigatorComponentOptions } from './NavigatorComponentOptions';
+import type { Options } from './NavigatorComponentOptions';
 import type Sync from '../Components/Sync/Sync';
 import type SidebarPopup from '../EditMode/SidebarPopup';
 import Component from '../Components/Component.js';
@@ -13,7 +13,7 @@ declare class NavigatorComponent extends Component {
     /**
      * Default options of the Navigator component.
      */
-    static defaultOptions: Partial<NavigatorComponentOptions>;
+    static defaultOptions: Partial<Options>;
     /**
      * Creates component from JSON.
      *
@@ -26,7 +26,7 @@ declare class NavigatorComponent extends Component {
      * @private
      */
     static fromJSON(json: Component.JSON, cell: Cell): NavigatorComponent;
-    constructor(cell: Cell, options: NavigatorComponentOptions);
+    constructor(cell: Cell, options: Options);
     /**
      * Reference to the navigator chart.
      */
@@ -38,7 +38,7 @@ declare class NavigatorComponent extends Component {
     /**
      * Options for the navigator component
      */
-    options: NavigatorComponentOptions;
+    options: Options;
     /**
      * Reference to the sync system that allow to sync i.e tooltips.
      * @private
@@ -58,7 +58,7 @@ declare class NavigatorComponent extends Component {
      * Gets the component's options.
      * @internal
      */
-    getOptions(): Partial<NavigatorComponentOptions>;
+    getOptions(): Partial<Options>;
     /** @private */
     load(): Promise<this>;
     onTableChanged(): void;
@@ -76,7 +76,7 @@ declare class NavigatorComponent extends Component {
      * @param options
      * The options to apply.
      */
-    update(options: Partial<NavigatorComponentOptions>, shouldRerender?: boolean): Promise<void>;
-    getOptionsOnDrop(sidebar: SidebarPopup): Partial<NavigatorComponentOptions>;
+    update(options: Partial<Options>, shouldRerender?: boolean): Promise<void>;
+    getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
 }
 export default NavigatorComponent;

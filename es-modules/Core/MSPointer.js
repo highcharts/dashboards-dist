@@ -70,7 +70,7 @@ class MSPointer extends Pointer {
      *
      * */
     static isRequired() {
-        return !!(!H.hasTouch && (win.PointerEvent || win.MSPointerEvent));
+        return !!(!win.TouchEvent && (win.PointerEvent || win.MSPointerEvent));
     }
     /* *
      *

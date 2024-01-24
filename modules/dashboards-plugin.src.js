@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.2.1 (2024-01-10)
+ * @license Highcharts Dashboards v1.3.0 (2024-01-24)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -2818,6 +2818,11 @@
              * Additional CSS styles to apply inline to the container `div` and the root
              * SVG.
              *
+             * According to the CSS syntax documentation, it is recommended to quote
+             * font family names that contain white space, digits, or punctuation
+             * characters other than hyphens. In such cases, wrap the fontFamily
+             * name as follows: `fontFamily: '"Font name"'`.
+             *
              * Since v11, the root font size is 1rem by default, and all child element
              * are given a relative `em` font size by default. This allows implementers
              * to control all the chart's font sizes by only setting the root level.
@@ -2826,6 +2831,8 @@
              *         `.highcharts-root` class.
              * @sample {highcharts} highcharts/chart/style-serif-font/
              *         Using a serif type font
+             * @sample {highcharts} highcharts/chart/style-special-font/
+             *         Using a font with special character in name
              * @sample {highcharts} highcharts/members/relative-font-size/
              *         Relative font sizes
              * @sample {highcharts} highcharts/css/em/
@@ -7519,6 +7526,46 @@
          * */
         /**
          * Default options of the KPI component.
+         *
+         * @default {
+            chart: {
+                type: 'spline',
+                styledMode: true,
+                zooming: {
+                    mouseWheel: {
+                        enabled: false
+                    }
+                }
+            },
+            title: {
+                text: void 0
+            },
+            xAxis: {
+                visible: false
+            },
+            yAxis: {
+                visible: false,
+                title: {
+                    text: null
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            credits: {
+                enabled: false
+            },
+            tooltip: {
+                outside: true
+            },
+            plotOptions: {
+                series: {
+                    marker: {
+                        enabled: false
+                    }
+                }
+            }
+        }
          */
         KPIComponent.defaultChartOptions = {
             chart: {

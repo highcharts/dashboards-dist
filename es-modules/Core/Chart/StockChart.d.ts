@@ -17,6 +17,8 @@ declare module '../Axis/AxisLike' {
 declare module './ChartLike' {
     interface ChartLike {
         _labelPanes?: Record<string, Axis>;
+        fixedRange?: number;
+        setFixedRange(range: number | undefined): void;
     }
 }
 declare module '../Options' {
@@ -78,7 +80,7 @@ declare class StockChart extends Chart {
 }
 declare namespace StockChart {
     /** @private */
-    function compose(AxisClass: typeof Axis, SeriesClass: typeof Series, SVGRendererClass: typeof SVGRenderer): void;
+    function compose(ChartClass: typeof Chart, AxisClass: typeof Axis, SeriesClass: typeof Series, SVGRendererClass: typeof SVGRenderer): void;
     /**
      * Factory function for creating new stock charts. Creates a new
      * {@link Highcharts.StockChart|StockChart} object with different default

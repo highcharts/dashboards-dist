@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.2.1 (2024-01-10)
+ * @license Highcharts Dashboards v1.3.0 (2024-01-24)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,14 +62,14 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.2.1', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.3.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
                 Globals.doc.createElementNS &&
                 !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.hasBidiBug = (Globals.isFirefox &&
                 parseInt(Globals.userAgent.split('Firefox/')[1], 10) < 4 // issue #38
-            ), Globals.hasTouch = !!Globals.win.TouchEvent, Globals.marginNames = [
+            ), Globals.marginNames = [
                 'plotTop',
                 'marginRight',
                 'marginBottom',
@@ -776,11 +776,6 @@
          * @return {void}
          */
         function css(el, styles) {
-            if (H.isMS && !H.svg) { // #2686
-                if (styles && defined(styles.opacity)) {
-                    styles.filter = `alpha(opacity=${styles.opacity * 100})`;
-                }
-            }
             extend(el.style, styles);
         }
         /**
@@ -1094,15 +1089,17 @@
          * @param {*} [except]
          *        Exception, do not destroy this property, only delete it.
          */
-        function destroyObjectProperties(obj, except) {
+        function destroyObjectProperties(obj, except, destructablesOnly) {
             objectEach(obj, function (val, n) {
                 // If the object is non-null and destroy is defined
-                if (val && val !== except && val.destroy) {
+                if (val !== except && val?.destroy) {
                     // Invoke the destroy
                     val.destroy();
                 }
-                // Delete the property from the object.
-                delete obj[n];
+                // Delete the property from the object
+                if (val?.destroy || !destructablesOnly) {
+                    delete obj[n];
+                }
             });
         }
         /**
@@ -10036,13 +10033,11 @@
                 addEvent(document, 'mousemove', mouseMoveSnap);
                 addEvent(document, 'mouseup', mouseUpSnap);
                 // Touch events
-                // if (hasTouch) {
-                //     addEvent(snapX, 'touchstart', mouseDownSnapX);
-                //     addEvent(snapY, 'touchstart', mouseDownSnapY);
-                //     if (!rowContainer.hcEvents.mousemove) {
-                //         addEvent(rowContainer, 'touchmove', mouseMoveSnap);
-                //         addEvent(rowContainer, 'touchend', mouseUpSnap);
-                //     }
+                // addEvent(snapX, 'touchstart', mouseDownSnapX);
+                // addEvent(snapY, 'touchstart', mouseDownSnapY);
+                // if (!rowContainer.hcEvents.mousemove) {
+                //     addEvent(rowContainer, 'touchmove', mouseMoveSnap);
+                //     addEvent(rowContainer, 'touchend', mouseUpSnap);
                 // }
                 const runReflow = () => {
                     if (resizer.currentCell) {
@@ -10357,7 +10352,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.2.1/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.3.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(

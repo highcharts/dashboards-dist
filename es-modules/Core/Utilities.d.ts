@@ -470,7 +470,7 @@ declare function arrayMax(data: Array<any>): number;
  * @param {*} [except]
  *        Exception, do not destroy this property, only delete it.
  */
-declare function destroyObjectProperties(obj: any, except?: any): void;
+declare function destroyObjectProperties(obj: any, except?: any, destructablesOnly?: boolean): void;
 /**
  * Discard a HTML element
  *

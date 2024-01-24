@@ -47,7 +47,7 @@ declare abstract class Component {
     /**
      * Default options of the component.
      */
-    static defaultOptions: Partial<Component.ComponentOptions>;
+    static defaultOptions: Partial<Component.Options>;
     /**
      * The HTML element or id of HTML element that is used for appending
      * a component.
@@ -108,7 +108,7 @@ declare abstract class Component {
     /**
      * The options for the component.
      * */
-    options: Component.ComponentOptions;
+    options: Component.Options;
     /**
      * Sets an ID for the component's `div`.
      */
@@ -191,7 +191,7 @@ declare abstract class Component {
      * @param options
      * The options for the component.
      */
-    constructor(cell: Cell, options: Partial<Component.ComponentOptions>);
+    constructor(cell: Cell, options: Partial<Component.Options>);
     /**
      * Function fired when component's `tableChanged` event is fired.
      * @internal
@@ -296,7 +296,7 @@ declare abstract class Component {
      * @param shouldRerender
      * Set to true if the update should rerender the component.
      */
-    update(newOptions: Partial<Component.ComponentOptions>, shouldRerender?: boolean): Promise<void>;
+    update(newOptions: Partial<Component.Options>, shouldRerender?: boolean): Promise<void>;
     /**
      * Private method which sets up event listeners for the component.
      *
@@ -361,8 +361,8 @@ declare abstract class Component {
      * @internal
      *
      */
-    getOptions(): Partial<Component.ComponentOptions>;
-    getEditableOptions(): Component.ComponentOptions;
+    getOptions(): Partial<Component.Options>;
+    getEditableOptions(): Component.Options;
     getEditableOptionValue(propertyPath?: string[]): number | boolean | undefined | string;
 }
 interface Component {
@@ -387,7 +387,7 @@ declare namespace Component {
     }>;
     /** @internal */
     type UpdateEvent = Event<'update' | 'afterUpdate', {
-        options?: ComponentOptions;
+        options?: Options;
     }>;
     /** @internal */
     type LoadEvent = Event<'load' | 'afterLoad', {}>;
@@ -503,7 +503,7 @@ declare namespace Component {
     }
     /** @internal */
     type SyncType = keyof SyncOptions;
-    interface ComponentOptions {
+    interface Options {
         /**
          * Cell id, where component is attached.
          */

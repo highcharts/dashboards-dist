@@ -314,7 +314,7 @@ declare namespace Board {
         /**
          * General options for the components.
          **/
-        componentOptions?: Partial<Component.ComponentOptions>;
+        componentOptions?: Partial<Component.Options>;
         /**
          * A list of serialized layouts to add to the board.
          * @internal

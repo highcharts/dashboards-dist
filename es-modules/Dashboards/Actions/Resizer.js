@@ -214,13 +214,11 @@ class Resizer {
         addEvent(document, 'mousemove', mouseMoveSnap);
         addEvent(document, 'mouseup', mouseUpSnap);
         // Touch events
-        // if (hasTouch) {
-        //     addEvent(snapX, 'touchstart', mouseDownSnapX);
-        //     addEvent(snapY, 'touchstart', mouseDownSnapY);
-        //     if (!rowContainer.hcEvents.mousemove) {
-        //         addEvent(rowContainer, 'touchmove', mouseMoveSnap);
-        //         addEvent(rowContainer, 'touchend', mouseUpSnap);
-        //     }
+        // addEvent(snapX, 'touchstart', mouseDownSnapX);
+        // addEvent(snapY, 'touchstart', mouseDownSnapY);
+        // if (!rowContainer.hcEvents.mousemove) {
+        //     addEvent(rowContainer, 'touchmove', mouseMoveSnap);
+        //     addEvent(rowContainer, 'touchend', mouseUpSnap);
         // }
         const runReflow = () => {
             if (resizer.currentCell) {

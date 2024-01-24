@@ -10,7 +10,7 @@ declare class HTMLComponent extends Component {
     /**
      * Default options of the HTML component.
      */
-    static defaultOptions: Partial<Component.ComponentOptions> & {
+    static defaultOptions: Partial<Component.Options> & {
         type: string;
         elements: never[];
     };
@@ -36,7 +36,7 @@ declare class HTMLComponent extends Component {
     /**
      * HTML component's options.
      */
-    options: HTMLComponent.HTMLComponentOptions;
+    options: HTMLComponent.Options;
     /**
      * Reference to sync component that allows to sync.
      *
@@ -49,7 +49,7 @@ declare class HTMLComponent extends Component {
      * @param options
      * The options for the component.
      */
-    constructor(cell: Cell, options: Partial<HTMLComponent.HTMLComponentOptions>);
+    constructor(cell: Cell, options: Partial<HTMLComponent.Options>);
     /** @internal */
     load(): Promise<this>;
     render(): this;
@@ -59,8 +59,8 @@ declare class HTMLComponent extends Component {
      * @param options
      * The options to apply.
      */
-    update(options: Partial<HTMLComponent.HTMLComponentOptions>): Promise<void>;
-    getOptionsOnDrop(): Partial<HTMLComponent.HTMLComponentOptions>;
+    update(options: Partial<HTMLComponent.Options>): Promise<void>;
+    getOptionsOnDrop(): Partial<HTMLComponent.Options>;
     /**
      * TODO: Could probably use the serialize function moved on
      * the exportdata branch
@@ -85,7 +85,7 @@ declare class HTMLComponent extends Component {
      * @internal
      *
      */
-    getOptions(): Partial<HTMLComponent.HTMLComponentOptions>;
+    getOptions(): Partial<HTMLComponent.Options>;
     /**
      * @internal
      */
@@ -94,7 +94,7 @@ declare class HTMLComponent extends Component {
 declare namespace HTMLComponent {
     /** @internal */
     type ComponentType = HTMLComponent;
-    interface HTMLComponentOptions extends Component.ComponentOptions {
+    interface Options extends Component.Options {
         /**
          * Array of HTML elements, declared as string or node.
          * ```

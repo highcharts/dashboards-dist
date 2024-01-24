@@ -807,7 +807,8 @@ class Tooltip {
      */
     renderSplit(labels, points) {
         const tooltip = this;
-        const { chart, chart: { chartWidth, chartHeight, plotHeight, plotLeft, plotTop, pointer, scrollablePixelsY = 0, scrollablePixelsX, scrollingContainer: { scrollLeft, scrollTop } = { scrollLeft: 0, scrollTop: 0 }, styledMode }, distance, options, options: { positioner } } = tooltip;
+        const { chart, chart: { chartWidth, chartHeight, plotHeight, plotLeft, plotTop, pointer, scrollablePixelsY = 0, scrollablePixelsX, styledMode }, distance, options, options: { positioner } } = tooltip;
+        const { scrollLeft = 0, scrollTop = 0 } = chart.scrollablePlotArea?.scrollingContainer || {};
         // The area which the tooltip should be limited to. Limit to scrollable
         // plot area if enabled, otherwise limit to the chart container. If
         // outside is true it should be the whole viewport

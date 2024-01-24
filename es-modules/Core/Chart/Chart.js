@@ -391,12 +391,8 @@ class Chart {
      * Returns true if the given point is inside the plot area.
      */
     isInsidePlot(plotX, plotY, options = {}) {
-        const { inverted, plotBox, plotLeft, plotTop, scrollablePlotBox } = this;
-        let scrollLeft = 0, scrollTop = 0;
-        if (options.visiblePlotOnly && this.scrollingContainer) {
-            ({ scrollLeft, scrollTop } = this.scrollingContainer);
-        }
-        const series = options.series, box = (options.visiblePlotOnly && scrollablePlotBox) || plotBox, x = options.inverted ? plotY : plotX, y = options.inverted ? plotX : plotY, e = {
+        const { inverted, plotBox, plotLeft, plotTop, scrollablePlotBox } = this, { scrollLeft = 0, scrollTop = 0 } = (options.visiblePlotOnly &&
+            this.scrollablePlotArea?.scrollingContainer) || {}, series = options.series, box = (options.visiblePlotOnly && scrollablePlotBox) || plotBox, x = options.inverted ? plotY : plotX, y = options.inverted ? plotX : plotY, e = {
             x,
             y,
             isInsidePlot: true,
@@ -2477,7 +2473,7 @@ class Chart {
         const chart = this, lang = defaultOptions.lang, btnOptions = chart.zooming.resetButton, theme = btnOptions.theme, alignTo = (btnOptions.relativeTo === 'chart' ||
             btnOptions.relativeTo === 'spacingBox' ?
             null :
-            'scrollablePlotBox');
+            'plotBox');
         /**
          * @private
          */

@@ -13,7 +13,7 @@ declare class DataGridComponent extends Component {
     /** @private */
     static DataGridConstructor?: typeof DataGrid;
     /** @private */
-    static defaultOptions: Partial<Component.ComponentOptions> & {
+    static defaultOptions: Partial<Component.Options> & {
         dataGridClassName: string;
         dataGridID: string;
         dataGridOptions: {};
@@ -46,12 +46,12 @@ declare class DataGridComponent extends Component {
     /** @private */
     dataGridOptions: Partial<BaseDataGridOptions>;
     /** @private */
-    options: DataGridComponent.ComponentOptions;
+    options: DataGridComponent.Options;
     /** @private */
     sync: Component['sync'];
     /** @private */
     private connectorListeners;
-    constructor(cell: Cell, options: Partial<DataGridComponent.ComponentOptions>);
+    constructor(cell: Cell, options: Partial<DataGridComponent.Options>);
     onTableChanged(): void;
     /**
      * Disable editing of the columns that are modified by the data modifier.
@@ -75,7 +75,7 @@ declare class DataGridComponent extends Component {
     render(): this;
     /** @private */
     resize(width?: number | null, height?: number | null): void;
-    update(options: Partial<DataGridComponent.ComponentOptions>): Promise<void>;
+    update(options: Partial<DataGridComponent.Options>): Promise<void>;
     /** @private */
     private constructDataGrid;
     private setupConnectorUpdate;
@@ -85,7 +85,7 @@ declare class DataGridComponent extends Component {
      * @internal
      */
     private filterColumns;
-    getOptionsOnDrop(sidebar: SidebarPopup): Partial<DataGridComponent.ComponentOptions>;
+    getOptionsOnDrop(sidebar: SidebarPopup): Partial<DataGridComponent.Options>;
     /** @private */
     toJSON(): DataGridComponent.ClassJSON;
     /**
@@ -96,7 +96,7 @@ declare class DataGridComponent extends Component {
      * @internal
      *
      */
-    getOptions(): Partial<DataGridComponent.ComponentOptions>;
+    getOptions(): Partial<DataGridComponent.Options>;
     /**
      * Destroys the data grid component.
      */
@@ -114,7 +114,7 @@ declare namespace DataGridComponent {
     /**
      * Options to control the DataGrid component.
      */
-    interface ComponentOptions extends Component.ComponentOptions {
+    interface Options extends Component.Options {
         /**
          * The style class to add to the rendered data grid container.
          */

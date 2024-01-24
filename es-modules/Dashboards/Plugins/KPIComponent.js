@@ -444,6 +444,46 @@ KPIComponent.defaultOptions = merge(Component.defaultOptions, {
  * */
 /**
  * Default options of the KPI component.
+ *
+ * @default {
+    chart: {
+        type: 'spline',
+        styledMode: true,
+        zooming: {
+            mouseWheel: {
+                enabled: false
+            }
+        }
+    },
+    title: {
+        text: void 0
+    },
+    xAxis: {
+        visible: false
+    },
+    yAxis: {
+        visible: false,
+        title: {
+            text: null
+        }
+    },
+    legend: {
+        enabled: false
+    },
+    credits: {
+        enabled: false
+    },
+    tooltip: {
+        outside: true
+    },
+    plotOptions: {
+        series: {
+            marker: {
+                enabled: false
+            }
+        }
+    }
+}
  */
 KPIComponent.defaultChartOptions = {
     chart: {

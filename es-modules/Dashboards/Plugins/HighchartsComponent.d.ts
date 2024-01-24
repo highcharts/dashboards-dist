@@ -16,7 +16,7 @@ declare class HighchartsComponent extends Component {
     /**
      * Default options of the Highcharts component.
      */
-    static defaultOptions: Partial<Component.ComponentOptions> & {
+    static defaultOptions: Partial<Component.Options> & {
         /**
          * Whether to allow the component to edit the store to which it is
          * attached.
@@ -208,7 +208,7 @@ declare namespace HighchartsComponent {
     type JSONEvent = Component.Event<'toJSON' | 'fromJSON', {
         json: ClassJSON;
     }>;
-    interface Options extends Component.ComponentOptions {
+    interface Options extends Component.Options {
         /**
          * Whether to allow the component to edit the store to which it is
          * attached.
