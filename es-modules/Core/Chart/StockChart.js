@@ -18,6 +18,8 @@ const { composed } = H;
 import NavigatorDefaults from '../../Stock/Navigator/NavigatorDefaults.js';
 import RangeSelectorDefaults from '../../Stock/RangeSelector/RangeSelectorDefaults.js';
 import ScrollbarDefaults from '../../Stock/Scrollbar/ScrollbarDefaults.js';
+import StockUtilities from '../../Stock/Utilities/StockUtilities.js';
+const { setFixedRange } = StockUtilities;
 import U from '../Utilities.js';
 const { addEvent, clamp, defined, extend, find, isNumber, isString, merge, pick, pushUnique, splat } = U;
 import '../Pointer.js';
@@ -168,12 +170,12 @@ class StockChart extends Chart {
         userOptions.xAxis = xAxisOptions;
         userOptions.yAxis = yAxisOptions;
         // Apply X axis options to both single and multi y axes
-        options.xAxis = splat(userOptions.xAxis || {}).map((xAxisOptions, i) => merge(getDefaultAxisOptions('xAxis', xAxisOptions, defaultOptions.xAxis), 
+        options.xAxis = splat(userOptions.xAxis || {}).map((xAxisOptions) => merge(getDefaultAxisOptions('xAxis', xAxisOptions, defaultOptions.xAxis), 
         // #7690
         xAxisOptions, // User options
         getForcedAxisOptions('xAxis', userOptions)));
         // Apply Y axis options to both single and multi y axes
-        options.yAxis = splat(userOptions.yAxis || {}).map((yAxisOptions, i) => merge(getDefaultAxisOptions('yAxis', yAxisOptions, defaultOptions.yAxis), 
+        options.yAxis = splat(userOptions.yAxis || {}).map((yAxisOptions) => merge(getDefaultAxisOptions('yAxis', yAxisOptions, defaultOptions.yAxis), 
         // #7690
         yAxisOptions // User options
         ));
@@ -588,26 +590,6 @@ addEvent(Chart, 'update', function (e) {
             dataGroupingOptions &&
             pick(dataGroupingOptions.enabled, chart.options.isStock));
         return groupingEnabled;
-    }
-    /**
-     * Sets the chart.fixedRange to the specified value. If the value is larger
-     * than actual range, sets it to the maximum possible range. (#20327)
-     *
-     * @private
-     * @function Highcharts.StockChart#setFixedRange
-     * @param {number|undefined} range
-     *        Range to set in axis units.
-     */
-    function setFixedRange(range) {
-        const xAxis = this.xAxis[0];
-        if (defined(xAxis.dataMax) &&
-            defined(xAxis.dataMin) &&
-            range) {
-            this.fixedRange = Math.min(range, xAxis.dataMax - xAxis.dataMin);
-        }
-        else {
-            this.fixedRange = range;
-        }
     }
     /* eslint-disable jsdoc/check-param-names */
     /**

@@ -187,7 +187,7 @@ class Resizer {
             resizer.setTempWidthSiblings();
             resizer.startX = e.clientX;
         };
-        resizer.mouseDownSnapY = mouseDownSnapY = function (e) {
+        resizer.mouseDownSnapY = mouseDownSnapY = function () {
             resizer.isActive = true;
             resizer.currentDimension = 'y';
             resizer.editMode.hideToolbars(['row', 'cell']);
@@ -197,7 +197,7 @@ class Resizer {
                 resizer.onMouseMove(e);
             }
         };
-        resizer.mouseUpSnap = mouseUpSnap = function (e) {
+        resizer.mouseUpSnap = mouseUpSnap = function () {
             if (resizer.isActive) {
                 resizer.isActive = false;
                 resizer.currentDimension = void 0;

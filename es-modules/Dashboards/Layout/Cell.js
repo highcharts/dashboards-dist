@@ -114,7 +114,7 @@ class Cell extends GUIElement {
         this.reflow();
         // Mount component from JSON.
         if (this.options.mountedComponentJSON) {
-            this.mountComponentFromJSON(this.options.mountedComponentJSON, this.container);
+            this.mountComponentFromJSON(this.options.mountedComponentJSON);
         }
         // nested layout
         if (this.options.layout) {
@@ -151,20 +151,16 @@ class Cell extends GUIElement {
      * @param {Component.JSON} [json]
      * Component JSON.
      *
-     * @param {HTMLDOMElement} [cellContainer]
-     * Cell container
-     *
      * @return {boolean}
      * Returns true, if the component created from JSON is mounted,
      * otherwise false.
      */
-    mountComponentFromJSON(json, cellContainer // @todo
-    ) {
+    mountComponentFromJSON(json) {
         const cell = this;
         if (cell.id !== json.options.parentElement) {
             json.options.parentElement = cell.id;
         }
-        const component = componentFromJSON(json, cellContainer);
+        const component = componentFromJSON(json);
         if (component) {
             cell.mountedComponent = component;
             return true;

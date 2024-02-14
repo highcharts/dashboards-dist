@@ -289,7 +289,6 @@ class Board {
      */
     reflow() {
         const board = this, cntSize = board.getLayoutContainerSize();
-        let layout;
         if (board.editMode) {
             const editModeTools = board.editMode.tools;
             board.editMode.hideToolbars(['cell', 'row']);

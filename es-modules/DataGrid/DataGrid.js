@@ -111,6 +111,7 @@ class DataGrid {
         this.rowElements = [];
         this.draggedResizeHandle = null;
         this.draggedColumnRightIx = null;
+        this.columnNames = this.getColumnsToDisplay();
         this.render();
         (this.containerResizeObserver = new ResizeObserver(() => {
             this.updateGridElements();
@@ -127,6 +128,7 @@ class DataGrid {
         if (this.options.dataTable !== this.dataTable) {
             this.dataTable = this.initDataTable();
         }
+        this.columnNames = this.getColumnsToDisplay();
         this.scrollContainer.removeChild(this.innerContainer);
         this.render();
     }
@@ -305,7 +307,6 @@ class DataGrid {
         this.bottom = false;
         emptyHTMLElement(this.innerContainer);
         if (options.columnHeaders.enabled) {
-            this.columnNames = this.getColumnsToDisplay();
             this.renderColumnHeaders();
         }
         else {

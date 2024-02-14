@@ -46,9 +46,9 @@ class RowEditToolbar extends EditToolbar {
                 type: 'icon',
                 icon: iconURLPrefix + 'settings.svg',
                 events: {
-                    click: function (e) {
+                    click: function () {
                         this.menu.parent.editMode.setEditOverlay();
-                        this.menu.parent.onRowOptions(e);
+                        this.menu.parent.onRowOptions();
                     }
                 }
             });
@@ -59,7 +59,7 @@ class RowEditToolbar extends EditToolbar {
             className: EditGlobals.classNames.menuDestroy,
             icon: iconURLPrefix + 'destroy.svg',
             events: {
-                click: function (e) {
+                click: function () {
                     const parentNode = this.menu.parent, editMode = this.menu.parent.editMode, popup = editMode.confirmationPopup;
                     popup.show({
                         confirmButton: {
@@ -127,7 +127,7 @@ class RowEditToolbar extends EditToolbar {
             toolbar.hide();
         }
     }
-    onRowOptions(e) {
+    onRowOptions() {
         const toolbar = this;
         if (toolbar.editMode.sidebar) {
             toolbar.editMode.sidebar.show(toolbar.row);
@@ -142,7 +142,7 @@ class RowEditToolbar extends EditToolbar {
             // }
         }
     }
-    onRowDestroy(e) {
+    onRowDestroy() {
         const toolbar = this;
         if (toolbar.row) {
             this.resetEditedRow();

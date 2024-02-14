@@ -44,6 +44,16 @@ declare class NavigatorComponent extends Component {
      * @private
      */
     sync: Sync;
+    /**
+     * The content of the navigator is of type string.
+     * @private
+     */
+    private stringData?;
+    /**
+     * An array of virtual x-axis categories. Index is value on the x-axis.
+     * @private
+     */
+    private categories?;
     /** @private */
     private adjustNavigator;
     /**
@@ -59,6 +69,10 @@ declare class NavigatorComponent extends Component {
      * @internal
      */
     getOptions(): Partial<Options>;
+    /**
+     * Gets the extremes of the navigator's x-axis.
+     */
+    getAxisExtremes(): [number, number] | [string, string];
     /** @private */
     load(): Promise<this>;
     onTableChanged(): void;
@@ -68,6 +82,10 @@ declare class NavigatorComponent extends Component {
     render(): this;
     /** @private */
     private renderNavigator;
+    /**
+     * Generates the data for the crossfilter navigator.
+     */
+    private generateCrossfilterData;
     /** @private */
     resize(width?: (number | string | null), height?: (number | string | null)): this;
     /**

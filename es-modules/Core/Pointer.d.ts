@@ -1,4 +1,5 @@
 import type Axis from './Axis/Axis';
+import type BBoxObject from './Renderer/BBoxObject';
 import type Chart from './Chart/Chart';
 import type { DOMElementType } from './Renderer/DOMElementType';
 import type Options from './Options';
@@ -7,7 +8,6 @@ import type { PointerEvent } from './PointerEvent';
 import type Series from './Series/Series';
 import type SVGElement from './Renderer/SVG/SVGElement';
 import SVGAttributes from './Renderer/SVG/SVGAttributes';
-import BBoxObject from './Renderer/BBoxObject';
 declare module './Chart/ChartLike' {
     interface ChartLike {
         cancelClick?: boolean;
@@ -41,17 +41,14 @@ declare class Pointer {
     static unbindDocumentTouchEnd: (Function | undefined);
     chart: Chart;
     chartPosition?: Pointer.ChartPositionObject;
-    hasDragged: (false | number);
+    hasDragged: number;
     hasPinched?: boolean;
     hasZoom?: boolean;
-    hoverX?: (Point | Array<Point>);
     initiated?: boolean;
     isDirectTouch?: boolean;
-    lastValidTouch: object;
-    mouseDownX?: number;
-    mouseDownY?: number;
+    lastTouches?: Array<PointerEvent>;
     options: Options;
-    pinchDown: Array<any>;
+    pinchDown?: Array<PointerEvent>;
     res?: boolean;
     runChartClick?: boolean;
     selectionMarker?: SVGElement;
@@ -109,13 +106,13 @@ declare class Pointer {
      * @function Highcharts.Pointer#getSelectionBox
      * @emits getSelectionBox
      */
-    getSelectionBox(marker: SVGElement): Partial<BBoxObject>;
+    getSelectionBox(marker: SVGElement): BBoxObject;
     /**
      * On mouse up or touch end across the entire document, drop the selection.
      * @private
      * @function Highcharts.Pointer#drop
      */
-    drop(e: Event): void;
+    drop(e?: PointerEvent): void;
     /**
      * Finds the closest point to a set of coordinates, using the k-d-tree
      * algorithm.
@@ -275,7 +272,7 @@ declare class Pointer {
      * @private
      * @function Highcharts.Pointer#onContainerMouseEnter
      */
-    onContainerMouseEnter(e: MouseEvent): void;
+    onContainerMouseEnter(): void;
     /**
      * The mousemove, touchmove and touchstart event handler
      * @private
@@ -309,7 +306,7 @@ declare class Pointer {
      * @private
      * @function Highcharts.Pointer#onDocumentMouseUp
      */
-    onDocumentMouseUp(e: MouseEvent): void;
+    onDocumentMouseUp(e: PointerEvent): void;
     /**
      * Handle touch events with two touches
      * @private
@@ -320,15 +317,144 @@ declare class Pointer {
      * Run translation operations
      * @private
      * @function Highcharts.Pointer#pinchTranslate
-     */
-    pinchTranslate(pinchDown: Array<any>, touches: Array<PointerEvent>, transform: any, selectionMarker: any, clip: any, lastValidTouch: any): void;
+     * /
+    public pinchTranslate(
+        pinchDown: Array<any>,
+        touches: Array<PointerEvent>,
+        transform: any,
+        selectionMarker: any,
+        clip: any,
+        lastValidTouch: any
+    ): void {
+        if (this.zoomHor) {
+            this.pinchTranslateDirection(
+                true,
+                pinchDown,
+                touches,
+                transform,
+                selectionMarker,
+                clip,
+                lastValidTouch
+            );
+        }
+        if (this.zoomVert) {
+            this.pinchTranslateDirection(
+                false,
+                pinchDown,
+                touches,
+                transform,
+                selectionMarker,
+                clip,
+                lastValidTouch
+            );
+        }
+    }
+    */
     /**
      * Run translation operations for each direction (horizontal and vertical)
      * independently.
      * @private
      * @function Highcharts.Pointer#pinchTranslateDirection
-     */
-    pinchTranslateDirection(horiz: boolean, pinchDown: Array<any>, touches: Array<PointerEvent>, transform: any, selectionMarker: any, clip: any, lastValidTouch: any, forcedScale?: number): void;
+     * /
+    public pinchTranslateDirection(
+        horiz: boolean,
+        pinchDown: Array<any>,
+        touches: Array<PointerEvent>,
+        transform: any,
+        selectionMarker: any,
+        clip: any,
+        lastValidTouch: any,
+        forcedScale?: number
+    ): void {
+        const chart = this.chart,
+            xy: ('x'|'y') = horiz ? 'x' : 'y',
+            XY: ('X'|'Y') = horiz ? 'X' : 'Y',
+            sChartXY: ('chartX'|'chartY') = ('chart' + XY) as any,
+            wh = horiz ? 'width' : 'height',
+            plotLeftTop = (chart as any)['plot' + (horiz ? 'Left' : 'Top')],
+            inverted = chart.inverted,
+            bounds = chart.bounds[horiz ? 'h' : 'v'],
+            singleTouch = pinchDown.length === 1,
+            touch0Start = pinchDown[0][sChartXY],
+            touch1Start = !singleTouch && pinchDown[1][sChartXY],
+            setScale = function (): void {
+                // Don't zoom if fingers are too close on this axis
+                if (
+                    typeof touch1Now === 'number' &&
+                    Math.abs(touch0Start - touch1Start) > 20
+                ) {
+                    scale = forcedScale ||
+                        Math.abs(touch0Now - touch1Now) /
+                        Math.abs(touch0Start - touch1Start);
+                }
+
+                clipXY = ((plotLeftTop - touch0Now) / scale) + touch0Start;
+                selectionWH = (chart as any)[
+                    'plot' + (horiz ? 'Width' : 'Height')
+                ] / scale;
+            };
+
+        let selectionWH: any,
+            selectionXY,
+            clipXY: any,
+            scale = forcedScale || 1,
+            touch0Now = touches[0][sChartXY],
+            touch1Now = !singleTouch && touches[1][sChartXY],
+            outOfBounds;
+
+        // Set the scale, first pass
+        setScale();
+
+        // The clip position (x or y) is altered if out of bounds, the selection
+        // position is not
+        selectionXY = clipXY;
+
+        // Out of bounds
+        if (selectionXY < bounds.min) {
+            selectionXY = bounds.min;
+            outOfBounds = true;
+        } else if (selectionXY + selectionWH > bounds.max) {
+            selectionXY = bounds.max - selectionWH;
+            outOfBounds = true;
+        }
+
+        // Is the chart dragged off its bounds, determined by dataMin and
+        // dataMax?
+        if (outOfBounds) {
+
+            // Modify the touchNow position in order to create an elastic drag
+            // movement. This indicates to the user that the chart is responsive
+            // but can't be dragged further.
+            touch0Now -= 0.8 * (touch0Now - lastValidTouch[xy][0]);
+            if (typeof touch1Now === 'number') {
+                touch1Now -= 0.8 * (touch1Now - lastValidTouch[xy][1]);
+            }
+
+            // Set the scale, second pass to adapt to the modified touchNow
+            // positions
+            setScale();
+
+        } else {
+            lastValidTouch[xy] = [touch0Now, touch1Now];
+        }
+
+        // Set geometry for clipping, selection and transformation
+        if (!inverted) {
+            clip[xy] = clipXY - plotLeftTop;
+            clip[wh] = selectionWH;
+        }
+        const scaleKey = inverted ?
+            (horiz ? 'scaleY' : 'scaleX') : 'scale' + XY;
+        const transformScale = inverted ? 1 / scale : scale;
+
+        selectionMarker[wh] = selectionWH;
+        selectionMarker[xy] = selectionXY;
+        // Invert scale if needed (#19217)
+        transform[scaleKey] = scale * (inverted && !horiz ? -1 : 1);
+        transform['translate' + XY] = (transformScale * plotLeftTop) +
+            (touch0Now - (transformScale * touch0Start));
+    }
+    */
     /**
      * Reset the tracking by hiding the tooltip, the hover series state and the
      * hover point
@@ -353,12 +479,6 @@ declare class Pointer {
      * @emits Highcharts.Point#event:mouseOver
      */
     runPointActions(e?: PointerEvent, p?: Point, force?: boolean): void;
-    /**
-     * Scale series groups to a certain scale and translation.
-     * @private
-     * @function Highcharts.Pointer#scaleGroups
-     */
-    scaleGroups(attribs?: Series.PlotBoxTransform, clip?: boolean): void;
     /**
      * Set the JS DOM events on the container and document. This method should
      * contain a one-to-one assignment between methods and their handlers. Any
@@ -433,9 +553,15 @@ declare namespace Pointer {
         min: number;
     }
     interface SelectEventObject {
+        animation?: boolean;
+        height?: number;
         originalEvent: Event;
         resetSelection?: boolean;
+        trigger?: string;
+        width?: number;
+        x?: number;
         xAxis: Array<SelectDataObject>;
+        y?: number;
         yAxis: Array<SelectDataObject>;
     }
     /**

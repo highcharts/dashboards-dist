@@ -27,7 +27,7 @@ class EditContextMenu extends Menu {
      *  Constructor
      *
      * */
-    constructor(parentElement, options, editMode, parent) {
+    constructor(parentElement, options, editMode) {
         super(editMode.board.container, merge(EditContextMenu.defaultOptions, options || {}), editMode);
         this.editMode = editMode;
         this.options = merge(EditContextMenu.defaultOptions, options || {});

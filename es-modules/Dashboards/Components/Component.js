@@ -146,9 +146,7 @@ class Component {
         }, {}, this.parentElement);
         this.contentElement = createElement('div', {
             className: `${this.options.className}-content`
-        }, {
-            height: '100%'
-        }, this.element, true);
+        }, {}, this.element, true);
         this.filterAndAssignSyncOptions();
         this.setupEventListeners();
         this.attachCellListeneres();
@@ -168,7 +166,9 @@ class Component {
      * @param sidebar
      * The sidebar popup.
      */
-    getOptionsOnDrop(sidebar) {
+    getOptionsOnDrop(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sidebar) {
         return {};
     }
     /* *
@@ -305,21 +305,25 @@ class Component {
                 ].forEach((event) => {
                     this.tableEvents.push((table)
                         .on(event, (e) => {
-                        clearInterval(this.tableEventTimeout);
+                        clearTimeout(this.tableEventTimeout);
                         this.tableEventTimeout = Globals.win.setTimeout(() => {
                             this.emit({
                                 ...e,
                                 type: 'tableChanged'
                             });
                             this.tableEventTimeout = void 0;
-                        }, 0);
+                        });
                     }));
                 });
             }
             this.tableEvents.push(connector.on('afterLoad', () => {
-                this.emit({
-                    target: this,
-                    type: 'tableChanged'
+                clearTimeout(this.tableEventTimeout);
+                this.tableEventTimeout = Globals.win.setTimeout(() => {
+                    this.emit({
+                        target: this,
+                        type: 'tableChanged'
+                    });
+                    this.tableEventTimeout = void 0;
                 });
             }));
         }
@@ -336,9 +340,13 @@ class Component {
         if (connector) {
             tableEvents.push(connector.table.on('afterSetModifier', (e) => {
                 if (e.type === 'afterSetModifier') {
-                    this.emit({
-                        ...e,
-                        type: 'tableChanged'
+                    clearTimeout(this.tableEventTimeout);
+                    this.tableEventTimeout = Globals.win.setTimeout(() => {
+                        this.emit({
+                            ...e,
+                            type: 'tableChanged'
+                        });
+                        this.tableEventTimeout = void 0;
                     });
                 }
             }));
@@ -581,7 +589,7 @@ class Component {
                 else {
                     captionElement.replaceWith(newCaption);
                 }
-                this.titleElement = newCaption;
+                this.captionElement = newCaption;
             }
         }
         else {

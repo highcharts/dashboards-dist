@@ -183,9 +183,8 @@ function renderSelectElement(option, dropdown, placeholder, id, dropdownPointer,
     const iconURL = option.iconsURLPrefix + option.iconURL;
     const selectOption = createElement('li', {}, {}, dropdown);
     const selectOptionBtn = createElement('button', { className: EditGlobals.classNames.customSelectButton }, {}, selectOption);
-    let icon;
     if (option.iconURL) {
-        icon = createElement('img', {
+        createElement('img', {
             src: iconURL
         }, {}, selectOptionBtn);
     }

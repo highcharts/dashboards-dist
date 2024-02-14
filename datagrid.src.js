@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.3.0 (2024-01-24)
+ * @license Highcharts Dashboards v1.3.1 (2024-02-14)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -1752,6 +1752,7 @@
                 if (options.timezone) {
                     return (timestamp) => {
                         try {
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             const [date, gmt, hours, colon, minutes = 0] = 
                             // eslint-disable-next-line new-cap
                             Intl.DateTimeFormat('en', {
@@ -4960,7 +4961,7 @@
          *
          * */
         const { defaultOptions, defaultTime } = D;
-        const { extend, getNestedProperty, isArray, isNumber, isObject, isString, pick, pInt } = U;
+        const { extend, getNestedProperty, isArray, isNumber, isObject, pick, pInt } = U;
         const helpers = {
             // Built-in helpers
             add: (a, b) => a + b,
@@ -5468,6 +5469,7 @@
                 this.rowElements = [];
                 this.draggedResizeHandle = null;
                 this.draggedColumnRightIx = null;
+                this.columnNames = this.getColumnsToDisplay();
                 this.render();
                 (this.containerResizeObserver = new ResizeObserver(() => {
                     this.updateGridElements();
@@ -5484,6 +5486,7 @@
                 if (this.options.dataTable !== this.dataTable) {
                     this.dataTable = this.initDataTable();
                 }
+                this.columnNames = this.getColumnsToDisplay();
                 this.scrollContainer.removeChild(this.innerContainer);
                 this.render();
             }
@@ -5662,7 +5665,6 @@
                 this.bottom = false;
                 emptyHTMLElement(this.innerContainer);
                 if (options.columnHeaders.enabled) {
-                    this.columnNames = this.getColumnsToDisplay();
                     this.renderColumnHeaders();
                 }
                 else {

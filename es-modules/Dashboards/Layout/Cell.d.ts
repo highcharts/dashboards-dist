@@ -1,6 +1,5 @@
 import type Component from '../Components/Component.js';
 import type CSSJSONObject from '../CSSJSONObject';
-import type { HTMLDOMElement } from '../../Core/Renderer/DOMElementType';
 import type JSON from '../JSON';
 import type LayoutType from './Layout';
 import type Row from './Row';
@@ -71,14 +70,11 @@ declare class Cell extends GUIElement {
      * @param {Component.JSON} [json]
      * Component JSON.
      *
-     * @param {HTMLDOMElement} [cellContainer]
-     * Cell container
-     *
      * @return {boolean}
      * Returns true, if the component created from JSON is mounted,
      * otherwise false.
      */
-    mountComponentFromJSON(json: Component.JSON, cellContainer: (HTMLDOMElement | undefined)): boolean;
+    mountComponentFromJSON(json: Component.JSON): boolean;
     /**
      * Destroy the element, its container, event hooks
      * and mounted component.

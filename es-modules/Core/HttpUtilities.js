@@ -9,9 +9,9 @@
  * */
 'use strict';
 import G from '../Core/Globals.js';
-const { doc, win } = G;
+const { win } = G;
 import U from '../Core/Utilities.js';
-const { createElement, discardElement, merge, objectEach } = U;
+const { discardElement, objectEach } = U;
 /* *
  *
  *  Functions

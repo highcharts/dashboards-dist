@@ -290,6 +290,7 @@ class Time {
         if (options.timezone) {
             return (timestamp) => {
                 try {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const [date, gmt, hours, colon, minutes = 0] = 
                     // eslint-disable-next-line new-cap
                     Intl.DateTimeFormat('en', {

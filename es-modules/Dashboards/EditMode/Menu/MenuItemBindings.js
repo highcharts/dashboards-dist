@@ -24,7 +24,7 @@ const MenuItemBindings = {
         type: 'button',
         langKey: 'viewFullscreen',
         events: {
-            click: function (e) {
+            click: function () {
                 const fullScreen = this.menu.editMode.board.fullscreen;
                 if (fullScreen) {
                     fullScreen.toggle();

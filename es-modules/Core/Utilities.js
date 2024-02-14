@@ -1360,18 +1360,21 @@ objectEach({
  *
  * @function Highcharts.addEvent<T>
  *
- * @param {Highcharts.Class<T>|T} el
- *        The element or object to add a listener to. It can be a
- *        {@link HTMLDOMElement}, an {@link SVGElement} or any other object.
+ * @param  {Highcharts.Class<T>|T} el
+ *         The element or object to add a listener to. It can be a
+ *         {@link HTMLDOMElement}, an {@link SVGElement} or any other object.
  *
- * @param {string} type
- *        The event type.
+ * @param  {string} type
+ *         The event type.
  *
- * @param {Highcharts.EventCallbackFunction<T>|Function} fn
- *        The function callback to execute when the event is fired.
+ * @param  {Highcharts.EventCallbackFunction<T>|Function} fn
+ *         The function callback to execute when the event is fired.
  *
- * @param {Highcharts.EventOptionsObject} [options]
- *        Options for adding the event.
+ * @param  {Highcharts.EventOptionsObject} [options]
+ *         Options for adding the event.
+ *
+ * @sample highcharts/members/addevent
+ *         Use a general `render` event to draw shapes on a chart
  *
  * @return {Function}
  *         A callback function to remove the added event.
@@ -1522,14 +1525,13 @@ function removeEvent(el, type, fn) {
  */
 function fireEvent(el, type, eventArguments, defaultFunction) {
     /* eslint-enable valid-jsdoc */
-    let e, i;
     eventArguments = eventArguments || {};
     if (doc.createEvent &&
         (el.dispatchEvent ||
             (el.fireEvent &&
                 // Enable firing events on Highcharts instance.
                 el !== H))) {
-        e = doc.createEvent('Events');
+        const e = doc.createEvent('Events');
         e.initEvent(type, true, true);
         eventArguments = extend(e, eventArguments);
         if (el.dispatchEvent) {

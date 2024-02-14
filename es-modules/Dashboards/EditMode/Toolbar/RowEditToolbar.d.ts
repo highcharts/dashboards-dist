@@ -13,8 +13,8 @@ declare class RowEditToolbar extends EditToolbar {
     editedRow?: Row;
     refreshOutline(x: number, y: number): void;
     showToolbar(row: Row): void;
-    onRowOptions(e: any): void;
-    onRowDestroy(e: any): void;
+    onRowOptions(): void;
+    onRowDestroy(): void;
     resetEditedRow(): void;
 }
 declare namespace RowEditToolbar {

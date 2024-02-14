@@ -373,7 +373,9 @@ function processFormula(formula, table) {
  * @return {Highcharts.FormulaValue|Array<Highcharts.FormulaValue>}
  * Result value (or values) of the process. `NaN` indicates an error.
  */
-function processFunction(formulaFunction, table, reference // @todo
+function processFunction(formulaFunction, table, 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+reference // @todo
 ) {
     const processor = processorFunctions[formulaFunction.name];
     if (processor) {

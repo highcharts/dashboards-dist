@@ -890,7 +890,7 @@ class DataTable {
      * @emits #afterSetColumns
      */
     setColumns(columns, rowIndex, eventDetail) {
-        const table = this, tableColumns = table.columns, tableModifier = table.modifier, tableRowCount = table.rowCount, reset = (typeof rowIndex === 'undefined'), columnNames = Object.keys(columns);
+        const table = this, tableColumns = table.columns, tableModifier = table.modifier, reset = (typeof rowIndex === 'undefined'), columnNames = Object.keys(columns);
         table.emit({
             type: 'setColumns',
             columns,

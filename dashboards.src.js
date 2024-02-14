@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v1.3.0 (2024-01-24)
+ * @license Highcharts Dashboards v1.3.1 (2024-02-14)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.3.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '1.3.1', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -1523,18 +1523,21 @@
          *
          * @function Highcharts.addEvent<T>
          *
-         * @param {Highcharts.Class<T>|T} el
-         *        The element or object to add a listener to. It can be a
-         *        {@link HTMLDOMElement}, an {@link SVGElement} or any other object.
+         * @param  {Highcharts.Class<T>|T} el
+         *         The element or object to add a listener to. It can be a
+         *         {@link HTMLDOMElement}, an {@link SVGElement} or any other object.
          *
-         * @param {string} type
-         *        The event type.
+         * @param  {string} type
+         *         The event type.
          *
-         * @param {Highcharts.EventCallbackFunction<T>|Function} fn
-         *        The function callback to execute when the event is fired.
+         * @param  {Highcharts.EventCallbackFunction<T>|Function} fn
+         *         The function callback to execute when the event is fired.
          *
-         * @param {Highcharts.EventOptionsObject} [options]
-         *        Options for adding the event.
+         * @param  {Highcharts.EventOptionsObject} [options]
+         *         Options for adding the event.
+         *
+         * @sample highcharts/members/addevent
+         *         Use a general `render` event to draw shapes on a chart
          *
          * @return {Function}
          *         A callback function to remove the added event.
@@ -1685,14 +1688,13 @@
          */
         function fireEvent(el, type, eventArguments, defaultFunction) {
             /* eslint-enable valid-jsdoc */
-            let e, i;
             eventArguments = eventArguments || {};
             if (doc.createEvent &&
                 (el.dispatchEvent ||
                     (el.fireEvent &&
                         // Enable firing events on Highcharts instance.
                         el !== H))) {
-                e = doc.createEvent('Events');
+                const e = doc.createEvent('Events');
                 e.initEvent(type, true, true);
                 eventArguments = extend(e, eventArguments);
                 if (el.dispatchEvent) {
@@ -2393,7 +2395,11 @@
              * @return {Highcharts.DataTable}
              * Table with `modified` property as a reference.
              */
-            modifyCell(table, columnName, rowIndex, cellValue, eventDetail) {
+            modifyCell(table, 
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            columnName, rowIndex, cellValue, eventDetail
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
                 return this.modifyTable(table);
             }
             /**
@@ -2415,7 +2421,11 @@
              * @return {Highcharts.DataTable}
              * Table with `modified` property as a reference.
              */
-            modifyColumns(table, columns, rowIndex, eventDetail) {
+            modifyColumns(table, 
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            columns, rowIndex, eventDetail
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
                 return this.modifyTable(table);
             }
             /**
@@ -2437,7 +2447,11 @@
              * @return {Highcharts.DataTable}
              * Table with `modified` property as a reference.
              */
-            modifyRows(table, rows, rowIndex, eventDetail) {
+            modifyRows(table, 
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            rows, rowIndex, eventDetail
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
                 return this.modifyTable(table);
             }
             /**
@@ -3409,7 +3423,7 @@
              * @emits #afterSetColumns
              */
             setColumns(columns, rowIndex, eventDetail) {
-                const table = this, tableColumns = table.columns, tableModifier = table.modifier, tableRowCount = table.rowCount, reset = (typeof rowIndex === 'undefined'), columnNames = Object.keys(columns);
+                const table = this, tableColumns = table.columns, tableModifier = table.modifier, reset = (typeof rowIndex === 'undefined'), columnNames = Object.keys(columns);
                 table.emit({
                     type: 'setColumns',
                     columns,
@@ -3728,7 +3742,9 @@
              * @return {Array<string>|undefined}
              * Order of columns.
              */
-            getColumnOrder(usePresentationState) {
+            getColumnOrder(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            usePresentationState) {
                 const connector = this, columns = connector.metadata.columns, names = Object.keys(columns || {});
                 if (names.length) {
                     return names.sort((a, b) => (pick(columns[a].index, 0) - pick(columns[b].index, 0)));
@@ -3907,7 +3923,7 @@
 
         return DataConnector;
     });
-    _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [_modules['Core/Utilities.js']], function (U) {
+    _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [], function () {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -3917,7 +3933,6 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        const { merge } = U;
         /* *
          *
          *  Namespace
@@ -4161,8 +4176,7 @@
             }
             Bindings.addComponent = addComponent;
             /** @internal */
-            function componentFromJSON(json, cellContainer // @todo
-            ) {
+            function componentFromJSON(json) {
                 let componentClass = ComponentRegistry.types[json.$class];
                 if (!componentClass) {
                     return;
@@ -5507,9 +5521,8 @@
             const iconURL = option.iconsURLPrefix + option.iconURL;
             const selectOption = createElement('li', {}, {}, dropdown);
             const selectOptionBtn = createElement('button', { className: EditGlobals.classNames.customSelectButton }, {}, selectOption);
-            let icon;
             if (option.iconURL) {
-                icon = createElement('img', {
+                createElement('img', {
                     src: iconURL
                 }, {}, selectOptionBtn);
             }
@@ -5959,7 +5972,7 @@
                 type: 'button',
                 langKey: 'viewFullscreen',
                 events: {
-                    click: function (e) {
+                    click: function () {
                         const fullScreen = this.menu.editMode.board.fullscreen;
                         if (fullScreen) {
                             fullScreen.toggle();
@@ -6381,7 +6394,7 @@
                         type: 'icon',
                         icon: iconURLPrefix + 'settings.svg',
                         events: {
-                            click: function (e) {
+                            click: function () {
                                 this.menu.parent.editMode.setEditOverlay();
                                 this.menu.parent.onCellOptions();
                             }
@@ -6394,7 +6407,7 @@
                     className: EditGlobals.classNames.menuDestroy,
                     icon: iconURLPrefix + 'destroy.svg',
                     events: {
-                        click: function (e) {
+                        click: function () {
                             const parentNode = this.menu.parent, editMode = this.menu.parent.editMode, popup = editMode.confirmationPopup;
                             popup.show({
                                 confirmButton: {
@@ -6555,9 +6568,9 @@
                         type: 'icon',
                         icon: iconURLPrefix + 'settings.svg',
                         events: {
-                            click: function (e) {
+                            click: function () {
                                 this.menu.parent.editMode.setEditOverlay();
-                                this.menu.parent.onRowOptions(e);
+                                this.menu.parent.onRowOptions();
                             }
                         }
                     });
@@ -6568,7 +6581,7 @@
                     className: EditGlobals.classNames.menuDestroy,
                     icon: iconURLPrefix + 'destroy.svg',
                     events: {
-                        click: function (e) {
+                        click: function () {
                             const parentNode = this.menu.parent, editMode = this.menu.parent.editMode, popup = editMode.confirmationPopup;
                             popup.show({
                                 confirmButton: {
@@ -6636,7 +6649,7 @@
                     toolbar.hide();
                 }
             }
-            onRowOptions(e) {
+            onRowOptions() {
                 const toolbar = this;
                 if (toolbar.editMode.sidebar) {
                     toolbar.editMode.sidebar.show(toolbar.row);
@@ -6651,7 +6664,7 @@
                     // }
                 }
             }
-            onRowDestroy(e) {
+            onRowDestroy() {
                 const toolbar = this;
                 if (toolbar.row) {
                     this.resetEditedRow();
@@ -7503,7 +7516,7 @@
             addCloseButton(className = 'highcharts-popup-close') {
                 const popup = this, iconsURL = this.iconsURL;
                 // Create close popup button.
-                const closeButton = createElement('div', { className }, void 0, this.container);
+                const closeButton = createElement('button', { className }, void 0, this.container);
                 closeButton.style['background-image'] = 'url(' +
                     (iconsURL.match(/png|svg|jpeg|jpg|gif/ig) ?
                         iconsURL : iconsURL + 'close.svg') + ')';
@@ -7807,7 +7820,7 @@
                 this.reflow();
                 // Mount component from JSON.
                 if (this.options.mountedComponentJSON) {
-                    this.mountComponentFromJSON(this.options.mountedComponentJSON, this.container);
+                    this.mountComponentFromJSON(this.options.mountedComponentJSON);
                 }
                 // nested layout
                 if (this.options.layout) {
@@ -7844,20 +7857,16 @@
              * @param {Component.JSON} [json]
              * Component JSON.
              *
-             * @param {HTMLDOMElement} [cellContainer]
-             * Cell container
-             *
              * @return {boolean}
              * Returns true, if the component created from JSON is mounted,
              * otherwise false.
              */
-            mountComponentFromJSON(json, cellContainer // @todo
-            ) {
+            mountComponentFromJSON(json) {
                 const cell = this;
                 if (cell.id !== json.options.parentElement) {
                     json.options.parentElement = cell.id;
                 }
-                const component = componentFromJSON(json, cellContainer);
+                const component = componentFromJSON(json);
                 if (component) {
                     cell.mountedComponent = component;
                     return true;
@@ -8243,7 +8252,7 @@
                 }
                 // Mount components.
                 for (let i = 0, iEnd = componentsToMount.length; i < iEnd; ++i) {
-                    componentsToMount[i].cell.mountComponentFromJSON(componentsToMount[i].mountedComponentJSON, (cell || {}).container);
+                    componentsToMount[i].cell.mountComponentFromJSON(componentsToMount[i].mountedComponentJSON);
                 }
             }
             /**
@@ -8336,7 +8345,6 @@
                 };
             }
             setSize(height) {
-                const cells = this.cells;
                 Row.setContainerHeight(this.container, height);
             }
             // Get cell index from the row.cells array.
@@ -9137,7 +9145,7 @@
              *  Constructor
              *
              * */
-            constructor(parentElement, options, editMode, parent) {
+            constructor(parentElement, options, editMode) {
                 super(editMode.board.container, merge(EditContextMenu.defaultOptions, options || {}), editMode);
                 this.editMode = editMode;
                 this.options = merge(EditContextMenu.defaultOptions, options || {});
@@ -10006,7 +10014,7 @@
                     resizer.setTempWidthSiblings();
                     resizer.startX = e.clientX;
                 };
-                resizer.mouseDownSnapY = mouseDownSnapY = function (e) {
+                resizer.mouseDownSnapY = mouseDownSnapY = function () {
                     resizer.isActive = true;
                     resizer.currentDimension = 'y';
                     resizer.editMode.hideToolbars(['row', 'cell']);
@@ -10016,7 +10024,7 @@
                         resizer.onMouseMove(e);
                     }
                 };
-                resizer.mouseUpSnap = mouseUpSnap = function (e) {
+                resizer.mouseUpSnap = mouseUpSnap = function () {
                     if (resizer.isActive) {
                         resizer.isActive = false;
                         resizer.currentDimension = void 0;
@@ -10352,7 +10360,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.3.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.3.1/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -10540,7 +10548,7 @@
                             dragDrop.mouseRowContext = row;
                         }
                     });
-                    addEvent(row.container, 'mouseleave', function (e) {
+                    addEvent(row.container, 'mouseleave', function () {
                         if (dragDrop.isActive && dragDrop.mouseRowContext === row) {
                             dragDrop.mouseRowContext = void 0;
                         }
@@ -10563,7 +10571,7 @@
                     // Init dragDrop cell events.
                     if (editMode.dragDrop || editMode.resizer) {
                         const dragDrop = editMode.dragDrop;
-                        addEvent(cell.container, 'mouseenter', function (e) {
+                        addEvent(cell.container, 'mouseenter', function () {
                             if (editMode.isContextDetectionActive) {
                                 editMode.mouseCellContext = cell;
                             }
@@ -12065,9 +12073,7 @@
                 }, {}, this.parentElement);
                 this.contentElement = createElement('div', {
                     className: `${this.options.className}-content`
-                }, {
-                    height: '100%'
-                }, this.element, true);
+                }, {}, this.element, true);
                 this.filterAndAssignSyncOptions();
                 this.setupEventListeners();
                 this.attachCellListeneres();
@@ -12087,7 +12093,9 @@
              * @param sidebar
              * The sidebar popup.
              */
-            getOptionsOnDrop(sidebar) {
+            getOptionsOnDrop(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            sidebar) {
                 return {};
             }
             /* *
@@ -12224,21 +12232,25 @@
                         ].forEach((event) => {
                             this.tableEvents.push((table)
                                 .on(event, (e) => {
-                                clearInterval(this.tableEventTimeout);
+                                clearTimeout(this.tableEventTimeout);
                                 this.tableEventTimeout = Globals.win.setTimeout(() => {
                                     this.emit({
                                         ...e,
                                         type: 'tableChanged'
                                     });
                                     this.tableEventTimeout = void 0;
-                                }, 0);
+                                });
                             }));
                         });
                     }
                     this.tableEvents.push(connector.on('afterLoad', () => {
-                        this.emit({
-                            target: this,
-                            type: 'tableChanged'
+                        clearTimeout(this.tableEventTimeout);
+                        this.tableEventTimeout = Globals.win.setTimeout(() => {
+                            this.emit({
+                                target: this,
+                                type: 'tableChanged'
+                            });
+                            this.tableEventTimeout = void 0;
                         });
                     }));
                 }
@@ -12255,9 +12267,13 @@
                 if (connector) {
                     tableEvents.push(connector.table.on('afterSetModifier', (e) => {
                         if (e.type === 'afterSetModifier') {
-                            this.emit({
-                                ...e,
-                                type: 'tableChanged'
+                            clearTimeout(this.tableEventTimeout);
+                            this.tableEventTimeout = Globals.win.setTimeout(() => {
+                                this.emit({
+                                    ...e,
+                                    type: 'tableChanged'
+                                });
+                                this.tableEventTimeout = void 0;
                             });
                         }
                     }));
@@ -12500,7 +12516,7 @@
                         else {
                             captionElement.replaceWith(newCaption);
                         }
-                        this.titleElement = newCaption;
+                        this.captionElement = newCaption;
                     }
                 }
                 else {
@@ -13192,7 +13208,6 @@
              */
             reflow() {
                 const board = this, cntSize = board.getLayoutContainerSize();
-                let layout;
                 if (board.editMode) {
                     const editModeTools = board.editMode.tools;
                     board.editMode.hideToolbars(['cell', 'row']);
@@ -13816,7 +13831,11 @@
              * @param {DataConverter.Options} [options]
              * Options for the export.
              */
-            export(connector, options) {
+            export(
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            connector, options
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
                 this.emit({
                     type: 'exportError',
                     columns: [],
@@ -13891,7 +13910,9 @@
              * @param {DataConverter.UserOptions} options
              * Options of the DataConverter.
              */
-            parse(options) {
+            parse(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            options) {
                 this.emit({
                     type: 'parseError',
                     columns: [],
@@ -14286,11 +14307,9 @@
                 if (!decimalPoint || decimalPoint === itemDelimiter) {
                     decimalPoint = converter.guessedDecimalPoint || '.';
                 }
-                let i = 0, c = '', cl = '', cn = '', token = '', actualColumn = 0, column = 0;
+                let i = 0, c = '', token = '', actualColumn = 0, column = 0;
                 const read = (j) => {
                     c = columnStr[j];
-                    cl = columnStr[j - 1];
-                    cn = columnStr[j + 1];
                 };
                 const pushType = (type) => {
                     if (dataTypes.length < column + 1) {
@@ -14572,14 +14591,14 @@
                     detail: eventDetail,
                     table
                 });
-                // If already loaded, clear the current rows
-                table.deleteRows();
                 return Promise
                     .resolve(csvURL ?
                     fetch(csvURL).then((response) => response.text()) :
                     csv || '')
                     .then((csv) => {
                     if (csv) {
+                        // If already loaded, clear the current rows
+                        table.deleteColumns();
                         converter.parse({ csv });
                         table.setColumns(converter.getTable().getColumns());
                     }
@@ -14839,8 +14858,6 @@
                     table,
                     url
                 });
-                // If already loaded, clear the current table
-                table.deleteColumns();
                 return fetch(url)
                     .then((response) => (response.json()))
                     .then((json) => {
@@ -14851,6 +14868,8 @@
                         firstRowAsNames,
                         json
                     });
+                    // If already loaded, clear the current table
+                    table.deleteColumns();
                     table.setColumns(converter.getTable().getColumns());
                     return connector.setModifierOptions(dataModifier);
                 })
@@ -15131,9 +15150,7 @@
              * Get table header markup from row data.
              */
             getTableHeaderHTML(topheaders = [], subheaders = [], options = this.options) {
-                const { useMultiLevelHeaders, useRowspanHeaders } = options, decimalPoint = (options.useLocalDecimalPoint ?
-                    (1.1).toLocaleString()[1] :
-                    '.');
+                const { useMultiLevelHeaders, useRowspanHeaders } = options;
                 let html = '<thead>', i = 0, len = subheaders && subheaders.length, next, cur, curColspan = 0, rowspan;
                 // Clean up multiple table headers. Chart.getDataRows() returns two
                 // levels of headers when using multilevel, not merged. We need to
@@ -15381,8 +15398,6 @@
                     table,
                     tableElement: connector.tableElement
                 });
-                // If already loaded, clear the current rows
-                table.deleteColumns();
                 let tableElement;
                 if (typeof tableHTML === 'string') {
                     connector.tableID = tableHTML;
@@ -15404,6 +15419,8 @@
                     return Promise.reject(new Error(error));
                 }
                 converter.parse(merge({ tableElement: connector.tableElement }, connector.options), eventDetail);
+                // If already loaded, clear the current rows
+                table.deleteColumns();
                 table.setColumns(converter.getTable().getColumns());
                 return connector
                     .setModifierOptions(dataModifier)
@@ -15509,6 +15526,7 @@
                 if (!data) {
                     return;
                 }
+                converter.columns = [];
                 converter.emit({
                     type: 'parse',
                     columns: converter.columns,
@@ -15681,20 +15699,18 @@
                     detail: eventDetail,
                     table
                 });
-                // If already loaded, clear the current rows
-                table.deleteRows();
                 return Promise
                     .resolve(dataUrl ?
                     fetch(dataUrl).then((json) => json.json()) :
                     data || [])
                     .then((data) => {
                     if (data) {
+                        // If already loaded, clear the current rows
+                        table.deleteColumns();
                         converter.parse({ data });
                         table.setColumns(converter.getTable().getColumns());
                     }
-                    return connector
-                        .setModifierOptions(dataModifier)
-                        .then(() => data);
+                    return connector.setModifierOptions(dataModifier).then(() => data);
                 })
                     .then((data) => {
                     connector.emit({

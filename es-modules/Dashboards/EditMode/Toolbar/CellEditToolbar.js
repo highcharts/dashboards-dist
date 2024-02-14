@@ -47,7 +47,7 @@ class CellEditToolbar extends EditToolbar {
                 type: 'icon',
                 icon: iconURLPrefix + 'settings.svg',
                 events: {
-                    click: function (e) {
+                    click: function () {
                         this.menu.parent.editMode.setEditOverlay();
                         this.menu.parent.onCellOptions();
                     }
@@ -60,7 +60,7 @@ class CellEditToolbar extends EditToolbar {
             className: EditGlobals.classNames.menuDestroy,
             icon: iconURLPrefix + 'destroy.svg',
             events: {
-                click: function (e) {
+                click: function () {
                     const parentNode = this.menu.parent, editMode = this.menu.parent.editMode, popup = editMode.confirmationPopup;
                     popup.show({
                         confirmButton: {

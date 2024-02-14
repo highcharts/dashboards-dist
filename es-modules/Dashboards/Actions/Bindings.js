@@ -112,8 +112,7 @@ var Bindings;
     }
     Bindings.addComponent = addComponent;
     /** @internal */
-    function componentFromJSON(json, cellContainer // @todo
-    ) {
+    function componentFromJSON(json) {
         let componentClass = ComponentRegistry.types[json.$class];
         if (!componentClass) {
             return;

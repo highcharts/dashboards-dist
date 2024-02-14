@@ -34,7 +34,6 @@ declare module './ChartLike' {
         resetZoomButton?: SVGElement;
         pan(e: PointerEvent, panning: boolean | ChartPanningOptions): void;
         showResetZoom(): void;
-        zoom(event: Pointer.SelectEventObject): void;
         zoomOut(): void;
     }
 }
@@ -97,12 +96,12 @@ declare module '../Series/SeriesLike' {
 declare class Chart {
     static chart(options: Partial<Options>, callback?: Chart.CallbackFunction): Chart;
     static chart(renderTo: (string | globalThis.HTMLElement), options: Partial<Options>, callback?: Chart.CallbackFunction): Chart;
+    /** definitions */
     constructor(options: Partial<Options>, callback?: Chart.CallbackFunction);
     constructor(renderTo: (string | globalThis.HTMLElement), options: Partial<Options>, callback?: Chart.CallbackFunction);
     _cursor?: (CursorValue | null);
     axes: Array<AxisType>;
     axisOffset: Array<number>;
-    bounds: Record<string, Record<string, number>>;
     callback?: Chart.CallbackFunction;
     chartBackground?: SVGElement;
     chartHeight: number;
@@ -857,24 +856,34 @@ declare class Chart {
      */
     zoomOut(): void;
     /**
-     * Zoom into a given portion of the chart given by axis coordinates.
-     *
-     * @private
-     * @function Highcharts.Chart#zoom
-     * @param {Highcharts.SelectEventObject} event
-     */
-    zoom(event: Pointer.SelectEventObject): void;
-    /**
      * Pan the chart by dragging the mouse across the pane. This function is
      * called on mouse move, and the distance to pan is computed from chartX
      * compared to the first chartX position in the dragging operation.
      *
      * @private
      * @function Highcharts.Chart#pan
-     * @param {Highcharts.PointerEventObject} e
+     * @param {Highcharts.PointerEventObject} event
      * @param {string} panning
      */
-    pan(e: PointerEvent, panning: ChartPanningOptions | boolean): void;
+    pan(event: PointerEvent, panning: ChartPanningOptions | boolean): void;
+    /**
+     * Pan and scale the chart. Used internally by mouse-pan, touch-pan,
+     * touch-zoom, and mousewheel zoom.
+     *
+     * The main positioning logic is created around two imaginary boxes. What is
+     * currently within the `from` rectangle, should be transformed to fill up
+     * the `to` rectangle.
+     * - In a mouse zoom, the `from` rectangle is the selection, while the `to`
+     *   rectangle is the full plot area.
+     * - In a touch zoom, the `from` rectangle is made up of the last two-finger
+     *   touch, while the `to`` rectangle is the current touch.
+     * - In a mousewheel zoom, the the `to` rectangle is a 10x10 px square,
+     *   while the `to` rectangle reflects the scale around that.
+     *
+     * @private
+     * @function Highcharts.Chart#transform
+     */
+    transform(params: Chart.ChartTransformParams): boolean;
 }
 interface Chart extends ChartLike {
     callbacks: Array<Chart.CallbackFunction>;
@@ -904,6 +913,15 @@ declare namespace Chart {
         widthAdjust?: number;
         x?: number;
         y?: number;
+    }
+    interface ChartTransformParams {
+        axes?: Array<Axis>;
+        event?: PointerEvent;
+        to?: Partial<BBoxObject>;
+        reset?: boolean;
+        selection?: Pointer.SelectEventObject;
+        from?: Partial<BBoxObject>;
+        trigger?: string;
     }
     interface CreateAxisOptionsObject {
         animation: (undefined | boolean | Partial<AnimationOptions>);

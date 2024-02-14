@@ -173,7 +173,7 @@ var CircleUtilities;
         return circles.reduce((points, c1, i, arr) => {
             const additional = arr
                 .slice(i + 1)
-                .reduce((points, c2, j, arr) => {
+                .reduce((points, c2, j) => {
                 const indexes = [i, j + i + 1];
                 return points.concat(getCircleCircleIntersection(c1, c2).map((p) => {
                     p.indexes = indexes;

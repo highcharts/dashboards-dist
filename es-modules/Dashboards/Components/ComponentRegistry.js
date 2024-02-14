@@ -8,8 +8,6 @@
  *
  * */
 'use strict';
-import U from '../../Core/Utilities.js';
-const { merge } = U;
 /* *
  *
  *  Namespace

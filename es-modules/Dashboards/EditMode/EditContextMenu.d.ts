@@ -22,7 +22,7 @@ declare class EditContextMenu extends Menu {
             };
         };
     };
-    constructor(parentElement: HTMLElement, options: EditContextMenu.Options, editMode: EditMode, parent?: HTMLElement);
+    constructor(parentElement: HTMLElement, options: EditContextMenu.Options, editMode: EditMode);
     editMode: EditMode;
     options: EditContextMenu.Options;
     initEvents(): void;
