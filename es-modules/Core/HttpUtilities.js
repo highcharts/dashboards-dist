@@ -26,7 +26,7 @@ const { discardElement, objectEach } = U;
  *        The Ajax settings to use.
  *
  * @return {false|undefined}
- *         Returns false, if error occured.
+ *         Returns false, if error occurred.
  */
 function ajax(settings) {
     const headers = {
@@ -41,7 +41,7 @@ function ajax(settings) {
      * @param {XMLHttpRequest} xhr
      * Internal request object.
      * @param {string|Error} err
-     * Occured error.
+     * Occurred error.
      */
     function handleError(xhr, err) {
         if (settings.error) {

@@ -86,6 +86,9 @@ class SidebarPopup extends BaseForm {
     detectRightSidebar(context) {
         const editMode = this.editMode;
         const layoutWrapper = editMode.board.layoutsWrapper;
+        if (!layoutWrapper) {
+            return false;
+        }
         return GUIElement.getOffsets(context, layoutWrapper).left < ((layoutWrapper.offsetWidth / 2) - 10); // 10 = snap
     }
     /**
@@ -218,7 +221,7 @@ class SidebarPopup extends BaseForm {
             const options = merge(componentOptions, {
                 cell: newCell.id
             });
-            Bindings.addComponent(options, newCell);
+            Bindings.addComponent(options, sidebar.editMode.board, newCell);
             sidebar.editMode.setEditOverlay();
             return newCell;
         }
@@ -353,7 +356,7 @@ SidebarPopup.addLayout = {
                     textContent: 'Placeholder text'
                 }
             ]
-        });
+        }, board);
     }
 };
 /* *

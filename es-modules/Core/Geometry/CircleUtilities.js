@@ -134,7 +134,7 @@ var CircleUtilities;
      * The first circle.
      *
      * @param {Highcharts.CircleObject} c2
-     * The second sircle.
+     * The second circle.
      *
      * @return {Array<Highcharts.PositionObject>}
      * Returns the resulting intersection points.
@@ -194,7 +194,7 @@ var CircleUtilities;
      * The first circle.
      *
      * @param {Highcharts.CircleObject} circle2
-     * The The second circle.
+     * The second circle.
      *
      * @return {boolean}
      * Returns true if circle1 is completely overlapping circle2, false if not.

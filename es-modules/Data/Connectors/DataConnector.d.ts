@@ -71,7 +71,7 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      */
     getColumnOrder(usePresentationState?: boolean): (Array<string> | undefined);
     /**
-     * Retrieves the columns of the the dataTable,
+     * Retrieves the columns of the dataTable,
      * applies column order from meta.
      *
      * @param {boolean} [usePresentationOrder]

@@ -1,6 +1,6 @@
-import type DataGrid from '../../DataGrid/DataGrid';
+import type { DataGridNamespace } from './DataGridTypes';
 import type PluginHandler from '../PluginHandler';
-import DataGridComponent from './DataGridComponent.js';
+import DataGridComponent from './DataGridComponent/DataGridComponent.js';
 declare module '../Components/ComponentType' {
     interface ComponentTypeRegistry {
         DataGrid: typeof DataGridComponent;
@@ -11,7 +11,7 @@ declare module '../Components/ComponentType' {
  *
  * @param {Dashboards.DataGrid} dataGrid DataGrid core to connect.
  */
-declare function connectDataGrid(DataGridClass: typeof DataGrid): void;
+declare function connectDataGrid(DataGridNS: DataGridNamespace): void;
 declare const DataGridCustom: {
     connectDataGrid: typeof connectDataGrid;
 };

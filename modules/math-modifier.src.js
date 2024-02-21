@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 1.3.1 (2024-02-14)
+ * @license Highcharts Dashboards Math 2.0.0-rc1 (2024-02-21)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -985,7 +985,7 @@
             return isValue(x) ? x : NaN;
         }
         /**
-         * Process a function  on the give table. If the arguments do not contain
+         * Process a function on the given table. If the arguments do not contain
          * references or ranges, then no table has to be provided.
          *
          * @private

@@ -847,7 +847,7 @@ class Pointer {
     onDocumentMouseUp(e) {
         charts[pick(Pointer.hoverChartIndex, -1)]
             ?.pointer
-            .drop(e);
+            ?.drop(e);
     }
     /**
      * Handle touch events with two touches
@@ -1242,12 +1242,9 @@ class Pointer {
         }
         // Start the event listener to pick up the tooltip and crosshairs
         if (!pointer.unDocMouseMove) {
-            pointer.unDocMouseMove = addEvent(chart.container.ownerDocument, 'mousemove', function (e) {
-                const chart = charts[Pointer.hoverChartIndex];
-                if (chart) {
-                    chart.pointer.onDocumentMouseMove(e);
-                }
-            });
+            pointer.unDocMouseMove = addEvent(chart.container.ownerDocument, 'mousemove', (e) => charts[Pointer.hoverChartIndex ?? -1]
+                ?.pointer
+                ?.onDocumentMouseMove(e));
             pointer.eventsToUnbind.push(pointer.unDocMouseMove);
         }
         // Issues related to crosshair #4927, #5269 #5066, #5658
@@ -1313,7 +1310,7 @@ class Pointer {
         const hoverChart = H.charts[pick(Pointer.hoverChartIndex, -1)];
         if (hoverChart &&
             hoverChart !== chart) {
-            hoverChart.pointer.onContainerMouseLeave(e || { relatedTarget: chart.container });
+            hoverChart.pointer?.onContainerMouseLeave(e || { relatedTarget: chart.container });
         }
         if (!hoverChart ||
             !hoverChart.mouseIsDown) {

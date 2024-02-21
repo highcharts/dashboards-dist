@@ -110,8 +110,6 @@ class Cell extends GUIElement {
                 height: cellHeight
             })
         });
-        // Set cell width respecting responsive options.
-        this.reflow();
         // Mount component from JSON.
         if (this.options.mountedComponentJSON) {
             this.mountComponentFromJSON(this.options.mountedComponentJSON);
@@ -175,11 +173,11 @@ class Cell extends GUIElement {
         const cell = this;
         const { row } = cell;
         // Destroy mounted component.
-        if (cell.mountedComponent) {
-            cell.mountedComponent.destroy();
-        }
+        cell.mountedComponent?.destroy();
+        // if layout exists in the cell - destroy it
+        cell.nestedLayout?.destroy();
         row.unmountCell(cell);
-        const destroyRow = row.cells.length === 0;
+        const destroyRow = row.cells?.length === 0;
         super.destroy();
         if (destroyRow) {
             row.destroy();
@@ -266,22 +264,6 @@ class Cell extends GUIElement {
         }
         return levels;
     }
-    reflow(dashContainerSize) {
-        const cell = this, cntSize = dashContainerSize ||
-            cell.row.layout.board.getLayoutContainerSize(), respoOptions = cell.options.responsive, optWidth = cell.options.width;
-        if (cell.container) {
-            let width = '';
-            if (respoOptions &&
-                respoOptions[cntSize] &&
-                respoOptions[cntSize].width) {
-                width = cell.convertWidthToValue(respoOptions[cntSize].width);
-            }
-            else if (optWidth) {
-                width = cell.convertWidthToValue(optWidth);
-            }
-            cell.setSize(width || 'auto');
-        }
-    }
     /**
      * Set cell size.
      *
@@ -328,19 +310,6 @@ class Cell extends GUIElement {
             fireEvent(cell.row.layout.board, 'cellResize', { cell: cell });
             fireEvent(cell.row, 'cellChange', { cell: cell, row: cell.row });
         }
-    }
-    // Updates width in responsive options.
-    updateSize(width, // % value or 'auto' or px
-    rwdMode // small, medium, large
-    ) {
-        const cell = this, cntSize = rwdMode ||
-            cell.row.layout.board.getLayoutContainerSize();
-        if (!cell.options.responsive) {
-            cell.options.responsive = {};
-        }
-        cell.options.responsive[cntSize] = {
-            width: width
-        };
     }
     setHighlight(remove) {
         const cell = this, editMode = cell.row.layout.board.editMode;

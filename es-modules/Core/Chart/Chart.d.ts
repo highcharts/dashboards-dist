@@ -88,7 +88,7 @@ declare module '../Series/SeriesLike' {
  *        The chart options structure.
  *
  * @param {Highcharts.ChartCallbackFunction} [callback]
- *        Function to run when the chart has loaded and and all external images
+ *        Function to run when the chart has loaded and all external images
  *        are loaded. Defining a
  *        [chart.events.load](https://api.highcharts.com/highcharts/chart.events.load)
  *        handler is equivalent.
@@ -147,7 +147,7 @@ declare class Chart {
     plotTop: number;
     plotWidth: number;
     pointCount: number;
-    pointer: Pointer;
+    pointer?: Pointer;
     reflowTimeout?: number;
     renderer: Chart.Renderer;
     renderTo: globalThis.HTMLElement;
@@ -184,7 +184,7 @@ declare class Chart {
      *        Custom options.
      *
      * @param {Function} [callback]
-     *        Function to run when the chart has loaded and and all external
+     *        Function to run when the chart has loaded and all external
      *        images are loaded.
      *
      *
@@ -877,7 +877,7 @@ declare class Chart {
      *   rectangle is the full plot area.
      * - In a touch zoom, the `from` rectangle is made up of the last two-finger
      *   touch, while the `to`` rectangle is the current touch.
-     * - In a mousewheel zoom, the the `to` rectangle is a 10x10 px square,
+     * - In a mousewheel zoom, the `to` rectangle is a 10x10 px square,
      *   while the `to` rectangle reflects the scale around that.
      *
      * @private

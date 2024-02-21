@@ -140,6 +140,7 @@ class HTMLComponent extends Component {
     render() {
         super.render();
         this.constructTree();
+        this.sync.start();
         this.emit({ type: 'afterRender' });
         return this;
     }

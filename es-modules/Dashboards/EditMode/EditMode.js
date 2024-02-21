@@ -60,7 +60,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/1.3.1/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.0.0-rc1/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(
@@ -96,14 +96,6 @@ class EditMode {
                 addComponentBtn: {
                     enabled: true,
                     icon: this.iconsURLPrefix + 'add.svg'
-                },
-                rwdButtons: {
-                    enabled: true,
-                    icons: {
-                        small: this.iconsURLPrefix + 'smartphone.svg',
-                        medium: this.iconsURLPrefix + 'tablet.svg',
-                        large: this.iconsURLPrefix + 'computer.svg'
-                    }
                 }
             }
         }, options || {});
@@ -116,8 +108,6 @@ class EditMode {
         this.isInitialized = false;
         this.isContextDetectionActive = false;
         this.tools = {};
-        this.rwdMenu = [];
-        this.rwdMode = this.board.getLayoutContainerSize();
         this.createTools();
         this.confirmationPopup = new ConfirmationPopup(board.container, this.iconsURLPrefix, this, this.options.confirmationPopup);
         // Create edit overlay.
@@ -209,11 +199,13 @@ class EditMode {
                 editMode.isContextDetectionActive = true;
             });
         }
-        addEvent(board.layoutsWrapper, 'mousemove', editMode.onDetectContext.bind(editMode));
-        addEvent(board.layoutsWrapper, 'click', editMode.onContextConfirm.bind(editMode));
-        addEvent(board.layoutsWrapper, 'mouseleave', () => {
-            editMode.hideContextPointer();
-        });
+        if (board.layoutsWrapper) {
+            addEvent(board.layoutsWrapper, 'mousemove', editMode.onDetectContext.bind(editMode));
+            addEvent(board.layoutsWrapper, 'click', editMode.onContextConfirm.bind(editMode));
+            addEvent(board.layoutsWrapper, 'mouseleave', () => {
+                editMode.hideContextPointer();
+            });
+        }
     }
     /**
      * Set events for the layout.
@@ -314,10 +306,6 @@ class EditMode {
         if (this.addComponentBtn) {
             this.addComponentBtn.style.display = 'block';
         }
-        // Sets proper rwd mode.
-        editMode.rwdMode = editMode.board.getLayoutContainerSize();
-        // Show responsive buttons.
-        this.showRwdButtons();
         editMode.active = true;
         editMode.isContextDetectionActive = true;
     }
@@ -341,11 +329,11 @@ class EditMode {
         if (editMode.resizer) {
             editMode.resizer.disableResizer();
         }
-        // Hide responsive buttons.
-        this.hideRwdButtons();
         // Disable responsive width and restore elements to their original
         // positions and sizes.
-        this.board.layoutsWrapper.style.width = '100%';
+        if (this.board.layoutsWrapper) {
+            this.board.layoutsWrapper.style.width = '100%';
+        }
         this.board.reflow();
         editMode.active = false;
         editMode.stopContextDetection();
@@ -440,8 +428,8 @@ class EditMode {
         }
     }
     /**
-     * Creates the buttons such as `addComponent` button, rwd buttons and
-     * context menu button and its container.
+     * Creates the buttons such as `addComponent` button, context menu button
+     * and its container.
      * @internal
      */
     createTools() {
@@ -450,7 +438,7 @@ class EditMode {
         // Create tools container
         this.tools.container = document.createElement('div');
         this.tools.container.classList.add(EditGlobals.classNames.editTools);
-        this.board.layoutsWrapper.parentNode.insertBefore(this.tools.container, this.board.layoutsWrapper);
+        this.board.layoutsWrapper?.parentNode.insertBefore(this.tools.container, this.board.layoutsWrapper);
         // Create context menu button
         if (options.contextMenu && options.contextMenu.enabled) {
             this.tools.contextButtonElement = EditRenderer.renderContextButton(this.tools.container, editMode);
@@ -458,9 +446,6 @@ class EditMode {
             if (!editMode.tools.contextMenu) {
                 editMode.tools.contextMenu = new EditContextMenu(editMode.board.container, editMode.options.contextMenu || {}, editMode);
             }
-        }
-        if (options.tools?.rwdButtons?.enabled) {
-            this.createRwdMenu();
         }
         // Create add component button
         if (options.tools?.addComponentBtn?.enabled &&
@@ -481,71 +466,6 @@ class EditMode {
                     display: 'none'
                 }
             });
-        }
-    }
-    /**
-     * Creates the responsive width buttons.
-     * @internal
-     */
-    createRwdMenu() {
-        const rwdBreakingPoints = this.board.options.responsiveBreakpoints;
-        const toolsContainer = this.tools.container;
-        const options = this.options;
-        const rwdIcons = options?.tools?.rwdButtons?.icons || {};
-        for (const key in rwdBreakingPoints) {
-            if (toolsContainer) {
-                const btn = EditRenderer.renderButton(toolsContainer, {
-                    className: EditGlobals.classNames.editToolsBtn,
-                    icon: rwdIcons[key] || '',
-                    text: this.lang[key],
-                    callback: (e) => {
-                        const button = e.target, isSelected = button.classList.contains('selected');
-                        // Deselect given button and reset board width.
-                        if (isSelected) {
-                            button.classList.remove('selected');
-                            this.board.layoutsWrapper.style.width = '';
-                            this.rwdMode = '';
-                        }
-                        else {
-                            // Deselect all buttons.
-                            this.rwdMenu.forEach((btn) => {
-                                btn.classList.remove('selected');
-                            });
-                            // Select given button and change board width.
-                            button.classList.add('selected');
-                            this.board.layoutsWrapper.style.width =
-                                rwdBreakingPoints[key] + 'px';
-                            this.rwdMode = key;
-                        }
-                        // Reflow elements.
-                        this.board.reflow();
-                    },
-                    style: {
-                        display: 'none'
-                    }
-                });
-                if (btn) {
-                    this.rwdMenu.push(btn);
-                }
-            }
-        }
-    }
-    /**
-     * Shows responsive buttons.
-     * @internal
-     */
-    showRwdButtons() {
-        for (let i = 0, iEnd = this.rwdMenu.length; i < iEnd; ++i) {
-            this.rwdMenu[i].style.display = 'block';
-        }
-    }
-    /**
-     * Hides responsive buttons.
-     * @internal
-     */
-    hideRwdButtons() {
-        for (let i = 0, iEnd = this.rwdMenu.length; i < iEnd; ++i) {
-            this.rwdMenu[i].style.display = 'none';
         }
     }
     /**

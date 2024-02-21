@@ -36,7 +36,7 @@ export declare const enum Palette {
      */
     neutralColor5 = "#f2f2f2",
     /**
-     * Tooltip backgroud, button fills, map null points.
+     * Tooltip background, button fills, map null points.
      */
     neutralColor3 = "#f7f7f7",
     /**

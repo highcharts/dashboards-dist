@@ -356,7 +356,7 @@ function processFormula(formula, table) {
     return isValue(x) ? x : NaN;
 }
 /**
- * Process a function  on the give table. If the arguments do not contain
+ * Process a function on the given table. If the arguments do not contain
  * references or ranges, then no table has to be provided.
  *
  * @private

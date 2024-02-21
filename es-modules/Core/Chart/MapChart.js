@@ -45,7 +45,7 @@ class MapChart extends Chart {
      *        Custom options.
      *
      * @param {Function} [callback]
-     *        Function to run when the chart has loaded and and all external
+     *        Function to run when the chart has loaded and all external
      *        images are loaded.
      *
      *
@@ -118,6 +118,16 @@ class MapChart extends Chart {
                 [chartX, chartY] :
                 void 0);
         }
+    }
+    update(options) {
+        // Calculate and set the recommended map view if map option is set
+        if (options.chart && 'map' in options.chart) {
+            this.mapView?.recommendMapView(this, [
+                options.chart.map,
+                ...(this.options.series || []).map((s) => s.mapData)
+            ], true);
+        }
+        super.update.apply(this, arguments);
     }
 }
 /* *
