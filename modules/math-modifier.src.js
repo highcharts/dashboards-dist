@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 1.3.1 (2024-02-14)
+ * @license Highcharts Dashboards Math 2.0.0-rc2 (2024-03-12)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -171,7 +171,7 @@
                         start = i;
                     }
                     else {
-                        return text.substring(start + 1, i); // i is excluding
+                        return text.substring(start + 1, i); // `ì` is excluding
                     }
                 }
             }
@@ -306,7 +306,7 @@
                     !term) {
                     const string = extractString(text.substring(i));
                     args.push(string);
-                    i += string.length + 1; // only +1 to cover ++i in for-loop
+                    i += string.length + 1; // Only +1 to cover ++i in for-loop
                     // Skip space and check paranthesis nesting
                 }
                 else if (char !== ' ') {
@@ -319,7 +319,7 @@
                     }
                 }
             }
-            // look for left-overs from last argument
+            // Look for left-overs from last argument
             if (!parantheseLevel && term) {
                 args.push(parseArgument(term, alternativeSeparators));
             }
@@ -793,7 +793,7 @@
                 default:
                     return NaN;
             }
-            // limit decimal to 9 digits
+            // Limit decimal to 9 digits
             return (result % 1 ?
                 Math.round(result * 1000000000) / 1000000000 :
                 result);
@@ -947,7 +947,7 @@
                 }
                 else if (isFunction(item)) {
                     result = processFunction(item, table);
-                    y = (isValue(result) ? result : NaN); // arrays are not allowed here
+                    y = (isValue(result) ? result : NaN); // Arrays are not allowed here
                     // Next item is a reference and needs to get resolved
                 }
                 else if (isReference(item)) {
@@ -985,7 +985,7 @@
             return isValue(x) ? x : NaN;
         }
         /**
-         * Process a function  on the give table. If the arguments do not contain
+         * Process a function on the given table. If the arguments do not contain
          * references or ranges, then no table has to be provided.
          *
          * @private
@@ -1775,10 +1775,10 @@
             if (!count) {
                 return NaN;
             }
-            const half = Math.floor(count / 2); // floor because index starts at 0
+            const half = Math.floor(count / 2); // Floor because index starts at 0
             return (count % 2 ?
-                median[half] : // odd
-                (median[half - 1] + median[half]) / 2 // even
+                median[half] : // Odd
+                (median[half - 1] + median[half]) / 2 // Even
             );
         }
         /* *
@@ -2544,11 +2544,11 @@
                     if (typeof cell === 'string' &&
                         cell[0] === '=') {
                         try {
-                            // use cache while formula string is repetitive
+                            // Use cache while formula string is repetitive
                             cacheFormula = (cacheString === cell ?
                                 cacheFormula :
                                 FormulaParser.parseFormula(cell.substring(1), alternativeSeparators));
-                            // process parsed formula string
+                            // Process parsed formula string
                             column[i] =
                                 FormulaProcessor.processFormula(cacheFormula, table);
                         }

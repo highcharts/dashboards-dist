@@ -358,7 +358,7 @@ const defaultOptions = {
      * );
      * ```
      *
-     * Since v6.0.5, the time options were moved from the `global` obect to the
+     * Since v6.0.5, the time options were moved from the `global` object to the
      * `time` object, and time options can be set on each individual chart.
      *
      * @sample {highcharts|highstock}
@@ -1071,7 +1071,7 @@ const defaultOptions = {
          * @type {Highcharts.FormatterCallbackFunction<Point|Series>}
          */
         labelFormatter: function () {
-            /** eslint-enable valid-jsdoc */
+            // eslint-enable valid-jsdoc
             return this.name;
         },
         /**
@@ -1348,7 +1348,7 @@ const defaultOptions = {
          * are inherited from `style` unless overridden here.
          *
          * @see In styled mode, the hovered legend items can be styled with
-         *      the `.highcharts-legend-item:hover` pesudo-class.
+         *      the `.highcharts-legend-item:hover` pseudo-class.
          *
          * @sample {highcharts} highcharts/legend/itemhoverstyle/
          *         Red on hover
@@ -1426,7 +1426,7 @@ const defaultOptions = {
              */
             height: '13px'
         },
-        // itemWidth: undefined,
+        /// itemWidth: undefined,
         /**
          * When this is true, the legend symbol width will be the same as
          * the symbol height, which in turn defaults to the font size of the
@@ -1578,7 +1578,7 @@ const defaultOptions = {
          * @since 2.0
          */
         verticalAlign: 'bottom',
-        // width: undefined,
+        // Width: undefined,
         /**
          * The x offset of the legend relative to its horizontal alignment
          * `align` within chart.spacingLeft and chart.spacingRight. Negative
@@ -2631,10 +2631,10 @@ export default DefaultOptions;
  * @callback Highcharts.ChartAddSeriesCallbackFunction
  *
  * @param {Highcharts.Chart} this
- *        The chart on which the event occured.
+ *        The chart on which the event occurred.
  *
  * @param {Highcharts.ChartAddSeriesEventObject} event
- *        The event that occured.
+ *        The event that occurred.
  */
 /**
  * Contains common event information. Through the `options` property you can
@@ -2664,10 +2664,10 @@ export default DefaultOptions;
  * @callback Highcharts.ChartClickCallbackFunction
  *
  * @param {Highcharts.Chart} this
- *        The chart on which the event occured.
+ *        The chart on which the event occurred.
  *
  * @param {Highcharts.PointerEventObject} event
- *        The event that occured.
+ *        The event that occurred.
  */
 /**
  * Contains an axes of the clicked spot.
@@ -2707,10 +2707,10 @@ export default DefaultOptions;
  * @callback Highcharts.ChartLoadCallbackFunction
  *
  * @param {Highcharts.Chart} this
- *        The chart on which the event occured.
+ *        The chart on which the event occurred.
  *
  * @param {global.Event} event
- *        The event that occured.
+ *        The event that occurred.
  */
 /**
  * Fires when the chart is redrawn, either after a call to `chart.redraw()` or
@@ -2720,10 +2720,10 @@ export default DefaultOptions;
  * @callback Highcharts.ChartRedrawCallbackFunction
  *
  * @param {Highcharts.Chart} this
- *        The chart on which the event occured.
+ *        The chart on which the event occurred.
  *
  * @param {global.Event} event
- *        The event that occured.
+ *        The event that occurred.
  */
 /**
  * Gets fired after initial load of the chart (directly after the `load` event),
@@ -2732,10 +2732,10 @@ export default DefaultOptions;
  * @callback Highcharts.ChartRenderCallbackFunction
  *
  * @param {Highcharts.Chart} this
- *        The chart on which the event occured.
+ *        The chart on which the event occurred.
  *
  * @param {global.Event} event
- *        The event that occured.
+ *        The event that occurred.
  */
 /**
  * Gets fired when an area of the chart has been selected. The default action
@@ -2745,7 +2745,7 @@ export default DefaultOptions;
  * @callback Highcharts.ChartSelectionCallbackFunction
  *
  * @param {Highcharts.Chart} this
- *        The chart on which the event occured.
+ *        The chart on which the event occurred.
  *
  * @param {Highcharts.SelectEventObject} event
  *        Event informations
@@ -2753,4 +2753,4 @@ export default DefaultOptions;
  * @return {boolean|undefined}
  *         Return false to prevent the default action, usually zoom.
  */
-(''); // detach doclets above
+(''); // Detach doclets above

@@ -86,6 +86,9 @@ class SidebarPopup extends BaseForm {
     detectRightSidebar(context) {
         const editMode = this.editMode;
         const layoutWrapper = editMode.board.layoutsWrapper;
+        if (!layoutWrapper) {
+            return false;
+        }
         return GUIElement.getOffsets(context, layoutWrapper).left < ((layoutWrapper.offsetWidth / 2) - 10); // 10 = snap
     }
     /**
@@ -189,7 +192,7 @@ class SidebarPopup extends BaseForm {
                         const newCell = components[i].onDrop(sidebar, dropContext);
                         if (newCell) {
                             const mountedComponent = newCell.mountedComponent;
-                            // skip init connector when is not defined by
+                            // Skip init connector when is not defined by
                             // options f.e HTML component.
                             if (mountedComponent.options?.connector?.id) {
                                 mountedComponent.initConnector();
@@ -218,7 +221,7 @@ class SidebarPopup extends BaseForm {
             const options = merge(componentOptions, {
                 cell: newCell.id
             });
-            Bindings.addComponent(options, newCell);
+            Bindings.addComponent(options, sidebar.editMode.board, newCell);
             sidebar.editMode.setEditOverlay();
             return newCell;
         }
@@ -230,6 +233,7 @@ class SidebarPopup extends BaseForm {
         const editMode = this.editMode;
         const editCellContext = editMode.editCellContext;
         this.removeClassNames();
+        this.container.style.display = 'none';
         // Remove edit overlay if active.
         if (editMode.isEditOverlayActive) {
             editMode.setEditOverlay(true);
@@ -298,7 +302,7 @@ class SidebarPopup extends BaseForm {
      * @returns Close button element
      */
     addCloseButton(className = EditGlobals.classNames.popupCloseButton) {
-        // close popup when click outside the popup
+        // Close popup when click outside the popup
         addEvent(document, 'click', (event) => {
             event.stopPropagation();
             if (this.container.style.display === 'block' &&
@@ -353,7 +357,7 @@ SidebarPopup.addLayout = {
                     textContent: 'Placeholder text'
                 }
             ]
-        });
+        }, board);
     }
 };
 /* *

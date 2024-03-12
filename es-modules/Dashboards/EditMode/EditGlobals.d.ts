@@ -167,14 +167,6 @@ declare namespace EditGlobals {
          */
         id: string;
         /**
-         * @default 'Large'
-         */
-        large: string;
-        /**
-         * @default 'Medium'
-         */
-        medium: string;
-        /**
          * @default 'off'
          */
         off: string;
@@ -194,10 +186,6 @@ declare namespace EditGlobals {
          * Options for the sidebar and its components.
          */
         sidebar: SidebarLangOptions;
-        /**
-         * @default 'Small'
-         */
-        small: string;
         /**
          * @default 'Styles'
          */

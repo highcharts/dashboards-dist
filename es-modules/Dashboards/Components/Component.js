@@ -15,17 +15,17 @@
  * */
 'use strict';
 import CallbackRegistry from '../CallbackRegistry.js';
+import ComponentGroup from './ComponentGroup.js';
 import EditableOptions from './EditableOptions.js';
+import Sync from './Sync/Sync.js';
 import Globals from '../Globals.js';
 const { classNamePrefix } = Globals;
 import U from '../../Core/Utilities.js';
-const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, relativeLength, diffObjects } = U;
+const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, isObject, getStyle, diffObjects } = U;
 import CU from './ComponentUtilities.js';
 const { getMargins, getPaddings } = CU;
-import ComponentGroup from './ComponentGroup.js';
 import DU from '../Utilities.js';
 const { uniqueKey } = DU;
-import Sync from './Sync/Sync.js';
 /* *
  *
  *  Class
@@ -92,7 +92,7 @@ class Component {
      * @param options
      * The options for the component.
      */
-    constructor(cell, options) {
+    constructor(cell, options, board) {
         /**
          * Registry of callbacks registered on the component. Used in the Highcharts
          * component to keep track of chart events.
@@ -127,8 +127,10 @@ class Component {
          * @internal
          * */
         this.innerResizeTimeouts = [];
-        this.board = cell.row.layout.board;
-        this.parentElement = cell.container;
+        const renderTo = options.renderTo || options.cell;
+        this.board = board || cell?.row?.layout?.board || {};
+        this.parentElement =
+            cell?.container || document.querySelector('#' + renderTo);
         this.cell = cell;
         this.options = merge(Component.defaultOptions, options);
         this.id = this.options.id && this.options.id.length ?
@@ -144,21 +146,27 @@ class Component {
         this.element = createElement('div', {
             className: this.options.className
         }, {}, this.parentElement);
+        if (!Number(getStyle(this.element, 'padding'))) {
+            // Fix flex problem, because of wrong height in internal elements
+            this.element.style.padding = '0.1px';
+        }
         this.contentElement = createElement('div', {
             className: `${this.options.className}-content`
         }, {}, this.element, true);
         this.filterAndAssignSyncOptions();
         this.setupEventListeners();
-        this.attachCellListeneres();
-        this.on('tableChanged', () => {
-            this.onTableChanged();
-        });
-        this.on('update', () => {
-            this.cell.setLoadingState();
-        });
-        this.on('afterRender', () => {
-            this.cell.setLoadingState(false);
-        });
+        if (cell) {
+            this.attachCellListeners();
+            this.on('tableChanged', () => {
+                this.onTableChanged();
+            });
+            this.on('update', () => {
+                this.cell.setLoadingState();
+            });
+            this.on('afterRender', () => {
+                this.cell.setLoadingState(false);
+            });
+        }
     }
     /**
      * Returns the component's options when it is dropped from the sidebar.
@@ -187,7 +195,7 @@ class Component {
         if (connectorId &&
             (this.connectorId !== connectorId ||
                 dataPool.isNewConnector(connectorId))) {
-            this.cell.setLoadingState();
+            this.cell?.setLoadingState();
             const connector = await dataPool.getConnector(connectorId);
             this.setConnector(connector);
         }
@@ -204,25 +212,23 @@ class Component {
     */
     filterAndAssignSyncOptions(defaultHandlers = this.constructor.syncHandlers) {
         const sync = this.options.sync || {};
-        const syncHandlers = Object.keys(sync)
-            .reduce((carry, handlerName) => {
+        const syncHandlers = Object.keys(sync).reduce((carry, handlerName) => {
             if (handlerName) {
-                const handler = sync[handlerName], defaultHandler = defaultHandlers[handlerName];
-                if (defaultHandler) {
-                    if (handler === true) {
-                        carry[handlerName] = defaultHandler;
-                    }
-                    else if (handler && handler.enabled) {
-                        const keys = [
-                            'emitter', 'handler'
-                        ];
-                        carry[handlerName] = {};
-                        for (const key of keys) {
-                            if (handler[key] === true ||
-                                handler[key] === void 0) {
-                                carry[handlerName][key] =
-                                    defaultHandler[key];
-                            }
+                const defaultHandler = defaultHandlers[handlerName];
+                const defaultOptions = Sync.defaultSyncOptions[handlerName];
+                const handler = sync[handlerName];
+                // Make it always an object
+                carry[handlerName] = merge(defaultOptions || {}, { enabled: isObject(handler) ? handler.enabled : handler }, isObject(handler) ? handler : {});
+                // Set emitter and handler default functions
+                if (defaultHandler && carry[handlerName].enabled) {
+                    const keys = [
+                        'emitter', 'handler'
+                    ];
+                    for (const key of keys) {
+                        if (carry[handlerName][key] === true ||
+                            carry[handlerName][key] === void 0) {
+                            carry[handlerName][key] =
+                                defaultHandler[key];
                         }
                     }
                 }
@@ -237,8 +243,8 @@ class Component {
      *
      * @internal
      */
-    attachCellListeneres() {
-        // remove old listeners
+    attachCellListeners() {
+        // Remove old listeners
         while (this.cellListeners.length) {
             const destroy = this.cellListeners.pop();
             if (destroy) {
@@ -280,7 +286,7 @@ class Component {
         if (cell.container) {
             this.parentElement = cell.container;
         }
-        this.attachCellListeneres();
+        this.attachCellListeners();
         if (resize) {
             this.resizeTo(this.parentElement);
         }
@@ -376,7 +382,7 @@ class Component {
             // Set up event listeners
             this.clearTableListeners();
             this.setupTableListeners(connector.table);
-            // re-setup if modifier changes
+            // Re-setup if modifier changes
             connector.table.on('setModifier', () => this.clearTableListeners());
             connector.table.on('afterSetModifier', (e) => {
                 if (e.type === 'afterSetModifier' && e.modified) {
@@ -422,7 +428,6 @@ class Component {
      * @internal
      */
     getContentHeight() {
-        const parentHeight = this.dimensions.height || Number(getStyle(this.element, 'height'));
         const titleHeight = this.titleElement ?
             this.titleElement.clientHeight + getMargins(this.titleElement).y :
             0;
@@ -430,7 +435,7 @@ class Component {
             this.captionElement.clientHeight +
                 getMargins(this.captionElement).y :
             0;
-        return parentHeight - titleHeight - captionHeight;
+        return titleHeight + captionHeight;
     }
     /**
      * Resize the component
@@ -447,22 +452,13 @@ class Component {
         if (height) {
             // Get offset for border, padding
             const pad = getPaddings(this.element).y + getMargins(this.element).y;
-            this.dimensions.height = relativeLength(height, Number(getStyle(this.parentElement, 'height'))) - pad;
-            this.element.style.height = this.dimensions.height + 'px';
-            this.contentElement.style.height = this.getContentHeight() + 'px';
+            this.element.style.height = 'calc(100% - ' + pad + 'px)';
+            this.contentElement.style.height =
+                'calc(100% - ' + this.getContentHeight() + 'px)';
         }
-        if (width) {
-            const pad = getPaddings(this.element).x + getMargins(this.element).x;
-            this.dimensions.width = relativeLength(width, Number(getStyle(this.parentElement, 'width'))) - pad;
-            this.element.style.width = this.dimensions.width + 'px';
-        }
-        if (height === null) {
+        else if (height === null) {
             this.dimensions.height = null;
             this.element.style.removeProperty('height');
-        }
-        if (width === null) {
-            this.dimensions.width = null;
-            this.element.style.removeProperty('width');
         }
         fireEvent(this, 'resize', {
             width,
@@ -539,8 +535,17 @@ class Component {
                 }
             });
         }
-        // TODO: Replace with a resize observer.
-        window.addEventListener('resize', () => this.resizeTo(this.parentElement));
+        const resizeObserverCallback = () => {
+            this.resizeTo(this.parentElement);
+        };
+        if (typeof ResizeObserver === 'function') {
+            this.resizeObserver = new ResizeObserver(resizeObserverCallback);
+            this.resizeObserver.observe(this.element);
+        }
+        else {
+            const unbind = addEvent(window, 'resize', resizeObserverCallback);
+            addEvent(this, 'destroy', unbind);
+        }
     }
     /**
      * Adds title at the top of component's container.
@@ -623,9 +628,9 @@ class Component {
      */
     render() {
         this.emit({ type: 'render' });
-        this.resizeTo(this.parentElement);
         this.setTitle(this.options.title);
         this.setCaption(this.options.caption);
+        this.resizeTo(this.parentElement);
         return this;
     }
     /**
@@ -635,10 +640,11 @@ class Component {
         /**
          * TODO: Should perhaps set an `isActive` flag to false.
          */
+        this.sync.stop();
         while (this.element.firstChild) {
             this.element.firstChild.remove();
         }
-        // call unmount
+        // Call unmount
         fireEvent(this, 'unmount');
         // Unregister events
         this.tableEvents.forEach((eventCallback) => eventCallback());
@@ -677,9 +683,8 @@ class Component {
         });
         const json = {
             $class: this.options.type,
-            // connector: this.connector ? this.connector.toJSON() : void 0,
             options: {
-                cell: this.options.cell,
+                renderTo: this.options.renderTo,
                 parentElement: this.parentElement.id,
                 dimensions,
                 id: this.id,

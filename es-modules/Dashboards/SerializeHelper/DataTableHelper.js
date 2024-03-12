@@ -57,18 +57,18 @@ function toJSON(obj) {
         $class: 'Data.DataTable',
         columns: obj.getColumns()
     };
-    // aliases
+    // Aliases
     if (aliasKeys.length) {
         const jsonAliases = json.aliases = {};
         for (let i = 0, iEnd = aliasKeys.length; i < iEnd; ++i) {
             jsonAliases[aliasKeys[i]] = aliases[aliasKeys[i]];
         }
     }
-    // custom ID
+    // Custom ID
     if (!obj.autoId) {
         json.id = obj.id;
     }
-    // done
+    // Done
     return json;
 }
 /* *

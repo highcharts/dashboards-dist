@@ -1,7 +1,7 @@
 import EditGlobals from '../EditMode/EditGlobals.js';
 import GUIElement from '../Layout/GUIElement.js';
 import U from '../../Core/Utilities.js';
-const { merge, addEvent, createElement, fireEvent, removeEvent, pick } = U;
+const { merge, addEvent, createElement, fireEvent, removeEvent } = U;
 /**
  * Class providing a resizing functionality.
  */
@@ -128,19 +128,16 @@ class Resizer {
     setTempWidthSiblings() {
         const currentCell = this.currentCell;
         if (currentCell) {
-            const currentRwdMode = this.editMode.rwdMode, cellOffsets = GUIElement.getOffsets(currentCell), rowLevelInfo = currentCell.row.getRowLevelInfo(cellOffsets.top), rowLevelCells = (rowLevelInfo && rowLevelInfo.rowLevel.cells) || [];
-            let cellContainer, cell, optionsWidth;
+            const cellOffsets = GUIElement.getOffsets(currentCell), rowLevelInfo = currentCell.row.getRowLevelInfo(cellOffsets.top), rowLevelCells = (rowLevelInfo && rowLevelInfo.rowLevel.cells) || [];
+            let cellContainer, cell;
             for (let i = 0, iEnd = rowLevelCells.length; i < iEnd; ++i) {
                 cell = rowLevelCells[i];
                 cellContainer = cell.container;
-                optionsWidth = pick(((cell.options.responsive || {})[currentRwdMode] || {})
-                    .width, cell.options.width);
                 // Do not convert width on the current cell and next siblings.
                 if (cell === currentCell) {
                     break;
                 }
-                if (cellContainer &&
-                    (!optionsWidth || optionsWidth === 'auto')) {
+                if (cellContainer) {
                     cellContainer.style.flex =
                         '0 0 ' + cellContainer.offsetWidth + 'px';
                     this.tempSiblingsWidth.push(cell);
@@ -245,8 +242,6 @@ class Resizer {
         const currentCell = this.currentCell;
         const cellContainer = currentCell && currentCell.container;
         const currentDimension = this.currentDimension;
-        const sidebar = this.editMode.sidebar;
-        const currentRwdMode = sidebar && sidebar.editMode.rwdMode;
         if (currentCell &&
             cellContainer &&
             !((currentCell.row.layout.board.editMode || {}).dragDrop || {})
@@ -260,7 +255,6 @@ class Resizer {
                     100 +
                     '%';
                 currentCell.setSize(newWidth);
-                currentCell.updateSize(newWidth, currentRwdMode);
                 this.startX = e.clientX;
             }
             // Resize height

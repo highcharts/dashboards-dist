@@ -47,7 +47,7 @@ class DashboardsAccessibility {
         }
     }
 }
-// namespace DashboardsAccessibility { }
+/// namespace DashboardsAccessibility { }
 /* *
  *
  *  Default Export

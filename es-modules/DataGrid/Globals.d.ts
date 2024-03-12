@@ -23,5 +23,8 @@ declare namespace Globals {
         columnHeader: string;
     };
     const win: Window & typeof globalThis;
+    const userAgent: string;
+    const isChrome: boolean;
+    const isSafari: boolean;
 }
 export default Globals;

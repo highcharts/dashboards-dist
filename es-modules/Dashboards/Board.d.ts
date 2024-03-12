@@ -1,17 +1,17 @@
 import type Component from './Components/Component';
+import type ComponentType from './Components/ComponentType';
 import type DataPoolOptions from '../Data/DataPoolOptions';
 import type JSON from './JSON';
+import type EditMode from './EditMode/EditMode';
+import type Fullscreen from './EditMode/Fullscreen';
 import Bindings from './Actions/Bindings.js';
 import DashboardsAccessibility from './Accessibility/DashboardsAccessibility.js';
 import DataCursor from '../Data/DataCursor.js';
 import DataCursorHelper from './SerializeHelper/DataCursorHelper.js';
 import DataPool from '../Data/DataPool.js';
-import EditMode from './EditMode/EditMode.js';
-import Fullscreen from './EditMode/Fullscreen.js';
 import Globals from './Globals.js';
 import Layout from './Layout/Layout.js';
 import Serializable from './Serializable.js';
-import ComponentType from './Components/ComponentType';
 /**
  * Class that represents a dashboard.
  *
@@ -123,7 +123,12 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * Flag to determine if the GUI is enabled.
      * @internal
      * */
-    guiEnabled: (boolean | undefined);
+    guiEnabled?: boolean;
+    /**
+     * Flag to determine if the EditMode is enabled.
+     * @internal
+     * */
+    private editModeEnabled?;
     /**
      * The unique id of the dashboard, it is generated automatically.
      * */
@@ -141,7 +146,7 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * The wrapper for the layouts.
      * @internal
      * */
-    layoutsWrapper: globalThis.HTMLElement;
+    layoutsWrapper?: globalThis.HTMLElement;
     /**
      * An array of mounted components on the dashboard.
      * */
@@ -160,7 +165,7 @@ declare class Board implements Serializable<Board, Board.JSON> {
      *
      * @internal
      * @param async Whether to initialize the dashboard asynchronously. When
-     * false or undefined the function returns the dashboard isntance.
+     * false or undefined the function returns the dashboard instance.
      *  instance.
      *
      * @returns
@@ -194,6 +199,12 @@ declare class Board implements Serializable<Board, Board.JSON> {
      */
     private initContainer;
     /**
+     * Inits creating a layouts and setup the EditMode tools.
+     * @internal
+     *
+     */
+    private initLayout;
+    /**
      * Creates a new layouts and adds it to the dashboard based on the options.
      * @internal
      *
@@ -221,14 +232,6 @@ declare class Board implements Serializable<Board, Board.JSON> {
      */
     setComponents(components: Array<Partial<ComponentType['options']>>): Array<Promise<Component | void>>;
     /**
-     * Returns the current size of the layout container based on the selected
-     * responsive breakpoints.
-     * @internal
-     *
-     * @returns Return current size of the layout container in px.
-     */
-    getLayoutContainerSize(): string;
-    /**
      * Destroy the whole dashboard, its layouts and elements.
      */
     destroy(): void;
@@ -250,7 +253,6 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * layouts and its cells.
      */
     reflow(): void;
-    reflowLayout(layout: Layout, cntSize: string): void;
     /**
      * Converts the given JSON to a class instance.
      *
@@ -321,11 +323,11 @@ declare namespace Board {
          **/
         layoutsJSON?: Array<Layout.JSON>;
         /**
-         * Responsive breakpoints for the board - small, medium and large.
+         * Before changing the styling of the Dashboards layout to fully CSS, it
+         * was responsible for responsive breakpoints for the board - small,
+         * medium and large.
          *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/responsive/responsive-breakpoints/ | Change responsive breakpoints}
+         * @deprecated
          **/
         responsiveBreakpoints?: ResponsiveBreakpoints;
     }
@@ -339,7 +341,7 @@ declare namespace Board {
          **/
         componentOptions?: Partial<Component.ComponentOptionsJSON>;
         /**
-         * List of components to add to the board in JSON fromat.
+         * List of components to add to the board in JSON format.
          **/
         components?: Array<Component.ComponentOptionsJSON>;
         /**
@@ -360,24 +362,36 @@ declare namespace Board {
          **/
         guiEnabled?: boolean;
         /**
-         * Responsive breakpoints for the board - small, medium and large.
+         * Before changing the styling of the Dashboards layout to fully CSS, it
+         * was responsible for responsive breakpoints for the board - small,
+         * medium and large.
+         *
+         * @deprecated
          **/
         responsiveBreakpoints?: ResponsiveBreakpoints;
     }
     /**
      * Responsive breakpoints for the board - small, medium and large.
+     *
+     * @deprecated
      **/
     interface ResponsiveBreakpoints extends JSON.Object {
         /**
          * Value in px to test the dashboard is in small mode.
+         *
+         * @deprecated
          **/
         small: number;
         /**
          * Value in px to test the dashboard is in medium mode.
+         *
+         * @deprecated
          **/
         medium: number;
         /**
          * Value in px to test the dashboard is in large mode.
+         *
+         * @deprecated
          **/
         large: number;
     }

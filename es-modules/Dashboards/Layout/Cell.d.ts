@@ -32,7 +32,7 @@ declare class Cell extends GUIElement {
     /**
      * The type of GUI element.
      */
-    readonly type: GUIElement.GUIElementType;
+    readonly type?: GUIElement.GUIElementType | undefined;
     /**
      * Reference to the row instance.
      */
@@ -99,10 +99,9 @@ declare class Cell extends GUIElement {
     getOptions(): Globals.DeepPartial<Cell.Options>;
     protected changeVisibility(setVisible?: boolean): void;
     getParentCell(level: number): (Cell | undefined);
-    getOverlappingLevels(align: string, // left, right, top, bottom
-    levelMaxGap: number, // max distance between levels
+    getOverlappingLevels(align: string, // 'left', 'right', 'top', 'bottom'
+    levelMaxGap: number, // Max distance between levels
     offset?: number): Array<number>;
-    reflow(dashContainerSize?: string): void;
     /**
      * Set cell size.
      *
@@ -113,8 +112,6 @@ declare class Cell extends GUIElement {
      * value in px
      */
     setSize(width?: (string | number), height?: (string | number)): void;
-    updateSize(width: string, // % value or 'auto' or px
-    rwdMode?: string): void;
     setHighlight(remove?: boolean): void;
     setActiveState(): void;
     /**
@@ -128,10 +125,15 @@ declare class Cell extends GUIElement {
 declare namespace Cell {
     /**
      * Responsive options of the cell.
+     *
+     * @deprecated
      */
     interface CellResponsiveOptions {
         /**
          * The width, that should the cell have in the given responsive mode.
+         *
+         * @deprecated
+         *
          */
         width: (string | number);
     }
@@ -155,40 +157,16 @@ declare namespace Cell {
          * The fraction converts value into percents like in CSS grid is.
          * For example `1/3` means `33.333%`.
          *
-         * Examples:
-         * ```
-         * width: 300 // 300px
-         * ```
-         * ```
-         * width: '300px'
-         * ```
-         * ```
-         * width: '1/3' // 33.333%
-         * ```
-         * ```
-         * width: '33.333%'
-         * ```
+         * @deprecated
          *
-         *  Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/gui/dimensions/ | Set cell dimensions}
          **/
         width?: (string | number);
         /**
          * Height of the cell.
          *
-         * Examples:
-         * ```
-         * height: 300 // 300px
-         * ```
-         * ```
-         * height: '300px'
-         * ```
+         * @deprecated
          *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/gui/dimensions/ | Set cell dimensions}
-         **/
+         * **/
         height?: (string | number);
         /**
          * CSS styles for cell container.
@@ -217,9 +195,7 @@ declare namespace Cell {
         /**
          * Options for responsive design.
          *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/gui/responsive/ | Responsive cell width}
+         * @deprecated
          **/
         responsive?: Record<string, CellResponsiveOptions>;
     }
@@ -234,6 +210,11 @@ declare namespace Cell {
         mountedComponentJSON?: Component.JSON;
         style?: CSSJSONObject;
         layoutJSON?: LayoutType.JSON;
+    }
+    interface DOMCell {
+        id: string;
+        container: HTMLElement;
+        mountedComponent: Component;
     }
 }
 export default Cell;

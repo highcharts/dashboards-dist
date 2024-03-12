@@ -164,7 +164,7 @@ function basicOperation(operator, x, y) {
         default:
             return NaN;
     }
-    // limit decimal to 9 digits
+    // Limit decimal to 9 digits
     return (result % 1 ?
         Math.round(result * 1000000000) / 1000000000 :
         result);
@@ -318,7 +318,7 @@ function processFormula(formula, table) {
         }
         else if (isFunction(item)) {
             result = processFunction(item, table);
-            y = (isValue(result) ? result : NaN); // arrays are not allowed here
+            y = (isValue(result) ? result : NaN); // Arrays are not allowed here
             // Next item is a reference and needs to get resolved
         }
         else if (isReference(item)) {
@@ -356,7 +356,7 @@ function processFormula(formula, table) {
     return isValue(x) ? x : NaN;
 }
 /**
- * Process a function  on the give table. If the arguments do not contain
+ * Process a function on the given table. If the arguments do not contain
  * references or ranges, then no table has to be provided.
  *
  * @private

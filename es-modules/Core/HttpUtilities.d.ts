@@ -24,7 +24,7 @@ export interface AjaxSuccessCallbackFunction {
  *        The Ajax settings to use.
  *
  * @return {false|undefined}
- *         Returns false, if error occured.
+ *         Returns false, if error occurred.
  */
 declare function ajax(settings: AjaxSettingsObject): (false | undefined);
 /**

@@ -188,16 +188,19 @@ class Row extends GUIElement {
     destroy() {
         const row = this;
         const { layout } = row;
+        // Copy to avoid problem with index when shifting array of cells during
+        // the destroy.
+        const rowCells = [...row.cells];
         // Destroy cells.
-        for (let i = 0, iEnd = row.cells.length; i < iEnd; ++i) {
-            if (row.cells[i]) {
-                row.cells[i].destroy();
+        for (let i = 0, iEnd = rowCells?.length; i < iEnd; ++i) {
+            if (rowCells[i]) {
+                rowCells[i].destroy();
             }
         }
         if (row.layout) {
             row.layout.unmountRow(row);
             super.destroy();
-            if (layout.rows.length === 0) {
+            if (layout.rows?.length === 0) {
                 layout.destroy();
             }
         }
@@ -249,7 +252,7 @@ class Row extends GUIElement {
     }
     // Get cell index from the row.cells array.
     getCellIndex(cell) {
-        for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
+        for (let i = 0, iEnd = this.cells?.length; i < iEnd; ++i) {
             if (this.cells[i].id === cell.id) {
                 return i;
             }

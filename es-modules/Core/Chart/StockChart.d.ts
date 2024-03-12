@@ -8,7 +8,6 @@ import type SVGElement from '../Renderer/SVG/SVGElement';
 import type SVGPath from '../Renderer/SVG/SVGPath';
 import type SVGRenderer from '../Renderer/SVG/SVGRenderer';
 import Chart from '../Chart/Chart.js';
-import '../Pointer.js';
 declare module '../Axis/AxisLike' {
     interface AxisLike {
         crossLabel?: SVGElement;
@@ -57,7 +56,7 @@ declare class StockChart extends Chart {
      *        Custom options.
      *
      * @param {Function} [callback]
-     *        Function to run when the chart has loaded and and all external
+     *        Function to run when the chart has loaded and all external
      *        images are loaded.
      *
      *

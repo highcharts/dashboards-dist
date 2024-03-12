@@ -1335,7 +1335,7 @@ var Chart3D;
                     visible: isVisible
                 };
             };
-            // docs @TODO: Add all frame options (left, right, top, bottom,
+            // Docs @TODO: Add all frame options (left, right, top, bottom,
             // front, back) to apioptions JSDoc once the new system is up.
             const ret = {
                 axes: {},
@@ -1364,7 +1364,7 @@ var Chart3D;
             };
             // Decide the bast place to put axis title/labels based on the
             // visible faces. Ideally, The labels can only be on the edge
-            // between a visible face and an invisble one. Also, the Y label
+            // between a visible face and an invisible one. Also, the Y label
             // should be one the left-most edge (right-most if opposite).
             if (options3d.axisLabelPosition === 'auto') {
                 const isValidEdge = function (face1, face2) {
@@ -1683,4 +1683,4 @@ export default Chart3D;
  * @product   highcharts
  * @apioption chart.options3d.frame.side.size
  */
-''; // keeps doclets above in JS file
+''; // Keeps doclets above in JS file
