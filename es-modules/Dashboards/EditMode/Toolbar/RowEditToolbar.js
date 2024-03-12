@@ -131,7 +131,7 @@ class RowEditToolbar extends EditToolbar {
         const toolbar = this;
         if (toolbar.editMode.sidebar) {
             toolbar.editMode.sidebar.show(toolbar.row);
-            // toolbar.editMode.sidebar.updateTitle('ROW OPTIONS');
+            /// toolbar.editMode.sidebar.updateTitle('ROW OPTIONS');
             // @ToDo - mask is buggy - should be refactored or removed.
             // if (this.row) {
             //     super.maskNotEditedElements(
@@ -153,7 +153,7 @@ class RowEditToolbar extends EditToolbar {
         }
     }
     resetEditedRow() {
-        // super.resetCurrentElements(this.row as Row, true);
+        /// super.resetCurrentElements(this.row as Row, true);
         this.editedRow = void 0;
     }
 }

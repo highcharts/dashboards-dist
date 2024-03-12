@@ -100,7 +100,7 @@ class Pointer {
                 Pointer.unbindDocumentTouchEnd = (Pointer.unbindDocumentTouchEnd());
             }
         }
-        // memory and CPU leak
+        // Memory and CPU leak
         clearInterval(pointer.tooltipTimeout);
         objectEach(pointer, function (_val, prop) {
             pointer[prop] = void 0;
@@ -847,7 +847,7 @@ class Pointer {
     onDocumentMouseUp(e) {
         charts[pick(Pointer.hoverChartIndex, -1)]
             ?.pointer
-            .drop(e);
+            ?.drop(e);
     }
     /**
      * Handle touch events with two touches
@@ -1163,7 +1163,7 @@ class Pointer {
             tooltip.shared :
             false);
         let hoverPoint = p || chart.hoverPoint, hoverSeries = hoverPoint && hoverPoint.series || chart.hoverSeries;
-        const // onMouseOver or already hovering a series with directTouch
+        const // `onMouseOver` or already hovering a series with directTouch
         isDirectTouch = (!e || e.type !== 'touchmove') && (!!p || ((hoverSeries && hoverSeries.directTouch) &&
             pointer.isDirectTouch)), hoverData = this.getHoverData(hoverPoint, hoverSeries, series, isDirectTouch, shared, e);
         // Update variables from hoverData.
@@ -1242,12 +1242,9 @@ class Pointer {
         }
         // Start the event listener to pick up the tooltip and crosshairs
         if (!pointer.unDocMouseMove) {
-            pointer.unDocMouseMove = addEvent(chart.container.ownerDocument, 'mousemove', function (e) {
-                const chart = charts[Pointer.hoverChartIndex];
-                if (chart) {
-                    chart.pointer.onDocumentMouseMove(e);
-                }
-            });
+            pointer.unDocMouseMove = addEvent(chart.container.ownerDocument, 'mousemove', (e) => charts[Pointer.hoverChartIndex ?? -1]
+                ?.pointer
+                ?.onDocumentMouseMove(e));
             pointer.eventsToUnbind.push(pointer.unDocMouseMove);
         }
         // Issues related to crosshair #4927, #5269 #5066, #5658
@@ -1313,7 +1310,7 @@ class Pointer {
         const hoverChart = H.charts[pick(Pointer.hoverChartIndex, -1)];
         if (hoverChart &&
             hoverChart !== chart) {
-            hoverChart.pointer.onContainerMouseLeave(e || { relatedTarget: chart.container });
+            hoverChart.pointer?.onContainerMouseLeave(e || { relatedTarget: chart.container });
         }
         if (!hoverChart ||
             !hoverChart.mouseIsDown) {
@@ -1415,7 +1412,7 @@ class Pointer {
      * @private
      */
     function compose(ChartClass) {
-        if (pushUnique(composed, compose)) {
+        if (pushUnique(composed, 'Core.Pointer')) {
             addEvent(ChartClass, 'beforeRender', function () {
                 /**
                  * The Pointer that keeps track of mouse and touch
@@ -1558,4 +1555,4 @@ export default Pointer;
 * @name Highcharts.SelectEventObject#yAxis
 * @type {Array<Highcharts.SelectDataObject>}
 */
-''; // keeps doclets above in JS file
+''; // Keeps doclets above in JS file

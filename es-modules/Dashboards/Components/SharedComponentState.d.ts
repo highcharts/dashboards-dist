@@ -121,7 +121,7 @@ declare namespace SharedComponentState {
         sender?: string;
     }
     /**
-     * All information objects of DataPrsentationState events.
+     * All information objects of DataPresentationState events.
      */
     type Event = (ColumnOrderEvent | ColumnVisibilityEvent | PointHoverEvent | SelectionEvent | HiddenRowEvent);
     /**

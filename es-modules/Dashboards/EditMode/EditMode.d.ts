@@ -73,16 +73,6 @@ declare class EditMode {
      */
     addComponentBtn?: HTMLDOMElement;
     /**
-     * Current selected mode, for emulating different screen width for
-     * responsive web design.
-     */
-    rwdMode: string;
-    /**
-     * HTML elements responsible for changing the container width.
-     * @internal
-     */
-    rwdMenu: Array<HTMLDOMElement>;
-    /**
      * @internal
      */
     tools: EditMode.Tools;
@@ -196,26 +186,11 @@ declare class EditMode {
      */
     showToolbars(toolbarTypes?: Array<string>, currentCell?: Cell): void;
     /**
-     * Creates the buttons such as `addComponent` button, rwd buttons and
-     * context menu button and its container.
+     * Creates the buttons such as `addComponent` button, context menu button
+     * and its container.
      * @internal
      */
     createTools(): void;
-    /**
-     * Creates the responsive width buttons.
-     * @internal
-     */
-    private createRwdMenu;
-    /**
-     * Shows responsive buttons.
-     * @internal
-     */
-    showRwdButtons(): void;
-    /**
-     * Hides responsive buttons.
-     * @internal
-     */
-    hideRwdButtons(): void;
     /**
      * Event fired when detecting context on drag&drop.
      *
@@ -357,6 +332,11 @@ declare namespace EditMode {
         addComponentBtn?: AddComponentBtn;
         /**
          * RWD buttons options.
+         *
+         * RWD buttons are permanently disabled since the change from
+         * options-managed responsiveness to fully CSS-managed.
+         *
+         * @deprecated
          */
         rwdButtons?: RwdButtons;
         /**
@@ -392,35 +372,49 @@ declare namespace EditMode {
         icon: string;
     }
     /**
-     * RWD buttons options.
+     * Deprecated RWD buttons options.
+     *
+     * RWD buttons are permanently disabled since the change from
+     * options-managed responsiveness to fully CSS-managed.
+     *
+     * @deprecated
      */
     interface RwdButtons {
         /**
          * Whether the RWD buttons should be visible.
          *
-         * @default true
-         *
+         * @deprecated
          */
         enabled?: boolean;
         /**
          * RWD buttons icons options.
+         *
+         * @deprecated
          */
         icons: RwdIcons;
     }
     /**
      * RWD Buttons icons options.
+     *
+     * @deprecated
      */
     interface RwdIcons {
         /**
          * URL to small RWD button icon.
+         *
+         * @deprecated
          */
         small: string;
         /**
          * URL to medium RWD button icon.
+         *
+         * @deprecated
          */
         medium: string;
         /**
          * URL to large RWD button icon.
+         *
+         * @deprecated
          */
         large: string;
     }

@@ -58,7 +58,7 @@ const { addEvent, attr, createElement, css, defined, diffObjects, discardElement
  *        The chart options structure.
  *
  * @param {Highcharts.ChartCallbackFunction} [callback]
- *        Function to run when the chart has loaded and and all external images
+ *        Function to run when the chart has loaded and all external images
  *        are loaded. Defining a
  *        [chart.events.load](https://api.highcharts.com/highcharts/chart.events.load)
  *        handler is equivalent.
@@ -87,7 +87,7 @@ class Chart {
      * The chart options structure.
      *
      * @param {Highcharts.ChartCallbackFunction} [callback]
-     * Function to run when the chart has loaded and and all external images are
+     * Function to run when the chart has loaded and all external images are
      * loaded. Defining a
      * [chart.events.load](https://api.highcharts.com/highcharts/chart.events.load)
      * handler is equivalent.
@@ -98,7 +98,7 @@ class Chart {
     static chart(a, b, c) {
         return new Chart(a, b, c);
     }
-    /** Implementation */
+    // Implementation
     constructor(a, 
     /* eslint-disable @typescript-eslint/no-unused-vars */
     b, c
@@ -148,7 +148,7 @@ class Chart {
      *        Custom options.
      *
      * @param {Function} [callback]
-     *        Function to run when the chart has loaded and and all external
+     *        Function to run when the chart has loaded and all external
      *        images are loaded.
      *
      *
@@ -158,7 +158,7 @@ class Chart {
     init(userOptions, callback) {
         // Fire the event with a default function
         fireEvent(this, 'init', { args: arguments }, function () {
-            const options = merge(defaultOptions, userOptions), // do the merge
+            const options = merge(defaultOptions, userOptions), // Do the merge
             optionsChart = options.chart;
             /**
              * The original options given to the constructor or a chart factory
@@ -470,7 +470,7 @@ class Chart {
         }
         // Adjust title layout (reflow multiline text)
         chart.layOutTitles(false);
-        // link stacked series
+        // Link stacked series
         i = series.length;
         while (i--) {
             serie = series[i];
@@ -482,7 +482,7 @@ class Chart {
                 }
             }
         }
-        if (hasDirtyStacks) { // mark others as dirty
+        if (hasDirtyStacks) { // Mark others as dirty
             i = series.length;
             while (i--) {
                 serie = series[i];
@@ -510,17 +510,17 @@ class Chart {
                 fireEvent(serie, 'updatedData');
             }
         });
-        // handle added or removed series
+        // Handle added or removed series
         if (redrawLegend && legend && legend.options.enabled) {
-            // draw legend graphics
+            // Draw legend graphics
             legend.render();
             chart.isDirtyLegend = false;
         }
-        // reset stacks
+        // Reset stacks
         if (hasStackedSeries) {
             chart.getStacks();
         }
-        // set axes scales
+        // Set axes scales
         axes.forEach(function (axis) {
             axis.updateNames();
             axis.setScale();
@@ -532,13 +532,13 @@ class Chart {
                 isDirtyBox = true;
             }
         });
-        // redraw axes
+        // Redraw axes
         axes.forEach(function (axis) {
             // Fire 'afterSetExtremes' only if extremes are set
             const key = axis.min + ',' + axis.max;
             if (axis.extKey !== key) { // #821, #4452
                 axis.extKey = key;
-                // prevent a recursive call to chart.redraw() (#1119)
+                // Prevent a recursive call to chart.redraw() (#1119)
                 afterRedraw.push(function () {
                     fireEvent(axis, 'afterSetExtremes', extend(axis.eventArgs, axis.getExtremes())); // #747, #751
                     delete axis.eventArgs;
@@ -548,14 +548,14 @@ class Chart {
                 axis.redraw();
             }
         });
-        // the plot areas size has changed
+        // The plot areas size has changed
         if (isDirtyBox) {
             chart.drawChartBox();
         }
         // Fire an event before redrawing series, used by the boost module to
         // clear previous series renderings.
         fireEvent(chart, 'predraw');
-        // redraw affected series
+        // Redraw affected series
         series.forEach(function (serie) {
             if ((isDirtyBox || serie.isDirty) && serie.visible) {
                 serie.redraw();
@@ -564,11 +564,11 @@ class Chart {
             // for a hidden series after setData(). Fixes #6012
             serie.isDirtyData = false;
         });
-        // move tooltip or reset
+        // Move tooltip or reset
         if (pointer) {
             pointer.reset(true);
         }
-        // redraw if canvas
+        // Redraw if canvas
         renderer.draw();
         // Fire the events
         fireEvent(chart, 'redraw');
@@ -733,7 +733,7 @@ class Chart {
         const options = this.options[name] = merge(this.options[name], explicitOptions);
         let elem = this[name];
         if (elem && explicitOptions) {
-            this[name] = elem = elem.destroy(); // remove old
+            this[name] = elem = elem.destroy(); // Remove old
         }
         if (options && !elem) {
             elem = this.renderer.text(options.text, 0, 0, options.useHTML)
@@ -999,7 +999,7 @@ class Chart {
         }
         // Make a reference to the chart from the div
         attr(renderTo, indexAttrName, chart.index);
-        // remove previous chart
+        // Remove previous chart
         renderTo.innerHTML = AST.emptyHTML;
         // If the container doesn't have an offsetWidth, it has or is a child of
         // a node that has display:none. We need to temporarily move it out to a
@@ -1009,10 +1009,10 @@ class Chart {
         if (!optionsChart.skipClone && !renderTo.offsetWidth) {
             chart.temporaryDisplay();
         }
-        // get the width and height
+        // Get the width and height
         chart.getChartSize();
-        const chartWidth = chart.chartWidth;
         const chartHeight = chart.chartHeight;
+        let chartWidth = chart.chartWidth;
         // Allow table cells and flex-boxes to shrink without the chart blocking
         // them out (#6427)
         css(renderTo, { overflow: 'hidden' });
@@ -1020,7 +1020,7 @@ class Chart {
         if (!chart.styledMode) {
             containerStyle = extend({
                 position: 'relative',
-                // needed for context menu (avoidscrollbars) and content
+                // Needed for context menu (avoidscrollbars) and content
                 // overflow in IE
                 overflow: 'hidden',
                 width: chartWidth + 'px',
@@ -1046,7 +1046,18 @@ class Chart {
             id: containerId
         }, containerStyle, renderTo);
         chart.container = container;
-        // cache the cursor (#1650)
+        // Adjust width if setting height affected it (#20334)
+        chart.getChartSize();
+        if (chartWidth !== chart.chartWidth) {
+            chartWidth = chart.chartWidth;
+            if (!chart.styledMode) {
+                css(container, {
+                    width: pick(optionsChart.style?.width, chartWidth + 'px')
+                });
+            }
+        }
+        chart.containerBox = chart.getContainerBox();
+        // Cache the cursor (#1650)
         chart._cursor = container.style.cursor;
         // Initialize the renderer
         const Renderer = optionsChart.renderer || !svg ?
@@ -1060,7 +1071,6 @@ class Chart {
          * @type {Highcharts.SVGRenderer}
          */
         chart.renderer = new Renderer(container, chartWidth, chartHeight, void 0, optionsChart.forExport, options.exporting && options.exporting.allowHTML, chart.styledMode);
-        chart.containerBox = chart.getContainerBox();
         // Set the initial animation from the options
         setAnimation(void 0, chart);
         chart.setClassName(optionsChart.className);
@@ -1119,7 +1129,7 @@ class Chart {
                 }
             });
         };
-        // pre-render axes to get labels offset width
+        // Pre-render axes to get labels offset width
         if (chart.hasCartesianSeries) {
             getOffset(chart.axes);
         }
@@ -1167,7 +1177,7 @@ class Chart {
      */
     reflow(e) {
         const chart = this, oldBox = chart.containerBox, containerBox = chart.getContainerBox();
-        delete chart.pointer.chartPosition;
+        delete chart.pointer?.chartPosition;
         // Width and height checks for display:none. Target is doc in Opera
         // and win in Firefox, Chrome and IE9.
         if (!chart.isPrinting &&
@@ -1295,12 +1305,12 @@ class Chart {
             // resize observer (#19027).
             setTimeout(() => {
                 if (chart) {
-                    fireEvent(chart, 'endResize', void 0, () => {
-                        chart.isResizing -= 1;
-                    });
+                    fireEvent(chart, 'endResize');
                 }
             }, animObject(globalAnimation).duration);
         }
+        // Handle resizing counter even if we've re-rendered or not (#20548).
+        chart.isResizing -= 1;
     }
     /**
      * Set the public chart properties. This is done before and after the
@@ -1403,7 +1413,7 @@ class Chart {
         marginNames.forEach(function (m, side) {
             chart[m] = pick(chart.margin[side], chart.spacing[side]);
         });
-        chart.axisOffset = [0, 0, 0, 0]; // top, right, bottom, left
+        chart.axisOffset = [0, 0, 0, 0]; // Top, right, bottom, left
         chart.clipOffset = [0, 0, 0, 0];
     }
     /**
@@ -1543,7 +1553,7 @@ class Chart {
                 optionsChart[key] ||
                     // The default series class:
                     (klass && klass.prototype[key]);
-            // requires it
+            // Requires it
             // 4. Check if any the chart's series require it
             i = seriesOptions && seriesOptions.length;
             while (!value && i--) {
@@ -1655,7 +1665,7 @@ class Chart {
                 !chart.polar) {
                 expectedSpace = options.tickLength;
                 axis.createGroups();
-                // Calculate extecped space based on dummy tick
+                // Calculate expected space based on dummy tick
                 const mockTick = new Tick(axis, 0, '', true), label = mockTick.createLabel('x', labels);
                 mockTick.destroy();
                 if (label &&
@@ -1787,7 +1797,7 @@ class Chart {
     destroy() {
         const chart = this, axes = chart.axes, series = chart.series, container = chart.container, parentNode = container && container.parentNode;
         let i;
-        // fire the chart.destoy event
+        // Fire the chart.destroy event
         fireEvent(chart, 'destroy');
         // Delete the chart from charts lookup array
         if (chart.renderer.forExport) {
@@ -1798,7 +1808,7 @@ class Chart {
         }
         H.chartCount--;
         chart.renderTo.removeAttribute('data-highcharts-chart');
-        // remove events
+        // Remove events
         removeEvent(chart);
         // ==== Destroy collections:
         // Destroy axes
@@ -1836,7 +1846,7 @@ class Chart {
                 discardElement(container);
             }
         }
-        // clean it all up
+        // Clean it all up
         objectEach(chart, function (val, key) {
             delete chart[key];
         });
@@ -1856,7 +1866,7 @@ class Chart {
         chart.setChartSize();
         // Set the common chart properties (mainly invert) from the given series
         chart.propFromSeries();
-        // get axes
+        // Get axes
         chart.getAxes();
         // Initialize the series
         const series = isArray(options.series) ? options.series : [];
@@ -1874,7 +1884,7 @@ class Chart {
         // in Highcharts Stock.
         fireEvent(chart, 'beforeRender');
         chart.render();
-        chart.pointer.getChartPosition(); // #14973
+        chart.pointer?.getChartPosition(); // #14973
         // Fire the load event if there are no external images
         if (!chart.renderer.imgCount && !chart.hasLoaded) {
             chart.onload();
@@ -1913,6 +1923,7 @@ class Chart {
     }
     /**
      * Emit console warning if the a11y module is not loaded.
+     * @private
      */
     warnIfA11yModuleNotLoaded() {
         const { options, title } = this;
@@ -1968,7 +1979,7 @@ class Chart {
         const chart = this;
         let series;
         if (options) { // <- not necessary
-            redraw = pick(redraw, true); // defaults to true
+            redraw = pick(redraw, true); // Defaults to true
             fireEvent(chart, 'addSeries', { options: options }, function () {
                 series = chart.initSeries(options);
                 chart.isDirtyLegend = true;
@@ -2099,7 +2110,7 @@ class Chart {
             }
         };
         let loadingDiv = chart.loadingDiv, loadingSpan = chart.loadingSpan;
-        // create the layer at the first call
+        // Create the layer at the first call
         if (!loadingDiv) {
             chart.loadingDiv = loadingDiv = createElement('div', {
                 className: 'highcharts-loading highcharts-loading-hidden'
@@ -2289,7 +2300,7 @@ class Chart {
             this.options.colors = options.colors;
         }
         if (options.time) {
-            // Maintaining legacy global time. If the chart is instanciated
+            // Maintaining legacy global time. If the chart is instantiated
             // first with global time, then updated with time options, we need
             // to create a new Time instance to avoid mutating the global time
             // (#10536).
@@ -2303,7 +2314,7 @@ class Chart {
             // need to update the chart options separately. #14230.
             merge(true, chart.options.time, options.time);
         }
-        // Some option stuctures correspond one-to-one to chart objects that
+        // Some option structures correspond one-to-one to chart objects that
         // have update methods, for example
         // options.credits => chart.credits
         // options.legend => chart.legend
@@ -2351,7 +2362,7 @@ class Chart {
                     // No match by id found, match by index instead
                     if (!item && chart[coll]) {
                         item = chart[coll][pick(newOptions.index, i)];
-                        // Check if we grabbed an item with an exising but
+                        // Check if we grabbed an item with an existing but
                         // different id (#13541). Check that the item in this
                         // position is not internal (navigator).
                         if (item && ((hasId && defined(item.options.id)) ||
@@ -2556,7 +2567,7 @@ class Chart {
      *   rectangle is the full plot area.
      * - In a touch zoom, the `from` rectangle is made up of the last two-finger
      *   touch, while the `to`` rectangle is the current touch.
-     * - In a mousewheel zoom, the the `to` rectangle is a 10x10 px square,
+     * - In a mousewheel zoom, the `to` rectangle is a 10x10 px square,
      *   while the `to` rectangle reflects the scale around that.
      *
      * @private
@@ -2704,9 +2715,9 @@ extend(Chart.prototype, {
     // Hook for adding callbacks in modules
     callbacks: [],
     /**
-     * These collections (arrays) implement `Chart.addSomethig` method used in
+     * These collections (arrays) implement `Chart.addSomething` method used in
      * chart.update() to create new object in the collection. Equivalent for
-     * deleting is resolved by simple `Somethig.remove()`.
+     * deleting is resolved by simple `Something.remove()`.
      *
      * Note: We need to define these references after initializers are bound to
      * chart's prototype.
@@ -2714,7 +2725,7 @@ extend(Chart.prototype, {
      * @private
      */
     collectionsWithInit: {
-        // collectionName: [ initializingMethod, [extraArguments] ]
+        // CollectionName: [ initializingMethod, [extraArguments] ]
         xAxis: [Chart.prototype.addAxis, [true]],
         yAxis: [Chart.prototype.addAxis, [false]],
         series: [Chart.prototype.addSeries]
@@ -2903,4 +2914,4 @@ export default Chart;
 * @name Highcharts.ChartIsInsideOptionsObject#visiblePlotOnly
 * @type {boolean|undefined}
 */
-''; // keeps doclets above in JS file
+''; // Keeps doclets above in JS file

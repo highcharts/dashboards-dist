@@ -25,7 +25,7 @@ class Fullscreen {
     constructor(DashboardClass) {
         this.isOpen = false;
         this.board = DashboardClass;
-        // add class to allow scroll element
+        // Add class to allow scroll element
         this.board.boardWrapper.classList.add(Globals.classNamePrefix + '-fullscreen');
     }
     /* *
@@ -49,7 +49,7 @@ class Fullscreen {
         }
         const fullscreen = this, board = fullscreen.board;
         // Handle exitFullscreen() method when user clicks 'Escape' button.
-        const unbindChange = addEvent(board.boardWrapper.ownerDocument, // dashboard's document
+        const unbindChange = addEvent(board.boardWrapper.ownerDocument, // Dashboard's document
         'fullscreenchange', function () {
             if (fullscreen.isOpen) {
                 fullscreen.isOpen = false;

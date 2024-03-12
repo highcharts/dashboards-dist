@@ -7,7 +7,7 @@ import type { ColorLike, ColorType } from './ColorType';
  * @name Highcharts.Color
  *
  * @param {Highcharts.ColorType} input
- * The input color in either rbga or hex format
+ * The input color in either rgba or hex format
  */
 declare class Color implements ColorLike {
     /**
@@ -31,7 +31,7 @@ declare class Color implements ColorLike {
      * @function Highcharts.Color.parse
      *
      * @param {Highcharts.ColorType} [input]
-     * The input color in either rbga or hex format.
+     * The input color in either rgba or hex format.
      *
      * @return {Highcharts.Color}
      * Color instance.

@@ -215,7 +215,7 @@ class HTMLElement extends SVGElement {
             this.alignOnAdd = true;
             return;
         }
-        const { element, renderer, rotation, styles, textAlign = 'left', textWidth, translateX = 0, translateY = 0, x = 0, y = 0 } = this, alignCorrection = {
+        const { element, renderer, rotation, rotationOriginX, rotationOriginY, styles, textAlign = 'left', textWidth, translateX = 0, translateY = 0, x = 0, y = 0 } = this, alignCorrection = {
             left: 0, center: 0.5, right: 1
         }[textAlign], whiteSpace = styles.whiteSpace;
         // Get the pixel length of the text
@@ -243,7 +243,7 @@ class HTMLElement extends SVGElement {
                 element.innerHTML,
                 textWidth,
                 this.textAlign
-            ].join(',');
+            ].join(','), parentPadding = (this.parentGroup?.padding * -1) || 0;
             let baseline, hasBoxWidthChanged = false;
             // Update textWidth. Use the memoized textPxLength if possible, to
             // avoid the getTextPxLength function using elem.offsetWidth.
@@ -277,7 +277,7 @@ class HTMLElement extends SVGElement {
                 if (defined(rotation) &&
                     ((rotation !== (this.oldRotation || 0)) ||
                         (textAlign !== this.oldAlign))) {
-                    this.setSpanRotation(rotation, alignCorrection, baseline);
+                    this.setSpanRotation(rotation, parentPadding, parentPadding);
                 }
                 this.getSpanCorrection(
                 // Avoid elem.offsetWidth if we can, it affects rendering
@@ -285,11 +285,13 @@ class HTMLElement extends SVGElement {
                 ((!defined(rotation) && this.textPxLength) || // #7920
                     element.offsetWidth), baseline, alignCorrection);
             }
-            // Apply position with correction
-            css(element, {
-                left: (x + (this.xCorr || 0)) + 'px',
-                top: (y + (this.yCorr || 0)) + 'px'
-            });
+            // Apply position with correction and rotation origin
+            const { xCorr = 0, yCorr = 0 } = this, rotOriginX = (rotationOriginX ?? x) - xCorr - x - parentPadding, rotOriginY = (rotationOriginY ?? y) - yCorr - y - parentPadding, styles = {
+                left: `${x + xCorr}px`,
+                top: `${y + yCorr}px`,
+                transformOrigin: `${rotOriginX}px ${rotOriginY}px`
+            };
+            css(element, styles);
             // Record current text transform
             this.cTT = currentTextTransform;
             this.oldRotation = rotation;
@@ -300,13 +302,13 @@ class HTMLElement extends SVGElement {
      * Set the rotation of an individual HTML span.
      * @private
      */
-    setSpanRotation(rotation, alignCorrection, baseline) {
+    setSpanRotation(rotation, originX, originY) {
         // CSS transform and transform-origin both supported without prefix
         // since Firefox 16 (2012), IE 10 (2012), Chrome 36 (2014), Safari 9
         // (2015).;
         css(this.element, {
             transform: `rotate(${rotation}deg)`,
-            transformOrigin: `${alignCorrection * 100}% ${baseline}px`
+            transformOrigin: `${originX}% ${originY}px`
         });
     }
     /**
@@ -380,8 +382,10 @@ class HTMLElement extends SVGElement {
 // Some shared setters
 const proto = HTMLElement.prototype;
 proto.visibilitySetter = proto.opacitySetter = commonSetter;
-proto.ySetter = proto.xSetter;
-proto.rotationSetter = proto.xSetter;
+proto.ySetter =
+    proto.rotationSetter =
+        proto.rotationOriginXSetter =
+            proto.rotationOriginYSetter = proto.xSetter;
 /* *
  *
  *  Default Export

@@ -31,7 +31,7 @@ declare class MapChart extends Chart {
      *        Custom options.
      *
      * @param {Function} [callback]
-     *        Function to run when the chart has loaded and and all external
+     *        Function to run when the chart has loaded and all external
      *        images are loaded.
      *
      *
@@ -71,6 +71,7 @@ declare class MapChart extends Chart {
      *        Keep this chart position stationary if possible.
      */
     mapZoom(howMuch?: number, xProjected?: number, yProjected?: number, chartX?: number, chartY?: number): void;
+    update(options: Partial<Options>): void;
 }
 interface MapChart extends Chart {
     hoverPoint?: MapPoint;

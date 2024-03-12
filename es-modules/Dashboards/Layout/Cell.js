@@ -110,13 +110,11 @@ class Cell extends GUIElement {
                 height: cellHeight
             })
         });
-        // Set cell width respecting responsive options.
-        this.reflow();
         // Mount component from JSON.
         if (this.options.mountedComponentJSON) {
             this.mountComponentFromJSON(this.options.mountedComponentJSON);
         }
-        // nested layout
+        // Nested layout
         if (this.options.layout) {
             this.setNestedLayout();
         }
@@ -175,11 +173,11 @@ class Cell extends GUIElement {
         const cell = this;
         const { row } = cell;
         // Destroy mounted component.
-        if (cell.mountedComponent) {
-            cell.mountedComponent.destroy();
-        }
+        cell.mountedComponent?.destroy();
+        // If layout exists in the cell - destroy it
+        cell.nestedLayout?.destroy();
         row.unmountCell(cell);
-        const destroyRow = row.cells.length === 0;
+        const destroyRow = row.cells?.length === 0;
         super.destroy();
         if (destroyRow) {
             row.destroy();
@@ -248,9 +246,9 @@ class Cell extends GUIElement {
         }
     }
     // Method to get array of overlapping levels.
-    getOverlappingLevels(align, // left, right, top, bottom
-    levelMaxGap, // max distance between levels
-    offset // analized cell offset
+    getOverlappingLevels(align, // 'left', 'right', 'top', 'bottom'
+    levelMaxGap, // Max distance between levels
+    offset // Analyzed cell offset
     ) {
         const cell = this, parentCell = cell.row.layout.parentCell;
         let levels = [cell.row.layout.level];
@@ -265,22 +263,6 @@ class Cell extends GUIElement {
             }
         }
         return levels;
-    }
-    reflow(dashContainerSize) {
-        const cell = this, cntSize = dashContainerSize ||
-            cell.row.layout.board.getLayoutContainerSize(), respoOptions = cell.options.responsive, optWidth = cell.options.width;
-        if (cell.container) {
-            let width = '';
-            if (respoOptions &&
-                respoOptions[cntSize] &&
-                respoOptions[cntSize].width) {
-                width = cell.convertWidthToValue(respoOptions[cntSize].width);
-            }
-            else if (optWidth) {
-                width = cell.convertWidthToValue(optWidth);
-            }
-            cell.setSize(width || 'auto');
-        }
     }
     /**
      * Set cell size.
@@ -329,19 +311,6 @@ class Cell extends GUIElement {
             fireEvent(cell.row, 'cellChange', { cell: cell, row: cell.row });
         }
     }
-    // Updates width in responsive options.
-    updateSize(width, // % value or 'auto' or px
-    rwdMode // small, medium, large
-    ) {
-        const cell = this, cntSize = rwdMode ||
-            cell.row.layout.board.getLayoutContainerSize();
-        if (!cell.options.responsive) {
-            cell.options.responsive = {};
-        }
-        cell.options.responsive[cntSize] = {
-            width: width
-        };
-    }
     setHighlight(remove) {
         const cell = this, editMode = cell.row.layout.board.editMode;
         if (cell.container && editMode) {
@@ -359,14 +328,14 @@ class Cell extends GUIElement {
         }
     }
     setActiveState() {
-        // reset other boxes
+        // Reset other boxes
         const cell = this;
         cell.row.layout.board.mountedComponents.forEach((mountedComponent) => {
             if (mountedComponent.cell.container) {
                 mountedComponent.cell.container.classList.remove(Globals.classNames.cellActive);
             }
         });
-        // apply class
+        // Apply class
         if (cell.container) {
             cell.container.classList.add(Globals.classNames.cellActive);
         }

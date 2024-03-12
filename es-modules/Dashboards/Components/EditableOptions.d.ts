@@ -64,7 +64,7 @@ declare namespace EditableOptions {
          */
         name: string;
         /**
-         * whether the option should have a toggle to be enabled or disabled.
+         * Whether the option should have a toggle to be enabled or disabled.
          */
         showToggle?: boolean;
         /**

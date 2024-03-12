@@ -64,7 +64,7 @@ declare class AST {
     /**
      * Allow all custom SVG and HTML attributes, references and tags (together
      * with potentially harmful ones) to be added to the DOM from the chart
-     * configuration. In other words, disable the the allow-listing which is the
+     * configuration. In other words, disable the allow-listing which is the
      * primary functionality of the AST.
      *
      * WARNING: Setting this property to `true` while allowing untrusted user

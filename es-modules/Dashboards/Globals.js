@@ -59,12 +59,6 @@ var Globals;
         cell: 'cell',
         layout: 'layout'
     };
-    /** @internal */
-    Globals.responsiveBreakpoints = {
-        small: 'small',
-        medium: 'medium',
-        large: 'large'
-    };
     /**
      * Contains all Board instances of this window.
      */

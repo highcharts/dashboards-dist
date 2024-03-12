@@ -22,13 +22,11 @@ import DashboardsAccessibility from './Accessibility/DashboardsAccessibility.js'
 import DataCursor from '../Data/DataCursor.js';
 import DataCursorHelper from './SerializeHelper/DataCursorHelper.js';
 import DataPool from '../Data/DataPool.js';
-import EditMode from './EditMode/EditMode.js';
-import Fullscreen from './EditMode/Fullscreen.js';
 import Globals from './Globals.js';
 import Layout from './Layout/Layout.js';
 import Serializable from './Serializable.js';
+import HTMLComponent from './Components/HTMLComponent/HTMLComponent.js';
 import U from '../Core/Utilities.js';
-import HTMLComponent from './Components/HTMLComponent.js';
 const { merge, addEvent, error, objectEach, uniqueKey, createElement } = U;
 /* *
  *
@@ -91,38 +89,27 @@ class Board {
         this.options = merge(Board.defaultOptions, options);
         this.dataPool = new DataPool(options.dataPool);
         this.id = uniqueKey();
-        this.guiEnabled = (this.options.gui || {}).enabled;
+        this.guiEnabled = !options.gui ?
+            false : this.options?.gui?.enabled;
+        this.editModeEnabled = !options.editMode ?
+            false : this.options?.editMode?.enabled;
         this.layouts = [];
         this.mountedComponents = [];
         this.initContainer(renderTo);
-        // Create layouts wrapper.
-        this.layoutsWrapper = createElement('div', {
-            className: Globals.classNames.layoutsWrapper
-        }, {}, this.container);
         // Init edit mode.
-        if (EditMode && !(this.options.editMode &&
-            !this.options.editMode.enabled)) {
-            this.editMode = new EditMode(this, this.options.editMode);
+        if (this.guiEnabled) {
+            this.initLayout();
         }
         // Add table cursors support.
         this.dataCursor = new DataCursor();
-        // Add fullscreen support.
-        this.fullscreen = new Fullscreen(this);
         this.index = Globals.boards.length;
         Globals.boards.push(this);
-        // a11y module
+        // A11y module
         this.a11y = new DashboardsAccessibility(this);
     }
     // Implementation:
     init(async) {
         const options = this.options;
-        if (options.gui && this.options.gui) {
-            this.setLayouts(this.options.gui);
-        }
-        // Init layouts from JSON.
-        if (options.layoutsJSON && !this.layouts.length) {
-            this.setLayoutsFromJSON(options.layoutsJSON);
-        }
         let componentPromises = (options.components) ?
             this.setComponents(options.components) : [];
         // Init events.
@@ -166,13 +153,47 @@ class Board {
             error(13, true);
         }
         // Clear the container from any content.
-        renderTo.innerHTML = '';
-        // Set the main wrapper container.
-        board.boardWrapper = renderTo;
-        // Add container for the board.
-        board.container = createElement('div', {
-            className: Globals.classNames.boardContainer
-        }, {}, this.boardWrapper);
+        if (this.guiEnabled) {
+            renderTo.innerHTML = '';
+            // Set the main wrapper container.
+            board.boardWrapper = renderTo;
+            // Add container for the board.
+            board.container = createElement('div', {
+                className: Globals.classNames.boardContainer
+            }, {}, this.boardWrapper);
+        }
+        else {
+            board.container = renderTo;
+        }
+    }
+    /**
+     * Inits creating a layouts and setup the EditMode tools.
+     * @internal
+     *
+     */
+    initLayout() {
+        const options = this.options;
+        if (!Dashboards.EditMode) {
+            throw new Error('Missing layout.js module');
+        }
+        else {
+            // Create layouts wrapper.
+            this.layoutsWrapper = createElement('div', {
+                className: Globals.classNames.layoutsWrapper
+            }, {}, this.container);
+            if (options.gui) {
+                this.setLayouts(options.gui);
+            }
+            // Init layouts from JSON.
+            if (options.layoutsJSON && !this.layouts.length) {
+                this.setLayoutsFromJSON(options.layoutsJSON);
+            }
+            if (this.editModeEnabled) {
+                this.editMode = new Dashboards.EditMode(this, this.options.editMode);
+                // Add fullscreen support.
+                this.fullscreen = new Dashboards.FullScreen(this);
+            }
+        }
     }
     /**
      * Creates a new layouts and adds it to the dashboard based on the options.
@@ -216,31 +237,11 @@ class Board {
      */
     setComponents(components) {
         const promises = [];
+        const board = this;
         for (let i = 0, iEnd = components.length; i < iEnd; ++i) {
-            promises.push(Bindings.addComponent(components[i]));
+            promises.push(Bindings.addComponent(components[i], board));
         }
         return promises;
-    }
-    /**
-     * Returns the current size of the layout container based on the selected
-     * responsive breakpoints.
-     * @internal
-     *
-     * @returns Return current size of the layout container in px.
-     */
-    getLayoutContainerSize() {
-        const board = this, responsiveOptions = board.options.responsiveBreakpoints, cntWidth = (board.layoutsWrapper || {}).clientWidth;
-        let size = Globals.responsiveBreakpoints.large;
-        if (responsiveOptions) {
-            if (cntWidth <= responsiveOptions.small) {
-                size = Globals.responsiveBreakpoints.small;
-            }
-            else if (cntWidth > responsiveOptions.small &&
-                cntWidth <= responsiveOptions.medium) {
-                size = Globals.responsiveBreakpoints.medium;
-            }
-        }
-        return size;
     }
     /**
      * Destroy the whole dashboard, its layouts and elements.
@@ -248,13 +249,13 @@ class Board {
     destroy() {
         const board = this;
         // Destroy layouts.
-        for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
+        for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
             board.layouts[i].destroy();
         }
         // Remove resizeObserver from the board
         this.resizeObserver?.unobserve(board.container);
         // Destroy container.
-        board.container.remove();
+        board.container?.remove();
         // @ToDo Destroy bindings.
         // Delete all properties.
         objectEach(board, function (val, key) {
@@ -269,7 +270,7 @@ class Board {
     exportLocal() {
         localStorage.setItem(
         // Dashboard.prefix + this.id,
-        Globals.classNamePrefix + '1', // temporary for demo test
+        Globals.classNamePrefix + '1', // Temporary for demo test
         JSON.stringify(this.toJSON()));
     }
     /**
@@ -288,31 +289,15 @@ class Board {
      * layouts and its cells.
      */
     reflow() {
-        const board = this, cntSize = board.getLayoutContainerSize();
+        const board = this;
         if (board.editMode) {
             const editModeTools = board.editMode.tools;
             board.editMode.hideToolbars(['cell', 'row']);
             board.editMode.hideContextPointer();
-            // update expanded context menu container
+            // Update expanded context menu container
             if (editModeTools.contextMenu) {
                 editModeTools.contextMenu
                     .updatePosition(editModeTools.contextButtonElement);
-            }
-        }
-        for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-            this.reflowLayout(board.layouts[i], cntSize);
-        }
-    }
-    reflowLayout(layout, cntSize) {
-        let row, cell;
-        for (let j = 0, jEnd = layout.rows.length; j < jEnd; ++j) {
-            row = layout.rows[j];
-            for (let k = 0, kEnd = row.cells.length; k < kEnd; ++k) {
-                cell = row.cells[k];
-                cell.reflow(cntSize);
-                if (cell.nestedLayout) {
-                    this.reflowLayout(cell.nestedLayout, cntSize);
-                }
             }
         }
     }
@@ -327,7 +312,6 @@ class Board {
     fromJSON(json) {
         const options = json.options, board = new Board(options.containerId, {
             componentOptions: options.componentOptions,
-            responsiveBreakpoints: options.responsiveBreakpoints,
             dataPool: options.dataPool,
             layoutsJSON: options.layouts
         });
@@ -353,8 +337,7 @@ class Board {
                 dataPool: board.options.dataPool,
                 guiEnabled: board.guiEnabled,
                 layouts: layouts,
-                componentOptions: board.options.componentOptions,
-                responsiveBreakpoints: board.options.responsiveBreakpoints
+                componentOptions: board.options.componentOptions
             }
         };
     }
@@ -415,12 +398,7 @@ class Board {
             },
             layouts: []
         },
-        components: [],
-        responsiveBreakpoints: {
-            small: 576,
-            medium: 992,
-            large: 1200
-        }
+        components: []
     };
     /* *
      *
@@ -435,7 +413,7 @@ class Board {
     function importLocal() {
         const dashboardJSON = localStorage.getItem(
         // Dashboard.prefix + this.id,
-        Globals.classNamePrefix + '1' // temporary for demo test
+        Globals.classNamePrefix + '1' // Temporary for demo test
         );
         if (dashboardJSON) {
             try {
@@ -443,7 +421,7 @@ class Board {
                     .fromJSON(JSON.parse(dashboardJSON));
             }
             catch (e) {
-                // nothing to do
+                // Nothing to do
             }
         }
     }

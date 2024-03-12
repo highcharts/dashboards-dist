@@ -42,7 +42,7 @@ declare module './Series/SeriesOptions' {
  * Tooltip options.
  */
 declare class Tooltip {
-    constructor(chart: Chart, options: TooltipOptions);
+    constructor(chart: Chart, options: TooltipOptions, pointer: Pointer);
     allowShared: boolean;
     chart: Chart;
     container?: globalThis.HTMLElement;
@@ -57,6 +57,7 @@ declare class Tooltip {
     now: Record<string, number>;
     options: TooltipOptions;
     outside: boolean;
+    pointer: Pointer;
     renderer?: SVGRenderer;
     shared?: boolean;
     split?: boolean;

@@ -29,15 +29,15 @@ import Serializable from '../Serializable.js';
  */
 function fromJSON(json) {
     const chainOptions = json.options.chain, jsonChain = json.chain, modifiers = [];
-    // modifiers
+    // Modifiers
     for (let i = 0, iEnd = jsonChain.length; i < iEnd; ++i) {
         modifiers.push(Serializable.fromJSON(jsonChain[i]));
     }
-    // apply chain options later
+    // Apply chain options later
     delete json.options.chain;
     const chainModifier = new ChainModifier(json.options, ...modifiers);
     chainModifier.options.chain = chainOptions;
-    // done
+    // Done
     return chainModifier;
 }
 /**
@@ -64,12 +64,12 @@ function jsonSupportFor(obj) {
  */
 function toJSON(obj) {
     const chain = [], options = obj.options;
-    // modifiers
+    // Modifiers
     const objChain = obj.chain;
     for (let i = 0, iEnd = objChain.length; i < iEnd; ++i) {
         chain.push(Serializable.toJSON(objChain[i]));
     }
-    // done
+    // Done
     return {
         $class: 'Data.ChainModifier',
         chain: [],

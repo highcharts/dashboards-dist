@@ -8,12 +8,12 @@ import type DataModifier from '../../Data/Modifiers/DataModifier';
 import type TextOptions from './TextOptions';
 import type SidebarPopup from '../EditMode/SidebarPopup';
 import CallbackRegistry from '../CallbackRegistry.js';
+import ComponentGroup from './ComponentGroup.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
 import DataTable from '../../Data/DataTable.js';
 import EditableOptions from './EditableOptions.js';
-import Globals from '../Globals.js';
-import ComponentGroup from './ComponentGroup.js';
 import Sync from './Sync/Sync.js';
+import Globals from '../Globals.js';
 /**
  *
  * Abstract Class of component.
@@ -145,6 +145,11 @@ declare abstract class Component {
      */
     private cellListeners;
     /**
+     * Reference to ResizeObserver, which allows running 'unobserve'.
+     * @internal
+     */
+    private resizeObserver?;
+    /**
      * @internal
      */
     protected syncHandlers?: Sync.OptionsRecord;
@@ -191,7 +196,7 @@ declare abstract class Component {
      * @param options
      * The options for the component.
      */
-    constructor(cell: Cell, options: Partial<Component.Options>);
+    constructor(cell: Cell, options: Partial<Component.Options>, board?: Board);
     /**
      * Function fired when component's `tableChanged` event is fired.
      * @internal
@@ -226,7 +231,7 @@ declare abstract class Component {
      *
      * @internal
      */
-    private attachCellListeneres;
+    private attachCellListeners;
     /**
      * Set a parent cell.
      * @param cell
@@ -409,105 +414,18 @@ declare namespace Component {
         target?: Component;
         detail?: Globals.AnyRecord;
     } & EventRecord;
-    /**
-     * The sync can be an object configuration containing: `highlight`,
-     * `visibility` or `extremes`. For the Navigator Component `crossfilter`
-     * sync can be used.
-     *
-     * Example:
-     * ```
-     * {
-     *     highlight: true
-     * }
-     * ```
-     */
-    interface SyncOptions {
-        /**
-         * Crossfilter sync is available for Navigator components. Modifies data
-         * by selecting only those rows that meet common ranges.
-         *
-         * Alternatively to the boolean value, it can accept an object
-         * containing additional options for operating this type of
-         * synchronization.
-         *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/crossfilter | Crossfilter Sync }
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/crossfilter-affecting-navigators | Crossfilter with affectNavigators enabled }
-         *
-         * @default false
-         */
-        crossfilter?: boolean | CrossfilterSyncOptions;
-        /**
-         * Extremes sync is available for Highcharts, KPI, DataGrid and
-         * Navigator components. Sets a common range of displayed data. For the
-         * KPI Component sets the last value.
-         *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/sync-extremes/ | Extremes Sync }
-         *
-         * @default false
-         */
-        extremes?: boolean | Sync.OptionsEntry;
-        /**
-         * Highlight sync is available for Highcharts and DataGrid components.
-         * It allows to highlight hovered corresponding rows in the table and
-         * chart points.
-         *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/component-options/sync-highlight/ | Highlight Sync }
-         *
-         * @default false
-         */
-        highlight?: boolean | Sync.OptionsEntry;
-        /**
-         * Visibility sync is available for Highcharts and DataGrid components.
-         * Synchronizes the visibility of data from a hidden/shown series.
-         *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/component-options/sync-visibility/ | Visibility Sync }
-         *
-         * @default false
-         */
-        visibility?: boolean | Sync.OptionsEntry;
-    }
-    /**
-     * The crossfilter sync options.
-     *
-     * Example:
-     * ```
-     * {
-     *     enabled: true,
-     *     affectNavigator: true
-     * }
-     * ```
-     */
-    interface CrossfilterSyncOptions extends Sync.OptionsEntry {
-        /**
-         * Whether this navigator component's content should be affected by
-         * other navigators with crossfilter enabled.
-         *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/crossfilter-affecting-navigators | Affect Navigators Enabled }
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/sync-extremes/ | Affect Navigators Disabled }
-         *
-         * @default false
-         */
-        affectNavigator?: boolean;
-    }
-    /** @internal */
-    type SyncType = keyof SyncOptions;
     interface Options {
         /**
          * Cell id, where component is attached.
+         * Deprecated, use `renderTo` instead.
+         *
+         * @deprecated
          */
         cell?: string;
+        /**
+         * Cell id, where component is attached.
+         */
+        renderTo?: string;
         /**
          * The name of class that is applied to the component's container.
          */
@@ -538,25 +456,8 @@ declare namespace Component {
         editableOptionsBindings?: EditableOptions.OptionsBindings;
         /** @internal */
         presentationModifier?: DataModifier;
-        /**
-         * Defines which elements should be synced.
-         * ```
-         * Example:
-         * {
-         *     highlight: true
-         * }
-         * ```
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/sync-extremes/ | Extremes Sync }
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/component-options/sync-highlight/ | Highlight Sync }
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/component-options/sync-visibility/ | Visibility Sync }
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/crossfilter | Crossfilter Sync } (Navigator Component only)
-         */
-        sync?: SyncOptions;
+        /** @internal */
+        sync?: Sync.RawOptionsRecord;
         /**
          * Connector options
          */
@@ -589,14 +490,14 @@ declare namespace Component {
     interface ComponentOptionsJSON extends JSON.Object {
         caption?: string;
         className?: string;
-        cell?: string;
+        renderTo?: string;
         editableOptions?: JSON.Array<string>;
         editableOptionsBindings?: EditableOptions.OptionsBindings & JSON.Object;
         id: string;
         parentCell?: Cell.JSON;
         parentElement?: string;
         style?: {};
-        sync?: SyncOptions & JSON.Object;
+        sync?: Sync.RawOptionsRecord & JSON.Object;
         title?: string;
         type: keyof ComponentTypeRegistry;
     }

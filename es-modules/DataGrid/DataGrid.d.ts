@@ -295,6 +295,15 @@ declare class DataGrid {
      */
     private handleMouseOver;
     /**
+     * Handle click over rows.
+     *
+     * @internal
+     *
+     * @param e
+     * Related mouse event.
+     */
+    private handleRowClick;
+    /**
      * Remove the <input> overlay and update the cell value
      * @internal
      */

@@ -11,7 +11,7 @@
  *
  * */
 'use strict';
-import DataGridComponent from './DataGridComponent.js';
+import DataGridComponent from '../Components/DataGridComponent/DataGridComponent.js';
 /* *
  *
  *  Functions
@@ -22,8 +22,8 @@ import DataGridComponent from './DataGridComponent.js';
  *
  * @param {Dashboards.DataGrid} dataGrid DataGrid core to connect.
  */
-function connectDataGrid(DataGridClass) {
-    DataGridComponent.DataGridConstructor = DataGridClass;
+function connectDataGrid(DataGridNS) {
+    DataGridComponent.DataGridNamespace = DataGridNS;
 }
 /**
  * Callback function of the Dashboard plugin.

@@ -357,6 +357,23 @@ declare function pad(number: number, length?: number, padder?: string): string;
  */
 declare function relativeLength(value: Utilities.RelativeSize, base: number, offset?: number): number;
 /**
+ * Replaces text in a string with a given replacement in a loop to catch nested
+ * matches after previous replacements.
+ *
+ * @function Highcharts.replaceNested
+ *
+ * @param {string} text
+ * Text to search and modify.
+ *
+ * @param {...Array<(RegExp|string)>} replacements
+ * One or multiple tuples with search pattern (`[0]: (string|RegExp)`) and
+ * replacement (`[1]: string`) for matching text.
+ *
+ * @return {string}
+ * Text with replacements.
+ */
+declare function replaceNested(text: string, ...replacements: Array<[pattern: (string | RegExp), replacement: string]>): string;
+/**
  * Wrap a method with extended functionality, preserving the original function.
  *
  * @function Highcharts.wrap
@@ -758,6 +775,7 @@ declare const Utilities: {
     pushUnique: typeof pushUnique;
     relativeLength: typeof relativeLength;
     removeEvent: typeof removeEvent;
+    replaceNested: typeof replaceNested;
     splat: typeof splat;
     stableSort: typeof stableSort;
     syncTimeout: typeof syncTimeout;

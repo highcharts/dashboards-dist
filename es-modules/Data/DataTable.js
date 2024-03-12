@@ -24,7 +24,6 @@ const { addEvent, fireEvent, uniqueKey } = U;
  * to add, remove, and manipulate columns and rows, as well as to retrieve data
  * from specific cells.
  *
- * @private
  * @class
  * @name Highcharts.DataTable
  *
@@ -492,7 +491,7 @@ class DataTable {
                 for (let i = 0, cellValue; i < columnLength; ++i) {
                     cellValue = column[i];
                     if (typeof cellValue === 'number') {
-                        // assume unmixed data for performance reasons
+                        // Assume unmixed data for performance reasons
                         return column.slice();
                     }
                     if (cellValue !== null &&

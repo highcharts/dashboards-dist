@@ -17,7 +17,7 @@ declare module './Chart/ChartLike' {
         mouseDownX?: number;
         mouseDownY?: number;
         mouseIsDown?: (boolean | string);
-        pointer: Pointer;
+        pointer?: Pointer;
     }
 }
 /**
