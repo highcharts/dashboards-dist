@@ -37,8 +37,6 @@ declare namespace Globals {
     };
     /** @internal */
     const guiElementType: Record<string, GUIElement.GUIElementType>;
-    /** @internal */
-    const responsiveBreakpoints: Record<string, string>;
     /**
      * Contains all Board instances of this window.
      */

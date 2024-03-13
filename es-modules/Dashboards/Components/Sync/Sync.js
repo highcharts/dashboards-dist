@@ -100,10 +100,11 @@ class Sync {
     start() {
         const { syncConfig, component } = this;
         for (const id of Object.keys(syncConfig)) {
-            if (!syncConfig[id]) {
+            const syncOptions = syncConfig[id];
+            if (!syncOptions) {
                 continue;
             }
-            let { emitter: emitterConfig, handler: handlerConfig } = syncConfig[id];
+            let { emitter: emitterConfig, handler: handlerConfig } = syncOptions;
             if (handlerConfig) {
                 // Avoid registering the same handler multiple times
                 // i.e. panning and selection uses the same handler
@@ -112,11 +113,7 @@ class Sync {
                         Sync.defaultHandlers[id]
                             .handler;
                 }
-                // Create a tuple if the handler is a function.
-                if (typeof handlerConfig === 'function') {
-                    handlerConfig = [id, handlerConfig];
-                }
-                const handler = new SyncHandler(...handlerConfig);
+                const handler = new SyncHandler(id, handlerConfig);
                 if (!this.isRegisteredHandler(handler.id)) {
                     this.registerSyncHandler(handler);
                     handler.register(component);
@@ -128,12 +125,7 @@ class Sync {
                         Sync.defaultHandlers[id]
                             .emitter;
                 }
-                // TODO: should rework the SyncHandler constructor when
-                // all handlers are updated
-                if (typeof emitterConfig === 'function') {
-                    emitterConfig = [id, emitterConfig];
-                }
-                const emitter = new SyncEmitter(...emitterConfig);
+                const emitter = new SyncEmitter(id, emitterConfig);
                 if (!this.isRegisteredEmitter(emitter.id)) {
                     this.registerSyncEmitter(emitter);
                     emitter.create(component);
@@ -172,6 +164,33 @@ class Sync {
  * the configuration before creating the dashboard.
  */
 Sync.defaultHandlers = {};
+/* *
+ *
+ *  Class Namespace
+ *
+ * */
+(function (Sync) {
+    /* *
+     *
+     *  Declarations
+     *
+     * */
+    /* *
+     *
+     *  Constants
+     *
+     * */
+    Sync.defaultSyncOptions = {
+        crossfilter: {
+            affectNavigator: false
+        },
+        highlight: {
+            highlightPoint: true,
+            showTooltip: true,
+            showCrosshair: true
+        }
+    };
+})(Sync || (Sync = {}));
 /* *
  *
  *  Default Export

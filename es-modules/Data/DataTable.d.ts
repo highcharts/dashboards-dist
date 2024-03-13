@@ -6,7 +6,6 @@ import type DataTableOptions from './DataTableOptions';
  * to add, remove, and manipulate columns and rows, as well as to retrieve data
  * from specific cells.
  *
- * @private
  * @class
  * @name Highcharts.DataTable
  *

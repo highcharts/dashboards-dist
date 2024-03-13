@@ -45,7 +45,7 @@ class MenuItem {
             className += ' ' + options.className;
         }
         return createElement('div', { className: className || '' }, merge(this.options.style || {}, 
-        // to remove
+        // To remove
         this.isActive ? { display: 'block' } : {}), this.menu.container);
     }
     setInnerElement() {

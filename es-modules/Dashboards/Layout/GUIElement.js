@@ -47,13 +47,13 @@ class GUIElement {
         };
     }
     // Method for element id generation.
-    static createElementId(elementType // col, row, layout
+    static createElementId(elementType // 'col', 'row', 'layout'
     ) {
         return (Globals.classNamePrefix + elementType + '-' +
             uniqueKey().slice(11));
     }
     // Get width in percentages (0% - 100%).
-    static getPercentageWidth(width // supported formats '50%' or '1/2'
+    static getPercentageWidth(width // Supported formats '50%' or '1/2'
     ) {
         const fractionRegEx = /^([0-9]{1})[\-\/\.]([0-9]{1,2})$/;
         let result;

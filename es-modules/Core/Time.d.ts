@@ -52,6 +52,7 @@ declare module './Axis/TickPositionsArray' {
  * Time options as defined in [chart.options.time](/highcharts/time).
  */
 declare class Time {
+    static formatCache: Record<string, Intl.DateTimeFormat>;
     constructor(options?: Time.TimeOptions);
     options: Time.TimeOptions;
     timezoneOffset?: number;

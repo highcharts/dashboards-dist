@@ -55,6 +55,9 @@ var Globals;
         columnHeader: Globals.classNamePrefix + 'column-header'
     };
     Globals.win = window;
+    Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '';
+    Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1;
+    Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1;
 })(Globals || (Globals = {}));
 /* *
  *

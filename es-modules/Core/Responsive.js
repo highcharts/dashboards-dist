@@ -8,10 +8,8 @@
  *
  * */
 'use strict';
-import H from './Globals.js';
-const { composed } = H;
 import U from './Utilities.js';
-const { diffObjects, extend, find, merge, pick, pushUnique, uniqueKey } = U;
+const { diffObjects, extend, find, merge, pick, uniqueKey } = U;
 /* *
  *
  *  Composition
@@ -33,8 +31,9 @@ var Responsive;
      * @private
      */
     function compose(ChartClass) {
-        if (pushUnique(composed, compose)) {
-            extend(ChartClass.prototype, {
+        const chartProto = ChartClass.prototype;
+        if (!chartProto.matchResponsiveRule) {
+            extend(chartProto, {
                 matchResponsiveRule,
                 setResponsive
             });
@@ -140,7 +139,7 @@ export default Responsive;
  * @return {boolean}
  * Return `true` if it applies.
  */
-(''); // keeps doclets above in JS file
+(''); // Keeps doclets above in JS file
 /* *
  *
  *  API Options
@@ -186,7 +185,7 @@ export default Responsive;
  * [xAxis](#xAxis), [yAxis](#yAxis) or [series](#series). For these
  * collections, an `id` option is used to map the new option set to
  * an existing object. If an existing object of the same id is not found,
- * the item of the same indexupdated. So for example, setting `chartOptions`
+ * the item of the same index updated. So for example, setting `chartOptions`
  * with two series items without an `id`, will cause the existing chart's
  * two series to be updated with respective options.
  *
@@ -253,4 +252,4 @@ export default Responsive;
  * @since     5.0.0
  * @apioption responsive.rules.condition.minWidth
  */
-(''); // keeps doclets above in JS file
+(''); // Keeps doclets above in JS file

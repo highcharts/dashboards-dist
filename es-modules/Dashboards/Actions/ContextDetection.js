@@ -17,7 +17,7 @@ import U from '../../Core/Utilities.js';
 import GUIElement from '../Layout/GUIElement.js';
 const { defined } = U;
 class ContextDetection {
-    static isGUIElementOnParentEdge(mouseContext, side // right, left, top, bottom
+    static isGUIElementOnParentEdge(mouseContext, side // 'right', 'left', 'top', 'bottom'
     ) {
         const visibleElements = (side === 'top' || side === 'bottom') ?
             mouseContext.row.layout.getVisibleRows() :
@@ -47,7 +47,7 @@ class ContextDetection {
     }
     static getContext(mouseCellContext, e, offset) {
         let sideOffset;
-        // get cell offsets, width, height
+        // Get cell offsets, width, height
         const mouseCellContextOffsets = GUIElement.getOffsets(mouseCellContext);
         const { width, height } = GUIElement.getDimFromOffsets(mouseCellContextOffsets);
         // Correct offset when element to small.
@@ -57,7 +57,7 @@ class ContextDetection {
         // Get mouse position relative to the mouseContext sides.
         const leftSideX = e.clientX - mouseCellContextOffsets.left;
         const topSideY = e.clientY - mouseCellContextOffsets.top;
-        // get cell side - right, left, top, bottom
+        // Get cell side - right, left, top, bottom
         const sideY = topSideY >= -offset && topSideY <= offset ? 'top' :
             topSideY - height >= -offset && topSideY - height <= offset ?
                 'bottom' :
