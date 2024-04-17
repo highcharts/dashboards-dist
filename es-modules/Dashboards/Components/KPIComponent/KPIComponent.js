@@ -16,7 +16,7 @@
 'use strict';
 import AST from '../../../Core/Renderer/HTML/AST.js';
 import Component from '../Component.js';
-import KPISyncHandlers from './KPISyncHandlers.js';
+import KPISyncs from './KPISyncs/KPISyncs.js';
 import KPIComponentDefaults from './KPIComponentDefaults.js';
 import Templating from '../../../Core/Templating.js';
 const { format } = Templating;
@@ -82,7 +82,6 @@ class KPIComponent extends Component {
         super(cell, options, board);
         this.options = options;
         this.type = 'KPI';
-        this.sync = new KPIComponent.Sync(this, this.syncHandlers);
         this.value = createElement('span', {
             className: `${options.className}-value`
         }, {}, this.contentElement);
@@ -137,14 +136,6 @@ class KPIComponent extends Component {
         return this;
     }
     /**
-     * Internal method for handling option updates.
-     *
-     * @private
-     */
-    setOptions() {
-        this.filterAndAssignSyncOptions(KPISyncHandlers);
-    }
-    /**
      * Handles updating via options.
      *
      * @param options
@@ -152,7 +143,6 @@ class KPIComponent extends Component {
      */
     async update(options, shouldRerender = true) {
         await super.update(options);
-        this.setOptions();
         if (options.chartOptions && this.chart) {
             this.chart.update(options.chartOptions);
         }
@@ -182,8 +172,9 @@ class KPIComponent extends Component {
         if (defined(this.options.value)) {
             return this.options.value;
         }
-        if (this.connector && this.options.columnName) {
-            const table = this.connector?.table.modified, column = table.getColumn(this.options.columnName), length = column?.length || 0;
+        const connector = this.getFirstConnector();
+        if (connector && this.options.columnName) {
+            const table = connector.table.modified, column = table.getColumn(this.options.columnName), length = column?.length || 0;
             return table.getCellAsString(this.options.columnName, length - 1);
         }
     }
@@ -416,8 +407,10 @@ class KPIComponent extends Component {
  * Default options of the KPI component.
  */
 KPIComponent.defaultOptions = merge(Component.defaultOptions, KPIComponentDefaults);
-/** @internal */
-KPIComponent.syncHandlers = KPISyncHandlers;
+/**
+ * Predefined sync config for the KPI component.
+ */
+KPIComponent.predefinedSyncConfig = KPISyncs;
 /**
  * Default options of the KPI component.
  *

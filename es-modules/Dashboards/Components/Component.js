@@ -15,13 +15,13 @@
  * */
 'use strict';
 import CallbackRegistry from '../CallbackRegistry.js';
-import ComponentGroup from './ComponentGroup.js';
+import ConnectorHandler from './ConnectorHandler.js';
 import EditableOptions from './EditableOptions.js';
 import Sync from './Sync/Sync.js';
 import Globals from '../Globals.js';
 const { classNamePrefix } = Globals;
 import U from '../../Core/Utilities.js';
-const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, isObject, getStyle, diffObjects } = U;
+const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, diffObjects } = U;
 import CU from './ComponentUtilities.js';
 const { getMargins, getPaddings } = CU;
 import DU from '../Utilities.js';
@@ -94,19 +94,16 @@ class Component {
      */
     constructor(cell, options, board) {
         /**
+         * The connector handlers for the component.
+         */
+        this.connectorHandlers = [];
+        /**
          * Registry of callbacks registered on the component. Used in the Highcharts
          * component to keep track of chart events.
          *
          * @internal
          */
         this.callbackRegistry = new CallbackRegistry();
-        /**
-         * Event listeners tied to the current DataTable. Used for rerendering the
-         * component on data changes.
-         *
-         * @internal
-         */
-        this.tableEvents = [];
         /**
          * Event listeners tied to the parent cell. Used for rendering/resizing the
          * component on interactions.
@@ -136,9 +133,16 @@ class Component {
         this.id = this.options.id && this.options.id.length ?
             this.options.id :
             uniqueKey();
+        if (this.options.connector) {
+            const connectorOptionsArray = isArray(this.options.connector) ?
+                this.options.connector :
+                [this.options.connector];
+            for (const connectorOptions of connectorOptionsArray) {
+                this.connectorHandlers.push(new ConnectorHandler(this, connectorOptions));
+            }
+        }
         this.editableOptions =
             new EditableOptions(this, options.editableOptionsBindings);
-        this.presentationModifier = this.options.presentationModifier;
         this.dimensions = {
             width: null,
             height: null
@@ -153,7 +157,7 @@ class Component {
         this.contentElement = createElement('div', {
             className: `${this.options.className}-content`
         }, {}, this.element, true);
-        this.filterAndAssignSyncOptions();
+        this.sync = new Sync(this, this.constructor.predefinedSyncConfig);
         this.setupEventListeners();
         if (cell) {
             this.attachCellListeners();
@@ -179,64 +183,13 @@ class Component {
     sidebar) {
         return {};
     }
-    /* *
-     *
-     *  Functions
-     *
-     * */
     /**
-     * Inits connectors for the component and rerenders it.
+     * Returns the first connector of the component if it exists.
      *
-     * @returns
-     * Promise resolving to the component.
+     * @internal
      */
-    async initConnector() {
-        const connectorId = this.options.connector?.id, dataPool = this.board.dataPool;
-        if (connectorId &&
-            (this.connectorId !== connectorId ||
-                dataPool.isNewConnector(connectorId))) {
-            this.cell?.setLoadingState();
-            const connector = await dataPool.getConnector(connectorId);
-            this.setConnector(connector);
-        }
-        return this;
-    }
-    /**
-    * Filter the sync options that are declared in the component options.
-    * Assigns the sync options to the component and to the sync instance.
-    *
-    * @param defaultHandlers
-    * Sync handlers on component.
-    *
-    * @internal
-    */
-    filterAndAssignSyncOptions(defaultHandlers = this.constructor.syncHandlers) {
-        const sync = this.options.sync || {};
-        const syncHandlers = Object.keys(sync).reduce((carry, handlerName) => {
-            if (handlerName) {
-                const defaultHandler = defaultHandlers[handlerName];
-                const defaultOptions = Sync.defaultSyncOptions[handlerName];
-                const handler = sync[handlerName];
-                // Make it always an object
-                carry[handlerName] = merge(defaultOptions || {}, { enabled: isObject(handler) ? handler.enabled : handler }, isObject(handler) ? handler : {});
-                // Set emitter and handler default functions
-                if (defaultHandler && carry[handlerName].enabled) {
-                    const keys = [
-                        'emitter', 'handler'
-                    ];
-                    for (const key of keys) {
-                        if (carry[handlerName][key] === true ||
-                            carry[handlerName][key] === void 0) {
-                            carry[handlerName][key] =
-                                defaultHandler[key];
-                        }
-                    }
-                }
-            }
-            return carry;
-        }, {});
-        this.sync ? this.sync.syncConfig = syncHandlers : void 0;
-        this.syncHandlers = syncHandlers;
+    getFirstConnector() {
+        return this.connectorHandlers[0]?.connector;
     }
     /**
      * Setup listeners on cell/other things up the chain
@@ -292,133 +245,19 @@ class Component {
         }
     }
     /**
-     * Adds event listeners to data table.
-     * @param table
-     * Data table that is source of data.
-     * @internal
+     * Initializes connector handlers for the component.
      */
-    setupTableListeners(table) {
-        const connector = this.connector;
-        if (connector) {
-            if (table) {
-                [
-                    'afterDeleteColumns',
-                    'afterDeleteRows',
-                    'afterSetCell',
-                    'afterSetConnector',
-                    'afterSetColumns',
-                    'afterSetRows'
-                ].forEach((event) => {
-                    this.tableEvents.push((table)
-                        .on(event, (e) => {
-                        clearTimeout(this.tableEventTimeout);
-                        this.tableEventTimeout = Globals.win.setTimeout(() => {
-                            this.emit({
-                                ...e,
-                                type: 'tableChanged'
-                            });
-                            this.tableEventTimeout = void 0;
-                        });
-                    }));
-                });
-            }
-            this.tableEvents.push(connector.on('afterLoad', () => {
-                clearTimeout(this.tableEventTimeout);
-                this.tableEventTimeout = Globals.win.setTimeout(() => {
-                    this.emit({
-                        target: this,
-                        type: 'tableChanged'
-                    });
-                    this.tableEventTimeout = void 0;
-                });
-            }));
+    async initConnectors() {
+        fireEvent(this, 'setConnectors', {
+            connectorHandlers: this.connectorHandlers
+        });
+        for (const connectorHandler of this.connectorHandlers) {
+            await connectorHandler.initConnector();
         }
-    }
-    /**
-     * Remove event listeners in data table.
-     * @internal
-     */
-    clearTableListeners() {
-        const connector = this.connector, tableEvents = this.tableEvents;
-        if (tableEvents.length) {
-            tableEvents.forEach((removeEventCallback) => removeEventCallback());
-        }
-        if (connector) {
-            tableEvents.push(connector.table.on('afterSetModifier', (e) => {
-                if (e.type === 'afterSetModifier') {
-                    clearTimeout(this.tableEventTimeout);
-                    this.tableEventTimeout = Globals.win.setTimeout(() => {
-                        this.emit({
-                            ...e,
-                            type: 'tableChanged'
-                        });
-                        this.tableEventTimeout = void 0;
-                    });
-                }
-            }));
-        }
-    }
-    /**
-     * Attaches data store to the component.
-     * @param connector
-     * Connector of data.
-     *
-     * @returns
-     * Component which can be used in chaining.
-     *
-     * @internal
-     */
-    setConnector(connector) {
-        fireEvent(this, 'setConnector', { connector });
-        // Clean up old event listeners
-        while (this.tableEvents.length) {
-            const eventCallback = this.tableEvents.pop();
-            if (typeof eventCallback === 'function') {
-                eventCallback();
-            }
-        }
-        this.connector = connector;
-        if (connector) {
-            // Set up event listeners
-            this.clearTableListeners();
-            this.setupTableListeners(connector.table);
-            // Re-setup if modifier changes
-            connector.table.on('setModifier', () => this.clearTableListeners());
-            connector.table.on('afterSetModifier', (e) => {
-                if (e.type === 'afterSetModifier' && e.modified) {
-                    this.setupTableListeners(e.modified);
-                }
-            });
-            // Add the component to a group based on the
-            // connector table id by default
-            // TODO: make this configurable
-            const tableID = connector.table.id;
-            if (!ComponentGroup.getComponentGroup(tableID)) {
-                ComponentGroup.addComponentGroup(new ComponentGroup(tableID));
-            }
-            const group = ComponentGroup.getComponentGroup(tableID);
-            if (group) {
-                group.addComponents([this.id]);
-                this.activeGroup = group;
-            }
-        }
-        fireEvent(this, 'afterSetConnector', { connector });
+        fireEvent(this, 'afterSetConnectors', {
+            connectorHandlers: this.connectorHandlers
+        });
         return this;
-    }
-    /** @internal */
-    setActiveGroup(group) {
-        if (typeof group === 'string') {
-            group = ComponentGroup.getComponentGroup(group) || null;
-        }
-        if (group instanceof ComponentGroup) {
-            this.activeGroup = group;
-        }
-        if (group === null) {
-            this.activeGroup = void 0;
-        }
-        if (this.activeGroup) {
-            this.activeGroup.addComponents([this.id]);
-        }
     }
     /**
      * Gets height of the component's content.
@@ -500,14 +339,34 @@ class Component {
         };
         // Update options
         fireEvent(this, 'update', eventObject);
-        this.options = merge(this.options, newOptions);
-        if (this.options.connector?.id &&
-            this.connectorId !== this.options.connector.id) {
-            const connector = await this.board.dataPool
-                .getConnector(this.options.connector.id);
-            this.setConnector(connector);
+        if (newOptions.connector && Array.isArray(this.options.connector)) {
+            this.options.connector = void 0;
         }
         this.options = merge(this.options, newOptions);
+        const connectorOptions = (this.options.connector ? (isArray(this.options.connector) ? this.options.connector :
+            [this.options.connector]) : []);
+        let connectorsHaveChanged = connectorOptions.length !== this.connectorHandlers.length;
+        if (!connectorsHaveChanged) {
+            for (let i = 0, iEnd = connectorOptions.length; i < iEnd; i++) {
+                const oldConnectorId = this.connectorHandlers[i]?.options.id;
+                const newConnectorId = connectorOptions[i]?.id;
+                if (oldConnectorId !== newConnectorId) {
+                    connectorsHaveChanged = true;
+                    break;
+                }
+                this.connectorHandlers[i].updateOptions(connectorOptions[i]);
+            }
+        }
+        if (connectorsHaveChanged) {
+            for (const connectorHandler of this.connectorHandlers) {
+                connectorHandler.destroy();
+            }
+            this.connectorHandlers.length = 0;
+            for (const options of connectorOptions) {
+                this.connectorHandlers.push(new ConnectorHandler(this, options));
+            }
+            await this.initConnectors();
+        }
         if (shouldRerender || eventObject.shouldForceRerender) {
             this.render();
         }
@@ -614,7 +473,7 @@ class Component {
      * @internal
      */
     async load() {
-        await this.initConnector();
+        await this.initConnectors();
         this.render();
         return this;
     }
@@ -646,8 +505,9 @@ class Component {
         }
         // Call unmount
         fireEvent(this, 'unmount');
-        // Unregister events
-        this.tableEvents.forEach((eventCallback) => eventCallback());
+        for (const connectorHandler of this.connectorHandlers) {
+            connectorHandler.destroy();
+        }
         this.element.remove();
     }
     /** @internal */
@@ -716,6 +576,10 @@ class Component {
         let result = component.getEditableOptions();
         for (let i = 0, end = propertyPath.length; i < end; i++) {
             if (isArray(result)) {
+                if (propertyPath[0] === 'connector' &&
+                    result.length > 1) {
+                    return 'multiple connectors';
+                }
                 result = result[0];
             }
             if (!result) {
@@ -733,6 +597,13 @@ class Component {
  * */
 /** @internal */
 Component.Sync = Sync;
+/**
+ * Predefined sync config for component.
+ */
+Component.predefinedSyncConfig = {
+    defaultSyncOptions: {},
+    defaultSyncPairs: {}
+};
 /**
  * Default options of the component.
  */
@@ -756,8 +627,4 @@ Component.defaultOptions = {
             type: 'input'
         }]
 };
-/**
- * Default sync Handlers.
- */
-Component.syncHandlers = {};
 export default Component;

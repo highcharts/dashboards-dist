@@ -12,6 +12,10 @@ declare class HTMLComponent extends Component {
      */
     static defaultOptions: Partial<Component.Options> & import("../../Globals.js").default.DeepPartial<Options>;
     /**
+     * Predefined sync config for HTML component.
+     */
+    static predefinedSyncConfig: import("../Sync/Sync.js").default.PredefinedSyncConfig;
+    /**
      * Creates component from JSON.
      *
      * @param json
@@ -34,12 +38,6 @@ declare class HTMLComponent extends Component {
      * HTML component's options.
      */
     options: Options;
-    /**
-     * Reference to sync component that allows to sync.
-     *
-     * @internal
-     */
-    sync: Component['sync'];
     /**
      * Creates a HTML component in the cell.
      *

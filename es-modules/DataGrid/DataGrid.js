@@ -468,7 +468,10 @@ class DataGrid {
             const row = target.parentElement;
             this.toggleRowHighlight(row);
             this.hoveredRow = row;
-            fireEvent(this.container, 'dataGridHover', { row });
+            fireEvent(this.container, 'dataGridHover', {
+                row,
+                columnName: target.dataset?.columnName
+            });
         }
         else if (this.hoveredRow) {
             this.toggleRowHighlight();

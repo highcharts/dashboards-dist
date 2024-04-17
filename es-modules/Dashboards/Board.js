@@ -110,7 +110,7 @@ class Board {
     // Implementation:
     init(async) {
         const options = this.options;
-        let componentPromises = (options.components) ?
+        const componentPromises = (options.components) ?
             this.setComponents(options.components) : [];
         // Init events.
         this.initEvents();
@@ -349,23 +349,28 @@ class Board {
      * The JSON of boards's options.
      */
     getOptions() {
-        const board = this, layouts = [], components = [];
-        for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-            layouts.push(board.layouts[i].getOptions());
-        }
+        const board = this, options = {
+            ...this.options,
+            components: []
+        };
         for (let i = 0, iEnd = board.mountedComponents.length; i < iEnd; ++i) {
             if (board.mountedComponents[i].cell &&
                 board.mountedComponents[i].cell.mountedComponent) {
-                components.push(board.mountedComponents[i].component.getOptions());
+                options.components?.push(board.mountedComponents[i].component.getOptions());
             }
         }
-        return {
-            ...this.options,
-            gui: {
-                layouts
-            },
-            components: components
-        };
+        if (this.guiEnabled) {
+            options.gui = {
+                layouts: []
+            };
+            for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
+                options.gui.layouts?.push(board.layouts[i].getOptions());
+            }
+        }
+        else {
+            delete options.gui;
+        }
+        return options;
     }
 }
 /* *

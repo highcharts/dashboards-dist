@@ -53,6 +53,9 @@ declare function getJSON(url: string, success: AjaxSuccessCallbackFunction): voi
  * @param {RequestInit} [fetchOptions]
  * Additional attributes for the post request
  */
+/**
+ *
+ */
 declare function post(url: string, data: Record<string, any>, fetchOptions?: RequestInit): Promise<void>;
 declare const HttpUtilities: {
     ajax: typeof ajax;

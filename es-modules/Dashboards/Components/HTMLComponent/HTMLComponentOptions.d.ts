@@ -2,6 +2,10 @@ import type Component from '../Component';
 import type AST from '../../../Core/Renderer/HTML/AST';
 export interface Options extends Component.Options {
     /**
+     * Connector options
+     */
+    connector?: Component.ConnectorOptions;
+    /**
      * Array of HTML elements, declared as string or node.
      * ```
      * Example:

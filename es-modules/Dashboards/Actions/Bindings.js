@@ -35,10 +35,23 @@ var Bindings;
      *  Functions
      *
      * */
-    function getGUIElement(idOrElement) {
-        const container = typeof idOrElement === 'string' ?
-            document.getElementById(idOrElement) : idOrElement;
+    function getGUIElement(idOrElement, parentElement) {
+        let container;
         let guiElement;
+        if (typeof idOrElement === 'string') {
+            if (document.querySelectorAll('#' + idOrElement).length > 1) {
+                error('Multiple cells have identical ID ' +
+                    '("' + idOrElement + '"), potentially leading to ' +
+                    'unexpected behaviour. Ensure that each cell has a ' +
+                    'unique ID on the page.');
+            }
+            container = parentElement ?
+                parentElement.querySelector('#' + idOrElement) :
+                document.getElementById(idOrElement);
+        }
+        else {
+            container = idOrElement;
+        }
         if (container !== null) {
             fireEvent(container, 'bindedGUIElement', {}, function (e) {
                 guiElement = e.guiElement;
@@ -54,7 +67,13 @@ var Bindings;
             error('The `renderTo` option is required to render the component.');
             return;
         }
-        cell = cell || Bindings.getCell(renderTo);
+        if (board.mountedComponents.filter((el) => ((el.options.renderTo || el.options.cell) === renderTo)).length > 0) {
+            error('The component is misconfigured and is unable to initialize ' +
+                'it. A different component has already been declared in the`' +
+                renderTo + '` cell.');
+            return;
+        }
+        cell = cell || Bindings.getCell(renderTo, board.container);
         const componentContainer = cell?.container || document.querySelector('#' + renderTo);
         if (!componentContainer || !options.type) {
             error('The component is misconfigured and is unable to find the' +
@@ -128,7 +147,7 @@ var Bindings;
     Bindings.addComponent = addComponent;
     /** @internal */
     function componentFromJSON(json) {
-        let componentClass = ComponentRegistry.types[json.$class];
+        const componentClass = ComponentRegistry.types[json.$class];
         if (!componentClass) {
             return;
         }
@@ -143,24 +162,24 @@ var Bindings;
         return component;
     }
     Bindings.componentFromJSON = componentFromJSON;
-    function getCell(idOrElement) {
-        const cell = getGUIElement(idOrElement);
+    function getCell(idOrElement, parentElement) {
+        const cell = getGUIElement(idOrElement, parentElement);
         if (!(cell && cell.getType() === 'cell')) {
             return;
         }
         return cell;
     }
     Bindings.getCell = getCell;
-    function getRow(idOrElement) {
-        const row = getGUIElement(idOrElement);
+    function getRow(idOrElement, parentElement) {
+        const row = getGUIElement(idOrElement, parentElement);
         if (!(row && row.getType() === 'row')) {
             return;
         }
         return row;
     }
     Bindings.getRow = getRow;
-    function getLayout(idOrElement) {
-        const layout = getGUIElement(idOrElement);
+    function getLayout(idOrElement, parentElement) {
+        const layout = getGUIElement(idOrElement, parentElement);
         if (!(layout && layout.getType() === 'layout')) {
             return;
         }

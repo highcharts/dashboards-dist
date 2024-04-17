@@ -43,12 +43,14 @@ declare class Pointer {
     chartPosition?: Pointer.ChartPositionObject;
     hasDragged: number;
     hasPinched?: boolean;
+    hasPointerCapture?: boolean;
     hasZoom?: boolean;
     initiated?: boolean;
     isDirectTouch?: boolean;
     lastTouches?: Array<PointerEvent>;
     options: Options;
     pinchDown?: Array<PointerEvent>;
+    pointerCaptureEventsToUnbind: Array<Function>;
     res?: boolean;
     runChartClick?: boolean;
     selectionMarker?: SVGElement;
@@ -488,6 +490,14 @@ declare class Pointer {
      * @function Highcharts.Pointer#setDOMEvents
      */
     setDOMEvents(): void;
+    /**
+     * Sets, or removes on update, pointer events using pointer capture for
+     * tooltip.followTouchMove if any series has findNearestPointBy that
+     * includes the y dimension.
+     * @private
+     * @function Highcharts.Pointer#setPointerCapture
+    */
+    setPointerCapture(): void;
     /**
      * Sets the index of the hovered chart and leaves the previous hovered
      * chart, to reset states like tooltip.

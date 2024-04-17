@@ -2574,7 +2574,7 @@ class Chart {
      * @function Highcharts.Chart#transform
      */
     transform(params) {
-        const { axes = this.axes, event, from = {}, reset, selection, to = {}, trigger } = params, { inverted, resetZoomButton } = this;
+        const { axes = this.axes, event, from = {}, reset, selection, to = {}, trigger } = params, { inverted } = this;
         let hasZoomed = false, displayButton;
         // Remove active points for shared tooltip
         this.hoverPoints?.forEach((point) => point.setState());
@@ -2594,11 +2594,15 @@ class Chart {
                 continue;
             }
             let newMin = axis.toValue(minPx, true) +
-                minPointOffset * pointRangeDirection, newMax = axis.toValue(minPx + len / scale, true) -
-                ((minPointOffset * pointRangeDirection) ||
-                    // Polar zoom tests failed when this was not commented:
-                    // (axis.isXAxis && axis.pointRangePadding) ||
-                    0), allExtremes = axis.allExtremes;
+                // Don't apply offset for selection (#20784)
+                (selection ? 0 : minPointOffset * pointRangeDirection), newMax = axis.toValue(minPx + len / scale, true) -
+                (selection ? // Don't apply offset for selection (#20784)
+                    0 :
+                    ((minPointOffset * pointRangeDirection) ||
+                        // Polar zoom tests failed when this was not
+                        // commented:
+                        // (axis.isXAxis && axis.pointRangePadding) ||
+                        0)), allExtremes = axis.allExtremes;
             if (newMin > newMax) {
                 [newMin, newMax] = [newMax, newMin];
             }
@@ -2698,11 +2702,11 @@ class Chart {
             }
             else {
                 // Show or hide the Reset zoom button
-                if (displayButton && !resetZoomButton) {
+                if (displayButton && !this.resetZoomButton) {
                     this.showResetZoom();
                 }
-                else if (!displayButton && resetZoomButton) {
-                    this.resetZoomButton = resetZoomButton.destroy();
+                else if (!displayButton && this.resetZoomButton) {
+                    this.resetZoomButton = this.resetZoomButton.destroy();
                 }
                 this.redraw(trigger === 'zoom' &&
                     (this.options.chart.animation ?? this.pointCount < 100));

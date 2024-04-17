@@ -1,14 +1,12 @@
 import type Board from '../Board';
 import type Cell from '../Layout/Cell';
-import type { ComponentConnectorOptions } from './ComponentOptions';
 import type { ComponentType, ComponentTypeRegistry } from './ComponentType';
 import type JSON from '../JSON';
 import type Serializable from '../Serializable';
-import type DataModifier from '../../Data/Modifiers/DataModifier';
 import type TextOptions from './TextOptions';
 import type SidebarPopup from '../EditMode/SidebarPopup';
 import CallbackRegistry from '../CallbackRegistry.js';
-import ComponentGroup from './ComponentGroup.js';
+import ConnectorHandler from './ConnectorHandler.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
 import DataTable from '../../Data/DataTable.js';
 import EditableOptions from './EditableOptions.js';
@@ -45,6 +43,10 @@ declare abstract class Component {
     /** @internal */
     static Sync: typeof Sync;
     /**
+     * Predefined sync config for component.
+     */
+    static predefinedSyncConfig: Sync.PredefinedSyncConfig;
+    /**
      * Default options of the component.
      */
     static defaultOptions: Partial<Component.Options>;
@@ -62,17 +64,9 @@ declare abstract class Component {
      */
     cell: Cell;
     /**
-     * Default sync Handlers.
+     * The connector handlers for the component.
      */
-    static syncHandlers: Sync.OptionsRecord;
-    /**
-     * Connector that allows you to load data via URL or from a local source.
-     */
-    connector?: Component.ConnectorTypes;
-    /**
-     * The id of the connector in the data pool to use.
-     */
-    protected connectorId?: string;
+    connectorHandlers: ConnectorHandler[];
     /**
      * @internal
      * The board the component belongs to
@@ -126,18 +120,6 @@ declare abstract class Component {
      */
     callbackRegistry: CallbackRegistry;
     /**
-     * The interval for rendering the component on data changes.
-     * @internal
-     */
-    private tableEventTimeout?;
-    /**
-     * Event listeners tied to the current DataTable. Used for rerendering the
-     * component on data changes.
-     *
-     * @internal
-     */
-    private tableEvents;
-    /**
      * Event listeners tied to the parent cell. Used for rendering/resizing the
      * component on interactions.
      *
@@ -153,27 +135,8 @@ declare abstract class Component {
      * @internal
      */
     protected syncHandlers?: Sync.OptionsRecord;
-    /**
-     * DataModifier that is applied on top of modifiers set on the DataStore.
-     *
-     * @internal
-     */
-    presentationModifier?: DataModifier;
-    /**
-     * The table being presented, either a result of the above or a way to
-     * modify the table via events.
-     *
-     * @internal
-     */
-    presentationTable?: DataTable;
-    /**
-     * The active group of the component. Used for sync.
-     *
-     * @internal
-     */
-    activeGroup: ComponentGroup | undefined;
     /** @internal */
-    abstract sync: Sync;
+    sync: Sync;
     /**
      * Timeouts for calls to `Component.resizeTo()`.
      *
@@ -210,22 +173,11 @@ declare abstract class Component {
      */
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<ComponentType['options']>;
     /**
-     * Inits connectors for the component and rerenders it.
+     * Returns the first connector of the component if it exists.
      *
-     * @returns
-     * Promise resolving to the component.
+     * @internal
      */
-    initConnector(): Promise<this>;
-    /**
-    * Filter the sync options that are declared in the component options.
-    * Assigns the sync options to the component and to the sync instance.
-    *
-    * @param defaultHandlers
-    * Sync handlers on component.
-    *
-    * @internal
-    */
-    protected filterAndAssignSyncOptions(defaultHandlers?: typeof Sync.defaultHandlers): void;
+    getFirstConnector(): Component.ConnectorTypes | undefined;
     /**
      * Setup listeners on cell/other things up the chain
      *
@@ -243,30 +195,9 @@ declare abstract class Component {
      */
     setCell(cell: Cell, resize?: boolean): void;
     /**
-     * Adds event listeners to data table.
-     * @param table
-     * Data table that is source of data.
-     * @internal
+     * Initializes connector handlers for the component.
      */
-    private setupTableListeners;
-    /**
-     * Remove event listeners in data table.
-     * @internal
-     */
-    private clearTableListeners;
-    /**
-     * Attaches data store to the component.
-     * @param connector
-     * Connector of data.
-     *
-     * @returns
-     * Component which can be used in chaining.
-     *
-     * @internal
-     */
-    setConnector(connector: Component.ConnectorTypes | undefined): this;
-    /** @internal */
-    setActiveGroup(group: ComponentGroup | string | null): void;
+    initConnectors(): Promise<this>;
     /**
      * Gets height of the component's content.
      *
@@ -374,6 +305,7 @@ interface Component {
     type: keyof ComponentTypeRegistry;
 }
 declare namespace Component {
+    type ConnectorOptions = ConnectorHandler.ConnectorOptions;
     /** @internal */
     interface JSON extends Serializable.JSON<string> {
         options: ComponentOptionsJSON;
@@ -382,8 +314,8 @@ declare namespace Component {
      * The basic events
      */
     /** @internal */
-    type EventTypes = SetConnectorEvent | ResizeEvent | UpdateEvent | TableChangedEvent | LoadEvent | RenderEvent | JSONEvent | PresentationModifierEvent;
-    type SetConnectorEvent = Event<'setConnector' | 'afterSetConnector', {}>;
+    type EventTypes = SetConnectorsEvent | ResizeEvent | UpdateEvent | TableChangedEvent | LoadEvent | RenderEvent | JSONEvent | PresentationModifierEvent;
+    type SetConnectorsEvent = Event<'setConnectors' | 'afterSetConnectors', {}>;
     /** @internal */
     type ResizeEvent = Event<'resize', {
         readonly type: 'resize';
@@ -455,13 +387,11 @@ declare namespace Component {
         /** @internal */
         editableOptionsBindings?: EditableOptions.OptionsBindings;
         /** @internal */
-        presentationModifier?: DataModifier;
-        /** @internal */
         sync?: Sync.RawOptionsRecord;
         /**
          * Connector options
          */
-        connector?: ComponentConnectorOptions;
+        connector?: ConnectorOptions | ConnectorOptions[];
         /**
          * Sets an ID for the component's container.
          */

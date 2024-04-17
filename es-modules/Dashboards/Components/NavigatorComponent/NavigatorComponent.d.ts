@@ -1,7 +1,6 @@
 import type { Chart, Highcharts as H } from '../../Plugins/HighchartsTypes';
 import type Cell from '../../Layout/Cell';
 import type { Options } from './NavigatorComponentOptions';
-import type SidebarPopup from '../../EditMode/SidebarPopup';
 import Component from '../Component.js';
 /**
  * Setup a component with data navigation.
@@ -13,6 +12,10 @@ declare class NavigatorComponent extends Component {
      * Default options of the Navigator component.
      */
     static defaultOptions: Partial<Options>;
+    /**
+     * Predefined sync configuration for the Navigator component.
+     */
+    static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
     /**
      * Creates component from JSON.
      *
@@ -39,11 +42,6 @@ declare class NavigatorComponent extends Component {
      */
     options: Options;
     /**
-     * Reference to the sync system that allow to sync i.e tooltips.
-     * @private
-     */
-    sync: Component['sync'];
-    /**
      * The content of the navigator is of type string.
      * @private
      */
@@ -56,7 +54,7 @@ declare class NavigatorComponent extends Component {
     /** @private */
     private adjustNavigator;
     /**
-     * Returns the first column of columnAssignments to use for navigator data.
+     * Returns the first column of columnAssignment to use for navigator data.
      * @private
      *
      * @return
@@ -94,6 +92,6 @@ declare class NavigatorComponent extends Component {
      * The options to apply.
      */
     update(options: Partial<Options>, shouldRerender?: boolean): Promise<void>;
-    getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
+    getOptionsOnDrop(): Partial<Options>;
 }
 export default NavigatorComponent;

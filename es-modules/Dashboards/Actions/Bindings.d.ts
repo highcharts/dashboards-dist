@@ -13,8 +13,8 @@ declare namespace Bindings {
     function addComponent(options: Partial<ComponentType['options']>, board: Board, cell?: Cell): Promise<(Component | void)>;
     /** @internal */
     function componentFromJSON(json: Component.JSON): (Component | undefined);
-    function getCell(idOrElement: string): (Cell | undefined);
-    function getRow(idOrElement: string): (Row | undefined);
-    function getLayout(idOrElement: string): (Layout | undefined);
+    function getCell(idOrElement: string, parentElement?: HTMLElement): (Cell | undefined);
+    function getRow(idOrElement: string, parentElement?: HTMLElement): (Row | undefined);
+    function getLayout(idOrElement: string, parentElement?: HTMLElement): (Layout | undefined);
 }
 export default Bindings;

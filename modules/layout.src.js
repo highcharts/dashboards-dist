@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Layout 2.0.0 (2024-03-13)
+ * @license Highcharts Dashboards Layout 2.1.0 (2024-04-17)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -460,11 +460,10 @@
          * Button Element
          */
         function renderButton(parentElement, options) {
-            let button;
             if (!parentElement) {
                 return;
             }
-            button = createElement('button', {
+            const button = createElement('button', {
                 className: (EditGlobals.classNames.button + ' ' +
                     (options.className || '')),
                 onclick: options.callback,
@@ -1306,10 +1305,10 @@
                     text: (component.board?.editMode || EditGlobals)
                         .lang.confirmButton,
                     className: EditGlobals.classNames.popupConfirmBtn,
-                    callback: () => {
+                    callback: async () => {
                         const changedOptions = this
                             .changedOptions;
-                        component.update(merge(changedOptions, {
+                        await component.update(merge(changedOptions, {
                             chartOptions: this.chartOptionsJSON
                         }));
                         menu.changedOptions = {};
@@ -1740,12 +1739,6 @@
                                 }
                                 const newCell = components[i].onDrop(sidebar, dropContext);
                                 if (newCell) {
-                                    const mountedComponent = newCell.mountedComponent;
-                                    // Skip init connector when is not defined by
-                                    // options f.e HTML component.
-                                    if (mountedComponent.options?.connector?.id) {
-                                        mountedComponent.initConnector();
-                                    }
                                     sidebar.editMode.setEditCellContext(newCell);
                                     sidebar.show(newCell);
                                     newCell.setHighlight();
@@ -3153,7 +3146,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.0.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.1.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(

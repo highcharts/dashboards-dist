@@ -14,7 +14,7 @@
 import Component from '../Component.js';
 import Globals from '../../Globals.js';
 import NavigatorComponentDefaults from './NavigatorComponentDefaults.js';
-import NavigatorSyncHandler from './NavigatorSyncHandlers.js';
+import NavigatorSyncs from './NavigatorSyncs/NavigatorSyncs.js';
 import U from '../../../Core/Utilities.js';
 const { diffObjects, isNumber, isString, merge, pick } = U;
 /* *
@@ -57,6 +57,7 @@ class NavigatorComponent extends Component {
      * */
     constructor(cell, options) {
         super(cell, options);
+        this.type = 'Navigator';
         this.options = merge(NavigatorComponent.defaultOptions, options);
         const charter = (NavigatorComponent.charter.Chart ||
             Globals.win.Highcharts);
@@ -65,8 +66,6 @@ class NavigatorComponent extends Component {
             .chart(this.chartContainer, (this.options.chartOptions || {}));
         this.chartContainer.classList
             .add(Globals.classNamePrefix + 'navigator');
-        this.filterAndAssignSyncOptions(NavigatorSyncHandler);
-        this.sync = new NavigatorComponent.Sync(this, this.syncHandlers);
         if (this.sync.syncConfig.crossfilter?.enabled) {
             this.chart.update(merge({ navigator: { xAxis: { labels: { format: '{value}' } } } }, this.options.chartOptions || {}), false);
         }
@@ -110,23 +109,25 @@ class NavigatorComponent extends Component {
         }
     }
     /**
-     * Returns the first column of columnAssignments to use for navigator data.
+     * Returns the first column of columnAssignment to use for navigator data.
      * @private
      *
      * @return
      * Navigator column assignment.
      */
     getColumnAssignment() {
-        const columnAssignments = (this.options.columnAssignments || {});
+        const columnAssignment = this.options.columnAssignment ??
+            this.options.columnAssignments ?? {};
         let columnsAssignment;
-        for (const column of Object.keys(columnAssignments)) {
-            columnsAssignment = columnAssignments[column];
+        for (const column of Object.keys(columnAssignment)) {
+            columnsAssignment = columnAssignment[column];
             if (columnsAssignment !== null) {
                 return [column, columnsAssignment];
             }
         }
-        if (this.connector) {
-            const columns = this.connector.table.getColumnNames();
+        const connector = this.getFirstConnector();
+        if (connector) {
+            const columns = connector.table.getColumnNames();
             if (columns.length) {
                 return [columns[0], 'y'];
             }
@@ -198,8 +199,9 @@ class NavigatorComponent extends Component {
     /** @private */
     renderNavigator() {
         const chart = this.chart;
-        if (this.connector) {
-            const table = this.connector.table, column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
+        const connector = this.getFirstConnector();
+        if (connector) {
+            const table = connector.table, column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
             let data;
             if (this.sync.syncConfig.crossfilter?.enabled) {
                 data = this.generateCrossfilterData();
@@ -221,7 +223,7 @@ class NavigatorComponent extends Component {
      */
     generateCrossfilterData() {
         const crossfilterOptions = this.sync.syncConfig.crossfilter;
-        const table = this.connector?.table;
+        const table = this.getFirstConnector()?.table;
         const columnValues = table?.getColumn(this.getColumnAssignment()[0], true) || [];
         if (!table || columnValues.length < 1 || !crossfilterOptions) {
             return [];
@@ -316,9 +318,6 @@ class NavigatorComponent extends Component {
     async update(options, shouldRerender = true) {
         const chart = this.chart;
         await super.update(options, false);
-        if (options.sync) {
-            this.filterAndAssignSyncOptions(NavigatorSyncHandler);
-        }
         if (options.chartOptions) {
             chart.update(merge(this.sync.syncConfig.crossfilter?.enabled ? ({ navigator: { xAxis: { labels: { format: '{value}' } } } }) : {}, options.chartOptions), false);
         }
@@ -327,9 +326,7 @@ class NavigatorComponent extends Component {
             this.render();
         }
     }
-    getOptionsOnDrop(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    sidebar) {
+    getOptionsOnDrop() {
         return {};
     }
 }
@@ -337,6 +334,10 @@ class NavigatorComponent extends Component {
  * Default options of the Navigator component.
  */
 NavigatorComponent.defaultOptions = merge(Component.defaultOptions, NavigatorComponentDefaults);
+/**
+ * Predefined sync configuration for the Navigator component.
+ */
+NavigatorComponent.predefinedSyncConfig = NavigatorSyncs;
 /* *
  *
  *  Default Export

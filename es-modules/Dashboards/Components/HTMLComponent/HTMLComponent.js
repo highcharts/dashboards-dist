@@ -17,6 +17,7 @@
 import AST from '../../../Core/Renderer/HTML/AST.js';
 import Component from '../Component.js';
 import HTMLComponentDefaults from './HTMLComponentDefaults.js';
+import HTMLSyncs from './HTMLSyncs/HTMLSyncs.js';
 import U from '../../../Core/Utilities.js';
 const { merge, diffObjects } = U;
 // TODO: This may affect the AST parsing in Highcharts
@@ -113,7 +114,6 @@ class HTMLComponent extends Component {
         this.options = options;
         this.type = 'HTML';
         this.elements = [];
-        this.sync = new Component.Sync(this, this.syncHandlers);
     }
     /* *
      *
@@ -256,6 +256,10 @@ class HTMLComponent extends Component {
  * Default options of the HTML component.
  */
 HTMLComponent.defaultOptions = merge(Component.defaultOptions, HTMLComponentDefaults);
+/**
+ * Predefined sync config for HTML component.
+ */
+HTMLComponent.predefinedSyncConfig = HTMLSyncs;
 /* *
  *
  *  Default export

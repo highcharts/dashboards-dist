@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.0.0 (2024-03-13)
+ * @license Highcharts Dashboards v2.1.0 (2024-04-17)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.0.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.1.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -10120,7 +10120,10 @@
                     const row = target.parentElement;
                     this.toggleRowHighlight(row);
                     this.hoveredRow = row;
-                    fireEvent(this.container, 'dataGridHover', { row });
+                    fireEvent(this.container, 'dataGridHover', {
+                        row,
+                        columnName: target.dataset?.columnName
+                    });
                 }
                 else if (this.hoveredRow) {
                     this.toggleRowHighlight();

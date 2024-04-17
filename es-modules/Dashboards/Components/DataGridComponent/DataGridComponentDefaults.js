@@ -12,7 +12,6 @@
  * */
 'use strict';
 import DataConverter from '../../../Data/Converters/DataConverter.js';
-import DataGridSyncHandlers from './DataGridSyncHandlers.js';
 import U from '../../../Core/Utilities.js';
 const { uniqueKey } = U;
 /* *
@@ -29,7 +28,6 @@ const DataGridComponentDefaults = {
             propertyPath: ['connector', 'id'],
             type: 'select'
         }],
-    syncHandlers: DataGridSyncHandlers,
     onUpdate: (e, connector) => {
         const inputElement = e.target;
         if (inputElement) {

@@ -1,11 +1,11 @@
 import type Board from '../../Board';
 import type Cell from '../../Layout/Cell';
 import type { Chart, Options as ChartOptions, Highcharts as H } from '../../Plugins/HighchartsTypes';
-import type { ConstructorType, Options } from './HighchartsComponentOptions';
+import type { ColumnAssignmentOptions, ConstructorType, Options } from './HighchartsComponentOptions';
 import type SidebarPopup from '../../EditMode/SidebarPopup';
 import Component from '../Component.js';
-import DataConnector from '../../../Data/Connectors/DataConnector.js';
 import Globals from '../../Globals.js';
+import ConnectorHandler from '../../Components/ConnectorHandler';
 /**
  *
  * Class that represents a Highcharts component.
@@ -14,8 +14,10 @@ import Globals from '../../Globals.js';
 declare class HighchartsComponent extends Component {
     /** @private */
     static charter: H;
-    /** @private */
-    static syncHandlers: import("../Sync/Sync").default.OptionsRecord;
+    /**
+     * Predefined sync config for Highcharts component.
+     */
+    static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
     /**
      * Default options of the Highcharts component.
      */
@@ -69,15 +71,9 @@ declare class HighchartsComponent extends Component {
      */
     chartConstructor: ConstructorType;
     /**
-     * Reference to sync component that allows to sync i.e tooltips.
-     *
-     * @private
+     * An object of series IDs and their connector handlers.
      */
-    sync: Component['sync'];
-    /**
-     * List of series IDs created from the connector using `columnAssignment`.
-     */
-    seriesFromConnector: string[];
+    seriesFromConnector: Record<string, ConnectorHandler>;
     /**
      * Creates a Highcharts component in the cell.
      *
@@ -97,17 +93,17 @@ declare class HighchartsComponent extends Component {
      * */
     private setupConnectorUpdate;
     /**
+     * Update the store, when the point is being dragged.
+     * @param point Dragged point.
+     * @param connectorHandler Connector handler with data to update.
+     */
+    private onChartUpdate;
+    /**
      * Internal method for handling option updates.
      *
      * @internal
      */
     private setOptions;
-    /**
-     * Update the store, when the point is being dragged.
-     * @param  {Point} point Dragged point.
-     * @param  {Component.ConnectorTypes} store Connector to update.
-     */
-    private onChartUpdate;
     /**
      * Handles updating via options.
      * @param options
@@ -117,10 +113,15 @@ declare class HighchartsComponent extends Component {
     update(options: Partial<Options>, shouldRerender?: boolean): Promise<void>;
     /**
      * Updates chart's series when the data table is changed.
-     *
      * @private
      */
     updateSeries(): void;
+    /**
+     * Updates the series based on the connector from each connector handler.
+     * @param connectorHandler The connector handler.
+     * @private
+     */
+    private updateSeriesFromConnector;
     /**
      * Destroy chart and create a new one.
      *
@@ -162,7 +163,6 @@ declare class HighchartsComponent extends Component {
      * @private
      */
     private registerChartEvents;
-    setConnector(connector: DataConnector | undefined): this;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
     /**
      * Converts the class instance to a class JSON.
@@ -195,6 +195,10 @@ declare namespace HighchartsComponent {
     type JSONEvent = Component.Event<'toJSON' | 'fromJSON', {
         json: ClassJSON;
     }>;
+    /** @private */
+    interface HCConnectorHandler extends ConnectorHandler {
+        columnAssignment?: ColumnAssignmentOptions[];
+    }
     /** @private */
     interface OptionsJSON extends Component.ComponentOptionsJSON {
         chartOptions?: string;

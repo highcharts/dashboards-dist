@@ -427,11 +427,10 @@ function renderCheckbox(parentElement, checked) {
  * Button Element
  */
 function renderButton(parentElement, options) {
-    let button;
     if (!parentElement) {
         return;
     }
-    button = createElement('button', {
+    const button = createElement('button', {
         className: (EditGlobals.classNames.button + ' ' +
             (options.className || '')),
         onclick: options.callback,

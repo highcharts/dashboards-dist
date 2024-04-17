@@ -1,5 +1,5 @@
-import type ComponentType from '../ComponentType';
-export type EmitterFunction = (this: ComponentType) => Function | void;
+import type Component from '../Component';
+export type EmitterFunction = (this: Component) => Function | void;
 /**
  *  Class responsible for adding event listeners on a component
  *  @internal
@@ -50,7 +50,7 @@ declare class SyncEmitter {
      *
      * @param component The component to attach to.
      */
-    create(component: ComponentType): void;
+    create(component: Component): void;
     /**
      * To be used when removing the emitter from the component.
      * Calls the {@link callback} function.

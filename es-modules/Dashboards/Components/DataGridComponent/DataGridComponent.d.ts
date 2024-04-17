@@ -10,8 +10,10 @@ import Component from '../Component.js';
  * @private
  */
 declare class DataGridComponent extends Component {
-    /** @private */
-    static syncHandlers: import("../Sync/Sync").default.OptionsRecord;
+    /**
+     * Predefined sync config for the DataGrid component.
+     */
+    static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
     /** @private */
     static DataGridNamespace?: DataGridNamespace;
     /** @private */
@@ -24,8 +26,6 @@ declare class DataGridComponent extends Component {
     dataGridOptions: Partial<BaseDataGridOptions>;
     /** @private */
     options: Options;
-    /** @private */
-    sync: Component['sync'];
     /** @private */
     private connectorListeners;
     constructor(cell: Cell, options: Partial<Options>, board?: Board);

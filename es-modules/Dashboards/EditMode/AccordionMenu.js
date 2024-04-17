@@ -72,10 +72,10 @@ class AccordionMenu {
             text: (component.board?.editMode || EditGlobals)
                 .lang.confirmButton,
             className: EditGlobals.classNames.popupConfirmBtn,
-            callback: () => {
+            callback: async () => {
                 const changedOptions = this
                     .changedOptions;
-                component.update(merge(changedOptions, {
+                await component.update(merge(changedOptions, {
                     chartOptions: this.chartOptionsJSON
                 }));
                 menu.changedOptions = {};

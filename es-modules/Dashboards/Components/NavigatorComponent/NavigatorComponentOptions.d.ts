@@ -23,7 +23,7 @@ export interface Options extends Component.Options {
      */
     chartOptions: HighchartsOptions;
     /**
-     * Column assignments have impact on navigator and range. Only the first
+     * Column assignment have impact on navigator and range. Only the first
      * assignment is used and usually matches against the `y` values.
      *
      * If crossfilter sync is enabled, the column assignment will show the
@@ -32,13 +32,21 @@ export interface Options extends Component.Options {
      * @example
      * ``` JavaScript
      * {
-     *     columnAssignments: {
+     *     columnAssignment: {
      *         'My Column': 'y'
      *     }
      * }
      * ```
      */
+    columnAssignment?: Record<string, string | null>;
+    /**
+     * @deprecated
+     */
     columnAssignments?: Record<string, string | null>;
+    /**
+     * Connector options
+     */
+    connector?: Component.ConnectorOptions;
     /**
      * Defines which elements should be synced.
      * ```
@@ -87,7 +95,7 @@ export interface SyncOptions extends Sync.RawOptionsRecord {
      *
      * @default false
      */
-    crossfilter?: boolean | Sync.CrossfilterSyncOptions;
+    crossfilter?: boolean | CrossfilterSyncOptions;
     /**
      * Extremes sync is available for Highcharts, KPI, DataGrid and
      * Navigator components. Sets a common range of displayed data. For the
@@ -100,5 +108,31 @@ export interface SyncOptions extends Sync.RawOptionsRecord {
      * @default false
      */
     extremes?: boolean | Sync.OptionsEntry;
+}
+/**
+ * Crossfilter sync options.
+ *
+ * Example:
+ * ```
+ * {
+ *     enabled: true,
+ *     affectNavigator: true
+ * }
+ * ```
+ */
+export interface CrossfilterSyncOptions extends Sync.OptionsEntry {
+    /**
+     * Whether this navigator component's content should be affected by
+     * other navigators with crossfilter enabled.
+     *
+     * Try it:
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/crossfilter-affecting-navigators | Affect Navigators Enabled }
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/sync-extremes/ | Affect Navigators Disabled }
+     *
+     * @default false
+     */
+    affectNavigator?: boolean;
 }
 export default Options;

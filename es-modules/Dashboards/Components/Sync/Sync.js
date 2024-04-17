@@ -16,6 +16,8 @@
 'use strict';
 import SyncEmitter from './Emitter.js';
 import SyncHandler from './Handler.js';
+import U from '../../../Core/Utilities.js';
+const { merge, isObject } = U;
 /* *
  *
  * Class
@@ -34,12 +36,13 @@ class Sync {
      * @param component
      * The component to which the emitters and handlers are attached.
      *
-     * @param syncHandlers
-     * The emitters and handlers to use for each event.
+     * @param predefinedSyncConfig
+     * The predefined sync configuration.
      */
-    constructor(component, syncHandlers = Sync.defaultHandlers) {
+    constructor(component, predefinedSyncConfig) {
         this.component = component;
-        this.syncConfig = syncHandlers;
+        this.predefinedSyncConfig = predefinedSyncConfig;
+        this.syncConfig = Sync.prepareSyncConfig(predefinedSyncConfig, component.options.sync);
         this.registeredSyncHandlers = {};
         this.registeredSyncEmitters = {};
         this.isSyncing = false;
@@ -50,6 +53,40 @@ class Sync {
      *  Functions
      *
      * */
+    /**
+     * Method that prepares the sync configuration from the predefined config
+     * and current component options.
+     *
+     * @param predefinedConfig The predefined sync configuration.
+     * @param componentSyncOptions The current component sync options.
+     * @returns The sync configuration.
+     */
+    static prepareSyncConfig(predefinedConfig, componentSyncOptions = {}) {
+        const { defaultSyncPairs: defaultPairs, defaultSyncOptions: defaultOptionsList } = predefinedConfig;
+        return Object.keys(componentSyncOptions).reduce((acc, syncName) => {
+            if (syncName) {
+                const defaultPair = defaultPairs[syncName];
+                const defaultOptions = defaultOptionsList[syncName];
+                const entry = componentSyncOptions[syncName];
+                const preparedOptions = merge(defaultOptions || {}, { enabled: isObject(entry) ? entry.enabled : entry }, isObject(entry) ? entry : {});
+                if (defaultPair && preparedOptions.enabled) {
+                    const keys = [
+                        'emitter',
+                        'handler'
+                    ];
+                    for (const key of keys) {
+                        if (preparedOptions[key] === true ||
+                            preparedOptions[key] === void 0) {
+                            preparedOptions[key] =
+                                defaultPair[key];
+                        }
+                    }
+                }
+                acc[syncName] = preparedOptions;
+            }
+            return acc;
+        }, {});
+    }
     /**
      * Add new emitter to the registered emitters.
      *
@@ -98,9 +135,10 @@ class Sync {
      * Registers the handlers and emitters on the component
      */
     start() {
-        const { syncConfig, component } = this;
-        for (const id of Object.keys(syncConfig)) {
-            const syncOptions = syncConfig[id];
+        const { component } = this;
+        this.syncConfig = Sync.prepareSyncConfig(this.predefinedSyncConfig, component.options.sync);
+        for (const id of Object.keys(this.syncConfig)) {
+            const syncOptions = this.syncConfig[id];
             if (!syncOptions) {
                 continue;
             }
@@ -164,33 +202,6 @@ class Sync {
  * the configuration before creating the dashboard.
  */
 Sync.defaultHandlers = {};
-/* *
- *
- *  Class Namespace
- *
- * */
-(function (Sync) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    Sync.defaultSyncOptions = {
-        crossfilter: {
-            affectNavigator: false
-        },
-        highlight: {
-            highlightPoint: true,
-            showTooltip: true,
-            showCrosshair: true
-        }
-    };
-})(Sync || (Sync = {}));
 /* *
  *
  *  Default Export

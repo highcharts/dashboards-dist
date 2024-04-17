@@ -1,4 +1,4 @@
-import type ComponentType from '../ComponentType';
+import type Component from '../Component';
 /**
  * Class responsible for storing handler callbacks used in component sync.
  * @internal
@@ -54,7 +54,7 @@ declare class SyncHandler {
      * @param component
      * The component to register on.
      */
-    register(component: ComponentType): void;
+    register(component: Component): void;
     /**
      * To be used when removing the handler from the component.
      * Calls the {@link callback} function.

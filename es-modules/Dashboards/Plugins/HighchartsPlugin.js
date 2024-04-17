@@ -12,7 +12,6 @@
  * */
 'use strict';
 import HighchartsComponent from '../Components/HighchartsComponent/HighchartsComponent.js';
-import HighchartsSyncHandlers from '../Components/HighchartsComponent/HighchartsSyncHandlers.js';
 import KPIComponent from '../Components/KPIComponent/KPIComponent.js';
 import NavigatorComponent from '../Components/NavigatorComponent/NavigatorComponent.js';
 /* *
@@ -38,14 +37,10 @@ function connectHighcharts(highcharts) {
  * Plugin context provided by the Dashboard.
  */
 function onRegister(e) {
-    const { Sync, ComponentRegistry } = e;
+    const { ComponentRegistry } = e;
     ComponentRegistry.registerComponent('Highcharts', HighchartsComponent);
     ComponentRegistry.registerComponent('KPI', KPIComponent);
     ComponentRegistry.registerComponent('Navigator', NavigatorComponent);
-    Sync.defaultHandlers = {
-        ...Sync.defaultHandlers,
-        ...HighchartsSyncHandlers
-    };
 }
 /**
  * Callback function of the Dashboard plugin.
@@ -53,16 +48,8 @@ function onRegister(e) {
  * @param {Dashboard.PluginHandler.Event} e
  * Plugin context provided by the Dashboard.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function onUnregister(e) {
-    const { Sync } = e;
-    Object
-        .keys(HighchartsSyncHandlers)
-        .forEach((handler) => {
-        if (Sync.defaultHandlers[handler] ===
-            HighchartsSyncHandlers[handler]) {
-            delete Sync.defaultHandlers[handler];
-        }
-    });
 }
 /* *
  *

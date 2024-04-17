@@ -12,7 +12,7 @@
  * */
 'use strict';
 import Component from '../Component.js';
-import DataGridSyncHandlers from './DataGridSyncHandlers.js';
+import DataGridSyncs from './DataGridSyncs/DataGridSyncs.js';
 import DataGridComponentDefaults from './DataGridComponentDefaults.js';
 import U from '../../../Core/Utilities.js';
 const { diffObjects, merge } = U;
@@ -35,10 +35,7 @@ class DataGridComponent extends Component {
     static fromJSON(json, cell) {
         const options = json.options;
         const dataGridOptions = JSON.parse(json.options.dataGridOptions || '');
-        const component = new DataGridComponent(cell, merge(options, {
-            dataGridOptions,
-            syncHandlers: DataGridComponent.syncHandlers
-        }));
+        const component = new DataGridComponent(cell, merge(options, { dataGridOptions }));
         component.emit({
             type: 'fromJSON',
             json
@@ -62,12 +59,14 @@ class DataGridComponent extends Component {
         if (this.options.dataGridID) {
             this.contentElement.id = this.options.dataGridID;
         }
-        this.sync = new DataGridComponent.Sync(this, this.syncHandlers);
         this.dataGridOptions = (this.options.dataGridOptions ||
             {});
         this.innerResizeTimeouts = [];
-        this.on('afterSetConnector', (e) => {
-            this.disableEditingModifiedColumns(e.connector);
+        this.on('afterSetConnectors', (e) => {
+            const connector = e.connectorHandlers?.[0]?.connector;
+            if (connector) {
+                this.disableEditingModifiedColumns(connector);
+            }
         });
     }
     onTableChanged() {
@@ -120,19 +119,18 @@ class DataGridComponent extends Component {
     async load() {
         this.emit({ type: 'load' });
         await super.load();
-        if (this.connector &&
+        const connector = this.getFirstConnector();
+        if (connector &&
             !this.connectorListeners.length) {
             const connectorListeners = this.connectorListeners;
             // Reload the store when polling.
-            connectorListeners.push(this.connector
-                .on('afterLoad', (e) => {
-                if (e.table && this.connector) {
-                    this.connector.table.setColumns(e.table.getColumns());
+            connectorListeners.push(connector.on('afterLoad', (e) => {
+                if (e.table && connector) {
+                    connector.table.setColumns(e.table.getColumns());
                 }
             }));
             // Update the DataGrid when connector changed.
-            connectorListeners.push(this.connector.table
-                .on('afterSetCell', (e) => {
+            connectorListeners.push(connector.table.on('afterSetCell', (e) => {
                 const dataGrid = this.dataGrid;
                 let shouldUpdateTheGrid = true;
                 if (dataGrid) {
@@ -146,7 +144,8 @@ class DataGridComponent extends Component {
                             const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
                                 input.value :
                                 +input.value;
-                            if (cell.dataset.columnName === e.columnName &&
+                            if (cell.dataset.columnName ===
+                                e.columnName &&
                                 convertedInputValue === e.cellValue) {
                                 shouldUpdateTheGrid = false;
                             }
@@ -165,9 +164,10 @@ class DataGridComponent extends Component {
         if (!this.dataGrid) {
             this.dataGrid = this.constructDataGrid();
         }
-        if (this.connector &&
+        const connector = this.getFirstConnector();
+        if (connector &&
             this.dataGrid &&
-            this.dataGrid.dataTable.modified !== this.connector.table.modified) {
+            this.dataGrid.dataTable.modified !== connector.table.modified) {
             this.dataGrid.update({ dataTable: this.filterColumns() });
         }
         this.sync.start();
@@ -182,7 +182,10 @@ class DataGridComponent extends Component {
         }
     }
     async update(options) {
-        if (options.connector?.id !== this.connectorId) {
+        const connectorOptions = Array.isArray(options.connector) ?
+            options.connector[0] : options.connector;
+        if (this.connectorHandlers[0] &&
+            connectorOptions?.id !== this.connectorHandlers[0]?.connectorId) {
             const connectorListeners = this.connectorListeners;
             for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
                 connectorListeners[i]();
@@ -191,7 +194,6 @@ class DataGridComponent extends Component {
         }
         await super.update(options);
         if (this.dataGrid) {
-            this.filterAndAssignSyncOptions(DataGridSyncHandlers);
             this.dataGrid.update(this.options.dataGridOptions || {});
         }
         this.emit({ type: 'afterUpdate' });
@@ -200,8 +202,9 @@ class DataGridComponent extends Component {
     constructDataGrid() {
         if (DataGridComponent.DataGridNamespace) {
             const DataGrid = DataGridComponent.DataGridNamespace.DataGrid;
-            const columnOptions = this.connector ?
-                this.getColumnOptions(this.connector) :
+            const connector = this.getFirstConnector();
+            const columnOptions = connector ?
+                this.getColumnOptions(connector) :
                 {};
             this.dataGrid = new DataGrid(this.contentElement, {
                 ...this.options.dataGridOptions,
@@ -214,7 +217,8 @@ class DataGridComponent extends Component {
         throw new Error('DataGrid not connected.');
     }
     setupConnectorUpdate() {
-        const { connector, dataGrid } = this;
+        const { dataGrid } = this;
+        const connector = this.getFirstConnector();
         if (connector && dataGrid) {
             dataGrid.on('cellClick', (e) => {
                 if ('input' in e) {
@@ -229,7 +233,7 @@ class DataGridComponent extends Component {
      * @internal
      */
     filterColumns() {
-        const table = this.connector?.table.modified, visibleColumns = this.options.visibleColumns;
+        const table = this.getFirstConnector()?.table.modified, visibleColumns = this.options.visibleColumns;
         if (table) {
             // Show all columns if no visibleColumns is provided.
             if (!visibleColumns?.length) {
@@ -305,8 +309,10 @@ class DataGridComponent extends Component {
  *  Static Properties
  *
  * */
-/** @private */
-DataGridComponent.syncHandlers = DataGridSyncHandlers;
+/**
+ * Predefined sync config for the DataGrid component.
+ */
+DataGridComponent.predefinedSyncConfig = DataGridSyncs;
 /** @private */
 DataGridComponent.defaultOptions = merge(Component.defaultOptions, DataGridComponentDefaults);
 /* *

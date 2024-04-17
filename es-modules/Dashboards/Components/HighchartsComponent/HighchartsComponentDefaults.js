@@ -12,7 +12,6 @@
  * */
 'use strict';
 import Component from '../Component.js';
-import HighchartsSyncHandlers from './HighchartsSyncHandlers.js';
 import U from '../../../Core/Utilities.js';
 const { merge, uniqueKey } = U;
 /* *
@@ -192,7 +191,6 @@ const HighchartsComponentDefaults = {
             type: 'input'
         }
     ]),
-    syncHandlers: HighchartsSyncHandlers,
     editableOptionsBindings: merge(Component.defaultOptions.editableOptionsBindings, {
         skipRedraw: [
             'chartOptions',

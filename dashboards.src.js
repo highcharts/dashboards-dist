@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.0.0 (2024-03-13)
+ * @license Highcharts Dashboards v2.1.0 (2024-04-17)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.0.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.1.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -2862,416 +2862,7 @@
 
         return CallbackRegistry;
     });
-    _registerModule(_modules, 'Dashboards/Serializable.js', [], function () {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *
-         * */
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        /**
-         * Contains the toolset to serialize class instance to JSON and deserialize JSON
-         * to class instances.
-         * @internal
-         * @private
-         */
-        var Serializable;
-        (function (Serializable) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            /**
-             * Registry of serializable classes.
-             */
-            const classRegistry = {};
-            /**
-             * Registry of function sets.
-             */
-            const helperRegistry = {};
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Creates a class instance from the given JSON, if a suitable serializer
-             * has been found.
-             *
-             * @function Serializable.fromJSON
-             *
-             * @param {Serializable.JSON} json
-             * JSON to create a class instance or object from.
-             *
-             * @return {Globals.AnyRecord}
-             * Returns the class instance or object, or throws an exception.
-             */
-            function fromJSON(json) {
-                const $class = json.$class;
-                if (typeof $class !== 'string') {
-                    throw new Error('JSON has no $class property.');
-                }
-                const classs = classRegistry[$class];
-                if (classs) {
-                    return classs.fromJSON(json);
-                }
-                const helper = helperRegistry[$class];
-                if (helper) {
-                    return helper.fromJSON(json);
-                }
-                throw new Error(`'${$class}' unknown.`);
-            }
-            Serializable.fromJSON = fromJSON;
-            /**
-             * Registers a class prototype for the given JSON $class.
-             *
-             * @function Serializable.registerClassPrototype
-             *
-             * @param {string} $class
-             * JSON $class to register for.
-             *
-             * @param {Serializable} classPrototype
-             * Class to register.
-             */
-            function registerClassPrototype($class, classPrototype) {
-                if (classRegistry[$class]) {
-                    throw new Error('A serializer for \'' + $class + '\' is already registered.');
-                }
-                classRegistry[$class] = classPrototype;
-            }
-            Serializable.registerClassPrototype = registerClassPrototype;
-            /**
-             * Registers helper functions for the given JSON $class.
-             *
-             * @function Serializable.registerHelper
-             *
-             * @param {Helper} helperFunctions
-             * Helper functions to register.
-             */
-            function registerHelper(helperFunctions) {
-                if (helperRegistry[helperFunctions.$class]) {
-                    throw new Error('A serializer for \'' + helperFunctions.$class +
-                        '\' is already registered.');
-                }
-                helperRegistry[helperFunctions.$class] = helperFunctions;
-            }
-            Serializable.registerHelper = registerHelper;
-            /**
-             * Creates JSON from a class instance.
-             *
-             * @function Serializable.toJSON
-             *
-             * @param {Globals.AnyRecord} obj
-             * Class instance or object to serialize as JSON.
-             *
-             * @return {Serializable.JSON}
-             * JSON of the class instance.
-             */
-            function toJSON(obj) {
-                if (typeof obj.fromJSON === 'function' &&
-                    typeof obj.toJSON === 'function') {
-                    return obj.toJSON();
-                }
-                const classes = Object.keys(helperRegistry), numberOfHelpers = classes.length;
-                let $class, serializer;
-                for (let i = 0; i < numberOfHelpers; ++i) {
-                    $class = classes[i];
-                    serializer = helperRegistry[$class];
-                    if (serializer.jsonSupportFor(obj)) {
-                        return serializer.toJSON(obj);
-                    }
-                }
-                throw new Error('Object is not supported.');
-            }
-            Serializable.toJSON = toJSON;
-        })(Serializable || (Serializable = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Serializable;
-    });
-    _registerModule(_modules, 'Dashboards/Components/SharedComponentState.js', [_modules['Dashboards/Serializable.js'], _modules['Core/Utilities.js']], function (Serializable, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const { addEvent, fireEvent, merge } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Contains presentation information like column order, usually in relation to a
-         * table instance.
-         */
-        class SharedComponentState {
-            constructor() {
-                /* *
-                 *
-                 *  Properties
-                 *
-                 * */
-                this.columnVisibilityMap = {};
-                this.hiddenRowIndexes = [];
-                this.selection = {};
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Emits an event on this table to all registered callbacks of the given
-             * event.
-             *
-             * @param {DataPresentationState.Event} e
-             * Event object with event information.
-             */
-            emit(e) {
-                fireEvent(this, e.type, e);
-            }
-            /**
-             * Returns an ordered array of column names.
-             *
-             * @return {Array<string>}
-             * Array of column names in order.
-             */
-            getColumnOrder() {
-                return (this.columnOrder || []).slice();
-            }
-            getColumnVisibility(columnName) {
-                return this.columnVisibilityMap[columnName];
-            }
-            /**
-             * Returns a function for `Array.sort` to change the order of an array of
-             * column names. Unknown column names come last.
-             *
-             * @return {DataPresentationState.ColumnOrderCallback}
-             * Sort function to change the order.
-             */
-            getColumnSorter() {
-                const columnOrder = (this.columnOrder || []).slice();
-                if (!columnOrder.length) {
-                    return () => 0;
-                }
-                return (a, b) => {
-                    const aIndex = columnOrder.indexOf(a), bIndex = columnOrder.indexOf(b);
-                    if (aIndex > -1 && bIndex > -1) {
-                        return aIndex - bIndex;
-                    }
-                    if (bIndex > -1) {
-                        return 1;
-                    }
-                    if (aIndex > -1) {
-                        return -1;
-                    }
-                    return 0;
-                };
-            }
-            /**
-             * @return {boolean}
-             * Returns true, if the state was changed since initialization.
-             */
-            isSet() {
-                return this.isModified === true;
-            }
-            /**
-             * Registers a callback for a specific event.
-             *
-             * @param {string} type
-             * Event type as a string.
-             *
-             * @param {DataEventEmitter.Callback} callback
-             * Function to register for an event callback.
-             *
-             * @return {Function}
-             * Function to unregister callback from the event.
-             */
-            on(type, callback) {
-                return addEvent(this, type, callback);
-            }
-            /**
-             * Sets the order of the columns in place.
-             *
-             * @param {Array<string>} columnOrder
-             * Array of column names in order.
-             *
-             * @param {DataEventEmitter.Detail} [eventDetail]
-             * Custom information for pending events.
-             */
-            setColumnOrder(columnOrder, eventDetail) {
-                const presentationState = this, oldColumnOrder = (presentationState.columnOrder || []).slice(), newColumnOrder = columnOrder.slice();
-                presentationState.emit({
-                    type: 'columnOrderChange',
-                    detail: eventDetail,
-                    newColumnOrder,
-                    oldColumnOrder
-                });
-                presentationState.columnOrder = newColumnOrder;
-                presentationState.isModified = true;
-                presentationState.emit({
-                    type: 'afterColumnOrderChange',
-                    detail: eventDetail,
-                    newColumnOrder,
-                    oldColumnOrder
-                });
-            }
-            setColumnVisibility(columnVisibility, eventDetail) {
-                this.columnVisibilityMap = merge(this.columnVisibilityMap, columnVisibility);
-                this.emit({
-                    type: 'afterColumnVisibilityChange',
-                    visibilityMap: this.columnVisibilityMap,
-                    detail: eventDetail
-                });
-            }
-            setHiddenRows(rowIndexes, hidden = true) {
-                rowIndexes.forEach((rowIndex) => {
-                    if (this.hiddenRowIndexes.indexOf(rowIndex) === -1 && hidden) {
-                        this.hiddenRowIndexes.push(rowIndex);
-                    }
-                    if (this.hiddenRowIndexes.indexOf(rowIndex) > -1 && !hidden) {
-                        this.hiddenRowIndexes
-                            .splice(this.hiddenRowIndexes.indexOf(rowIndex), 1);
-                    }
-                });
-                this.emit({
-                    type: 'afterSetHiddenRows',
-                    hiddenRows: this.hiddenRowIndexes
-                });
-            }
-            getHiddenRows() {
-                return this.hiddenRowIndexes;
-            }
-            setHoverPoint(point, eventDetail) {
-                const isDataGrid = eventDetail && eventDetail.isDataGrid;
-                this.hoverPoint = isDataGrid ? void 0 : point;
-                if (point instanceof HTMLElement) {
-                    this.hoverRow = isDataGrid ? point : void 0;
-                }
-                this.emit({
-                    type: 'afterHoverPointChange',
-                    hoverPoint: isDataGrid ? void 0 : this.hoverPoint,
-                    hoverRow: isDataGrid ? this.hoverRow : void 0,
-                    detail: eventDetail
-                });
-            }
-            getHoverPoint() {
-                return this.hoverPoint;
-            }
-            getSelection() {
-                return this.selection;
-            }
-            setSelection(selection, reset = false, eventDetail) {
-                const axes = Object.keys(selection);
-                axes.forEach((axisID) => {
-                    this.selection[axisID] = selection[axisID];
-                });
-                this.emit({
-                    type: 'afterSelectionChange',
-                    selection: this.selection,
-                    reset,
-                    detail: eventDetail
-                });
-            }
-            /**
-             * Converts JSON to a presentation state.
-             * @internal
-             *
-             * @param {DataPresentationState.ClassJSON} json
-             * JSON (usually with a $class property) to convert.
-             *
-             * @return {DataPresentationState}
-             * Class instance from the JSON.
-             */
-            fromJSON(json) {
-                const presentationState = new SharedComponentState();
-                const { columnOrder, visibilityMap, selection, hoverpoint } = json;
-                if (columnOrder) {
-                    presentationState.setColumnOrder(columnOrder);
-                }
-                if (visibilityMap) {
-                    presentationState.setColumnVisibility(visibilityMap);
-                }
-                if (selection) {
-                    presentationState.setSelection(selection);
-                }
-                if (hoverpoint) {
-                    presentationState.setHoverPoint(hoverpoint);
-                }
-                return presentationState;
-            }
-            /**
-             * Converts the presentation state to JSON.
-             * @internal
-             *
-             * @return {SharedComponentState.JSON}
-             * JSON of this class instance.
-             */
-            toJSON() {
-                const json = {
-                    $class: 'Dashboards.SharedComponentState'
-                };
-                if (this.columnOrder) {
-                    json.columnOrder = this.columnOrder.slice();
-                }
-                if (this.hoverPoint) {
-                    const { x, y, id } = this.hoverPoint;
-                    json.hoverPoint = { x, y, id };
-                }
-                if (this.selection) {
-                    json.selection = this.selection;
-                }
-                if (this.columnVisibilityMap) {
-                    json.columnVisibility = this.columnVisibilityMap;
-                }
-                return json;
-            }
-        }
-        /* *
-         *
-         *  Registry
-         *
-         * */
-        Serializable.registerClassPrototype('Dashboards.SharedComponentState', SharedComponentState.prototype);
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return SharedComponentState;
-    });
-    _registerModule(_modules, 'Dashboards/Components/ComponentGroup.js', [_modules['Dashboards/Components/SharedComponentState.js']], function (SharedState) {
+    _registerModule(_modules, 'Dashboards/Globals.js', [], function () {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -3285,72 +2876,250 @@
          *  - Wojciech Chmiel
          *  - Gøran Slettemark
          *  - Sophie Bremer
+         *  - Pawel Lysy
+         *  - Karol Kolodziej
          *
          * */
-        class ComponentGroup {
-            static getComponentGroup(groupID) {
-                if (this.componentGroups[groupID]) {
-                    return this.componentGroups[groupID];
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        /**
+         * Global Dashboards namespace in classic `<scripts>`-based implementations.
+         *
+         * @namespace Dashboards
+         */
+        var Globals;
+        (function (Globals) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             * Prefix of a GUIElement HTML class name.
+             */
+            Globals.classNamePrefix = 'highcharts-dashboards-';
+            /** @internal */
+            Globals.classNames = {
+                layout: Globals.classNamePrefix + 'layout',
+                cell: Globals.classNamePrefix + 'cell',
+                cellHover: Globals.classNamePrefix + 'cell-state-hover',
+                cellActive: Globals.classNamePrefix + 'cell-state-active',
+                cellLoading: Globals.classNamePrefix + 'cell-state-loading',
+                row: Globals.classNamePrefix + 'row',
+                layoutsWrapper: Globals.classNamePrefix + 'layouts-wrapper',
+                boardContainer: Globals.classNamePrefix + 'wrapper'
+            };
+            /** @internal */
+            Globals.guiElementType = {
+                row: 'row',
+                cell: 'cell',
+                layout: 'layout'
+            };
+            /**
+             * Contains all Board instances of this window.
+             */
+            Globals.boards = [];
+            /**
+             * Reference to the window used by Dashboards.
+             */
+            Globals.win = window;
+        })(Globals || (Globals = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Globals;
+    });
+    _registerModule(_modules, 'Dashboards/Components/ConnectorHandler.js', [_modules['Dashboards/Globals.js']], function (Globals) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * A class that handles the connection between the component and the data
+         * connector.
+         */
+        class ConnectorHandler {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Creates an object that manages the data layer for the component.
+             *
+             * @param component
+             * The component that the connector is tied to.
+             *
+             * @param options
+             * The options for the connector.
+             *
+             */
+            constructor(component, options) {
+                /**
+                 * Event listeners tied to the current DataTable. Used for rerendering the
+                 * component on data changes.
+                 *
+                 * @internal
+                 */
+                this.tableEvents = [];
+                this.component = component;
+                this.options = options;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Inits connectors for the component and rerenders it.
+             *
+             * @returns
+             * Promise resolving to the component.
+             */
+            async initConnector() {
+                const component = this.component;
+                const connectorId = this.options.id;
+                const dataPool = this.component.board.dataPool;
+                if (connectorId &&
+                    (this.connectorId !== connectorId ||
+                        dataPool.isNewConnector(connectorId))) {
+                    component.cell?.setLoadingState();
+                    const connector = await dataPool.getConnector(connectorId);
+                    this.setConnector(connector);
+                }
+                return component;
+            }
+            /**
+             * Sets the connector for the component connector handler.
+             *
+             * @param connector
+             * The connector to set.
+             */
+            setConnector(connector) {
+                // Clean up old event listeners
+                while (this.tableEvents.length) {
+                    const eventCallback = this.tableEvents.pop();
+                    if (typeof eventCallback === 'function') {
+                        eventCallback();
+                    }
+                }
+                this.connector = connector;
+                if (connector) {
+                    // Set up event listeners
+                    this.clearTableListeners();
+                    this.setupTableListeners(connector.table);
+                    // Re-setup if modifier changes
+                    connector.table.on('setModifier', () => this.clearTableListeners());
+                    connector.table.on('afterSetModifier', (e) => {
+                        if (e.type === 'afterSetModifier' && e.modified) {
+                            this.setupTableListeners(e.modified);
+                            this.component.emit({
+                                type: 'tableChanged',
+                                connector: connector
+                            });
+                        }
+                    });
+                    if (connector.table) {
+                        if (this.presentationModifier) {
+                            this.presentationTable =
+                                this.presentationModifier.modifyTable(connector.table.modified.clone()).modified;
+                        }
+                        else {
+                            this.presentationTable = connector.table;
+                        }
+                    }
+                }
+                return this.component;
+            }
+            /**
+             * Adds event listeners to data table.
+             * @param table
+             * Data table that is source of data.
+             * @internal
+             */
+            setupTableListeners(table) {
+                const connector = this.connector;
+                if (connector) {
+                    if (table) {
+                        [
+                            'afterDeleteRows',
+                            'afterSetCell',
+                            'afterSetColumns',
+                            'afterSetRows'
+                        ].forEach((event) => {
+                            this.tableEvents.push(table.on(event, (e) => {
+                                clearTimeout(this.tableEventTimeout);
+                                this.tableEventTimeout = Globals.win.setTimeout(() => {
+                                    this.component.emit({
+                                        ...e,
+                                        type: 'tableChanged',
+                                        targetConnector: connector
+                                    });
+                                    this.tableEventTimeout = void 0;
+                                });
+                            }));
+                        });
+                    }
                 }
             }
-            static addComponentGroup(group) {
-                const { id } = group;
-                if (!this.componentGroups[id]) {
-                    this.componentGroups[id] = group;
+            /**
+             * Remove event listeners in data table.
+             * @internal
+             */
+            clearTableListeners() {
+                const connector = this.connector;
+                const tableEvents = this.tableEvents;
+                this.destroy();
+                if (connector) {
+                    tableEvents.push(connector.table.on('afterSetModifier', (e) => {
+                        if (e.type === 'afterSetModifier') {
+                            clearTimeout(this.tableEventTimeout);
+                            this.tableEventTimeout = Globals.win.setTimeout(() => {
+                                connector.emit({
+                                    ...e,
+                                    type: 'tableChanged',
+                                    targetConnector: connector
+                                });
+                                this.tableEventTimeout = void 0;
+                            });
+                        }
+                    }));
                 }
             }
-            static getGroupsFromComponent(componentID) {
-                const groups = Object.keys(this.componentGroups);
-                return groups.reduce((arr, groupKey) => {
-                    const group = this.getComponentGroup(groupKey);
-                    if (group && group.components.indexOf(componentID) > -1) {
-                        arr.push(group);
-                    }
-                    return arr;
-                }, []);
+            updateOptions(newOptions) {
+                this.options = newOptions;
             }
-            constructor(id) {
-                this.state = new SharedState();
-                this.components = [];
-                this.id = id;
-                ComponentGroup.addComponentGroup(this);
-            }
-            addComponents(components) {
-                while (components.length) {
-                    const id = components.pop();
-                    if (!id) {
-                        break;
-                    }
-                    if (this.components.indexOf(id) === -1) {
-                        this.components.push(id);
-                    }
-                }
-            }
-            removeComponents(components) {
-                while (components.length) {
-                    const id = components.pop();
-                    if (!id) {
-                        break;
-                    }
-                    const index = this.components.indexOf(id);
-                    if (index > -1) {
-                        this.components.splice(index, 1);
-                    }
-                }
-            }
-            getSharedState() {
-                return this.state;
-            }
-            on() {
-                throw new Error('Method not implemented.');
-            }
-            emit() {
-                throw new Error('Method not implemented.');
+            destroy() {
+                this.tableEvents.forEach((clearEvent) => clearEvent());
+                this.tableEvents.length = 0;
             }
         }
-        ComponentGroup.componentGroups = {};
 
-        return ComponentGroup;
+        return ConnectorHandler;
     });
     _registerModule(_modules, 'Dashboards/Components/EditableOptions.js', [], function () {
         /* *
@@ -3586,7 +3355,7 @@
 
         return SyncHandler;
     });
-    _registerModule(_modules, 'Dashboards/Components/Sync/Sync.js', [_modules['Dashboards/Components/Sync/Emitter.js'], _modules['Dashboards/Components/Sync/Handler.js']], function (SyncEmitter, SyncHandler) {
+    _registerModule(_modules, 'Dashboards/Components/Sync/Sync.js', [_modules['Dashboards/Components/Sync/Emitter.js'], _modules['Dashboards/Components/Sync/Handler.js'], _modules['Core/Utilities.js']], function (SyncEmitter, SyncHandler, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -3602,6 +3371,7 @@
          *  - Sophie Bremer
          *
          * */
+        const { merge, isObject } = U;
         /* *
          *
          * Class
@@ -3620,12 +3390,13 @@
              * @param component
              * The component to which the emitters and handlers are attached.
              *
-             * @param syncHandlers
-             * The emitters and handlers to use for each event.
+             * @param predefinedSyncConfig
+             * The predefined sync configuration.
              */
-            constructor(component, syncHandlers = Sync.defaultHandlers) {
+            constructor(component, predefinedSyncConfig) {
                 this.component = component;
-                this.syncConfig = syncHandlers;
+                this.predefinedSyncConfig = predefinedSyncConfig;
+                this.syncConfig = Sync.prepareSyncConfig(predefinedSyncConfig, component.options.sync);
                 this.registeredSyncHandlers = {};
                 this.registeredSyncEmitters = {};
                 this.isSyncing = false;
@@ -3636,6 +3407,40 @@
              *  Functions
              *
              * */
+            /**
+             * Method that prepares the sync configuration from the predefined config
+             * and current component options.
+             *
+             * @param predefinedConfig The predefined sync configuration.
+             * @param componentSyncOptions The current component sync options.
+             * @returns The sync configuration.
+             */
+            static prepareSyncConfig(predefinedConfig, componentSyncOptions = {}) {
+                const { defaultSyncPairs: defaultPairs, defaultSyncOptions: defaultOptionsList } = predefinedConfig;
+                return Object.keys(componentSyncOptions).reduce((acc, syncName) => {
+                    if (syncName) {
+                        const defaultPair = defaultPairs[syncName];
+                        const defaultOptions = defaultOptionsList[syncName];
+                        const entry = componentSyncOptions[syncName];
+                        const preparedOptions = merge(defaultOptions || {}, { enabled: isObject(entry) ? entry.enabled : entry }, isObject(entry) ? entry : {});
+                        if (defaultPair && preparedOptions.enabled) {
+                            const keys = [
+                                'emitter',
+                                'handler'
+                            ];
+                            for (const key of keys) {
+                                if (preparedOptions[key] === true ||
+                                    preparedOptions[key] === void 0) {
+                                    preparedOptions[key] =
+                                        defaultPair[key];
+                                }
+                            }
+                        }
+                        acc[syncName] = preparedOptions;
+                    }
+                    return acc;
+                }, {});
+            }
             /**
              * Add new emitter to the registered emitters.
              *
@@ -3684,9 +3489,10 @@
              * Registers the handlers and emitters on the component
              */
             start() {
-                const { syncConfig, component } = this;
-                for (const id of Object.keys(syncConfig)) {
-                    const syncOptions = syncConfig[id];
+                const { component } = this;
+                this.syncConfig = Sync.prepareSyncConfig(this.predefinedSyncConfig, component.options.sync);
+                for (const id of Object.keys(this.syncConfig)) {
+                    const syncOptions = this.syncConfig[id];
                     if (!syncOptions) {
                         continue;
                     }
@@ -3752,116 +3558,11 @@
         Sync.defaultHandlers = {};
         /* *
          *
-         *  Class Namespace
-         *
-         * */
-        (function (Sync) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            Sync.defaultSyncOptions = {
-                crossfilter: {
-                    affectNavigator: false
-                },
-                highlight: {
-                    highlightPoint: true,
-                    showTooltip: true,
-                    showCrosshair: true
-                }
-            };
-        })(Sync || (Sync = {}));
-        /* *
-         *
          *  Default Export
          *
          * */
 
         return Sync;
-    });
-    _registerModule(_modules, 'Dashboards/Globals.js', [], function () {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *  - Pawel Lysy
-         *  - Karol Kolodziej
-         *
-         * */
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        /**
-         * Global Dashboards namespace in classic `<scripts>`-based implementations.
-         *
-         * @namespace Dashboards
-         */
-        var Globals;
-        (function (Globals) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            /**
-             * Prefix of a GUIElement HTML class name.
-             */
-            Globals.classNamePrefix = 'highcharts-dashboards-';
-            /** @internal */
-            Globals.classNames = {
-                layout: Globals.classNamePrefix + 'layout',
-                cell: Globals.classNamePrefix + 'cell',
-                cellHover: Globals.classNamePrefix + 'cell-state-hover',
-                cellActive: Globals.classNamePrefix + 'cell-state-active',
-                cellLoading: Globals.classNamePrefix + 'cell-state-loading',
-                row: Globals.classNamePrefix + 'row',
-                layoutsWrapper: Globals.classNamePrefix + 'layouts-wrapper',
-                boardContainer: Globals.classNamePrefix + 'wrapper'
-            };
-            /** @internal */
-            Globals.guiElementType = {
-                row: 'row',
-                cell: 'cell',
-                layout: 'layout'
-            };
-            /**
-             * Contains all Board instances of this window.
-             */
-            Globals.boards = [];
-            /**
-             * Reference to the window used by Dashboards.
-             */
-            Globals.win = window;
-        })(Globals || (Globals = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Globals;
     });
     _registerModule(_modules, 'Dashboards/Components/ComponentUtilities.js', [], function () {
         /* *
@@ -4103,7 +3804,7 @@
 
         return Utilities;
     });
-    _registerModule(_modules, 'Dashboards/Components/Component.js', [_modules['Dashboards/CallbackRegistry.js'], _modules['Dashboards/Components/ComponentGroup.js'], _modules['Dashboards/Components/EditableOptions.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/ComponentUtilities.js'], _modules['Dashboards/Utilities.js']], function (CallbackRegistry, ComponentGroup, EditableOptions, Sync, Globals, U, CU, DU) {
+    _registerModule(_modules, 'Dashboards/Components/Component.js', [_modules['Dashboards/CallbackRegistry.js'], _modules['Dashboards/Components/ConnectorHandler.js'], _modules['Dashboards/Components/EditableOptions.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/ComponentUtilities.js'], _modules['Dashboards/Utilities.js']], function (CallbackRegistry, ConnectorHandler, EditableOptions, Sync, Globals, U, CU, DU) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -4120,7 +3821,7 @@
          *
          * */
         const { classNamePrefix } = Globals;
-        const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, isObject, getStyle, diffObjects } = U;
+        const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, diffObjects } = U;
         const { getMargins, getPaddings } = CU;
         const { uniqueKey } = DU;
         /* *
@@ -4191,19 +3892,16 @@
              */
             constructor(cell, options, board) {
                 /**
+                 * The connector handlers for the component.
+                 */
+                this.connectorHandlers = [];
+                /**
                  * Registry of callbacks registered on the component. Used in the Highcharts
                  * component to keep track of chart events.
                  *
                  * @internal
                  */
                 this.callbackRegistry = new CallbackRegistry();
-                /**
-                 * Event listeners tied to the current DataTable. Used for rerendering the
-                 * component on data changes.
-                 *
-                 * @internal
-                 */
-                this.tableEvents = [];
                 /**
                  * Event listeners tied to the parent cell. Used for rendering/resizing the
                  * component on interactions.
@@ -4233,9 +3931,16 @@
                 this.id = this.options.id && this.options.id.length ?
                     this.options.id :
                     uniqueKey();
+                if (this.options.connector) {
+                    const connectorOptionsArray = isArray(this.options.connector) ?
+                        this.options.connector :
+                        [this.options.connector];
+                    for (const connectorOptions of connectorOptionsArray) {
+                        this.connectorHandlers.push(new ConnectorHandler(this, connectorOptions));
+                    }
+                }
                 this.editableOptions =
                     new EditableOptions(this, options.editableOptionsBindings);
-                this.presentationModifier = this.options.presentationModifier;
                 this.dimensions = {
                     width: null,
                     height: null
@@ -4250,7 +3955,7 @@
                 this.contentElement = createElement('div', {
                     className: `${this.options.className}-content`
                 }, {}, this.element, true);
-                this.filterAndAssignSyncOptions();
+                this.sync = new Sync(this, this.constructor.predefinedSyncConfig);
                 this.setupEventListeners();
                 if (cell) {
                     this.attachCellListeners();
@@ -4276,64 +3981,13 @@
             sidebar) {
                 return {};
             }
-            /* *
-             *
-             *  Functions
-             *
-             * */
             /**
-             * Inits connectors for the component and rerenders it.
+             * Returns the first connector of the component if it exists.
              *
-             * @returns
-             * Promise resolving to the component.
+             * @internal
              */
-            async initConnector() {
-                const connectorId = this.options.connector?.id, dataPool = this.board.dataPool;
-                if (connectorId &&
-                    (this.connectorId !== connectorId ||
-                        dataPool.isNewConnector(connectorId))) {
-                    this.cell?.setLoadingState();
-                    const connector = await dataPool.getConnector(connectorId);
-                    this.setConnector(connector);
-                }
-                return this;
-            }
-            /**
-            * Filter the sync options that are declared in the component options.
-            * Assigns the sync options to the component and to the sync instance.
-            *
-            * @param defaultHandlers
-            * Sync handlers on component.
-            *
-            * @internal
-            */
-            filterAndAssignSyncOptions(defaultHandlers = this.constructor.syncHandlers) {
-                const sync = this.options.sync || {};
-                const syncHandlers = Object.keys(sync).reduce((carry, handlerName) => {
-                    if (handlerName) {
-                        const defaultHandler = defaultHandlers[handlerName];
-                        const defaultOptions = Sync.defaultSyncOptions[handlerName];
-                        const handler = sync[handlerName];
-                        // Make it always an object
-                        carry[handlerName] = merge(defaultOptions || {}, { enabled: isObject(handler) ? handler.enabled : handler }, isObject(handler) ? handler : {});
-                        // Set emitter and handler default functions
-                        if (defaultHandler && carry[handlerName].enabled) {
-                            const keys = [
-                                'emitter', 'handler'
-                            ];
-                            for (const key of keys) {
-                                if (carry[handlerName][key] === true ||
-                                    carry[handlerName][key] === void 0) {
-                                    carry[handlerName][key] =
-                                        defaultHandler[key];
-                                }
-                            }
-                        }
-                    }
-                    return carry;
-                }, {});
-                this.sync ? this.sync.syncConfig = syncHandlers : void 0;
-                this.syncHandlers = syncHandlers;
+            getFirstConnector() {
+                return this.connectorHandlers[0]?.connector;
             }
             /**
              * Setup listeners on cell/other things up the chain
@@ -4389,133 +4043,19 @@
                 }
             }
             /**
-             * Adds event listeners to data table.
-             * @param table
-             * Data table that is source of data.
-             * @internal
+             * Initializes connector handlers for the component.
              */
-            setupTableListeners(table) {
-                const connector = this.connector;
-                if (connector) {
-                    if (table) {
-                        [
-                            'afterDeleteColumns',
-                            'afterDeleteRows',
-                            'afterSetCell',
-                            'afterSetConnector',
-                            'afterSetColumns',
-                            'afterSetRows'
-                        ].forEach((event) => {
-                            this.tableEvents.push((table)
-                                .on(event, (e) => {
-                                clearTimeout(this.tableEventTimeout);
-                                this.tableEventTimeout = Globals.win.setTimeout(() => {
-                                    this.emit({
-                                        ...e,
-                                        type: 'tableChanged'
-                                    });
-                                    this.tableEventTimeout = void 0;
-                                });
-                            }));
-                        });
-                    }
-                    this.tableEvents.push(connector.on('afterLoad', () => {
-                        clearTimeout(this.tableEventTimeout);
-                        this.tableEventTimeout = Globals.win.setTimeout(() => {
-                            this.emit({
-                                target: this,
-                                type: 'tableChanged'
-                            });
-                            this.tableEventTimeout = void 0;
-                        });
-                    }));
+            async initConnectors() {
+                fireEvent(this, 'setConnectors', {
+                    connectorHandlers: this.connectorHandlers
+                });
+                for (const connectorHandler of this.connectorHandlers) {
+                    await connectorHandler.initConnector();
                 }
-            }
-            /**
-             * Remove event listeners in data table.
-             * @internal
-             */
-            clearTableListeners() {
-                const connector = this.connector, tableEvents = this.tableEvents;
-                if (tableEvents.length) {
-                    tableEvents.forEach((removeEventCallback) => removeEventCallback());
-                }
-                if (connector) {
-                    tableEvents.push(connector.table.on('afterSetModifier', (e) => {
-                        if (e.type === 'afterSetModifier') {
-                            clearTimeout(this.tableEventTimeout);
-                            this.tableEventTimeout = Globals.win.setTimeout(() => {
-                                this.emit({
-                                    ...e,
-                                    type: 'tableChanged'
-                                });
-                                this.tableEventTimeout = void 0;
-                            });
-                        }
-                    }));
-                }
-            }
-            /**
-             * Attaches data store to the component.
-             * @param connector
-             * Connector of data.
-             *
-             * @returns
-             * Component which can be used in chaining.
-             *
-             * @internal
-             */
-            setConnector(connector) {
-                fireEvent(this, 'setConnector', { connector });
-                // Clean up old event listeners
-                while (this.tableEvents.length) {
-                    const eventCallback = this.tableEvents.pop();
-                    if (typeof eventCallback === 'function') {
-                        eventCallback();
-                    }
-                }
-                this.connector = connector;
-                if (connector) {
-                    // Set up event listeners
-                    this.clearTableListeners();
-                    this.setupTableListeners(connector.table);
-                    // Re-setup if modifier changes
-                    connector.table.on('setModifier', () => this.clearTableListeners());
-                    connector.table.on('afterSetModifier', (e) => {
-                        if (e.type === 'afterSetModifier' && e.modified) {
-                            this.setupTableListeners(e.modified);
-                        }
-                    });
-                    // Add the component to a group based on the
-                    // connector table id by default
-                    // TODO: make this configurable
-                    const tableID = connector.table.id;
-                    if (!ComponentGroup.getComponentGroup(tableID)) {
-                        ComponentGroup.addComponentGroup(new ComponentGroup(tableID));
-                    }
-                    const group = ComponentGroup.getComponentGroup(tableID);
-                    if (group) {
-                        group.addComponents([this.id]);
-                        this.activeGroup = group;
-                    }
-                }
-                fireEvent(this, 'afterSetConnector', { connector });
+                fireEvent(this, 'afterSetConnectors', {
+                    connectorHandlers: this.connectorHandlers
+                });
                 return this;
-            }
-            /** @internal */
-            setActiveGroup(group) {
-                if (typeof group === 'string') {
-                    group = ComponentGroup.getComponentGroup(group) || null;
-                }
-                if (group instanceof ComponentGroup) {
-                    this.activeGroup = group;
-                }
-                if (group === null) {
-                    this.activeGroup = void 0;
-                }
-                if (this.activeGroup) {
-                    this.activeGroup.addComponents([this.id]);
-                }
             }
             /**
              * Gets height of the component's content.
@@ -4597,14 +4137,34 @@
                 };
                 // Update options
                 fireEvent(this, 'update', eventObject);
-                this.options = merge(this.options, newOptions);
-                if (this.options.connector?.id &&
-                    this.connectorId !== this.options.connector.id) {
-                    const connector = await this.board.dataPool
-                        .getConnector(this.options.connector.id);
-                    this.setConnector(connector);
+                if (newOptions.connector && Array.isArray(this.options.connector)) {
+                    this.options.connector = void 0;
                 }
                 this.options = merge(this.options, newOptions);
+                const connectorOptions = (this.options.connector ? (isArray(this.options.connector) ? this.options.connector :
+                    [this.options.connector]) : []);
+                let connectorsHaveChanged = connectorOptions.length !== this.connectorHandlers.length;
+                if (!connectorsHaveChanged) {
+                    for (let i = 0, iEnd = connectorOptions.length; i < iEnd; i++) {
+                        const oldConnectorId = this.connectorHandlers[i]?.options.id;
+                        const newConnectorId = connectorOptions[i]?.id;
+                        if (oldConnectorId !== newConnectorId) {
+                            connectorsHaveChanged = true;
+                            break;
+                        }
+                        this.connectorHandlers[i].updateOptions(connectorOptions[i]);
+                    }
+                }
+                if (connectorsHaveChanged) {
+                    for (const connectorHandler of this.connectorHandlers) {
+                        connectorHandler.destroy();
+                    }
+                    this.connectorHandlers.length = 0;
+                    for (const options of connectorOptions) {
+                        this.connectorHandlers.push(new ConnectorHandler(this, options));
+                    }
+                    await this.initConnectors();
+                }
                 if (shouldRerender || eventObject.shouldForceRerender) {
                     this.render();
                 }
@@ -4711,7 +4271,7 @@
              * @internal
              */
             async load() {
-                await this.initConnector();
+                await this.initConnectors();
                 this.render();
                 return this;
             }
@@ -4743,8 +4303,9 @@
                 }
                 // Call unmount
                 fireEvent(this, 'unmount');
-                // Unregister events
-                this.tableEvents.forEach((eventCallback) => eventCallback());
+                for (const connectorHandler of this.connectorHandlers) {
+                    connectorHandler.destroy();
+                }
                 this.element.remove();
             }
             /** @internal */
@@ -4813,6 +4374,10 @@
                 let result = component.getEditableOptions();
                 for (let i = 0, end = propertyPath.length; i < end; i++) {
                     if (isArray(result)) {
+                        if (propertyPath[0] === 'connector' &&
+                            result.length > 1) {
+                            return 'multiple connectors';
+                        }
                         result = result[0];
                     }
                     if (!result) {
@@ -4830,6 +4395,13 @@
          * */
         /** @internal */
         Component.Sync = Sync;
+        /**
+         * Predefined sync config for component.
+         */
+        Component.predefinedSyncConfig = {
+            defaultSyncOptions: {},
+            defaultSyncPairs: {}
+        };
         /**
          * Default options of the component.
          */
@@ -4853,10 +4425,6 @@
                     type: 'input'
                 }]
         };
-        /**
-         * Default sync Handlers.
-         */
-        Component.syncHandlers = {};
 
         return Component;
     });
@@ -4890,7 +4458,37 @@
 
         return HTMLComponentDefaults;
     });
-    _registerModule(_modules, 'Dashboards/Components/HTMLComponent/HTMLComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js'], _modules['Core/Utilities.js']], function (AST, Component, HTMLComponentDefaults, U) {
+    _registerModule(_modules, 'Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js', [], function () {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+        *
+        *  Constants
+        *
+        * */
+        const predefinedSyncConfig = {
+            defaultSyncPairs: {},
+            defaultSyncOptions: {}
+        };
+        /* *
+         *
+         *  Default export
+         *
+         * */
+
+        return predefinedSyncConfig;
+    });
+    _registerModule(_modules, 'Dashboards/Components/HTMLComponent/HTMLComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js'], _modules['Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js'], _modules['Core/Utilities.js']], function (AST, Component, HTMLComponentDefaults, HTMLSyncs, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -5001,7 +4599,6 @@
                 this.options = options;
                 this.type = 'HTML';
                 this.elements = [];
-                this.sync = new Component.Sync(this, this.syncHandlers);
             }
             /* *
              *
@@ -5144,6 +4741,10 @@
          * Default options of the HTML component.
          */
         HTMLComponent.defaultOptions = merge(Component.defaultOptions, HTMLComponentDefaults);
+        /**
+         * Predefined sync config for HTML component.
+         */
+        HTMLComponent.predefinedSyncConfig = HTMLSyncs;
         /* *
          *
          *  Default export
@@ -10140,10 +9741,23 @@
              *  Functions
              *
              * */
-            function getGUIElement(idOrElement) {
-                const container = typeof idOrElement === 'string' ?
-                    document.getElementById(idOrElement) : idOrElement;
+            function getGUIElement(idOrElement, parentElement) {
+                let container;
                 let guiElement;
+                if (typeof idOrElement === 'string') {
+                    if (document.querySelectorAll('#' + idOrElement).length > 1) {
+                        error('Multiple cells have identical ID ' +
+                            '("' + idOrElement + '"), potentially leading to ' +
+                            'unexpected behaviour. Ensure that each cell has a ' +
+                            'unique ID on the page.');
+                    }
+                    container = parentElement ?
+                        parentElement.querySelector('#' + idOrElement) :
+                        document.getElementById(idOrElement);
+                }
+                else {
+                    container = idOrElement;
+                }
                 if (container !== null) {
                     fireEvent(container, 'bindedGUIElement', {}, function (e) {
                         guiElement = e.guiElement;
@@ -10159,7 +9773,13 @@
                     error('The `renderTo` option is required to render the component.');
                     return;
                 }
-                cell = cell || Bindings.getCell(renderTo);
+                if (board.mountedComponents.filter((el) => ((el.options.renderTo || el.options.cell) === renderTo)).length > 0) {
+                    error('The component is misconfigured and is unable to initialize ' +
+                        'it. A different component has already been declared in the`' +
+                        renderTo + '` cell.');
+                    return;
+                }
+                cell = cell || Bindings.getCell(renderTo, board.container);
                 const componentContainer = cell?.container || document.querySelector('#' + renderTo);
                 if (!componentContainer || !options.type) {
                     error('The component is misconfigured and is unable to find the' +
@@ -10233,7 +9853,7 @@
             Bindings.addComponent = addComponent;
             /** @internal */
             function componentFromJSON(json) {
-                let componentClass = ComponentRegistry.types[json.$class];
+                const componentClass = ComponentRegistry.types[json.$class];
                 if (!componentClass) {
                     return;
                 }
@@ -10248,24 +9868,24 @@
                 return component;
             }
             Bindings.componentFromJSON = componentFromJSON;
-            function getCell(idOrElement) {
-                const cell = getGUIElement(idOrElement);
+            function getCell(idOrElement, parentElement) {
+                const cell = getGUIElement(idOrElement, parentElement);
                 if (!(cell && cell.getType() === 'cell')) {
                     return;
                 }
                 return cell;
             }
             Bindings.getCell = getCell;
-            function getRow(idOrElement) {
-                const row = getGUIElement(idOrElement);
+            function getRow(idOrElement, parentElement) {
+                const row = getGUIElement(idOrElement, parentElement);
                 if (!(row && row.getType() === 'row')) {
                     return;
                 }
                 return row;
             }
             Bindings.getRow = getRow;
-            function getLayout(idOrElement) {
-                const layout = getGUIElement(idOrElement);
+            function getLayout(idOrElement, parentElement) {
+                const layout = getGUIElement(idOrElement, parentElement);
                 if (!(layout && layout.getType() === 'layout')) {
                     return;
                 }
@@ -10706,6 +10326,154 @@
          * */
 
         return DataCursor;
+    });
+    _registerModule(_modules, 'Dashboards/Serializable.js', [], function () {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        /**
+         * Contains the toolset to serialize class instance to JSON and deserialize JSON
+         * to class instances.
+         * @internal
+         * @private
+         */
+        var Serializable;
+        (function (Serializable) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             * Registry of serializable classes.
+             */
+            const classRegistry = {};
+            /**
+             * Registry of function sets.
+             */
+            const helperRegistry = {};
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Creates a class instance from the given JSON, if a suitable serializer
+             * has been found.
+             *
+             * @function Serializable.fromJSON
+             *
+             * @param {Serializable.JSON} json
+             * JSON to create a class instance or object from.
+             *
+             * @return {Globals.AnyRecord}
+             * Returns the class instance or object, or throws an exception.
+             */
+            function fromJSON(json) {
+                const $class = json.$class;
+                if (typeof $class !== 'string') {
+                    throw new Error('JSON has no $class property.');
+                }
+                const classs = classRegistry[$class];
+                if (classs) {
+                    return classs.fromJSON(json);
+                }
+                const helper = helperRegistry[$class];
+                if (helper) {
+                    return helper.fromJSON(json);
+                }
+                throw new Error(`'${$class}' unknown.`);
+            }
+            Serializable.fromJSON = fromJSON;
+            /**
+             * Registers a class prototype for the given JSON $class.
+             *
+             * @function Serializable.registerClassPrototype
+             *
+             * @param {string} $class
+             * JSON $class to register for.
+             *
+             * @param {Serializable} classPrototype
+             * Class to register.
+             */
+            function registerClassPrototype($class, classPrototype) {
+                if (classRegistry[$class]) {
+                    throw new Error('A serializer for \'' + $class + '\' is already registered.');
+                }
+                classRegistry[$class] = classPrototype;
+            }
+            Serializable.registerClassPrototype = registerClassPrototype;
+            /**
+             * Registers helper functions for the given JSON $class.
+             *
+             * @function Serializable.registerHelper
+             *
+             * @param {Helper} helperFunctions
+             * Helper functions to register.
+             */
+            function registerHelper(helperFunctions) {
+                if (helperRegistry[helperFunctions.$class]) {
+                    throw new Error('A serializer for \'' + helperFunctions.$class +
+                        '\' is already registered.');
+                }
+                helperRegistry[helperFunctions.$class] = helperFunctions;
+            }
+            Serializable.registerHelper = registerHelper;
+            /**
+             * Creates JSON from a class instance.
+             *
+             * @function Serializable.toJSON
+             *
+             * @param {Globals.AnyRecord} obj
+             * Class instance or object to serialize as JSON.
+             *
+             * @return {Serializable.JSON}
+             * JSON of the class instance.
+             */
+            function toJSON(obj) {
+                if (typeof obj.fromJSON === 'function' &&
+                    typeof obj.toJSON === 'function') {
+                    return obj.toJSON();
+                }
+                const classes = Object.keys(helperRegistry), numberOfHelpers = classes.length;
+                let $class, serializer;
+                for (let i = 0; i < numberOfHelpers; ++i) {
+                    $class = classes[i];
+                    serializer = helperRegistry[$class];
+                    if (serializer.jsonSupportFor(obj)) {
+                        return serializer.toJSON(obj);
+                    }
+                }
+                throw new Error('Object is not supported.');
+            }
+            Serializable.toJSON = toJSON;
+        })(Serializable || (Serializable = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Serializable;
     });
     _registerModule(_modules, 'Dashboards/SerializeHelper/DataCursorHelper.js', [_modules['Data/DataCursor.js'], _modules['Dashboards/Serializable.js']], function (DataCursor, Serializable) {
         /* *
@@ -12528,7 +12296,7 @@
             // Implementation:
             init(async) {
                 const options = this.options;
-                let componentPromises = (options.components) ?
+                const componentPromises = (options.components) ?
                     this.setComponents(options.components) : [];
                 // Init events.
                 this.initEvents();
@@ -12767,23 +12535,28 @@
              * The JSON of boards's options.
              */
             getOptions() {
-                const board = this, layouts = [], components = [];
-                for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-                    layouts.push(board.layouts[i].getOptions());
-                }
+                const board = this, options = {
+                    ...this.options,
+                    components: []
+                };
                 for (let i = 0, iEnd = board.mountedComponents.length; i < iEnd; ++i) {
                     if (board.mountedComponents[i].cell &&
                         board.mountedComponents[i].cell.mountedComponent) {
-                        components.push(board.mountedComponents[i].component.getOptions());
+                        options.components?.push(board.mountedComponents[i].component.getOptions());
                     }
                 }
-                return {
-                    ...this.options,
-                    gui: {
-                        layouts
-                    },
-                    components: components
-                };
+                if (this.guiEnabled) {
+                    options.gui = {
+                        layouts: []
+                    };
+                    for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
+                        options.gui.layouts?.push(board.layouts[i].getOptions());
+                    }
+                }
+                else {
+                    delete options.gui;
+                }
+                return options;
             }
         }
         /* *
@@ -12860,7 +12633,7 @@
 
         return Board;
     });
-    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncHandlers.js', [_modules['Core/Utilities.js']], function (U) {
+    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridExtremesSync.js', [], function () {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -12870,201 +12643,307 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Karol Kolodziej
+         *  - Dawid Dragula
          *
          * */
-        /* eslint-disable require-jsdoc, max-len */
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        const defaultOptions = {};
+        const syncPair = {
+            emitter: void 0,
+            handler: function () {
+                if (this.type !== 'DataGrid') {
+                    return;
+                }
+                const component = this;
+                const { board } = component;
+                const handleChangeExtremes = (e) => {
+                    const cursor = e.cursor;
+                    if (cursor.type === 'position' &&
+                        component.dataGrid &&
+                        typeof cursor?.row === 'number') {
+                        const { row } = cursor;
+                        component.dataGrid.scrollToRow(row);
+                    }
+                };
+                const registerCursorListeners = () => {
+                    const { dataCursor: cursor } = board;
+                    if (!cursor) {
+                        return;
+                    }
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    if (!table) {
+                        return;
+                    }
+                    cursor.addListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
+                };
+                const unregisterCursorListeners = () => {
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    const { dataCursor: cursor } = board;
+                    if (!table) {
+                        return;
+                    }
+                    cursor.removeListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
+                };
+                if (board) {
+                    registerCursorListeners();
+                    return unregisterCursorListeners;
+                }
+            }
+        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
+
+        return { defaultOptions, syncPair };
+    });
+    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridHighlightSync.js', [_modules['Core/Utilities.js']], function (U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
         const { addEvent, removeEvent } = U;
         /* *
          *
          *  Constants
          *
          * */
-        const configs = {
-            emitters: {
-                highlightEmitter: function () {
-                    if (this.type !== 'DataGrid') {
-                        return;
-                    }
-                    const { dataGrid, board } = this;
-                    const highlightOptions = this.sync.syncConfig.highlight;
-                    if (!board || !dataGrid || !highlightOptions.enabled) {
-                        return;
-                    }
-                    const { dataCursor: cursor } = board;
-                    const onDataGridHover = (e) => {
-                        const table = this.connector && this.connector.table;
-                        if (table) {
-                            const row = e.row;
-                            const cell = row.querySelector(`.highcharts-datagrid-cell[data-original-data="${row.dataset.rowXIndex}"]`);
-                            cursor.emitCursor(table, {
-                                type: 'position',
-                                row: parseInt(row.dataset.rowIndex, 10),
-                                column: cell ? cell.dataset.columnName : void 0,
-                                state: 'dataGrid.hoverRow'
-                            });
-                        }
-                    };
-                    const onDataGridMouseOut = () => {
-                        const table = this.connector && this.connector.table;
-                        if (table) {
-                            cursor.emitCursor(table, {
-                                type: 'position',
-                                state: 'dataGrid.hoverOut'
-                            });
-                        }
-                    };
-                    addEvent(dataGrid.container, 'dataGridHover', onDataGridHover);
-                    addEvent(dataGrid.container, 'mouseout', onDataGridMouseOut);
-                    // Return a function that calls the callbacks
-                    return function () {
-                        removeEvent(dataGrid.container, 'dataGridHover', onDataGridHover);
-                        removeEvent(dataGrid.container, 'mouseout', onDataGridMouseOut);
-                    };
+        const defaultOptions = {};
+        const syncPair = {
+            emitter: function () {
+                if (this.type !== 'DataGrid') {
+                    return;
                 }
+                const component = this;
+                const { dataGrid, board } = component;
+                const highlightOptions = this.sync.syncConfig.highlight;
+                if (!board || !dataGrid || !highlightOptions?.enabled) {
+                    return;
+                }
+                const { dataCursor: cursor } = board;
+                const onDataGridHover = (e) => {
+                    const table = this.getFirstConnector()?.table;
+                    if (table) {
+                        const row = e.row;
+                        cursor.emitCursor(table, {
+                            type: 'position',
+                            row: parseInt(row.dataset.rowIndex, 10),
+                            column: e.columnName,
+                            state: 'dataGrid.hoverRow'
+                        });
+                    }
+                };
+                const onDataGridMouseOut = () => {
+                    const table = this.getFirstConnector()?.table;
+                    if (table) {
+                        cursor.emitCursor(table, {
+                            type: 'position',
+                            state: 'dataGrid.hoverOut'
+                        });
+                    }
+                };
+                addEvent(dataGrid.container, 'dataGridHover', onDataGridHover);
+                addEvent(dataGrid.container, 'mouseout', onDataGridMouseOut);
+                // Return a function that calls the callbacks
+                return function () {
+                    removeEvent(dataGrid.container, 'dataGridHover', onDataGridHover);
+                    removeEvent(dataGrid.container, 'mouseout', onDataGridMouseOut);
+                };
             },
-            handlers: {
-                highlightHandler: function () {
-                    const { board } = this;
-                    const highlightOptions = this.sync.syncConfig.highlight;
-                    if (!highlightOptions.enabled) {
+            handler: function () {
+                if (this.type !== 'DataGrid') {
+                    return;
+                }
+                const component = this;
+                const { board } = component;
+                const highlightOptions = component.sync.syncConfig.highlight;
+                if (!highlightOptions?.enabled) {
+                    return;
+                }
+                const handleCursor = (e) => {
+                    const cursor = e.cursor;
+                    if (cursor.type === 'position') {
+                        const { row } = cursor;
+                        const { dataGrid } = component;
+                        if (row !== void 0 && dataGrid) {
+                            const highlightedDataRow = dataGrid.container
+                                .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
+                            if (highlightedDataRow) {
+                                dataGrid.toggleRowHighlight(highlightedDataRow);
+                                dataGrid.hoveredRow = highlightedDataRow;
+                            }
+                        }
+                    }
+                };
+                const handleCursorOut = () => {
+                    const { dataGrid } = component;
+                    if (dataGrid) {
+                        dataGrid.toggleRowHighlight(void 0);
+                    }
+                };
+                const registerCursorListeners = () => {
+                    const { dataCursor: cursor } = board;
+                    if (!cursor) {
                         return;
                     }
-                    const handleCursor = (e) => {
-                        const cursor = e.cursor;
-                        if (cursor.type === 'position') {
-                            const { row } = cursor;
-                            const { dataGrid } = this;
-                            if (row !== void 0 && dataGrid) {
-                                const highlightedDataRow = dataGrid.container
-                                    .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
-                                if (highlightedDataRow) {
-                                    dataGrid.toggleRowHighlight(highlightedDataRow);
-                                    dataGrid.hoveredRow = highlightedDataRow;
-                                }
-                            }
-                        }
-                    };
-                    const handleCursorOut = () => {
-                        const { dataGrid } = this;
-                        if (dataGrid) {
-                            dataGrid.toggleRowHighlight(void 0);
-                        }
-                    };
-                    const registerCursorListeners = () => {
-                        const { dataCursor: cursor } = board;
-                        if (!cursor) {
-                            return;
-                        }
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.addListener(table.id, 'point.mouseOver', handleCursor);
-                        cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
-                    };
-                    const unregisterCursorListeners = () => {
-                        const cursor = board.dataCursor;
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.removeListener(table.id, 'point.mouseOver', handleCursor);
-                        cursor.removeListener(table.id, 'point.mouseOut', handleCursorOut);
-                    };
-                    if (board) {
-                        registerCursorListeners();
-                        return unregisterCursorListeners;
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    if (!table) {
+                        return;
                     }
-                },
-                extremesHandler: function () {
-                    const { board } = this;
-                    const handleChangeExtremes = (e) => {
-                        const cursor = e.cursor;
-                        if (cursor.type === 'position' &&
-                            this.dataGrid &&
-                            typeof cursor?.row === 'number') {
-                            const { row } = cursor;
-                            this.dataGrid.scrollToRow(row);
-                        }
-                    };
-                    const registerCursorListeners = () => {
-                        const { dataCursor: cursor } = board;
-                        if (!cursor) {
-                            return;
-                        }
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.addListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
-                    };
-                    const unregisterCursorListeners = () => {
-                        const table = this.connector && this.connector.table;
-                        const { dataCursor: cursor } = board;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.removeListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
-                    };
-                    if (board) {
-                        registerCursorListeners();
-                        return unregisterCursorListeners;
+                    cursor.addListener(table.id, 'point.mouseOver', handleCursor);
+                    cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
+                };
+                const unregisterCursorListeners = () => {
+                    const cursor = board.dataCursor;
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    if (!table) {
+                        return;
                     }
-                },
-                visibilityHandler: function () {
-                    const component = this, { board } = component;
-                    const handleVisibilityChange = (e) => {
-                        const cursor = e.cursor, dataGrid = component.dataGrid;
-                        if (!(dataGrid && cursor.type === 'position' && cursor.column)) {
-                            return;
-                        }
-                        const columnName = cursor.column;
-                        dataGrid.update({
-                            columns: {
-                                [columnName]: {
-                                    show: cursor.state !== 'series.hide'
-                                }
-                            }
-                        });
-                    };
-                    const registerCursorListeners = () => {
-                        const { dataCursor: cursor } = board;
-                        if (!cursor) {
-                            return;
-                        }
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.addListener(table.id, 'series.show', handleVisibilityChange);
-                        cursor.addListener(table.id, 'series.hide', handleVisibilityChange);
-                    };
-                    const unregisterCursorListeners = () => {
-                        const table = this.connector && this.connector.table;
-                        const { dataCursor: cursor } = board;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.removeListener(table.id, 'series.show', handleVisibilityChange);
-                        cursor.removeListener(table.id, 'series.hide', handleVisibilityChange);
-                    };
-                    if (board) {
-                        registerCursorListeners();
-                        return unregisterCursorListeners;
-                    }
+                    cursor.removeListener(table.id, 'point.mouseOver', handleCursor);
+                    cursor.removeListener(table.id, 'point.mouseOut', handleCursorOut);
+                };
+                if (board) {
+                    registerCursorListeners();
+                    return unregisterCursorListeners;
                 }
             }
         };
-        const defaults = {
-            highlight: { emitter: configs.emitters.highlightEmitter, handler: configs.handlers.highlightHandler },
-            extremes: { handler: configs.handlers.extremesHandler },
-            visibility: { handler: configs.handlers.visibilityHandler }
-        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
 
-        return defaults;
+        return { defaultOptions, syncPair };
     });
-    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js', [_modules['Data/Converters/DataConverter.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncHandlers.js'], _modules['Core/Utilities.js']], function (DataConverter, DataGridSyncHandlers, U) {
+    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridVisibilitySync.js', [], function () {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        const defaultOptions = {};
+        const syncPair = {
+            emitter: void 0,
+            handler: function () {
+                if (this.type !== 'DataGrid') {
+                    return;
+                }
+                const component = this;
+                const { board } = component;
+                const handleVisibilityChange = (e) => {
+                    const cursor = e.cursor, dataGrid = component.dataGrid;
+                    if (!(dataGrid && cursor.type === 'position' && cursor.column)) {
+                        return;
+                    }
+                    const columnName = cursor.column;
+                    dataGrid.update({
+                        columns: {
+                            [columnName]: {
+                                show: cursor.state !== 'series.hide'
+                            }
+                        }
+                    });
+                };
+                const registerCursorListeners = () => {
+                    const { dataCursor: cursor } = board;
+                    if (!cursor) {
+                        return;
+                    }
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    if (!table) {
+                        return;
+                    }
+                    cursor.addListener(table.id, 'series.show', handleVisibilityChange);
+                    cursor.addListener(table.id, 'series.hide', handleVisibilityChange);
+                };
+                const unregisterCursorListeners = () => {
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    const { dataCursor: cursor } = board;
+                    if (!table) {
+                        return;
+                    }
+                    cursor.removeListener(table.id, 'series.show', handleVisibilityChange);
+                    cursor.removeListener(table.id, 'series.hide', handleVisibilityChange);
+                };
+                if (board) {
+                    registerCursorListeners();
+                    return unregisterCursorListeners;
+                }
+            }
+        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
+
+        return { defaultOptions, syncPair };
+    });
+    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridSyncs.js', [_modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridExtremesSync.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridHighlightSync.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridVisibilitySync.js']], function (DataGridExtremesSync, DataGridHighlightSync, DataGridVisibilitySync) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+        *
+        *  Namespace
+        *
+        * */
+        const predefinedSyncConfig = {
+            defaultSyncPairs: {
+                extremes: DataGridExtremesSync.syncPair,
+                highlight: DataGridHighlightSync.syncPair,
+                visibility: DataGridVisibilitySync.syncPair
+            },
+            defaultSyncOptions: {
+                extremes: DataGridExtremesSync.defaultOptions,
+                highlight: DataGridHighlightSync.defaultOptions,
+                visibility: DataGridVisibilitySync.defaultOptions
+            }
+        };
+        /* *
+         *
+         *  Default export
+         *
+         * */
+
+        return predefinedSyncConfig;
+    });
+    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -13092,7 +12971,6 @@
                     propertyPath: ['connector', 'id'],
                     type: 'select'
                 }],
-            syncHandlers: DataGridSyncHandlers,
             onUpdate: (e, connector) => {
                 const inputElement = e.target;
                 if (inputElement) {
@@ -13131,7 +13009,7 @@
 
         return DataGridComponentDefaults;
     });
-    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncHandlers.js'], _modules['Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js'], _modules['Core/Utilities.js']], function (Component, DataGridSyncHandlers, DataGridComponentDefaults, U) {
+    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridSyncs.js'], _modules['Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js'], _modules['Core/Utilities.js']], function (Component, DataGridSyncs, DataGridComponentDefaults, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -13164,10 +13042,7 @@
             static fromJSON(json, cell) {
                 const options = json.options;
                 const dataGridOptions = JSON.parse(json.options.dataGridOptions || '');
-                const component = new DataGridComponent(cell, merge(options, {
-                    dataGridOptions,
-                    syncHandlers: DataGridComponent.syncHandlers
-                }));
+                const component = new DataGridComponent(cell, merge(options, { dataGridOptions }));
                 component.emit({
                     type: 'fromJSON',
                     json
@@ -13191,12 +13066,14 @@
                 if (this.options.dataGridID) {
                     this.contentElement.id = this.options.dataGridID;
                 }
-                this.sync = new DataGridComponent.Sync(this, this.syncHandlers);
                 this.dataGridOptions = (this.options.dataGridOptions ||
                     {});
                 this.innerResizeTimeouts = [];
-                this.on('afterSetConnector', (e) => {
-                    this.disableEditingModifiedColumns(e.connector);
+                this.on('afterSetConnectors', (e) => {
+                    const connector = e.connectorHandlers?.[0]?.connector;
+                    if (connector) {
+                        this.disableEditingModifiedColumns(connector);
+                    }
                 });
             }
             onTableChanged() {
@@ -13249,19 +13126,18 @@
             async load() {
                 this.emit({ type: 'load' });
                 await super.load();
-                if (this.connector &&
+                const connector = this.getFirstConnector();
+                if (connector &&
                     !this.connectorListeners.length) {
                     const connectorListeners = this.connectorListeners;
                     // Reload the store when polling.
-                    connectorListeners.push(this.connector
-                        .on('afterLoad', (e) => {
-                        if (e.table && this.connector) {
-                            this.connector.table.setColumns(e.table.getColumns());
+                    connectorListeners.push(connector.on('afterLoad', (e) => {
+                        if (e.table && connector) {
+                            connector.table.setColumns(e.table.getColumns());
                         }
                     }));
                     // Update the DataGrid when connector changed.
-                    connectorListeners.push(this.connector.table
-                        .on('afterSetCell', (e) => {
+                    connectorListeners.push(connector.table.on('afterSetCell', (e) => {
                         const dataGrid = this.dataGrid;
                         let shouldUpdateTheGrid = true;
                         if (dataGrid) {
@@ -13275,7 +13151,8 @@
                                     const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
                                         input.value :
                                         +input.value;
-                                    if (cell.dataset.columnName === e.columnName &&
+                                    if (cell.dataset.columnName ===
+                                        e.columnName &&
                                         convertedInputValue === e.cellValue) {
                                         shouldUpdateTheGrid = false;
                                     }
@@ -13294,9 +13171,10 @@
                 if (!this.dataGrid) {
                     this.dataGrid = this.constructDataGrid();
                 }
-                if (this.connector &&
+                const connector = this.getFirstConnector();
+                if (connector &&
                     this.dataGrid &&
-                    this.dataGrid.dataTable.modified !== this.connector.table.modified) {
+                    this.dataGrid.dataTable.modified !== connector.table.modified) {
                     this.dataGrid.update({ dataTable: this.filterColumns() });
                 }
                 this.sync.start();
@@ -13311,7 +13189,10 @@
                 }
             }
             async update(options) {
-                if (options.connector?.id !== this.connectorId) {
+                const connectorOptions = Array.isArray(options.connector) ?
+                    options.connector[0] : options.connector;
+                if (this.connectorHandlers[0] &&
+                    connectorOptions?.id !== this.connectorHandlers[0]?.connectorId) {
                     const connectorListeners = this.connectorListeners;
                     for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
                         connectorListeners[i]();
@@ -13320,7 +13201,6 @@
                 }
                 await super.update(options);
                 if (this.dataGrid) {
-                    this.filterAndAssignSyncOptions(DataGridSyncHandlers);
                     this.dataGrid.update(this.options.dataGridOptions || {});
                 }
                 this.emit({ type: 'afterUpdate' });
@@ -13329,8 +13209,9 @@
             constructDataGrid() {
                 if (DataGridComponent.DataGridNamespace) {
                     const DataGrid = DataGridComponent.DataGridNamespace.DataGrid;
-                    const columnOptions = this.connector ?
-                        this.getColumnOptions(this.connector) :
+                    const connector = this.getFirstConnector();
+                    const columnOptions = connector ?
+                        this.getColumnOptions(connector) :
                         {};
                     this.dataGrid = new DataGrid(this.contentElement, {
                         ...this.options.dataGridOptions,
@@ -13343,7 +13224,8 @@
                 throw new Error('DataGrid not connected.');
             }
             setupConnectorUpdate() {
-                const { connector, dataGrid } = this;
+                const { dataGrid } = this;
+                const connector = this.getFirstConnector();
                 if (connector && dataGrid) {
                     dataGrid.on('cellClick', (e) => {
                         if ('input' in e) {
@@ -13358,7 +13240,7 @@
              * @internal
              */
             filterColumns() {
-                const table = this.connector?.table.modified, visibleColumns = this.options.visibleColumns;
+                const table = this.getFirstConnector()?.table.modified, visibleColumns = this.options.visibleColumns;
                 if (table) {
                     // Show all columns if no visibleColumns is provided.
                     if (!visibleColumns?.length) {
@@ -13434,8 +13316,10 @@
          *  Static Properties
          *
          * */
-        /** @private */
-        DataGridComponent.syncHandlers = DataGridSyncHandlers;
+        /**
+         * Predefined sync config for the DataGrid component.
+         */
+        DataGridComponent.predefinedSyncConfig = DataGridSyncs;
         /** @private */
         DataGridComponent.defaultOptions = merge(Component.defaultOptions, DataGridComponentDefaults);
         /* *
@@ -13507,7 +13391,7 @@
 
         return DataGridPlugin;
     });
-    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncHandlers.js', [_modules['Core/Utilities.js']], function (U) {
+    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsExtremesSync.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -13517,19 +13401,235 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
+         *  - Dawid Dragula
          *
          * */
-        /* eslint-disable require-jsdoc, max-len */
         const { addEvent, isString } = U;
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        const defaultOptions = {};
+        const syncPair = {
+            emitter: function () {
+                if (this.type !== 'Highcharts') {
+                    return;
+                }
+                const component = this;
+                const cleanupCallbacks = [];
+                const { chart, board } = component;
+                const connector = component.connectorHandlers?.[0]?.connector;
+                const table = connector && connector.table;
+                const { dataCursor: cursor } = board;
+                if (table && chart) {
+                    const extremesEventHandler = (e) => {
+                        const reset = !!e.resetSelection;
+                        if ((!e.trigger || (e.trigger && e.trigger !== 'dashboards-sync')) && !reset) {
+                            // TODO: investigate this type?
+                            const axis = e.target;
+                            const seriesFromConnectorArray = Object.keys(component.seriesFromConnector);
+                            // Prefer a series that's in a related table,
+                            // but allow for other data
+                            const series = seriesFromConnectorArray.length > 0 ?
+                                chart.get(seriesFromConnectorArray[0]) :
+                                axis.series[0];
+                            if (series) {
+                                // Get the indexes of the first and last drawn points
+                                const visiblePoints = series.points.filter((point) => point.isInside || false);
+                                const minCursorData = {
+                                    type: 'position',
+                                    state: `${axis.coll}.extremes.min`
+                                };
+                                const maxCursorData = {
+                                    type: 'position',
+                                    state: `${axis.coll}.extremes.max`
+                                };
+                                if (seriesFromConnectorArray.length > 0 &&
+                                    axis.coll === 'xAxis' &&
+                                    visiblePoints.length) {
+                                    let columnName;
+                                    const columnAssignment = (component.connectorHandlers[0]
+                                        ?.options).columnAssignment;
+                                    if (columnAssignment) {
+                                        const assignment = columnAssignment.find((assignment) => (assignment.seriesId ===
+                                            series.options.id));
+                                        if (assignment) {
+                                            const data = assignment.data;
+                                            if (isString(data)) {
+                                                columnName = data;
+                                            }
+                                            else if (Array.isArray(data)) {
+                                                columnName = data[data.length - 1];
+                                            }
+                                            else {
+                                                columnName = data.y;
+                                            }
+                                        }
+                                    }
+                                    if (!columnName) {
+                                        columnName = axis.dateTime && (table.hasColumns(['x']) ? 'x' :
+                                            series.options.id ?? series.name);
+                                    }
+                                    minCursorData.row = visiblePoints[0].index;
+                                    minCursorData.column = columnName;
+                                    maxCursorData.row =
+                                        visiblePoints[visiblePoints.length - 1].index;
+                                    maxCursorData.column = columnName;
+                                }
+                                // Emit as lasting cursors
+                                cursor.emitCursor(table, minCursorData, e, true).emitCursor(table, maxCursorData, e, true);
+                            }
+                        }
+                    };
+                    const addExtremesEvent = () => chart.axes.map((axis) => addEvent(axis, 'afterSetExtremes', extremesEventHandler));
+                    let addExtremesEventCallbacks = addExtremesEvent();
+                    const resetExtremesEvent = () => {
+                        addExtremesEventCallbacks.forEach((callback) => {
+                            callback();
+                        });
+                        addExtremesEventCallbacks = [];
+                    };
+                    const handleChartResetSelection = (e) => {
+                        if (e.resetSelection) {
+                            resetExtremesEvent();
+                            cursor.emitCursor(table, {
+                                type: 'position',
+                                state: 'chart.zoomOut'
+                            }, e);
+                            addExtremesEventCallbacks.push(...addExtremesEvent());
+                        }
+                    };
+                    cleanupCallbacks.push(addEvent(chart, 'selection', handleChartResetSelection));
+                    cleanupCallbacks.push(() => {
+                        cursor.remitCursor(table.id, {
+                            type: 'position',
+                            state: 'xAxis.extremes.min'
+                        });
+                        cursor.remitCursor(table.id, {
+                            type: 'position',
+                            state: 'xAxis.extremes.max'
+                        });
+                        resetExtremesEvent();
+                    });
+                }
+                // Return cleanup
+                return function () {
+                    // Call back the cleanup callbacks
+                    cleanupCallbacks.forEach((callback) => {
+                        callback();
+                    });
+                };
+            },
+            handler: function () {
+                if (this.type !== 'Highcharts') {
+                    return;
+                }
+                const component = this;
+                const { chart, board } = component;
+                if (chart && board && chart.zooming?.type) {
+                    const dimensions = chart.zooming.type.split('')
+                        .map((c) => c + 'Axis');
+                    const unregisterCallbacks = [];
+                    dimensions.forEach((dimension) => {
+                        const handleUpdateExtremes = (e) => {
+                            const { cursor, event } = e;
+                            if (cursor.type === 'position') {
+                                const eventTarget = event?.target;
+                                if (eventTarget && chart) {
+                                    const axes = chart[dimension];
+                                    let didZoom = false;
+                                    axes.forEach((axis) => {
+                                        if (eventTarget.coll === axis.coll &&
+                                            eventTarget !== axis &&
+                                            eventTarget.min !== null &&
+                                            eventTarget.max !== null && (axis.max !== eventTarget.max ||
+                                            axis.min !== eventTarget.min)) {
+                                            axis.setExtremes(eventTarget.min, eventTarget.max, false, void 0, {
+                                                trigger: 'dashboards-sync'
+                                            });
+                                            didZoom = true;
+                                        }
+                                    });
+                                    if (didZoom && !chart.resetZoomButton) {
+                                        chart.showResetZoom();
+                                    }
+                                    chart.redraw();
+                                }
+                            }
+                        };
+                        const addCursorListeners = () => {
+                            const { dataCursor: cursor } = board;
+                            const connector = component.connectorHandlers?.[0]?.connector;
+                            if (connector) {
+                                const { table } = connector;
+                                cursor.addListener(table.id, `${dimension}.extremes.min`, handleUpdateExtremes);
+                                cursor.addListener(table.id, `${dimension}.extremes.max`, handleUpdateExtremes);
+                                const handleChartZoomOut = () => {
+                                    chart.zoomOut();
+                                    setTimeout(() => {
+                                        // Workaround for zoom button not being removed
+                                        const resetZoomButtons = component.element
+                                            .querySelectorAll('.highcharts-reset-zoom');
+                                        resetZoomButtons.forEach((button) => {
+                                            button.remove();
+                                        });
+                                    });
+                                };
+                                cursor.addListener(table.id, 'chart.zoomOut', handleChartZoomOut);
+                                unregisterCallbacks.push(() => {
+                                    cursor.removeListener(table.id, `${dimension}.extremes.min`, handleUpdateExtremes);
+                                    cursor.removeListener(table.id, `${dimension}.extremes.max`, handleUpdateExtremes);
+                                    cursor.removeListener(table.id, 'chart.zoomOut', handleChartZoomOut);
+                                });
+                            }
+                        };
+                        if (board) {
+                            addCursorListeners();
+                        }
+                    });
+                    return function () {
+                        unregisterCallbacks.forEach((callback) => {
+                            callback();
+                        });
+                    };
+                }
+            }
+        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
+
+        return { defaultOptions, syncPair };
+    });
+    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsHighlightSync.js', [_modules['Dashboards/Utilities.js']], function (U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { error } = U;
+        /* *
+        *
+        *  Utility Functions
+        *
+        * */
         /**
          * Utility function that returns the first row index
          * if the table has been modified by a range modifier
          *
          * @param {DataTable} table
          * The table to get the offset from.
-             *
+         *
          * @param {RangeModifierOptions} modifierOptions
          * The modifier options to use
          *
@@ -13557,530 +13657,506 @@
          *  Constants
          *
          * */
-        const configs = {
-            emitters: {
-                highlightEmitter: function () {
-                    if (this.type !== 'Highcharts') {
-                        return;
+        const defaultOptions = {
+            affectedSeriesId: null,
+            highlightPoint: true,
+            showTooltip: true,
+            showCrosshair: true
+        };
+        const syncPair = {
+            emitter: function () {
+                if (this.type !== 'Highcharts') {
+                    return;
+                }
+                const component = this;
+                const { chart, board } = component;
+                const highlightOptions = this.sync.syncConfig.highlight;
+                if (!highlightOptions.enabled || !chart) {
+                    return;
+                }
+                const { dataCursor: cursor } = board;
+                for (let i = 0, iEnd = chart.series?.length ?? 0; i < iEnd; ++i) {
+                    const series = chart.series[i];
+                    const seriesId = series.options.id ?? '';
+                    const connectorHandler = component.seriesFromConnector[seriesId];
+                    const table = connectorHandler?.connector?.table;
+                    let columnName;
+                    if (!table) {
+                        continue;
                     }
-                    const { chart, board } = this;
-                    const highlightOptions = this.sync.syncConfig.highlight;
-                    if (!highlightOptions.enabled) {
-                        return;
+                    const colAssignment = connectorHandler.columnAssignment?.find((s) => s.seriesId === seriesId);
+                    // TODO: Better way to recognize the column name.
+                    if (colAssignment) {
+                        const { data } = colAssignment;
+                        if (typeof data === 'string') {
+                            columnName = data;
+                        }
+                        else if (Array.isArray(data)) {
+                            columnName = data[1];
+                        }
+                        else {
+                            columnName = data.y ?? data.value;
+                        }
                     }
-                    const { dataCursor: cursor } = board;
-                    const table = this.connector && this.connector.table;
-                    if (chart?.series && table) {
+                    if (!columnName) {
+                        columnName = series.name;
+                    }
+                    series.update({
+                        point: {
+                            events: {
+                                // Emit table cursor
+                                mouseOver: function () {
+                                    let offset = 0;
+                                    const modifier = table.getModifier();
+                                    if (modifier?.options.type === 'Range') {
+                                        offset = getModifiedTableOffset(table, modifier.options);
+                                    }
+                                    cursor.emitCursor(table, {
+                                        type: 'position',
+                                        row: offset + this.index,
+                                        column: columnName,
+                                        state: 'point.mouseOver'
+                                    });
+                                },
+                                mouseOut: function () {
+                                    let offset = 0;
+                                    const modifier = table.getModifier();
+                                    if (modifier?.options.type === 'Range') {
+                                        offset = getModifiedTableOffset(table, modifier.options);
+                                    }
+                                    cursor.emitCursor(table, {
+                                        type: 'position',
+                                        row: offset + this.index,
+                                        column: columnName,
+                                        state: 'point.mouseOut'
+                                    });
+                                }
+                            }
+                        }
+                    }, false);
+                }
+                chart.redraw();
+                // Return function that handles cleanup
+                return function () {
+                    if (chart && chart.series) {
                         chart.series.forEach((series) => {
                             series.update({
                                 point: {
                                     events: {
-                                        // Emit table cursor
-                                        mouseOver: function () {
-                                            let offset = 0;
-                                            const modifier = table.getModifier();
-                                            if (modifier?.options.type === 'Range') {
-                                                offset = getModifiedTableOffset(table, modifier.options);
-                                            }
-                                            cursor.emitCursor(table, {
-                                                type: 'position',
-                                                row: offset + this.index,
-                                                column: series.name,
-                                                state: 'point.mouseOver'
-                                            });
-                                        },
-                                        mouseOut: function () {
-                                            let offset = 0;
-                                            const modifier = table.getModifier();
-                                            if (modifier?.options.type === 'Range') {
-                                                offset = getModifiedTableOffset(table, modifier.options);
-                                            }
-                                            cursor.emitCursor(table, {
-                                                type: 'position',
-                                                row: offset + this.index,
-                                                column: series.name,
-                                                state: 'point.mouseOut'
-                                            });
-                                        }
-                                    }
-                                }
-                            }, false);
-                            chart.redraw();
-                        });
-                    }
-                    // Return function that handles cleanup
-                    return function () {
-                        if (chart && chart.series) {
-                            chart.series.forEach((series) => {
-                                series.update({
-                                    point: {
-                                        events: {
-                                            mouseOver: void 0,
-                                            mouseOut: void 0
-                                        }
-                                    }
-                                }, false);
-                            });
-                            chart.redraw();
-                        }
-                    };
-                },
-                seriesVisibilityEmitter: function () {
-                    if (this.type !== 'Highcharts') {
-                        return;
-                    }
-                    const component = this;
-                    const { chart, connector, board } = component;
-                    if (!board || !chart) {
-                        return;
-                    }
-                    const table = connector?.table;
-                    if (table) { // Has a connector
-                        const { dataCursor: cursor } = board;
-                        const { series } = chart;
-                        series.forEach((series) => {
-                            series.update({
-                                events: {
-                                    show: function () {
-                                        cursor.emitCursor(table, {
-                                            type: 'position',
-                                            state: 'series.show',
-                                            column: this.name
-                                        });
-                                    },
-                                    hide: function () {
-                                        cursor.emitCursor(table, {
-                                            type: 'position',
-                                            state: 'series.hide',
-                                            column: this.name
-                                        });
+                                        mouseOver: void 0,
+                                        mouseOut: void 0
                                     }
                                 }
                             }, false);
                         });
                         chart.redraw();
                     }
-                    return function () {
-                        if (!chart || !chart.series?.length) {
-                            return;
-                        }
-                        chart.series.forEach((series) => {
-                            series.update({
-                                events: {
-                                    show: void 0,
-                                    hide: void 0
-                                }
-                            }, false);
-                        });
-                        chart.redraw();
-                    };
-                },
-                extremesEmitter: function () {
-                    if (this.type === 'Highcharts') {
-                        const component = this;
-                        const cleanupCallbacks = [];
-                        const { chart, connector, board } = component;
-                        const table = connector && connector.table;
-                        const { dataCursor: cursor } = board;
-                        if (table && chart) {
-                            const extremesEventHandler = (e) => {
-                                const reset = !!e.resetSelection;
-                                if ((!e.trigger || (e.trigger && e.trigger !== 'dashboards-sync')) && !reset) {
-                                    // TODO: investigate this type?
-                                    const axis = e.target;
-                                    // Prefer a series that's in a related table,
-                                    // but allow for other data
-                                    const series = component.seriesFromConnector.length > 0 ?
-                                        chart.get(component.seriesFromConnector[0]) :
-                                        axis.series[0];
-                                    if (series) {
-                                        // Get the indexes of the first and last drawn points
-                                        const visiblePoints = series.points
-                                            .filter((point) => point.isInside || false);
-                                        const minCursorData = {
-                                            type: 'position',
-                                            state: `${axis.coll}.extremes.min`
-                                        };
-                                        const maxCursorData = {
-                                            type: 'position',
-                                            state: `${axis.coll}.extremes.max`
-                                        };
-                                        if (component.seriesFromConnector.length > 0 &&
-                                            axis.coll === 'xAxis' &&
-                                            visiblePoints.length) {
-                                            let columnName;
-                                            const columnAssignment = component.options.connector?.columnAssignment;
-                                            if (columnAssignment) {
-                                                const assignment = columnAssignment.find((assignment) => assignment.seriesId === series.options.id);
-                                                if (assignment) {
-                                                    const data = assignment.data;
-                                                    if (isString(data)) {
-                                                        columnName = data;
-                                                    }
-                                                    else if (Array.isArray(data)) {
-                                                        columnName = data[data.length - 1];
-                                                    }
-                                                    else {
-                                                        columnName = data.y;
-                                                    }
-                                                }
-                                            }
-                                            if (!columnName) {
-                                                columnName = axis.dateTime && table.hasColumns(['x']) ?
-                                                    'x' :
-                                                    series.options.id ?? series.name;
-                                            }
-                                            minCursorData.row = visiblePoints[0].index;
-                                            minCursorData.column = columnName;
-                                            maxCursorData.row = visiblePoints[visiblePoints.length - 1].index;
-                                            maxCursorData.column = columnName;
-                                        }
-                                        // Emit as lasting cursors
-                                        cursor.emitCursor(table, minCursorData, e, true).emitCursor(table, maxCursorData, e, true);
-                                    }
-                                }
-                            };
-                            const addExtremesEvent = () => chart.axes.map((axis) => addEvent(axis, 'afterSetExtremes', extremesEventHandler));
-                            let addExtremesEventCallbacks = addExtremesEvent();
-                            const resetExtremesEvent = () => {
-                                addExtremesEventCallbacks.forEach((callback) => {
-                                    callback();
-                                });
-                                addExtremesEventCallbacks = [];
-                            };
-                            const handleChartResetSelection = (e) => {
-                                if (e.resetSelection) {
-                                    resetExtremesEvent();
-                                    cursor.emitCursor(table, {
-                                        type: 'position',
-                                        state: 'chart.zoomOut'
-                                    }, e);
-                                    addExtremesEventCallbacks.push(...addExtremesEvent());
-                                }
-                            };
-                            cleanupCallbacks.push(addEvent(chart, 'selection', handleChartResetSelection));
-                            cleanupCallbacks.push(() => {
-                                cursor.remitCursor(table.id, {
-                                    type: 'position',
-                                    state: 'xAxis.extremes.min'
-                                });
-                                cursor.remitCursor(table.id, {
-                                    type: 'position',
-                                    state: 'xAxis.extremes.max'
-                                });
-                                resetExtremesEvent();
-                            });
-                        }
-                        // Return cleanup
-                        return function () {
-                            // Call back the cleanup callbacks
-                            cleanupCallbacks.forEach((callback) => {
-                                callback();
-                            });
-                        };
-                    }
-                }
+                };
             },
-            handlers: {
-                seriesVisibilityHandler: function () {
-                    const component = this;
-                    const { board } = this;
-                    const findSeries = (seriesArray, name) => {
-                        for (const series of seriesArray) {
-                            if (series.name === name) {
-                                return series;
-                            }
-                        }
-                    };
-                    const handleShow = (e) => {
-                        const chart = component.chart;
-                        if (!chart || !chart.series?.length) {
-                            return;
-                        }
-                        if (e.cursor.type === 'position' && e.cursor.column !== void 0) {
-                            const series = findSeries(chart.series, e.cursor.column);
-                            if (series) {
-                                series.setVisible(true, true);
-                            }
-                        }
-                    };
-                    const handleHide = (e) => {
-                        const chart = component.chart;
-                        if (!chart || !chart.series?.length) {
-                            return;
-                        }
-                        if (e.cursor.type === 'position' && e.cursor.column !== void 0) {
-                            const series = findSeries(chart.series, e.cursor.column);
-                            if (series) {
-                                series.setVisible(false, true);
-                            }
-                        }
-                    };
-                    const registerCursorListeners = () => {
-                        const { dataCursor } = board;
-                        if (!dataCursor) {
-                            return;
-                        }
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
-                        }
-                        dataCursor.addListener(table.id, 'series.show', handleShow);
-                        dataCursor.addListener(table.id, 'series.hide', handleHide);
-                    };
-                    const unregisterCursorListeners = () => {
-                        const table = this.connector && this.connector.table;
-                        if (table) {
-                            board.dataCursor.removeListener(table.id, 'series.show', handleShow);
-                            board.dataCursor.removeListener(table.id, 'series.hide', handleHide);
-                        }
-                    };
-                    if (board) {
-                        registerCursorListeners();
-                        return unregisterCursorListeners;
+            handler: function () {
+                if (this.type !== 'Highcharts') {
+                    return;
+                }
+                const component = this;
+                const { chart, board } = component;
+                const getHoveredPoint = (e) => {
+                    const { table, cursor } = e;
+                    const highlightOptions = this.sync
+                        .syncConfig.highlight;
+                    const modifier = table.getModifier();
+                    let offset = 0;
+                    if (modifier && modifier.options.type === 'Range') {
+                        offset = getModifiedTableOffset(table, modifier.options);
                     }
-                },
-                highlightHandler: function () {
-                    const { chart, board } = this;
-                    const getHoveredPoint = (e) => {
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
+                    if (chart && chart.series?.length && cursor.type === 'position') {
+                        let series;
+                        const seriesId = highlightOptions.affectedSeriesId;
+                        if (highlightOptions.affectedSeriesId) {
+                            const foundSeries = chart.get(highlightOptions.affectedSeriesId);
+                            if (foundSeries?.points) {
+                                series = foundSeries;
+                            }
+                            else {
+                                error('No series with ID \'' + seriesId + '\' found in ' +
+                                    'the chart. Affected series will be selected ' +
+                                    'according to the column assignment.');
+                            }
                         }
-                        let offset = 0;
-                        const modifier = table.getModifier();
-                        if (modifier && modifier.options.type === 'Range') {
-                            offset = getModifiedTableOffset(table, modifier.options);
-                        }
-                        if (chart && chart.series?.length) {
-                            const cursor = e.cursor;
-                            if (cursor.type === 'position') {
-                                let [series] = chart.series;
-                                // #20133 - Highcharts dashboards don't sync
-                                // tooltips when charts have multiple series
-                                if (chart.series.length > 1 && cursor.column) {
-                                    const relatedSeries = chart.series.filter((series) => (series.name === cursor.column));
-                                    if (relatedSeries.length > 0) {
-                                        [series] = relatedSeries;
+                        if (!series) {
+                            const seriesIds = Object.keys(component.seriesFromConnector);
+                            for (let i = 0, iEnd = seriesIds.length; i < iEnd; ++i) {
+                                const seriesId = seriesIds[i];
+                                const connectorHandler = component.seriesFromConnector[seriesId];
+                                if (connectorHandler?.connector?.table !== table) {
+                                    continue;
+                                }
+                                const colAssignment = connectorHandler.columnAssignment;
+                                series = chart.get(seriesId);
+                                if (!colAssignment) {
+                                    break;
+                                }
+                                const { data } = colAssignment.find((s) => s.seriesId === seriesId) ?? {};
+                                if (!data || !cursor.column) {
+                                    break;
+                                }
+                                if (typeof data === 'string') {
+                                    if (data === cursor.column) {
+                                        break;
                                     }
                                 }
-                                if (series?.visible && cursor.row !== void 0) {
-                                    const point = series.data[cursor.row - offset];
-                                    if (point?.graphic) {
-                                        return point;
+                                else if (Array.isArray(data)) {
+                                    if (data.includes(cursor.column)) {
+                                        break;
+                                    }
+                                }
+                                else {
+                                    if (Object.keys(data)
+                                        .map((key) => data[key])
+                                        .includes(cursor.column)) {
+                                        break;
                                     }
                                 }
                             }
                         }
-                    };
-                    const handleCursor = (e) => {
-                        const highlightOptions = this.sync.syncConfig.highlight;
-                        if (!highlightOptions.enabled) {
-                            return;
-                        }
-                        const point = getHoveredPoint(e);
-                        if (!point || !chart ||
-                            // Non-cartesian points do not use 'isInside'
-                            (!point.isInside && point.series.isCartesian) ||
-                            // Abort if the affected chart is the same as the one
-                            // that is currently affected manually.
-                            point === chart.hoverPoint) {
-                            return;
-                        }
-                        const tooltip = chart.tooltip;
-                        if (tooltip && highlightOptions.showTooltip) {
-                            const useSharedTooltip = tooltip.shared;
-                            const hoverPoint = chart.hoverPoint;
-                            const hoverSeries = hoverPoint?.series ||
-                                chart.hoverSeries;
-                            const points = chart.pointer?.getHoverData(point, hoverSeries, chart.series, true, true);
-                            if (chart.tooltip && points) {
-                                tooltip.refresh(useSharedTooltip ? points.hoverPoints : point);
+                        if (series?.visible && cursor.row !== void 0) {
+                            const point = series.data[cursor.row - offset];
+                            if (point?.visible) {
+                                return point;
                             }
                         }
-                        if (highlightOptions.highlightPoint && (
-                        // If the tooltip is shared, the hover state is
-                        // already set on the point.
-                        (!tooltip?.shared && highlightOptions.showTooltip) ||
-                            !highlightOptions.showTooltip)) {
-                            point.setState('hover');
-                        }
-                        if (highlightOptions.showCrosshair) {
-                            point.series.xAxis?.drawCrosshair(void 0, point);
-                            point.series.yAxis?.drawCrosshair(void 0, point);
-                        }
-                    };
-                    const handleCursorOut = (e) => {
-                        const highlightOptions = this.sync.syncConfig.highlight;
-                        if (!chart || !chart.series.length ||
-                            !highlightOptions.enabled) {
-                            return;
-                        }
-                        const point = getHoveredPoint(e);
+                    }
+                };
+                const handleCursor = (e) => {
+                    const highlightOptions = this.sync
+                        .syncConfig.highlight;
+                    if (!highlightOptions.enabled) {
+                        return;
+                    }
+                    const point = getHoveredPoint(e);
+                    if (!point || !chart ||
+                        // Non-cartesian points do not use 'isInside'
+                        (!point.isInside && point.series.isCartesian) ||
                         // Abort if the affected chart is the same as the one
                         // that is currently affected manually.
-                        if (point && (!point.isInside && point.series.isCartesian ||
-                            point === chart.hoverPoint)) {
-                            return;
+                        point === chart.hoverPoint) {
+                        return;
+                    }
+                    const tooltip = chart.tooltip;
+                    if (tooltip && highlightOptions.showTooltip) {
+                        const useSharedTooltip = tooltip.shared;
+                        const hoverPoint = chart.hoverPoint;
+                        const hoverSeries = hoverPoint?.series ||
+                            chart.hoverSeries;
+                        const points = chart.pointer?.getHoverData(point, hoverSeries, chart.series, true, true);
+                        if (chart.tooltip && points) {
+                            tooltip.refresh(useSharedTooltip ? points.hoverPoints : point);
                         }
-                        let unhovered = false;
-                        const unhoverAllPoints = () => {
+                    }
+                    if (highlightOptions.highlightPoint && (
+                    // If the tooltip is shared, the hover state is
+                    // already set on the point.
+                    (!tooltip?.shared && highlightOptions.showTooltip) ||
+                        !highlightOptions.showTooltip)) {
+                        point.setState('hover');
+                    }
+                    if (highlightOptions.showCrosshair) {
+                        point.series.xAxis?.drawCrosshair(void 0, point);
+                        point.series.yAxis?.drawCrosshair(void 0, point);
+                    }
+                };
+                const handleCursorOut = (e) => {
+                    const highlightOptions = this.sync
+                        .syncConfig.highlight;
+                    if (!chart || !chart.series.length ||
+                        !highlightOptions.enabled) {
+                        return;
+                    }
+                    const point = getHoveredPoint(e);
+                    // Abort if the affected chart is the same as the one
+                    // that is currently affected manually.
+                    if (point && (!point.isInside && point.series.isCartesian ||
+                        point === chart.hoverPoint)) {
+                        return;
+                    }
+                    let unhovered = false;
+                    const unhoverAllPoints = () => {
+                        // If the 'row' parameter is missing in the event
+                        // object, the unhovered point cannot be identified.
+                        const series = chart.series;
+                        const seriesLength = series.length;
+                        for (let i = 0; i < seriesLength; i++) {
+                            const points = chart.series[i].points;
+                            const pointsLength = points.length;
+                            for (let j = 0; j < pointsLength; j++) {
+                                points[j].setState();
+                            }
+                        }
+                    };
+                    const tooltip = chart.tooltip;
+                    if (tooltip && highlightOptions.showTooltip) {
+                        tooltip.hide();
+                        // Shared tooltip refresh always hovers points, so it's
+                        // important to unhover all points on cursor out.
+                        if (tooltip.shared) {
+                            unhoverAllPoints();
+                            unhovered = true;
+                        }
+                    }
+                    if (highlightOptions.highlightPoint && !unhovered) {
+                        if (point) {
+                            point.setState();
+                        }
+                        else {
+                            unhoverAllPoints();
+                        }
+                    }
+                    if (highlightOptions.showCrosshair) {
+                        if (point) {
+                            point.series.xAxis?.drawCrosshair();
+                            point.series.yAxis?.drawCrosshair();
+                        }
+                        else {
                             // If the 'row' parameter is missing in the event
                             // object, the unhovered point cannot be identified.
-                            const series = chart.series;
-                            const seriesLength = series.length;
-                            for (let i = 0; i < seriesLength; i++) {
-                                const points = chart.series[i].points;
-                                const pointsLength = points.length;
-                                for (let j = 0; j < pointsLength; j++) {
-                                    points[j].setState();
-                                }
+                            const xAxes = chart.xAxis;
+                            const yAxes = chart.yAxis;
+                            for (let i = 0, l = xAxes.length; i < l; i++) {
+                                xAxes[i].drawCrosshair();
                             }
-                        };
-                        const tooltip = chart.tooltip;
-                        if (tooltip && highlightOptions.showTooltip) {
-                            tooltip.hide();
-                            // Shared tooltip refresh always hovers points, so it's
-                            // important to unhover all points on cursor out.
-                            if (tooltip.shared) {
-                                unhoverAllPoints();
-                                unhovered = true;
+                            for (let i = 0, l = yAxes.length; i < l; i++) {
+                                yAxes[i].drawCrosshair();
                             }
                         }
-                        if (highlightOptions.highlightPoint && !unhovered) {
-                            if (point) {
-                                point.setState();
-                            }
-                            else {
-                                unhoverAllPoints();
-                            }
-                        }
-                        if (highlightOptions.showCrosshair) {
-                            if (point) {
-                                point.series.xAxis?.drawCrosshair();
-                                point.series.yAxis?.drawCrosshair();
-                            }
-                            else {
-                                // If the 'row' parameter is missing in the event
-                                // object, the unhovered point cannot be identified.
-                                const xAxes = chart.xAxis;
-                                const yAxes = chart.yAxis;
-                                for (let i = 0, l = xAxes.length; i < l; i++) {
-                                    xAxes[i].drawCrosshair();
-                                }
-                                for (let i = 0, l = yAxes.length; i < l; i++) {
-                                    yAxes[i].drawCrosshair();
-                                }
-                            }
-                        }
-                    };
-                    const registerCursorListeners = () => {
-                        const { dataCursor: cursor } = board;
-                        if (cursor) {
-                            const table = this.connector && this.connector.table;
-                            if (table) {
-                                cursor.addListener(table.id, 'point.mouseOver', handleCursor);
-                                cursor.addListener(table.id, 'dataGrid.hoverRow', handleCursor);
-                                cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
-                                cursor.addListener(table.id, 'dataGrid.hoverOut', handleCursorOut);
-                            }
-                        }
-                    };
-                    const unregisterCursorListeners = () => {
-                        const table = this.connector && this.connector.table;
-                        if (table) {
-                            board.dataCursor.removeListener(table.id, 'point.mouseOver', handleCursor);
-                            board.dataCursor.removeListener(table.id, 'dataGrid.hoverRow', handleCursor);
-                            board.dataCursor.removeListener(table.id, 'point.mouseOut', handleCursorOut);
-                            board.dataCursor.removeListener(table.id, 'dataGrid.hoverOut', handleCursorOut);
-                        }
-                    };
-                    if (board) {
-                        registerCursorListeners();
-                        return unregisterCursorListeners;
                     }
-                },
-                extremesHandler: function () {
-                    const { chart, board } = this;
-                    if (chart && board && chart.zooming?.type) {
-                        const dimensions = chart.zooming.type.split('')
-                            .map((c) => c + 'Axis');
-                        const unregisterCallbacks = [];
-                        dimensions.forEach((dimension) => {
-                            const handleUpdateExtremes = (e) => {
-                                const { cursor, event } = e;
-                                if (cursor.type === 'position') {
-                                    const eventTarget = event && event.target;
-                                    if (eventTarget && chart) {
-                                        const axes = chart[dimension];
-                                        let didZoom = false;
-                                        axes.forEach((axis) => {
-                                            if (eventTarget.coll === axis.coll &&
-                                                eventTarget !== axis &&
-                                                eventTarget.min !== null &&
-                                                eventTarget.max !== null && (axis.max !== eventTarget.max ||
-                                                axis.min !== eventTarget.min)) {
-                                                axis.setExtremes(eventTarget.min, eventTarget.max, false, void 0, {
-                                                    trigger: 'dashboards-sync'
-                                                });
-                                                didZoom = true;
-                                            }
-                                        });
-                                        if (didZoom && !chart.resetZoomButton) {
-                                            chart.showResetZoom();
-                                        }
-                                        chart.redraw();
-                                    }
-                                }
-                            };
-                            const addCursorListeners = () => {
-                                const { dataCursor: cursor } = board;
-                                const { connector } = this;
-                                if (connector) {
-                                    const { table } = connector;
-                                    cursor.addListener(table.id, `${dimension}.extremes.min`, handleUpdateExtremes);
-                                    cursor.addListener(table.id, `${dimension}.extremes.max`, handleUpdateExtremes);
-                                    const handleChartZoomOut = () => {
-                                        chart.zoomOut();
-                                        setTimeout(() => {
-                                            // Workaround for zoom button not being removed
-                                            const resetZoomButtons = this.element
-                                                .querySelectorAll('.highcharts-reset-zoom');
-                                            resetZoomButtons.forEach((button) => {
-                                                button.remove();
-                                            });
-                                        });
-                                    };
-                                    cursor.addListener(table.id, 'chart.zoomOut', handleChartZoomOut);
-                                    unregisterCallbacks.push(() => {
-                                        cursor.removeListener(table.id, `${dimension}.extremes.min`, handleUpdateExtremes);
-                                        cursor.removeListener(table.id, `${dimension}.extremes.max`, handleUpdateExtremes);
-                                        cursor.removeListener(table.id, 'chart.zoomOut', handleChartZoomOut);
-                                    });
-                                }
-                            };
-                            if (board) {
-                                addCursorListeners();
-                            }
-                        });
-                        return function () {
-                            unregisterCallbacks.forEach((callback) => {
-                                callback();
-                            });
-                        };
+                };
+                const registerCursorListeners = () => {
+                    const { dataCursor: cursor } = board;
+                    const { connectorHandlers } = this;
+                    if (!cursor) {
+                        return;
                     }
+                    for (let i = 0, iEnd = connectorHandlers.length; i < iEnd; ++i) {
+                        const table = connectorHandlers[i]?.connector?.table;
+                        if (!table) {
+                            continue;
+                        }
+                        cursor.addListener(table.id, 'point.mouseOver', handleCursor);
+                        cursor.addListener(table.id, 'dataGrid.hoverRow', handleCursor);
+                        cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
+                        cursor.addListener(table.id, 'dataGrid.hoverOut', handleCursorOut);
+                    }
+                };
+                const unregisterCursorListeners = () => {
+                    const { dataCursor: cursor } = board;
+                    const { connectorHandlers } = this;
+                    if (!cursor) {
+                        return;
+                    }
+                    for (let i = 0, iEnd = connectorHandlers.length; i < iEnd; ++i) {
+                        const table = connectorHandlers[i]?.connector?.table;
+                        if (!table) {
+                            continue;
+                        }
+                        cursor.removeListener(table.id, 'point.mouseOver', handleCursor);
+                        cursor.removeListener(table.id, 'dataGrid.hoverRow', handleCursor);
+                        cursor.removeListener(table.id, 'point.mouseOut', handleCursorOut);
+                        cursor.removeListener(table.id, 'dataGrid.hoverOut', handleCursorOut);
+                    }
+                };
+                if (board) {
+                    registerCursorListeners();
+                    return unregisterCursorListeners;
                 }
             }
         };
-        const defaults = {
-            extremes: { emitter: configs.emitters.extremesEmitter, handler: configs.handlers.extremesHandler },
-            highlight: { emitter: configs.emitters.highlightEmitter, handler: configs.handlers.highlightHandler },
-            visibility: { emitter: configs.emitters.seriesVisibilityEmitter, handler: configs.handlers.seriesVisibilityHandler }
-        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
 
-        return defaults;
+        return { defaultOptions, syncPair };
     });
-    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncHandlers.js'], _modules['Core/Utilities.js']], function (Component, HighchartsSyncHandlers, U) {
+    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsVisibilitySync.js', [], function () {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        const defaultOptions = {};
+        const syncPair = {
+            emitter: function () {
+                if (this.type !== 'Highcharts') {
+                    return;
+                }
+                const component = this;
+                const { chart, board } = component;
+                const connector = this.getFirstConnector();
+                if (!board || !chart) {
+                    return;
+                }
+                const table = connector?.table;
+                if (table) { // Has a connector
+                    const { dataCursor: cursor } = board;
+                    const { series } = chart;
+                    series.forEach((series) => {
+                        series.update({
+                            events: {
+                                show: function () {
+                                    cursor.emitCursor(table, {
+                                        type: 'position',
+                                        state: 'series.show',
+                                        column: this.name
+                                    });
+                                },
+                                hide: function () {
+                                    cursor.emitCursor(table, {
+                                        type: 'position',
+                                        state: 'series.hide',
+                                        column: this.name
+                                    });
+                                }
+                            }
+                        }, false);
+                    });
+                    chart.redraw();
+                }
+                return function () {
+                    if (!chart || !chart.series?.length) {
+                        return;
+                    }
+                    chart.series.forEach((series) => {
+                        series.update({
+                            events: {
+                                show: void 0,
+                                hide: void 0
+                            }
+                        }, false);
+                    });
+                    chart.redraw();
+                };
+            },
+            handler: function () {
+                if (this.type !== 'Highcharts') {
+                    return;
+                }
+                const component = this;
+                const { board } = component;
+                const findSeries = (seriesArray, name) => {
+                    for (const series of seriesArray) {
+                        if (series.name === name) {
+                            return series;
+                        }
+                    }
+                };
+                const handleShow = (e) => {
+                    const chart = component.chart;
+                    if (!chart || !chart.series?.length) {
+                        return;
+                    }
+                    if (e.cursor.type === 'position' && e.cursor.column !== void 0) {
+                        const series = findSeries(chart.series, e.cursor.column);
+                        if (series) {
+                            series.setVisible(true, true);
+                        }
+                    }
+                };
+                const handleHide = (e) => {
+                    const chart = component.chart;
+                    if (!chart || !chart.series?.length) {
+                        return;
+                    }
+                    if (e.cursor.type === 'position' && e.cursor.column !== void 0) {
+                        const series = findSeries(chart.series, e.cursor.column);
+                        if (series) {
+                            series.setVisible(false, true);
+                        }
+                    }
+                };
+                const registerCursorListeners = () => {
+                    const { dataCursor } = board;
+                    if (!dataCursor) {
+                        return;
+                    }
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    if (!table) {
+                        return;
+                    }
+                    dataCursor.addListener(table.id, 'series.show', handleShow);
+                    dataCursor.addListener(table.id, 'series.hide', handleHide);
+                };
+                const unregisterCursorListeners = () => {
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    if (table) {
+                        board.dataCursor.removeListener(table.id, 'series.show', handleShow);
+                        board.dataCursor.removeListener(table.id, 'series.hide', handleHide);
+                    }
+                };
+                if (board) {
+                    registerCursorListeners();
+                    return unregisterCursorListeners;
+                }
+            }
+        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
+
+        return { defaultOptions, syncPair };
+    });
+    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsSyncs.js', [_modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsExtremesSync.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsHighlightSync.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsVisibilitySync.js']], function (HighchartsExtremesSync, HighchartsHighlightSync, HighchartsVisibilitySync) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+        *
+        *  Constants
+        *
+        * */
+        const predefinedSyncConfig = {
+            defaultSyncPairs: {
+                extremes: HighchartsExtremesSync.syncPair,
+                highlight: HighchartsHighlightSync.syncPair,
+                visibility: HighchartsVisibilitySync.syncPair
+            },
+            defaultSyncOptions: {
+                extremes: HighchartsExtremesSync.defaultOptions,
+                highlight: HighchartsHighlightSync.defaultOptions,
+                visibility: HighchartsVisibilitySync.defaultOptions
+            }
+        };
+        /* *
+         *
+         *  Default export
+         *
+         * */
+
+        return predefinedSyncConfig;
+    });
+    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js', [_modules['Dashboards/Components/Component.js'], _modules['Core/Utilities.js']], function (Component, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -14271,7 +14347,6 @@
                     type: 'input'
                 }
             ]),
-            syncHandlers: HighchartsSyncHandlers,
             editableOptionsBindings: merge(Component.defaultOptions.editableOptionsBindings, {
                 skipRedraw: [
                     'chartOptions',
@@ -14287,7 +14362,7 @@
 
         return HighchartsComponentDefaults;
     });
-    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncHandlers.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js'], _modules['Core/Utilities.js']], function (Component, DataConverter, DataTable, Globals, HighchartsSyncHandlers, HighchartsComponentDefaults, U) {
+    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsSyncs.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js'], _modules['Core/Utilities.js']], function (Component, DataConverter, DataTable, Globals, HighchartsSyncs, HighchartsComponentDefaults, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -14336,11 +14411,9 @@
                 const chartOptions = JSON.parse(json.options.chartOptions || '{}');
                 /// const store = json.store ? DataJSON.fromJSON(json.store) : void 0;
                 const component = new HighchartsComponent(cell, merge(options, {
-                    chartOptions,
+                    chartOptions
                     // Highcharts, // TODO: Find a solution
-                    // store: store instanceof DataConnector ? store : void 0,
-                    // Get from static registry:
-                    syncHandlers: HighchartsComponent.syncHandlers
+                    // store: store instanceof DataConnector ? store : void 0
                 }));
                 component.emit({
                     type: 'fromJSON',
@@ -14363,26 +14436,27 @@
                 options = merge(HighchartsComponent.defaultOptions, options);
                 super(cell, options, board);
                 /**
-                 * List of series IDs created from the connector using `columnAssignment`.
+                 * An object of series IDs and their connector handlers.
                  */
-                this.seriesFromConnector = [];
+                this.seriesFromConnector = {};
                 this.options = options;
                 this.chartConstructor = this.options.chartConstructor || 'chart';
                 this.type = 'Highcharts';
                 this.chartContainer = createElement('figure', void 0, void 0, this.contentElement, true);
                 this.setOptions();
-                this.sync = new HighchartsComponent.Sync(this, this.syncHandlers);
                 this.chartOptions = merge((this.options.chartOptions ||
                     { chart: {} }), {
                     tooltip: {} // Temporary fix for #18876
                 });
-                if (this.connector) {
-                    // Reload the store when polling
-                    this.connector.on('afterLoad', (e) => {
-                        if (e.table && this.connector) {
-                            this.connector.table.setColumns(e.table.getColumns());
-                        }
-                    });
+                for (const connectorHandler of this.connectorHandlers) {
+                    const connector = connectorHandler.connector;
+                    if (connector) {
+                        connector.on('afterLoad', (e) => {
+                            if (e.table) {
+                                connector.table.setColumns(e.table.getColumns());
+                            }
+                        });
+                    }
                 }
                 this.innerResizeTimeouts = [];
             }
@@ -14406,9 +14480,9 @@
                 super.render();
                 hcComponent.chart = hcComponent.getChart();
                 hcComponent.updateSeries();
-                this.sync.start();
                 hcComponent.emit({ type: 'afterRender' });
                 hcComponent.setupConnectorUpdate();
+                this.sync.start();
                 return this;
             }
             resize(width, height) {
@@ -14435,22 +14509,58 @@
              * @private
              * */
             setupConnectorUpdate() {
-                const { connector: store, chart } = this;
-                if (store && chart && this.options.allowConnectorUpdate) {
-                    for (let i = 0, iEnd = chart.series.length; i < iEnd; ++i) {
-                        const series = chart.series[i];
+                const { connectorHandlers, chart } = this;
+                if (!chart || !this.options.allowConnectorUpdate) {
+                    return;
+                }
+                const seriesLength = chart.series.length;
+                for (let i = 0, iEnd = connectorHandlers.length; i < iEnd; i++) {
+                    const connectorHandler = connectorHandlers[i];
+                    for (let j = 0; j < seriesLength; j++) {
+                        const series = chart.series[j];
                         series.update({
                             point: {
                                 events: {
-                                    drag: (e) => {
-                                        this.onChartUpdate(e.target, store);
+                                    update: (e) => {
+                                        this.onChartUpdate(e.target, connectorHandler);
                                     }
                                 }
                             }
                         }, false);
                     }
-                    chart.redraw();
                 }
+            }
+            /**
+             * Update the store, when the point is being dragged.
+             * @param point Dragged point.
+             * @param connectorHandler Connector handler with data to update.
+             */
+            onChartUpdate(point, connectorHandler) {
+                const table = connectorHandler.connector?.table;
+                const columnAssignment = connectorHandler.columnAssignment;
+                const seriesId = point.series.options.id;
+                const converter = new DataConverter();
+                const valueToSet = converter.asNumber(point.y);
+                if (!table) {
+                    return;
+                }
+                let columnName;
+                if (columnAssignment && seriesId) {
+                    const data = columnAssignment.find((s) => s.seriesId === seriesId)?.data;
+                    if (isString(data)) {
+                        columnName = data;
+                    }
+                    else if (Array.isArray(data)) {
+                        columnName = data[1];
+                    }
+                    else if (data) {
+                        columnName = data.y ?? data.value;
+                    }
+                }
+                if (!columnName) {
+                    columnName = seriesId ?? point.series.name;
+                }
+                table.setCell(columnName, point.index, valueToSet);
             }
             /**
              * Internal method for handling option updates.
@@ -14466,15 +14576,6 @@
                 }
             }
             /**
-             * Update the store, when the point is being dragged.
-             * @param  {Point} point Dragged point.
-             * @param  {Component.ConnectorTypes} store Connector to update.
-             */
-            onChartUpdate(point, store) {
-                const table = store.table, columnName = point.series.name, rowNumber = point.index, converter = new DataConverter(), valueToSet = converter.asNumber(point.y);
-                table.setCell(columnName, rowNumber, valueToSet);
-            }
-            /**
              * Handles updating via options.
              * @param options
              * The options to apply.
@@ -14483,7 +14584,6 @@
             async update(options, shouldRerender = true) {
                 await super.update(options, false);
                 this.setOptions();
-                this.filterAndAssignSyncOptions(HighchartsSyncHandlers);
                 if (this.chart) {
                     this.chart.update(merge(this.options.chartOptions) || {});
                 }
@@ -14492,32 +14592,36 @@
             }
             /**
              * Updates chart's series when the data table is changed.
-             *
              * @private
              */
             updateSeries() {
-                const { chart, connector } = this;
-                if (!chart || !connector) {
+                const { chart } = this;
+                const connectorHandlers = this.connectorHandlers;
+                if (!chart) {
                     return;
                 }
-                if (this.presentationModifier) {
-                    this.presentationTable = this.presentationModifier
-                        .modifyTable(connector.table.modified.clone()).modified;
+                const newSeriesIds = [];
+                for (const connectorHandler of connectorHandlers) {
+                    const options = connectorHandler.options;
+                    let columnAssignment = options.columnAssignment;
+                    if (!columnAssignment && connectorHandler.presentationTable) {
+                        columnAssignment = this.getDefaultColumnAssignment(connectorHandler.presentationTable.getColumnNames(), connectorHandler.presentationTable);
+                    }
+                    if (columnAssignment) {
+                        connectorHandler.columnAssignment = columnAssignment;
+                        for (const { seriesId } of columnAssignment) {
+                            if (seriesId) {
+                                newSeriesIds.push(seriesId);
+                            }
+                        }
+                    }
                 }
-                else {
-                    this.presentationTable = connector.table;
-                }
-                const table = this.presentationTable.modified;
-                const modifierOptions = this.presentationTable.getModifier()?.options;
-                this.emit({ type: 'afterPresentationModifier', table: table });
-                const columnNames = table.getColumnNames();
-                const columnAssignment = this.options.connector?.columnAssignment ??
-                    this.getDefaultColumnAssignment(columnNames);
+                const seriesArray = Object.keys(this.seriesFromConnector);
                 // Remove series that were added in the previous update and are not
                 // present in the new columnAssignment.
-                for (let i = 0, iEnd = this.seriesFromConnector.length; i < iEnd; ++i) {
-                    const oldSeriesId = this.seriesFromConnector[i];
-                    if (columnAssignment.some((seriesId) => seriesId.seriesId === oldSeriesId)) {
+                for (let i = 0, iEnd = seriesArray.length; i < iEnd; ++i) {
+                    const oldSeriesId = seriesArray[i];
+                    if (newSeriesIds.some((newSeriesId) => newSeriesId === oldSeriesId)) {
                         continue;
                     }
                     const series = chart.get(oldSeriesId);
@@ -14525,7 +14629,27 @@
                         series.destroy();
                     }
                 }
-                this.seriesFromConnector.length = 0;
+                this.seriesFromConnector = {};
+                for (const connectorHandler of connectorHandlers) {
+                    this.updateSeriesFromConnector(connectorHandler);
+                }
+                chart.redraw();
+            }
+            /**
+             * Updates the series based on the connector from each connector handler.
+             * @param connectorHandler The connector handler.
+             * @private
+             */
+            updateSeriesFromConnector(connectorHandler) {
+                const chart = this.chart;
+                if (!connectorHandler.connector ||
+                    !chart ||
+                    !connectorHandler.presentationTable) {
+                    return;
+                }
+                const table = connectorHandler.presentationTable.modified;
+                const modifierOptions = connectorHandler.presentationTable.getModifier()?.options;
+                const columnAssignment = connectorHandler.columnAssignment ?? [];
                 // Create the series or update the existing ones.
                 for (let i = 0, iEnd = columnAssignment.length; i < iEnd; ++i) {
                     const assignment = columnAssignment[i];
@@ -14582,9 +14706,8 @@
                     else {
                         series.update(seriesOptions, false);
                     }
-                    this.seriesFromConnector.push(assignment.seriesId);
+                    this.seriesFromConnector[assignment.seriesId] = connectorHandler;
                 }
-                chart.redraw();
             }
             /**
              * Destroy chart and create a new one.
@@ -14616,9 +14739,9 @@
              * @private
              *
              */
-            getDefaultColumnAssignment(columnNames = []) {
+            getDefaultColumnAssignment(columnNames = [], presentationTable) {
                 const result = [];
-                const firstColumn = this.presentationTable?.getColumn(columnNames[0]);
+                const firstColumn = presentationTable.getColumn(columnNames[0]);
                 if (firstColumn && isString(firstColumn[0])) {
                     for (let i = 1, iEnd = columnNames.length; i < iEnd; ++i) {
                         result.push({
@@ -14715,23 +14838,6 @@
                     });
                 }
             }
-            setConnector(connector) {
-                const chart = this.chart;
-                if (this.connector &&
-                    chart &&
-                    chart.series &&
-                    this.connector.table.id !== connector?.table.id) {
-                    const storeTableID = this.connector.table.id;
-                    for (let i = chart.series.length - 1; i >= 0; i--) {
-                        const series = chart.series[i];
-                        if (series.options.id?.indexOf(storeTableID) !== -1) {
-                            series.remove(false);
-                        }
-                    }
-                }
-                super.setConnector(connector);
-                return this;
-            }
             getOptionsOnDrop(sidebar) {
                 const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
                 let options = {
@@ -14827,8 +14933,10 @@
                 return super.getEditableOptionValue.call(this, propertyPath);
             }
         }
-        /** @private */
-        HighchartsComponent.syncHandlers = HighchartsSyncHandlers;
+        /**
+         * Predefined sync config for Highcharts component.
+         */
+        HighchartsComponent.predefinedSyncConfig = HighchartsSyncs;
         /**
          * Default options of the Highcharts component.
          */
@@ -14841,7 +14949,7 @@
 
         return HighchartsComponent;
     });
-    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPISyncHandlers.js', [_modules['Core/Utilities.js']], function (U) {
+    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPISyncs/KPIExtremesSync.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -14851,7 +14959,7 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Pawel Lysy
+         *  - Dawid Dragula
          *
          * */
         const { defined } = U;
@@ -14860,55 +14968,95 @@
          *  Constants
          *
          * */
-        const configs = {
-            emitters: {},
-            handlers: {
-                extremesHandler: function () {
-                    const { board } = this;
-                    const handleChangeExtremes = (e) => {
-                        const cursor = e.cursor;
-                        if (cursor.type === 'position' &&
-                            typeof cursor?.row === 'number' &&
-                            defined(cursor.column) &&
-                            this.connector &&
-                            !defined(this.options.value)) {
-                            const value = this.connector.table.modified.getCellAsString(cursor.column, cursor.row);
-                            this.setValue(value);
-                        }
-                    };
-                    const registerCursorListeners = () => {
-                        const { dataCursor: cursor } = board;
-                        if (!cursor) {
-                            return;
-                        }
-                        const table = this.connector && this.connector.table;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.addListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
-                    };
-                    const unregisterCursorListeners = () => {
-                        const table = this.connector && this.connector.table;
-                        const { dataCursor: cursor } = board;
-                        if (!table) {
-                            return;
-                        }
-                        cursor.removeListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
-                    };
-                    if (board) {
-                        registerCursorListeners();
-                        return unregisterCursorListeners;
+        const defaultOptions = {};
+        const syncPair = {
+            emitter: void 0,
+            handler: function () {
+                if (this.type !== 'KPI') {
+                    return;
+                }
+                const component = this;
+                const { board } = this;
+                const handleChangeExtremes = (e) => {
+                    const cursor = e.cursor;
+                    if (cursor.type === 'position' &&
+                        typeof cursor?.row === 'number' &&
+                        defined(cursor.column) &&
+                        component.connectorHandlers?.[0]?.connector &&
+                        !defined(component.options.value)) {
+                        const value = component.connectorHandlers[0].connector
+                            .table.modified.getCellAsString(cursor.column, cursor.row);
+                        component.setValue(value);
                     }
+                };
+                const registerCursorListeners = () => {
+                    const { dataCursor: cursor } = board;
+                    if (!cursor) {
+                        return;
+                    }
+                    const table = this.getFirstConnector()?.table;
+                    if (!table) {
+                        return;
+                    }
+                    cursor.addListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
+                };
+                const unregisterCursorListeners = () => {
+                    const table = this.getFirstConnector()?.table;
+                    const { dataCursor: cursor } = board;
+                    if (!table) {
+                        return;
+                    }
+                    cursor.removeListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
+                };
+                if (board) {
+                    registerCursorListeners();
+                    return unregisterCursorListeners;
                 }
             }
         };
-        const defaults = {
-            extremes: { handler: configs.handlers.extremesHandler }
-        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
 
-        return defaults;
+        return { defaultOptions, syncPair };
     });
-    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPIComponentDefaults.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/KPIComponent/KPISyncHandlers.js']], function (Component, KPISyncHandlers) {
+    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPISyncs/KPISyncs.js', [_modules['Dashboards/Components/KPIComponent/KPISyncs/KPIExtremesSync.js']], function (KPIExtremesSync) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+        *
+        *  Constants
+        *
+        * */
+        const predefinedSyncConfig = {
+            defaultSyncPairs: {
+                extremes: KPIExtremesSync.syncPair
+            },
+            defaultSyncOptions: {
+                extremes: KPIExtremesSync.defaultOptions
+            }
+        };
+        /* *
+         *
+         *  Default export
+         *
+         * */
+
+        return predefinedSyncConfig;
+    });
+    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPIComponentDefaults.js', [_modules['Dashboards/Components/Component.js']], function (Component) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -14933,7 +15081,6 @@
                 `${Component.defaultOptions.className}-kpi`
             ].join(' '),
             minFontSize: 20,
-            syncHandlers: KPISyncHandlers,
             thresholdColors: ['#f45b5b', '#90ed7d'],
             editableOptions: (Component.defaultOptions.editableOptions || []).concat([{
                     name: 'Value',
@@ -20134,7 +20281,7 @@
 
         return Templating;
     });
-    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/KPIComponent/KPISyncHandlers.js'], _modules['Dashboards/Components/KPIComponent/KPIComponentDefaults.js'], _modules['Core/Templating.js'], _modules['Core/Utilities.js']], function (AST, Component, KPISyncHandlers, KPIComponentDefaults, Templating, U) {
+    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/KPIComponent/KPISyncs/KPISyncs.js'], _modules['Dashboards/Components/KPIComponent/KPIComponentDefaults.js'], _modules['Core/Templating.js'], _modules['Core/Utilities.js']], function (AST, Component, KPISyncs, KPIComponentDefaults, Templating, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -20212,7 +20359,6 @@
                 super(cell, options, board);
                 this.options = options;
                 this.type = 'KPI';
-                this.sync = new KPIComponent.Sync(this, this.syncHandlers);
                 this.value = createElement('span', {
                     className: `${options.className}-value`
                 }, {}, this.contentElement);
@@ -20267,14 +20413,6 @@
                 return this;
             }
             /**
-             * Internal method for handling option updates.
-             *
-             * @private
-             */
-            setOptions() {
-                this.filterAndAssignSyncOptions(KPISyncHandlers);
-            }
-            /**
              * Handles updating via options.
              *
              * @param options
@@ -20282,7 +20420,6 @@
              */
             async update(options, shouldRerender = true) {
                 await super.update(options);
-                this.setOptions();
                 if (options.chartOptions && this.chart) {
                     this.chart.update(options.chartOptions);
                 }
@@ -20312,8 +20449,9 @@
                 if (defined(this.options.value)) {
                     return this.options.value;
                 }
-                if (this.connector && this.options.columnName) {
-                    const table = this.connector?.table.modified, column = table.getColumn(this.options.columnName), length = column?.length || 0;
+                const connector = this.getFirstConnector();
+                if (connector && this.options.columnName) {
+                    const table = connector.table.modified, column = table.getColumn(this.options.columnName), length = column?.length || 0;
                     return table.getCellAsString(this.options.columnName, length - 1);
                 }
             }
@@ -20546,8 +20684,10 @@
          * Default options of the KPI component.
          */
         KPIComponent.defaultOptions = merge(Component.defaultOptions, KPIComponentDefaults);
-        /** @internal */
-        KPIComponent.syncHandlers = KPISyncHandlers;
+        /**
+         * Predefined sync config for the KPI component.
+         */
+        KPIComponent.predefinedSyncConfig = KPISyncs;
         /**
          * Default options of the KPI component.
          *
@@ -20681,7 +20821,8 @@
                     outlineWidth: 0,
                     series: {
                         animation: false,
-                        lineWidth: 0
+                        lineWidth: 0,
+                        colorIndex: 0
                     },
                     xAxis: {
                         endOnTick: true,
@@ -20740,7 +20881,7 @@
 
         return NavigatorComponentDefaults;
     });
-    _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncHandlers.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
+    _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncUtils.js', [], function () {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -20750,182 +20891,298 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Karol Kolodziej
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+        *
+        *  Namespace
+        *
+        * */
+        var NavigatorSyncUtils;
+        (function (NavigatorSyncUtils) {
+            /* *
+            *
+            *  Utility Functions
+            *
+            * */
+            /**
+             * Adds or updates range options for a specific column.
+             * @param ranges Array of range options (will be modified).
+             * @param column Column name.
+             * @param minValue Minimum value.
+             * @param maxValue Maximum value.
+             * @internal
+             */
+            function setRangeOptions(ranges, column, minValue, maxValue) {
+                let changed = false;
+                for (let i = 0, iEnd = ranges.length; i < iEnd; ++i) {
+                    if (ranges[i].column === column) {
+                        ranges[i].maxValue = maxValue;
+                        ranges[i].minValue = minValue;
+                        changed = true;
+                        break;
+                    }
+                }
+                if (!changed) {
+                    ranges.push({ column, maxValue, minValue });
+                }
+            }
+            NavigatorSyncUtils.setRangeOptions = setRangeOptions;
+            /**
+             * Removes range options for a specific column.
+             * @param ranges Array of range options (will be modified).
+             * @param column Column name.
+             * @internal
+             */
+            function unsetRangeOptions(ranges, column) {
+                for (let i = 0, iEnd = ranges.length; i < iEnd; ++i) {
+                    if (ranges[i].column === column) {
+                        return ranges.splice(i, 1)[0];
+                    }
+                }
+            }
+            NavigatorSyncUtils.unsetRangeOptions = unsetRangeOptions;
+        })(NavigatorSyncUtils || (NavigatorSyncUtils = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return NavigatorSyncUtils;
+    });
+    _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorCrossfilterSync.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncUtils.js'], _modules['Core/Utilities.js']], function (DataModifier, NavigatorSyncUtils, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { Range: RangeModifier } = DataModifier.types;
+        const { addEvent } = U;
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        const defaultOptions = {
+            affectNavigator: false
+        };
+        const syncPair = {
+            emitter: function () {
+                if (this.type !== 'Navigator') {
+                    return;
+                }
+                const component = this;
+                const afterSetExtremes = async (extremes) => {
+                    if (component.connectorHandlers?.[0]?.connector) {
+                        const table = component.connectorHandlers[0].connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
+                        let modifier = table.getModifier();
+                        if (modifier instanceof RangeModifier) {
+                            NavigatorSyncUtils.setRangeOptions(modifier.options.ranges, filterColumn, min, max);
+                        }
+                        else {
+                            modifier = new RangeModifier({
+                                ranges: [{
+                                        column: filterColumn,
+                                        maxValue: max,
+                                        minValue: min
+                                    }]
+                            });
+                        }
+                        await table.setModifier(modifier);
+                        dataCursor.emitCursor(table, {
+                            type: 'range',
+                            columns: [filterColumn],
+                            firstRow: 0,
+                            lastRow: table.getRowCount() - 1,
+                            state: 'crossfilter'
+                        }, extremes);
+                    }
+                };
+                let delay;
+                return addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
+                    clearTimeout(delay);
+                    delay = setTimeout(afterSetExtremes, 50, this, extremes);
+                });
+            },
+            handler: void 0
+        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
+
+        return { defaultOptions, syncPair };
+    });
+    _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorExtremesSync.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncUtils.js'], _modules['Core/Utilities.js']], function (DataModifier, NavigatorSyncUtils, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
          *
          * */
         const { Range: RangeModifier } = DataModifier.types;
         const { addEvent, pick } = U;
         /* *
          *
-         *  Functions
-         *
-         * */
-        /** @internal */
-        function setRangeOptions(ranges, column, minValue, maxValue) {
-            let changed = false;
-            for (let i = 0, iEnd = ranges.length; i < iEnd; ++i) {
-                if (ranges[i].column === column) {
-                    ranges[i].maxValue = maxValue;
-                    ranges[i].minValue = minValue;
-                    changed = true;
-                    break;
-                }
-            }
-            if (!changed) {
-                ranges.push({ column, maxValue, minValue });
-            }
-        }
-        /** @internal */
-        function unsetRangeOptions(ranges, column) {
-            for (let i = 0, iEnd = ranges.length; i < iEnd; ++i) {
-                if (ranges[i].column === column) {
-                    return ranges.splice(i, 1)[0];
-                }
-            }
-        }
-        /* *
-         *
          *  Constants
          *
          * */
-        const configs = {
-            handlers: {
-                extremesHandler() {
-                    const component = this, dataCursor = component.board.dataCursor;
-                    const extremesListener = (e) => {
-                        const cursor = e.cursor;
-                        if (!component.connector) {
-                            return;
-                        }
-                        const table = component.connector.table;
-                        // Assume first column with unique keys as fallback
-                        let extremesColumn = table.getColumnNames()[0], maxIndex = table.getRowCount(), minIndex = 0;
-                        if (cursor.type === 'range') {
-                            maxIndex = cursor.lastRow;
-                            minIndex = cursor.firstRow;
-                            if (cursor.columns) {
-                                extremesColumn = pick(cursor.columns[0], extremesColumn);
-                            }
-                        }
-                        else if (cursor.state === 'xAxis.extremes.max') {
-                            extremesColumn = pick(cursor.column, extremesColumn);
-                            maxIndex = pick(cursor.row, maxIndex);
-                        }
-                        else {
-                            extremesColumn = pick(cursor.column, extremesColumn);
-                            minIndex = pick(cursor.row, minIndex);
-                        }
-                        const modifier = table.getModifier();
-                        if (typeof extremesColumn === 'string' &&
-                            modifier instanceof RangeModifier) {
-                            const ranges = modifier.options.ranges, min = table.getCell(extremesColumn, minIndex), max = table.getCell(extremesColumn, maxIndex);
-                            if (max !== null && typeof max !== 'undefined' &&
-                                min !== null && typeof min !== 'undefined') {
-                                unsetRangeOptions(ranges, extremesColumn);
-                                ranges.unshift({
-                                    column: extremesColumn,
-                                    maxValue: max,
-                                    minValue: min
-                                });
-                                table.setModifier(modifier);
-                            }
-                        }
-                    };
-                    const registerCursorListeners = () => {
-                        const table = component.connector && component.connector.table;
-                        if (table) {
-                            dataCursor.addListener(table.id, 'xAxis.extremes', extremesListener);
-                            dataCursor.addListener(table.id, 'xAxis.extremes.max', extremesListener);
-                            dataCursor.addListener(table.id, 'xAxis.extremes.min', extremesListener);
-                        }
-                    };
-                    const unregisterCursorListeners = () => {
-                        const table = component.connector && component.connector.table;
-                        if (table) {
-                            dataCursor.removeListener(table.id, 'xAxis.extremes', extremesListener);
-                            dataCursor.removeListener(table.id, 'xAxis.extremes.max', extremesListener);
-                            dataCursor.removeListener(table.id, 'xAxis.extremes.min', extremesListener);
-                        }
-                    };
-                    registerCursorListeners();
-                    return unregisterCursorListeners;
+        const defaultOptions = {};
+        const syncPair = {
+            emitter: function () {
+                if (this.type !== 'Navigator') {
+                    return;
                 }
+                const component = this;
+                const afterSetExtremes = (extremes) => {
+                    if (component.connectorHandlers?.[0]?.connector) {
+                        const table = component.connectorHandlers[0].connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
+                        dataCursor.emitCursor(table, {
+                            type: 'position',
+                            column: filterColumn,
+                            row: table.getRowIndexBy(filterColumn, min),
+                            state: 'xAxis.extremes.min'
+                        }, extremes);
+                        dataCursor.emitCursor(table, {
+                            type: 'position',
+                            column: filterColumn,
+                            row: table.getRowIndexBy(filterColumn, max),
+                            state: 'xAxis.extremes.max'
+                        }, extremes);
+                    }
+                };
+                let delay;
+                return addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
+                    clearTimeout(delay);
+                    delay = setTimeout(afterSetExtremes, 50, this, extremes);
+                });
             },
-            emitters: {
-                crossfilterEmitter() {
-                    const component = this;
-                    const afterSetExtremes = async (extremes) => {
-                        if (component.connector) {
-                            const table = component.connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
-                            let modifier = table.getModifier();
-                            if (modifier instanceof RangeModifier) {
-                                setRangeOptions(modifier.options.ranges, filterColumn, min, max);
-                            }
-                            else {
-                                modifier = new RangeModifier({
-                                    ranges: [{
-                                            column: filterColumn,
-                                            maxValue: max,
-                                            minValue: min
-                                        }]
-                                });
-                            }
-                            await table.setModifier(modifier);
-                            dataCursor.emitCursor(table, {
-                                type: 'range',
-                                columns: [filterColumn],
-                                firstRow: 0,
-                                lastRow: table.getRowCount() - 1,
-                                state: 'crossfilter'
-                            }, extremes);
-                        }
-                    };
-                    let delay;
-                    return addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
-                        clearTimeout(delay);
-                        delay = setTimeout(afterSetExtremes, 50, this, extremes);
-                    });
-                },
-                extremesEmitter() {
-                    const component = this;
-                    const afterSetExtremes = (extremes) => {
-                        if (component.connector) {
-                            const table = component.connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
-                            dataCursor.emitCursor(table, {
-                                type: 'position',
-                                column: filterColumn,
-                                row: table.getRowIndexBy(filterColumn, min),
-                                state: 'xAxis.extremes.min'
-                            }, extremes);
-                            dataCursor.emitCursor(table, {
-                                type: 'position',
-                                column: filterColumn,
-                                row: table.getRowIndexBy(filterColumn, max),
-                                state: 'xAxis.extremes.max'
-                            }, extremes);
-                        }
-                    };
-                    let delay;
-                    return addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
-                        clearTimeout(delay);
-                        delay = setTimeout(afterSetExtremes, 50, this, extremes);
-                    });
+            handler: function () {
+                if (this.type !== 'Navigator') {
+                    return;
                 }
+                const component = this;
+                const dataCursor = component.board.dataCursor;
+                const extremesListener = (e) => {
+                    const cursor = e.cursor;
+                    if (!component.connectorHandlers?.[0]?.connector) {
+                        return;
+                    }
+                    const table = component.connectorHandlers[0].connector.table;
+                    // Assume first column with unique keys as fallback
+                    let extremesColumn = table.getColumnNames()[0], maxIndex = table.getRowCount(), minIndex = 0;
+                    if (cursor.type === 'range') {
+                        maxIndex = cursor.lastRow;
+                        minIndex = cursor.firstRow;
+                        if (cursor.columns) {
+                            extremesColumn = pick(cursor.columns[0], extremesColumn);
+                        }
+                    }
+                    else if (cursor.state === 'xAxis.extremes.max') {
+                        extremesColumn = pick(cursor.column, extremesColumn);
+                        maxIndex = pick(cursor.row, maxIndex);
+                    }
+                    else {
+                        extremesColumn = pick(cursor.column, extremesColumn);
+                        minIndex = pick(cursor.row, minIndex);
+                    }
+                    const modifier = table.getModifier();
+                    if (typeof extremesColumn === 'string' &&
+                        modifier instanceof RangeModifier) {
+                        const ranges = modifier.options.ranges, min = table.getCell(extremesColumn, minIndex), max = table.getCell(extremesColumn, maxIndex);
+                        if (max !== null && typeof max !== 'undefined' &&
+                            min !== null && typeof min !== 'undefined') {
+                            NavigatorSyncUtils.unsetRangeOptions(ranges, extremesColumn);
+                            ranges.unshift({
+                                column: extremesColumn,
+                                maxValue: max,
+                                minValue: min
+                            });
+                            table.setModifier(modifier);
+                        }
+                    }
+                };
+                const registerCursorListeners = () => {
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    if (table) {
+                        dataCursor.addListener(table.id, 'xAxis.extremes', extremesListener);
+                        dataCursor.addListener(table.id, 'xAxis.extremes.max', extremesListener);
+                        dataCursor.addListener(table.id, 'xAxis.extremes.min', extremesListener);
+                    }
+                };
+                const unregisterCursorListeners = () => {
+                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    if (table) {
+                        dataCursor.removeListener(table.id, 'xAxis.extremes', extremesListener);
+                        dataCursor.removeListener(table.id, 'xAxis.extremes.max', extremesListener);
+                        dataCursor.removeListener(table.id, 'xAxis.extremes.min', extremesListener);
+                    }
+                };
+                registerCursorListeners();
+                return unregisterCursorListeners;
             }
         };
-        const defaults = {
-            crossfilter: {
-                emitter: configs.emitters.crossfilterEmitter
-            },
-            extremes: {
-                emitter: configs.emitters.extremesEmitter,
-                handler: configs.emitters.extremesHandler
-            }
-        };
+        /* *
+        *
+        *  Default export
+        *
+        * */
 
-        return defaults;
+        return { defaultOptions, syncPair };
     });
-    _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorComponentDefaults.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncHandlers.js'], _modules['Core/Utilities.js']], function (Component, Globals, NavigatorComponentDefaults, NavigatorSyncHandler, U) {
+    _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncs.js', [_modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorCrossfilterSync.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorExtremesSync.js']], function (NavigatorCrossfilterSync, NavigatorExtremesSync) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+        *
+        *  Constants
+        *
+        * */
+        const predefinedSyncConfig = {
+            defaultSyncPairs: {
+                crossfilter: NavigatorCrossfilterSync.syncPair,
+                extremes: NavigatorExtremesSync.syncPair
+            },
+            defaultSyncOptions: {
+                crossfilter: NavigatorCrossfilterSync.defaultOptions,
+                extremes: NavigatorExtremesSync.defaultOptions
+            }
+        };
+        /* *
+         *
+         *  Default export
+         *
+         * */
+
+        return predefinedSyncConfig;
+    });
+    _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorComponentDefaults.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncs.js'], _modules['Core/Utilities.js']], function (Component, Globals, NavigatorComponentDefaults, NavigatorSyncs, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -20979,6 +21236,7 @@
              * */
             constructor(cell, options) {
                 super(cell, options);
+                this.type = 'Navigator';
                 this.options = merge(NavigatorComponent.defaultOptions, options);
                 const charter = (NavigatorComponent.charter.Chart ||
                     Globals.win.Highcharts);
@@ -20987,8 +21245,6 @@
                     .chart(this.chartContainer, (this.options.chartOptions || {}));
                 this.chartContainer.classList
                     .add(Globals.classNamePrefix + 'navigator');
-                this.filterAndAssignSyncOptions(NavigatorSyncHandler);
-                this.sync = new NavigatorComponent.Sync(this, this.syncHandlers);
                 if (this.sync.syncConfig.crossfilter?.enabled) {
                     this.chart.update(merge({ navigator: { xAxis: { labels: { format: '{value}' } } } }, this.options.chartOptions || {}), false);
                 }
@@ -21032,23 +21288,25 @@
                 }
             }
             /**
-             * Returns the first column of columnAssignments to use for navigator data.
+             * Returns the first column of columnAssignment to use for navigator data.
              * @private
              *
              * @return
              * Navigator column assignment.
              */
             getColumnAssignment() {
-                const columnAssignments = (this.options.columnAssignments || {});
+                const columnAssignment = this.options.columnAssignment ??
+                    this.options.columnAssignments ?? {};
                 let columnsAssignment;
-                for (const column of Object.keys(columnAssignments)) {
-                    columnsAssignment = columnAssignments[column];
+                for (const column of Object.keys(columnAssignment)) {
+                    columnsAssignment = columnAssignment[column];
                     if (columnsAssignment !== null) {
                         return [column, columnsAssignment];
                     }
                 }
-                if (this.connector) {
-                    const columns = this.connector.table.getColumnNames();
+                const connector = this.getFirstConnector();
+                if (connector) {
+                    const columns = connector.table.getColumnNames();
                     if (columns.length) {
                         return [columns[0], 'y'];
                     }
@@ -21120,8 +21378,9 @@
             /** @private */
             renderNavigator() {
                 const chart = this.chart;
-                if (this.connector) {
-                    const table = this.connector.table, column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
+                const connector = this.getFirstConnector();
+                if (connector) {
+                    const table = connector.table, column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
                     let data;
                     if (this.sync.syncConfig.crossfilter?.enabled) {
                         data = this.generateCrossfilterData();
@@ -21143,7 +21402,7 @@
              */
             generateCrossfilterData() {
                 const crossfilterOptions = this.sync.syncConfig.crossfilter;
-                const table = this.connector?.table;
+                const table = this.getFirstConnector()?.table;
                 const columnValues = table?.getColumn(this.getColumnAssignment()[0], true) || [];
                 if (!table || columnValues.length < 1 || !crossfilterOptions) {
                     return [];
@@ -21238,9 +21497,6 @@
             async update(options, shouldRerender = true) {
                 const chart = this.chart;
                 await super.update(options, false);
-                if (options.sync) {
-                    this.filterAndAssignSyncOptions(NavigatorSyncHandler);
-                }
                 if (options.chartOptions) {
                     chart.update(merge(this.sync.syncConfig.crossfilter?.enabled ? ({ navigator: { xAxis: { labels: { format: '{value}' } } } }) : {}, options.chartOptions), false);
                 }
@@ -21249,9 +21505,7 @@
                     this.render();
                 }
             }
-            getOptionsOnDrop(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            sidebar) {
+            getOptionsOnDrop() {
                 return {};
             }
         }
@@ -21259,6 +21513,10 @@
          * Default options of the Navigator component.
          */
         NavigatorComponent.defaultOptions = merge(Component.defaultOptions, NavigatorComponentDefaults);
+        /**
+         * Predefined sync configuration for the Navigator component.
+         */
+        NavigatorComponent.predefinedSyncConfig = NavigatorSyncs;
         /* *
          *
          *  Default Export
@@ -21267,7 +21525,7 @@
 
         return NavigatorComponent;
     });
-    _registerModule(_modules, 'Dashboards/Plugins/HighchartsPlugin.js', [_modules['Dashboards/Components/HighchartsComponent/HighchartsComponent.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncHandlers.js'], _modules['Dashboards/Components/KPIComponent/KPIComponent.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorComponent.js']], function (HighchartsComponent, HighchartsSyncHandlers, KPIComponent, NavigatorComponent) {
+    _registerModule(_modules, 'Dashboards/Plugins/HighchartsPlugin.js', [_modules['Dashboards/Components/HighchartsComponent/HighchartsComponent.js'], _modules['Dashboards/Components/KPIComponent/KPIComponent.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorComponent.js']], function (HighchartsComponent, KPIComponent, NavigatorComponent) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -21303,14 +21561,10 @@
          * Plugin context provided by the Dashboard.
          */
         function onRegister(e) {
-            const { Sync, ComponentRegistry } = e;
+            const { ComponentRegistry } = e;
             ComponentRegistry.registerComponent('Highcharts', HighchartsComponent);
             ComponentRegistry.registerComponent('KPI', KPIComponent);
             ComponentRegistry.registerComponent('Navigator', NavigatorComponent);
-            Sync.defaultHandlers = {
-                ...Sync.defaultHandlers,
-                ...HighchartsSyncHandlers
-            };
         }
         /**
          * Callback function of the Dashboard plugin.
@@ -21318,16 +21572,8 @@
          * @param {Dashboard.PluginHandler.Event} e
          * Plugin context provided by the Dashboard.
          */
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         function onUnregister(e) {
-            const { Sync } = e;
-            Object
-                .keys(HighchartsSyncHandlers)
-                .forEach((handler) => {
-                if (Sync.defaultHandlers[handler] ===
-                    HighchartsSyncHandlers[handler]) {
-                    delete Sync.defaultHandlers[handler];
-                }
-            });
         }
         /* *
          *

@@ -1,4 +1,4 @@
-import type ComponentType from '../ComponentType';
+import type Component from '../Component';
 import SyncEmitter from './Emitter.js';
 import SyncHandler from './Handler.js';
 /** @internal */
@@ -9,10 +9,10 @@ declare class Sync {
      * @param component
      * The component to which the emitters and handlers are attached.
      *
-     * @param syncHandlers
-     * The emitters and handlers to use for each event.
+     * @param predefinedSyncConfig
+     * The predefined sync configuration.
      */
-    constructor(component: ComponentType, syncHandlers?: Sync.OptionsRecord);
+    constructor(component: Component, predefinedSyncConfig: Sync.PredefinedSyncConfig);
     /**
      * Array of listeners that should be removed when the sync is stopped.
      */
@@ -34,7 +34,11 @@ declare class Sync {
     /**
      * The component to which the emitters and handlers are attached.
      */
-    component: ComponentType;
+    component: Component;
+    /**
+     * The predefined sync configuration.
+     */
+    predefinedSyncConfig: Sync.PredefinedSyncConfig;
     /**
      * The emitters and handlers to use for each event
      */
@@ -43,6 +47,15 @@ declare class Sync {
      * Whether the component is currently syncing.
      */
     isSyncing: boolean;
+    /**
+     * Method that prepares the sync configuration from the predefined config
+     * and current component options.
+     *
+     * @param predefinedConfig The predefined sync configuration.
+     * @param componentSyncOptions The current component sync options.
+     * @returns The sync configuration.
+     */
+    private static prepareSyncConfig;
     /**
      * Add new emitter to the registered emitters.
      *
@@ -91,6 +104,25 @@ declare namespace Sync {
     type EmitterConfig = SyncEmitter['func'];
     /** @internal */
     type HandlerConfig = SyncHandler['func'];
+    /** @internal */
+    interface SyncPair {
+        emitter?: EmitterConfig;
+        handler?: HandlerConfig;
+    }
+    /**
+     * The configuration used to determine the default sync options, handlers
+     * and emitters for a component.
+     */
+    interface PredefinedSyncConfig {
+        /**
+         * The default sync pairs (emitters and handlers) for the component.
+         */
+        defaultSyncPairs: Record<string, SyncPair>;
+        /**
+         * The default sync options for the component.
+         */
+        defaultSyncOptions: Record<string, OptionsEntry>;
+    }
     interface OptionsEntry {
         /**
          * Whether the sync should be enabled.
@@ -119,73 +151,5 @@ declare namespace Sync {
     type OptionsRecord = (Record<(SyncEmitter['id'] | SyncHandler['id']), OptionsEntry>);
     /** @internal */
     type RawOptionsRecord = (Record<(SyncEmitter['id'] | SyncHandler['id']), undefined | boolean | OptionsEntry>);
-    /**
-     * Crossfilter sync options.
-     *
-     * Example:
-     * ```
-     * {
-     *     enabled: true,
-     *     affectNavigator: true
-     * }
-     * ```
-     */
-    interface CrossfilterSyncOptions extends Sync.OptionsEntry {
-        /**
-         * Whether this navigator component's content should be affected by
-         * other navigators with crossfilter enabled.
-         *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/crossfilter-affecting-navigators | Affect Navigators Enabled }
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/demo/sync-extremes/ | Affect Navigators Disabled }
-         *
-         * @default false
-         */
-        affectNavigator?: boolean;
-    }
-    /**
-     * Highlight sync options.
-     *
-     * Example:
-     * ```
-     * {
-     *     enabled: true,
-     *     highlightPoint: true,
-     *     showTooltip: false,
-     *     showCrosshair: true
-     * }
-     * ```
-     */
-    interface HighlightSyncOptions extends Sync.OptionsEntry {
-        /**
-         * Whether the marker should be synced. When hovering over a point in
-         * other component in the same group, the 'hover' state is enabled at
-         * the corresponding point in this component.
-         *
-         * @default true
-         */
-        highlightPoint?: boolean;
-        /**
-         * Whether the tooltip should be synced. When hovering over a point in
-         * other component in the same group, in this component the tooltip
-         * should be also shown.
-         *
-         * @default true
-         */
-        showTooltip?: boolean;
-        /**
-         * Whether the crosshair should be synced. When hovering over a point in
-         * other component in the same group, in this component the crosshair
-         * should be also shown.
-         *
-         * Works only for axes that have crosshair enabled.
-         *
-         * @default true
-         */
-        showCrosshair?: boolean;
-    }
-    const defaultSyncOptions: Record<string, unknown>;
 }
 export default Sync;

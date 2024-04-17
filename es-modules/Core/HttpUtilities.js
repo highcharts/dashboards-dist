@@ -129,6 +129,9 @@ function getJSON(url, success) {
  * @param {RequestInit} [fetchOptions]
  * Additional attributes for the post request
  */
+/**
+ *
+ */
 function post(url, data, fetchOptions) {
     const formData = new win.FormData();
     // Add the data

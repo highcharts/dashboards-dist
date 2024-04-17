@@ -12,7 +12,6 @@
  * */
 'use strict';
 import Component from '../Component.js';
-import KPISyncHandlers from './KPISyncHandlers.js';
 /* *
  *
  *  Constants
@@ -25,7 +24,6 @@ const KPIComponentDefaults = {
         `${Component.defaultOptions.className}-kpi`
     ].join(' '),
     minFontSize: 20,
-    syncHandlers: KPISyncHandlers,
     thresholdColors: ['#f45b5b', '#90ed7d'],
     editableOptions: (Component.defaultOptions.editableOptions || []).concat([{
             name: 'Value',

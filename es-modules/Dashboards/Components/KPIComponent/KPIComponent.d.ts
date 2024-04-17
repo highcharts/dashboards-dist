@@ -32,8 +32,10 @@ declare class KPIComponent extends Component {
      * Default options of the KPI component.
      */
     static defaultOptions: Partial<Component.Options> & import("../../Globals").default.DeepPartial<Options>;
-    /** @internal */
-    static syncHandlers: import("../Sync/Sync").default.OptionsRecord;
+    /**
+     * Predefined sync config for the KPI component.
+     */
+    static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
     /**
      * Default options of the KPI component.
      *
@@ -101,12 +103,6 @@ declare class KPIComponent extends Component {
      */
     chart?: Chart;
     /**
-     * Reference to sync component that allows to sync.
-     *
-     * @internal
-     */
-    sync: Component['sync'];
-    /**
      * Previous value of KPI.
      *
      * @internal
@@ -126,12 +122,6 @@ declare class KPIComponent extends Component {
     load(): Promise<this>;
     resize(width?: number | string | null, height?: number | string | null): this;
     render(): this;
-    /**
-     * Internal method for handling option updates.
-     *
-     * @private
-     */
-    private setOptions;
     /**
      * Handles updating via options.
      *
