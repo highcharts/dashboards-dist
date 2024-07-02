@@ -139,6 +139,20 @@ declare namespace Sync {
          */
         emitter?: EmitterConfig | null | boolean;
         /**
+         * The group in which components sharing the same connector should be
+         * synced.
+         *
+         * If `null` or `undefined` the component will be synced with all
+         * components with the same connector.
+         *
+         * Try it:
+         *
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/sync/groups | Sync groups for the same connector }
+         *
+         * @default undefined
+         */
+        group?: string;
+        /**
          * Responsible for _handling_ incoming action from the synced component
          * group.
          *

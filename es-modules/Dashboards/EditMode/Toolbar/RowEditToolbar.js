@@ -17,7 +17,7 @@ import U from '../../../Core/Utilities.js';
 import EditGlobals from '../EditGlobals.js';
 import EditToolbar from './EditToolbar.js';
 import GUIElement from '../../Layout/GUIElement.js';
-const { merge, objectEach } = U;
+const { fireEvent, merge, objectEach } = U;
 /**
  * @internal
  */
@@ -33,22 +33,10 @@ class RowEditToolbar extends EditToolbar {
                     onmousedown: function (e) {
                         const rowEditToolbar = this.menu
                             .parent, dragDrop = rowEditToolbar.editMode.dragDrop;
+                        e.preventDefault();
                         if (dragDrop && rowEditToolbar.row) {
                             dragDrop.onDragStart(e, rowEditToolbar.row);
                         }
-                    }
-                }
-            });
-        }
-        if (options.settings?.enabled) {
-            items.push({
-                id: 'settings',
-                type: 'icon',
-                icon: iconURLPrefix + 'settings.svg',
-                events: {
-                    click: function () {
-                        this.menu.parent.editMode.setEditOverlay();
-                        this.menu.parent.onRowOptions();
                     }
                 }
             });
@@ -105,8 +93,15 @@ class RowEditToolbar extends EditToolbar {
         }
     }
     showToolbar(row) {
-        const toolbar = this, rowCnt = row.container;
-        let x, y, offsetX;
+        const toolbar = this;
+        const rowCnt = row.container;
+        const rowToolbar = toolbar.editMode.rowToolbar;
+        let x;
+        let y;
+        let offsetX;
+        if (!rowToolbar) {
+            return;
+        }
         if (rowCnt &&
             toolbar.editMode.isActive() &&
             !(toolbar.editMode.dragDrop || {}).isActive) {
@@ -122,9 +117,11 @@ class RowEditToolbar extends EditToolbar {
             toolbar.setPosition(x, y);
             toolbar.row = row;
             toolbar.refreshOutline(-offsetX, toolbar.container.clientHeight);
+            rowToolbar.isVisible = true;
         }
         else if (toolbar.isVisible) {
             toolbar.hide();
+            rowToolbar.isVisible = false;
         }
     }
     onRowOptions() {
@@ -145,11 +142,17 @@ class RowEditToolbar extends EditToolbar {
     onRowDestroy() {
         const toolbar = this;
         if (toolbar.row) {
+            const rowId = toolbar.row.options.id || -1;
             this.resetEditedRow();
             toolbar.row.destroy();
             toolbar.row = void 0;
             // Hide row and cell toolbars.
             toolbar.editMode.hideToolbars(['cell', 'row']);
+            fireEvent(toolbar.editMode, 'layoutChanged', {
+                type: 'rowDestroyed',
+                target: rowId,
+                board: toolbar.editMode.board
+            });
         }
     }
     resetEditedRow() {

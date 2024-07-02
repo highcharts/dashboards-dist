@@ -56,7 +56,7 @@ var Globals;
     };
     Globals.win = window;
     Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '';
-    Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1;
+    Globals.isChrome = Globals.win.chrome;
     Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1;
 })(Globals || (Globals = {}));
 /* *

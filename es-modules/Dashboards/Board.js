@@ -27,7 +27,7 @@ import Layout from './Layout/Layout.js';
 import Serializable from './Serializable.js';
 import HTMLComponent from './Components/HTMLComponent/HTMLComponent.js';
 import U from '../Core/Utilities.js';
-const { merge, addEvent, error, objectEach, uniqueKey, createElement } = U;
+const { merge, addEvent, error, objectEach, uniqueKey } = U;
 /* *
  *
  *  Class
@@ -96,10 +96,7 @@ class Board {
         this.layouts = [];
         this.mountedComponents = [];
         this.initContainer(renderTo);
-        // Init edit mode.
-        if (this.guiEnabled) {
-            this.initLayout();
-        }
+        this.initEditMode();
         // Add table cursors support.
         this.dataCursor = new DataCursor();
         this.index = Globals.boards.length;
@@ -152,79 +149,19 @@ class Board {
         if (!renderTo) {
             error(13, true);
         }
-        // Clear the container from any content.
-        if (this.guiEnabled) {
-            renderTo.innerHTML = '';
-            // Set the main wrapper container.
-            board.boardWrapper = renderTo;
-            // Add container for the board.
-            board.container = createElement('div', {
-                className: Globals.classNames.boardContainer
-            }, {}, this.boardWrapper);
-        }
-        else {
-            board.container = renderTo;
-        }
+        board.container = renderTo;
     }
     /**
      * Inits creating a layouts and setup the EditMode tools.
      * @internal
      *
      */
-    initLayout() {
-        const options = this.options;
-        if (!Dashboards.EditMode) {
+    initEditMode() {
+        if (Dashboards.EditMode) {
+            this.editMode = new Dashboards.EditMode(this, this.options.editMode);
+        }
+        else if (this.editModeEnabled) {
             throw new Error('Missing layout.js module');
-        }
-        else {
-            // Create layouts wrapper.
-            this.layoutsWrapper = createElement('div', {
-                className: Globals.classNames.layoutsWrapper
-            }, {}, this.container);
-            if (options.gui) {
-                this.setLayouts(options.gui);
-            }
-            // Init layouts from JSON.
-            if (options.layoutsJSON && !this.layouts.length) {
-                this.setLayoutsFromJSON(options.layoutsJSON);
-            }
-            if (this.editModeEnabled) {
-                this.editMode = new Dashboards.EditMode(this, this.options.editMode);
-                // Add fullscreen support.
-                this.fullscreen = new Dashboards.FullScreen(this);
-            }
-        }
-    }
-    /**
-     * Creates a new layouts and adds it to the dashboard based on the options.
-     * @internal
-     *
-     * @param guiOptions
-     * The GUI options for the layout.
-     *
-     */
-    setLayouts(guiOptions) {
-        const board = this, layoutsOptions = guiOptions.layouts;
-        for (let i = 0, iEnd = layoutsOptions.length; i < iEnd; ++i) {
-            board.layouts.push(new Layout(board, merge({}, guiOptions.layoutOptions, layoutsOptions[i])));
-        }
-    }
-    /**
-     * Set the layouts from JSON.
-     * @internal
-     *
-     * @param json
-     * An array of layout JSON objects.
-     *
-     */
-    setLayoutsFromJSON(json) {
-        const board = this;
-        let layout;
-        for (let i = 0, iEnd = json.length; i < iEnd; ++i) {
-            layout = Layout.fromJSON(json[i], board);
-            if (layout) {
-                board.layouts.push(layout);
-            }
         }
     }
     /**
@@ -372,6 +309,30 @@ class Board {
         }
         return options;
     }
+    /**
+     * Get a Dashboards component by its identifier.
+     *
+     * @param id
+     * The identifier of the requested component.
+     *
+     * @returns
+     * The component with the given identifier.
+     */
+    getComponentById(id) {
+        return this.mountedComponents.find((c) => c.component.id === id)?.component;
+    }
+    /**
+     * Get a Dashboards component by its cell identifier.
+     *
+     * @param id
+     * The identifier of the cell that contains the requested component.
+     *
+     * @returns
+     * The component with the given cell identifier.
+     */
+    getComponentByCellId(id) {
+        return this.mountedComponents.find((c) => c.cell.id === id)?.component;
+    }
 }
 /* *
  *
@@ -426,7 +387,7 @@ class Board {
                     .fromJSON(JSON.parse(dashboardJSON));
             }
             catch (e) {
-                // Nothing to do
+                throw new Error('' + e);
             }
         }
     }

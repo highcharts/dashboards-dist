@@ -67,6 +67,7 @@ declare class DataTable implements DataEvent.Emitter {
     private modifier?;
     private rowCount;
     private versionTag;
+    private rowKeysId;
     /**
      * Returns a clone of this table. The cloned table is completely independent
      * of the original, and any changes made to the clone will not affect
@@ -446,6 +447,40 @@ declare class DataTable implements DataEvent.Emitter {
      */
     setColumns(columns: DataTable.ColumnCollection, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
     /**
+     * Sets the row key column. This column is invisible and the cells
+     * serve as identifiers to the rows they are contained in. Accessing
+     * rows by keys instead of indexes is necessary in cases where rows
+     * are rearranged by a DataModifier (e.g. SortModifier or RangeModifier).
+     *
+     * @function Highcharts.DataTable#setRowKeysColumn
+     *
+     * @param {number} nRows
+     * Number of rows to add to the column.
+     *
+     */
+    setRowKeysColumn(nRows: number): void;
+    /**
+     * Get the row key column.
+     *
+     * @function Highcharts.DataTable#getRowKeysColumn
+     *     *
+     * @return {DataTable.Column|undefined}
+     * Returns row keys if rowKeysId is defined, else undefined.
+     */
+    getRowKeysColumn(): DataTable.Column | undefined;
+    /**
+     * Get the row index in the original (unmodified) data table.
+     *
+     * @function Highcharts.DataTable#getRowIndexOriginal
+     *
+     * @param {number} idx
+     * Row index in the modified data table.
+     *
+     * @return {string}
+     * Row index in the original data table.
+     */
+    getRowIndexOriginal(idx: number): string;
+    /**
      * Sets or unsets the modifier for the table.
      * @private
      *
@@ -456,7 +491,7 @@ declare class DataTable implements DataEvent.Emitter {
      * Custom information for pending events.
      *
      * @return {Promise<Highcharts.DataTable>}
-     * Resolves to this table if successfull, or rejects on failure.
+     * Resolves to this table if successful, or rejects on failure.
      *
      * @emits #setModifier
      * @emits #afterSetModifier
@@ -495,7 +530,7 @@ declare class DataTable implements DataEvent.Emitter {
      * Row values to set.
      *
      * @param {number} [rowIndex]
-     * Index of the first row to set. Leave `undefind` to add as new rows.
+     * Index of the first row to set. Leave `undefined` to add as new rows.
      *
      * @param {Highcharts.DataTableEventDetail} [eventDetail]
      * Custom information for pending events.
@@ -504,6 +539,8 @@ declare class DataTable implements DataEvent.Emitter {
      * @emits #afterSetRows
      */
     setRows(rows: Array<(DataTable.Row | DataTable.RowObject)>, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
+    private moveRowKeysColumnToLast;
+    private removeRowKeysColumn;
 }
 /**
  * Additionally it provides necessary types for events.

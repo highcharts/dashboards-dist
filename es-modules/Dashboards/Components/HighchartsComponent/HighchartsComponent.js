@@ -424,9 +424,8 @@ class HighchartsComponent extends Component {
                 }
                 return new Factory(this.chartContainer, this.chartOptions);
             }
-            catch {
-                throw new Error('The Highcharts component is misconfigured: `' +
-                    this.cell.id + '`');
+            catch (e) {
+                throw new Error(`The Highcharts component in cell '${this.cell.id}' is misconfigured. \n____________\n${e}`);
             }
         }
         if (typeof charter.chart !== 'function') {
@@ -546,13 +545,19 @@ class HighchartsComponent extends Component {
             type: 'Highcharts'
         };
     }
+    /**
+     * Retrieves editable options for the chart.
+     *
+     * @returns
+     * The editable options for the chart and its values.
+     */
     getEditableOptions() {
         const component = this;
         const componentOptions = component.options;
         const chart = component.chart;
         const chartOptions = chart && chart.options;
-        const chartType = chartOptions && chartOptions.chart?.type || 'line';
-        return merge(componentOptions, {
+        const chartType = chartOptions?.chart?.type || 'line';
+        return merge({
             chartOptions
         }, {
             chartOptions: {
@@ -563,7 +568,7 @@ class HighchartsComponent extends Component {
                         {})[chartType]
                 }
             }
-        });
+        }, componentOptions);
     }
     getEditableOptionValue(propertyPath) {
         const component = this;

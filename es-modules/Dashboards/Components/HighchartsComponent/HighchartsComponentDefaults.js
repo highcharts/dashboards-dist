@@ -34,7 +34,13 @@ const HighchartsComponentDefaults = {
         series: []
     },
     chartConstructor: 'chart',
-    editableOptions: (Component.defaultOptions.editableOptions || []).concat([
+    editableOptions: [
+        {
+            name: 'connectorName',
+            propertyPath: ['connector', 'id'],
+            type: 'select'
+        },
+        ...Component.defaultOptions.editableOptions || [],
         {
             name: 'chartOptions',
             type: 'nested',
@@ -190,7 +196,7 @@ const HighchartsComponentDefaults = {
             propertyPath: ['chartID'],
             type: 'input'
         }
-    ]),
+    ],
     editableOptionsBindings: merge(Component.defaultOptions.editableOptionsBindings, {
         skipRedraw: [
             'chartOptions',

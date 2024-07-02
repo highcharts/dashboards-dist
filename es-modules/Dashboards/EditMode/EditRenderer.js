@@ -78,14 +78,17 @@ function renderContextButton(parentNode, editMode) {
  * @returns the outer element and content in the collapsable div.
  */
 function renderCollapseHeader(parentElement, options) {
-    const { name, showToggle, onchange, isEnabled, isNested, lang } = options;
+    const { name, showToggle, onchange, isEnabled, isNested, isStandalone, lang } = options;
     const accordion = createElement('div', {
         className: EditGlobals.classNames[isNested ? 'accordionNestedWrapper' : 'accordionContainer'] + ' ' + EditGlobals.classNames.collapsableContentHeader
     }, {}, parentElement);
     const header = createElement('div', {
         className: EditGlobals.classNames.accordionHeader
     }, {}, accordion);
-    const headerBtn = createElement('button', { className: EditGlobals.classNames.accordionHeaderBtn }, {}, header);
+    let headerBtn;
+    if (!isStandalone) {
+        headerBtn = createElement('button', { className: EditGlobals.classNames.accordionHeaderBtn }, {}, header);
+    }
     createElement('span', {
         textContent: lang[name] || name
     }, {}, headerBtn);
@@ -105,9 +108,11 @@ function renderCollapseHeader(parentElement, options) {
     }, {}, headerBtn);
     const content = createElement('div', {
         className: EditGlobals.classNames.accordionContent + ' ' +
-            EditGlobals.classNames.hiddenElement
+            (isStandalone ?
+                EditGlobals.classNames.standaloneElement :
+                EditGlobals.classNames.hiddenElement)
     }, {}, accordion);
-    headerBtn.addEventListener('click', function () {
+    headerBtn?.addEventListener('click', function () {
         content.classList.toggle(EditGlobals.classNames.hiddenElement);
         headerIcon.classList.toggle(EditGlobals.classNames.collapsedElement);
     });

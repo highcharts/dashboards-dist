@@ -1,10 +1,11 @@
 import type Board from '../Board';
-import type Cell from '../Layout/Cell';
 import type { ComponentType, ComponentTypeRegistry } from './ComponentType';
 import type JSON from '../JSON';
 import type Serializable from '../Serializable';
 import type TextOptions from './TextOptions';
 import type SidebarPopup from '../EditMode/SidebarPopup';
+import Cell from '../Layout/Cell.js';
+import CellHTML from '../Layout/CellHTML.js';
 import CallbackRegistry from '../CallbackRegistry.js';
 import ConnectorHandler from './ConnectorHandler.js';
 import DataConnector from '../../Data/Connectors/DataConnector.js';
@@ -62,7 +63,7 @@ declare abstract class Component {
      *
      * @internal
      */
-    cell: Cell;
+    cell: Cell | CellHTML;
     /**
      * The connector handlers for the component.
      */

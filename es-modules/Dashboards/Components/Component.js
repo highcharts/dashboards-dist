@@ -14,6 +14,7 @@
  *
  * */
 'use strict';
+import Cell from '../Layout/Cell.js';
 import CallbackRegistry from '../CallbackRegistry.js';
 import ConnectorHandler from './ConnectorHandler.js';
 import EditableOptions from './EditableOptions.js';
@@ -161,16 +162,20 @@ class Component {
         this.setupEventListeners();
         if (cell) {
             this.attachCellListeners();
-            this.on('tableChanged', () => {
-                this.onTableChanged();
-            });
             this.on('update', () => {
-                this.cell.setLoadingState();
+                if (this.cell instanceof Cell) {
+                    this.cell.setLoadingState();
+                }
             });
             this.on('afterRender', () => {
-                this.cell.setLoadingState(false);
+                if (this.cell instanceof Cell) {
+                    this.cell.setLoadingState(false);
+                }
             });
         }
+        this.on('tableChanged', () => {
+            this.onTableChanged();
+        });
     }
     /**
      * Returns the component's options when it is dropped from the sidebar.
@@ -204,7 +209,9 @@ class Component {
                 destroy();
             }
         }
-        if (this.cell && Object.keys(this.cell).length) {
+        if (this.cell &&
+            this.cell instanceof Cell &&
+            Object.keys(this.cell).length) {
             const board = this.cell.row.layout.board;
             this.cellListeners.push(
             // Listen for resize on dashboard
@@ -586,6 +593,12 @@ class Component {
                 return;
             }
             result = result[propertyPath[i]];
+            if (result === false &&
+                (propertyPath.indexOf('title') >= 0 ||
+                    propertyPath.indexOf('subtitle') >= 0 ||
+                    propertyPath.indexOf('caption') >= 0)) {
+                result = '';
+            }
         }
         return result;
     }
@@ -614,10 +627,6 @@ Component.defaultOptions = {
     caption: false,
     sync: Sync.defaultHandlers,
     editableOptions: [{
-            name: 'connectorName',
-            propertyPath: ['connector', 'id'],
-            type: 'select'
-        }, {
             name: 'title',
             propertyPath: ['title'],
             type: 'input'

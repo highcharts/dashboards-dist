@@ -99,8 +99,7 @@ declare class Cell extends GUIElement {
     getOptions(): Globals.DeepPartial<Cell.Options>;
     protected changeVisibility(setVisible?: boolean): void;
     getParentCell(level: number): (Cell | undefined);
-    getOverlappingLevels(align: string, // 'left', 'right', 'top', 'bottom'
-    levelMaxGap: number, // Max distance between levels
+    getOverlappingLevels(align: 'left' | 'right' | 'top' | 'bottom', levelMaxGap: number, // Max distance between levels
     offset?: number): Array<number>;
     /**
      * Set cell size.
@@ -210,11 +209,6 @@ declare namespace Cell {
         mountedComponentJSON?: Component.JSON;
         style?: CSSJSONObject;
         layoutJSON?: LayoutType.JSON;
-    }
-    interface DOMCell {
-        id: string;
-        container: HTMLElement;
-        mountedComponent: Component;
     }
 }
 export default Cell;

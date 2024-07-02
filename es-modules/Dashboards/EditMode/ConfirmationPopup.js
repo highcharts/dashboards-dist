@@ -83,12 +83,25 @@ class ConfirmationPopup extends BaseForm {
         return super.addCloseButton(className);
     }
     /**
-     * Adds content inside the popup.
+     * Adds events to the close button.
      *
-     * @param options
-     * Options for confirmation popup.
+     * @override BaseForm.closeButtonEvents
      */
-    renderContent(options) {
+    closeButtonEvents() {
+        const cancelCallback = this.contentOptions?.cancelButton.callback;
+        if (!cancelCallback) {
+            return;
+        }
+        cancelCallback();
+    }
+    /**
+     * Adds content inside the popup.
+     */
+    renderContent() {
+        const options = this.contentOptions;
+        if (!options) {
+            return;
+        }
         // Render content wrapper
         this.contentContainer = createElement('div', {
             className: EditGlobals.classNames.popupContentContainer
@@ -116,10 +129,7 @@ class ConfirmationPopup extends BaseForm {
             text: options.confirmButton.value,
             className: EditGlobals.classNames.popupConfirmBtn,
             callback: () => {
-                // Run callback
-                // confirmCallback.call(context);
                 options.confirmButton.callback.call(options.confirmButton.context);
-                // Hide popup
                 this.closePopup();
             }
         });
@@ -131,8 +141,9 @@ class ConfirmationPopup extends BaseForm {
      * Options for confirmation popup.
      */
     show(options) {
+        this.contentOptions = options;
         this.showPopup();
-        this.renderContent(options);
+        this.renderContent();
         this.editMode.setEditOverlay();
     }
     /**

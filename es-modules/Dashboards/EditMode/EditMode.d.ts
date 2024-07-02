@@ -1,7 +1,8 @@
-import type Cell from '../Layout/Cell';
 import type Row from '../Layout/Row';
 import type Board from '../Board';
 import type { HTMLDOMElement } from '../../Core/Renderer/DOMElementType';
+import Cell from '../Layout/Cell.js';
+import CellHTML from '../Layout/CellHTML.js';
 import EditGlobals from './EditGlobals.js';
 import CellEditToolbar from './Toolbar/CellEditToolbar.js';
 import RowEditToolbar from './Toolbar/RowEditToolbar.js';
@@ -26,6 +27,10 @@ declare class EditMode {
      * @internal
      */
     private active;
+    /**
+     * Whether the board is generated with custom HTML.
+     */
+    customHTMLMode: boolean;
     /**
      * Edit mode options.
      */
@@ -88,7 +93,7 @@ declare class EditMode {
     /**
      * @internal
      */
-    mouseCellContext?: Cell;
+    mouseCellContext?: Cell | CellHTML;
     /**
      * @internal
      */
@@ -96,23 +101,23 @@ declare class EditMode {
     /**
      * @internal
      */
-    potentialCellContext?: Cell;
+    potentialCellContext?: Cell | CellHTML;
     /**
      * @internal
      */
-    editCellContext?: Cell;
+    editCellContext?: Cell | CellHTML;
     /**
      * @internal
      */
-    contextPointer: EditMode.ContextPointer;
+    contextPointer?: EditMode.ContextPointer;
     /**
      * @internal
      */
-    editOverlay: HTMLDOMElement;
+    editOverlay?: HTMLDOMElement;
     /**
      * @internal
      */
-    isEditOverlayActive: boolean;
+    isEditOverlayActive?: boolean;
     /**
      * Event to fire on click of the context button.
      * @internal
@@ -121,7 +126,7 @@ declare class EditMode {
     /**
      * Activate or deactivate edit mode.
      */
-    onEditModeToggle(): void;
+    toggleEditMode(): void;
     /**
      * Init the instance of edit mode.
      * @internal
@@ -132,6 +137,30 @@ declare class EditMode {
      * @internal
      */
     private initEvents;
+    /**
+     * Initialize the container for the layouts.
+     * @internal
+     *
+     */
+    private initLayout;
+    /**
+     * Creates a new layouts and adds it to the dashboard based on the options.
+     * @internal
+     *
+     * @param guiOptions
+     * The GUI options for the layout.
+     *
+     */
+    private setLayouts;
+    /**
+     * Set the layouts from JSON.
+     * @internal
+     *
+     * @param json
+     * An array of layout JSON objects.
+     *
+     */
+    private setLayoutsFromJSON;
     /**
      * Set events for the layout.
      * @internal
@@ -146,7 +175,7 @@ declare class EditMode {
      * Set events for the cell.
      * @internal
      */
-    setCellEvents(cell: Cell): void;
+    setCellEvents(cell: Cell | CellHTML): void;
     /**
      * Activate the edit mode.
      * @internal
@@ -193,11 +222,8 @@ declare class EditMode {
     createTools(): void;
     /**
      * Event fired when detecting context on drag&drop.
-     *
-     * @param e
-     * Mouse pointer event.
      */
-    onDetectContext(e: PointerEvent): void;
+    onDetectContext(): void;
     /**
      * Stops the context detection.
      */
@@ -210,7 +236,7 @@ declare class EditMode {
      * Sets the edit cell context.
      * @internal
      */
-    setEditCellContext(editCellContext: Cell, oldEditCellContext?: Cell): void;
+    setEditCellContext(editCellContext: Cell | CellHTML, oldEditCellContext?: Cell | CellHTML): void;
     /**
      * Method for showing and positioning context pointer.
      * @internal

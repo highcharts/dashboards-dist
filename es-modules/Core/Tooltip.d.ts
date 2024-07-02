@@ -26,7 +26,7 @@ declare module './Series/SeriesLike' {
 }
 declare module './Series/SeriesOptions' {
     interface SeriesOptions {
-        tooltip?: DeepPartial<TooltipOptions>;
+        tooltip?: Partial<TooltipOptions>;
     }
 }
 /**
@@ -40,6 +40,9 @@ declare module './Series/SeriesOptions' {
  *
  * @param {Highcharts.TooltipOptions} options
  * Tooltip options.
+ *
+ * @param {Highcharts.Pointer} pointer
+ * The pointer instance.
  */
 declare class Tooltip {
     constructor(chart: Chart, options: TooltipOptions, pointer: Pointer);
@@ -54,14 +57,12 @@ declare class Tooltip {
     isSticky: boolean;
     label?: SVGElement;
     len?: number;
-    now: Record<string, number>;
     options: TooltipOptions;
     outside: boolean;
     pointer: Pointer;
     renderer?: SVGRenderer;
     shared?: boolean;
     split?: boolean;
-    tooltipTimeout?: number;
     tracker?: SVGElement;
     tt?: SVGElement;
     /**

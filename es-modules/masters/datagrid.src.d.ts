@@ -6,6 +6,7 @@
  *
  * License: www.highcharts.com/license
  */
+import AST from '../Core/Renderer/HTML/AST.js';
 import DataConnector from '../Data/Connectors/DataConnector.js';
 import DataCursor from '../Data/DataCursor.js';
 import _DataGrid from '../DataGrid/DataGrid.js';
@@ -24,7 +25,9 @@ import '../Data/Modifiers/SortModifier.js';
 declare global {
     interface DataGridNamespace {
         win: typeof Globals.win;
+        AST: typeof AST;
         DataGrid: typeof _DataGrid;
+        dataGrid: typeof _DataGrid.dataGrid;
         DataCursor: typeof DataCursor;
         DataModifier: typeof DataModifier;
         DataConnector: typeof DataConnector;

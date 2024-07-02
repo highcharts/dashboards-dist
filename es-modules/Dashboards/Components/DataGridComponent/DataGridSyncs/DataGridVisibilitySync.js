@@ -24,6 +24,9 @@ const syncPair = {
             return;
         }
         const component = this;
+        const syncOptions = this.sync.syncConfig.visibility;
+        const groupKey = syncOptions.group ?
+            ':' + syncOptions.group : '';
         const { board } = component;
         const handleVisibilityChange = (e) => {
             const cursor = e.cursor, dataGrid = component.dataGrid;
@@ -34,7 +37,7 @@ const syncPair = {
             dataGrid.update({
                 columns: {
                     [columnName]: {
-                        show: cursor.state !== 'series.hide'
+                        show: cursor.state !== 'series.hide' + groupKey
                     }
                 }
             });
@@ -48,8 +51,8 @@ const syncPair = {
             if (!table) {
                 return;
             }
-            cursor.addListener(table.id, 'series.show', handleVisibilityChange);
-            cursor.addListener(table.id, 'series.hide', handleVisibilityChange);
+            cursor.addListener(table.id, 'series.show' + groupKey, handleVisibilityChange);
+            cursor.addListener(table.id, 'series.hide' + groupKey, handleVisibilityChange);
         };
         const unregisterCursorListeners = () => {
             const table = component.connectorHandlers?.[0]?.connector?.table;
@@ -57,8 +60,8 @@ const syncPair = {
             if (!table) {
                 return;
             }
-            cursor.removeListener(table.id, 'series.show', handleVisibilityChange);
-            cursor.removeListener(table.id, 'series.hide', handleVisibilityChange);
+            cursor.removeListener(table.id, 'series.show' + groupKey, handleVisibilityChange);
+            cursor.removeListener(table.id, 'series.hide' + groupKey, handleVisibilityChange);
         };
         if (board) {
             registerCursorListeners();

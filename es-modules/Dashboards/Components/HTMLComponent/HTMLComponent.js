@@ -147,8 +147,7 @@ class HTMLComponent extends Component {
         this.constructTree();
         this.emit({ type: 'afterLoad' });
         if (isError) {
-            throw new Error('Missing tagName param in component: ' +
-                options.cell);
+            throw new Error(`Missing tagName param in component: ${options.renderTo}`);
         }
         return this;
     }

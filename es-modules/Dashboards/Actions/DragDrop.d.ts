@@ -130,6 +130,8 @@ declare class DragDrop {
     onRowDrag(e: PointerEvent, contextDetails?: ContextDetection.ContextDetails): void;
     /**
      * Unmounts dropped row and mounts it in a new position.
+     *
+     * @fires DragDrop#layoutChanged
      */
     onRowDragEnd(): void;
     /**
@@ -172,6 +174,8 @@ declare class DragDrop {
      *
      * @param {Cell} contextCell
      * Cell used as a dragDrop context.
+     *
+     * @fires DragDrop#layoutChanged
      */
     onCellDragEnd(contextCell?: Cell): void;
 }

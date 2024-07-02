@@ -23,6 +23,8 @@ const syncPair = {
             return;
         }
         const component = this;
+        const syncOptions = this.sync.syncConfig.visibility;
+        const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
         const { chart, board } = component;
         const connector = this.getFirstConnector();
         if (!board || !chart) {
@@ -38,14 +40,14 @@ const syncPair = {
                         show: function () {
                             cursor.emitCursor(table, {
                                 type: 'position',
-                                state: 'series.show',
+                                state: 'series.show' + groupKey,
                                 column: this.name
                             });
                         },
                         hide: function () {
                             cursor.emitCursor(table, {
                                 type: 'position',
-                                state: 'series.hide',
+                                state: 'series.hide' + groupKey,
                                 column: this.name
                             });
                         }
@@ -74,6 +76,8 @@ const syncPair = {
             return;
         }
         const component = this;
+        const syncOptions = this.sync.syncConfig.visibility;
+        const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
         const { board } = component;
         const findSeries = (seriesArray, name) => {
             for (const series of seriesArray) {
@@ -115,14 +119,14 @@ const syncPair = {
             if (!table) {
                 return;
             }
-            dataCursor.addListener(table.id, 'series.show', handleShow);
-            dataCursor.addListener(table.id, 'series.hide', handleHide);
+            dataCursor.addListener(table.id, 'series.show' + groupKey, handleShow);
+            dataCursor.addListener(table.id, 'series.hide' + groupKey, handleHide);
         };
         const unregisterCursorListeners = () => {
             const table = component.connectorHandlers?.[0]?.connector?.table;
             if (table) {
-                board.dataCursor.removeListener(table.id, 'series.show', handleShow);
-                board.dataCursor.removeListener(table.id, 'series.hide', handleHide);
+                board.dataCursor.removeListener(table.id, 'series.show' + groupKey, handleShow);
+                board.dataCursor.removeListener(table.id, 'series.hide' + groupKey, handleHide);
             }
         };
         if (board) {

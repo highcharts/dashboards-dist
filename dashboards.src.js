@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.1.0 (2024-04-17)
+ * @license Highcharts Dashboards v2.2.0 (2024-07-02)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,12 +62,12 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.1.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.2.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
                 Globals.doc.createElementNS &&
-                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.hasBidiBug = (Globals.isFirefox &&
+                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.hasBidiBug = (Globals.isFirefox &&
                 parseInt(Globals.userAgent.split('Firefox/')[1], 10) < 4 // Issue #38
             ), Globals.marginNames = [
                 'plotTop',
@@ -339,6 +339,21 @@
         function clamp(value, min, max) {
             return value > min ? value < max ? value : max : min;
         }
+        /**
+         * Utility for crisping a line position to the nearest full pixel depening on
+         * the line width
+         * @param {number} value       The raw pixel position
+         * @param {number} lineWidth   The line width
+         * @param {boolean} [inverted] Whether the containing group is inverted.
+         *                             Crisping round numbers on the y-scale need to go
+         *                             to the other side because the coordinate system
+         *                             is flipped (scaleY is -1)
+         * @return {number}            The pixel position to use for a crisp display
+         */
+        const crisp = (value, lineWidth = 0, inverted) => {
+            const mod = lineWidth % 2 / 2, inverter = inverted ? -1 : 1;
+            return (Math.round(value * inverter - mod) + mod) * inverter;
+        };
         // eslint-disable-next-line valid-jsdoc
         /**
          * Return the deep difference between two objects. It can either return the new
@@ -1904,6 +1919,7 @@
             clearTimeout: internalClearTimeout,
             correctFloat,
             createElement,
+            crisp,
             css,
             defined,
             destroyObjectProperties,
@@ -2624,16 +2640,19 @@
             'href',
             'id',
             'in',
+            'in2',
             'markerHeight',
             'markerWidth',
             'offset',
             'opacity',
+            'operator',
             'orient',
             'padding',
             'paddingLeft',
             'paddingRight',
             'patternUnits',
             'r',
+            'radius',
             'refX',
             'refY',
             'role',
@@ -2724,12 +2743,15 @@
             'dt',
             'em',
             'feComponentTransfer',
+            'feComposite',
             'feDropShadow',
+            'feFlood',
             'feFuncA',
             'feFuncB',
             'feFuncG',
             'feFuncR',
             'feGaussianBlur',
+            'feMorphology',
             'feOffset',
             'feMerge',
             'feMergeNode',
@@ -2834,33 +2856,63 @@
 
         return AST;
     });
-    _registerModule(_modules, 'Dashboards/CallbackRegistry.js', [], function () {
-        class CallbackRegistry {
-            constructor() {
-                this.registry = {};
+    _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [], function () {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        var ComponentRegistry;
+        (function (ComponentRegistry) {
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             *
+             * Record of component classes
+             * @todo
+             *
+             */
+            ComponentRegistry.types = {};
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Method used to register new component classes.
+             *
+             * @param {string} key
+             * Registry key of the component class.
+             *
+             * @param {ComponentType} DataConnectorClass
+             * Component class (aka class constructor) to register.
+             */
+            function registerComponent(key, ComponentClass) {
+                return (!!key &&
+                    !ComponentRegistry.types[key] &&
+                    !!(ComponentRegistry.types[key] = ComponentClass));
             }
-            addCallback(id, callback) {
-                this.registry[id] = callback;
-            }
-            getCallback(id) {
-                return this.registry[id];
-            }
-            /** @internal */
-            toJSON() {
-                const json = {};
-                Object.keys(this.registry).forEach((key) => {
-                    const entry = this.getCallback(key);
-                    const { func, type } = entry;
-                    json[key] = {
-                        func: func.toString(),
-                        type
-                    };
-                });
-                return json;
-            }
-        }
+            ComponentRegistry.registerComponent = registerComponent;
+        })(ComponentRegistry || (ComponentRegistry = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
 
-        return CallbackRegistry;
+        return ComponentRegistry;
     });
     _registerModule(_modules, 'Dashboards/Globals.js', [], function () {
         /* *
@@ -2940,7 +2992,1015 @@
 
         return Globals;
     });
-    _registerModule(_modules, 'Dashboards/Components/ConnectorHandler.js', [_modules['Dashboards/Globals.js']], function (Globals) {
+    _registerModule(_modules, 'Dashboards/EditMode/EditGlobals.js', [_modules['Dashboards/Globals.js']], function (DG) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *  - Wojciech Chmiel
+         *  - Gøran Slettemark
+         *  - Sophie Bremer
+         *
+         * */
+        const PREFIX = DG.classNamePrefix + 'edit-';
+        /**
+         * @internal
+         */
+        const EditGlobals = {
+            classNames: {
+                resizeSnap: PREFIX + 'resize-snap',
+                resizeSnapX: PREFIX + 'resize-snap-x',
+                resizeSnapY: PREFIX + 'resize-snap-y',
+                separator: PREFIX + 'separator',
+                contextMenuBtn: PREFIX + 'context-menu-btn',
+                contextMenuBtnText: PREFIX + 'context-menu-btn-text',
+                contextMenu: PREFIX + 'context-menu',
+                contextMenuItem: PREFIX + 'context-menu-item',
+                editModeEnabled: PREFIX + 'enabled',
+                editToolbar: PREFIX + 'toolbar',
+                editToolbarCellOutline: PREFIX + 'toolbar-cell-outline',
+                editToolbarRowOutline: PREFIX + 'toolbar-row-outline',
+                editToolbarItem: PREFIX + 'toolbar-item',
+                editToolbarRow: PREFIX + 'toolbar-row',
+                editToolbarCell: PREFIX + 'toolbar-cell',
+                editSidebar: PREFIX + 'sidebar',
+                editSidebarShow: PREFIX + 'sidebar-show',
+                editSidebarHide: PREFIX + 'sidebar-hide',
+                editSidebarTitle: PREFIX + 'sidebar-title',
+                editSidebarMenuItem: PREFIX + 'sidebar-item',
+                rowContextHighlight: PREFIX + 'row-context-highlight',
+                cellEditHighlight: PREFIX + 'cell-highlight',
+                dashboardCellEditHighlightActive: PREFIX + 'cell-highlight-active',
+                dragMock: PREFIX + 'drag-mock',
+                dropPointer: PREFIX + 'drop-pointer',
+                contextDetectionPointer: PREFIX + 'ctx-detection-pointer',
+                resizePointer: PREFIX + 'resize-pointer',
+                currentEditedElement: PREFIX + 'unmask',
+                maskElement: PREFIX + 'mask',
+                menuItem: PREFIX + 'menu-item',
+                menu: PREFIX + 'menu',
+                menuVerticalSeparator: PREFIX + 'menu-vertical-separator',
+                menuHorizontalSeparator: PREFIX + 'menu-horizontal-separator',
+                menuDestroy: PREFIX + 'menu-destroy',
+                editSidebarWrapper: PREFIX + 'sidebar-wrapper',
+                customSelect: PREFIX + 'custom-select',
+                customSelectButton: PREFIX + 'custom-option-button',
+                toggleContainer: PREFIX + 'toggle-container',
+                toggleWrapper: PREFIX + 'toggle-wrapper',
+                toggleSlider: PREFIX + 'toggle-slider',
+                toggleWrapperColored: PREFIX + 'toggle-wrapper-colored',
+                toggleLabels: PREFIX + 'toggle-labels',
+                button: PREFIX + 'button',
+                sidebarNavButton: PREFIX + 'sidebar-button-nav',
+                labelText: PREFIX + 'label-text',
+                editSidebarTabBtn: PREFIX + 'sidebar-tab-btn',
+                editToolsBtn: PREFIX + 'tools-btn',
+                editTools: PREFIX + 'tools',
+                editGridItems: PREFIX + 'grid-items',
+                // Confirmation popup
+                confirmationPopup: PREFIX + 'confirmation-popup',
+                popupButtonContainer: PREFIX + 'confirmation-popup-button-container',
+                popupContentContainer: PREFIX + 'confirmation-popup-content',
+                popupCancelBtn: PREFIX + 'confirmation-popup-cancel-btn',
+                popupConfirmBtn: PREFIX + 'confirmation-popup-confirm-btn',
+                popupCloseButton: PREFIX + 'popup-close',
+                editOverlay: PREFIX + 'overlay',
+                editOverlayActive: PREFIX + 'overlay-active',
+                resizerMenuBtnActive: PREFIX + 'resizer-menu-btn-active',
+                sidebarCloseButton: PREFIX + 'close-btn',
+                editSidebarTabBtnWrapper: PREFIX + 'tabs-buttons-wrapper',
+                editSidebarRight: PREFIX + 'sidebar-right',
+                editSidebarRightShow: PREFIX + 'sidebar-right-show',
+                viewFullscreen: PREFIX + 'view-fullscreen',
+                // Accordion
+                accordionMenu: PREFIX + 'accordion-menu',
+                accordionContainer: PREFIX + 'accordion',
+                accordionHeader: PREFIX + 'accordion-header',
+                accordionHeaderBtn: PREFIX + 'accordion-header-btn',
+                accordionHeaderIcon: PREFIX + 'accordion-header-icon',
+                accordionContent: PREFIX + 'accordion-content',
+                accordionNestedWrapper: PREFIX + 'accordion-nested',
+                accordionMenuButtonsContainer: PREFIX + 'accordion-menu-buttons-container',
+                accordionMenuButton: PREFIX + 'accordion-menu-button',
+                hiddenElement: PREFIX + 'hidden-element',
+                collapsableContentHeader: PREFIX + 'collapsable-content-header',
+                standaloneElement: PREFIX + 'standalone-element',
+                // Custom dropdown with icons
+                collapsedElement: PREFIX + 'collapsed-element',
+                dropdown: PREFIX + 'dropdown',
+                dropdownContent: PREFIX + 'dropdown-content',
+                dropdownButton: PREFIX + 'dropdown-button',
+                dropdownButtonContent: PREFIX + 'dropdown-button-content',
+                dropdownIcon: PREFIX + 'pointer',
+                icon: PREFIX + 'icon'
+            },
+            lang: {
+                accessibility: {
+                    contextMenu: {
+                        button: 'Context menu'
+                    },
+                    editMode: {
+                        editMode: 'Edit mode toggle button'
+                    }
+                },
+                addComponent: 'Add component',
+                cancelButton: 'Cancel',
+                caption: 'Caption',
+                chartClassName: 'Chart class name',
+                chartConfig: 'Chart configuration',
+                chartID: 'Chart ID',
+                chartOptions: 'Chart options',
+                chartType: 'Chart type',
+                connectorName: 'Connector name',
+                confirmButton: 'Confirm',
+                confirmDestroyCell: 'Do you really want to destroy the cell?',
+                confirmDestroyRow: 'Do you really want to destroy the row?',
+                confirmDiscardChanges: 'Do you really want to discard the changes?',
+                dataLabels: 'Data labels',
+                editMode: 'Edit mode',
+                errorMessage: 'Something went wrong',
+                exitFullscreen: 'Exit full screen',
+                id: 'Id',
+                off: 'off',
+                on: 'on',
+                pointFormat: 'Point format',
+                settings: 'Settings',
+                style: 'Styles',
+                title: 'Title',
+                viewFullscreen: 'View in full screen',
+                sidebar: {
+                    HTML: 'HTML',
+                    layout: 'Layout',
+                    Highcharts: 'Highcharts',
+                    DataGrid: 'DataGrid',
+                    KPI: 'KPI'
+                }
+            }
+        };
+
+        return EditGlobals;
+    });
+    _registerModule(_modules, 'Dashboards/Layout/GUIElement.js', [_modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (Globals, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *  - Wojciech Chmiel
+         *  - Gøran Slettemark
+         *  - Sophie Bremer
+         *
+         * */
+        const { addEvent, createElement, uniqueKey, objectEach, error } = U;
+        class GUIElement {
+            /* *
+            *
+            *  Static Properties
+            *
+            * */
+            /**
+             * Get offsets of the guiElement relative to the referenceElement or the
+             * Viewport.
+             *
+             * @param guiElement
+             * The element to get the offsets from.
+             *
+             * @param referenceElement
+             * The element to get the offsets relative to.
+             *
+             * @returns
+             * The offsets of the guiElement.
+             */
+            static getOffsets(guiElement, referenceElement) {
+                const offset = { left: 0, top: 0, right: 0, bottom: 0 };
+                if (!guiElement.container) {
+                    return offset;
+                }
+                const guiElementClientRect = guiElement.container.getBoundingClientRect();
+                const referenceClientRect = referenceElement ?
+                    referenceElement.getBoundingClientRect() : { left: 0, top: 0 };
+                offset.left = guiElementClientRect.left - referenceClientRect.left;
+                offset.top = guiElementClientRect.top - referenceClientRect.top;
+                offset.right =
+                    guiElementClientRect.right - referenceClientRect.left;
+                offset.bottom =
+                    guiElementClientRect.bottom - referenceClientRect.top;
+                return offset;
+            }
+            /**
+             * Get dimensions of the guiElement container from offsets.
+             *
+             * @param offsets
+             * The offsets of the guiElement container.
+             *
+             * @returns
+             * The dimensions of the guiElement container.
+             */
+            static getDimFromOffsets(offsets) {
+                return {
+                    width: offsets.right - offsets.left,
+                    height: offsets.bottom - offsets.top
+                };
+            }
+            /**
+             * Based on the element provided, generate an unique id.
+             *
+             * @param elementType
+             * Type of the element.
+             *
+             * @returns
+             * The unique id.
+             */
+            static getElementId(elementType) {
+                return (Globals.classNamePrefix + elementType + '-' +
+                    uniqueKey().slice(11));
+            }
+            /**
+             * Get width in percentages (0% - 100%).
+             *
+             * @param width
+             * The width of the element. Supported formats '50%' or '1/2'.
+             *
+             * @returns
+             * The width in percentages.
+             */
+            static getPercentageWidth(width) {
+                const fractionRegEx = /^(\d{1})[\-\/\.](\d{1,2})$/;
+                let result;
+                if (fractionRegEx.test(width)) {
+                    const match = width.match(fractionRegEx) || [], multiplier = +match[1], divider = +match[2];
+                    result = 100 * multiplier / divider;
+                    result = (result <= 100 ? result : 100) + '%';
+                }
+                else if (width.indexOf('%') !== -1) {
+                    const value = parseFloat(width);
+                    result = (value <= 100 ?
+                        (value >= 0 ? value : 0) : 100) + '%';
+                }
+                return result;
+            }
+            /* *
+            *
+            *  Functions
+            *
+            * */
+            /**
+             * Create or get existing HTML element as a GUIElement container.
+             *
+             * @param {GUIElement.ContainerOptions} options
+             * Options.
+             *
+             * @returns
+             * The HTML element for the element container.
+             */
+            getElementContainer(options) {
+                const guiElement = this;
+                let elem;
+                if (options.render) {
+                    if (options.attribs && !options.attribs.id) {
+                        delete options.attribs.id;
+                    }
+                }
+                else if (typeof options.elementId === 'string') {
+                    const div = document.getElementById(options.elementId);
+                    if (div) {
+                        guiElement.container = div;
+                    }
+                    else {
+                        error('Element ' + options.elementId + ' does not exist');
+                    }
+                }
+                if (options.element instanceof HTMLElement) {
+                    elem = options.element;
+                }
+                else {
+                    elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
+                }
+                // Set bindedGUIElement event on GUIElement container.
+                guiElement.removeBindedEventFn = addEvent(elem, 'bindedGUIElement', function (e) {
+                    e.guiElement = guiElement;
+                    e.stopImmediatePropagation();
+                });
+                return elem;
+            }
+            /**
+             * Destroy the element, its container, event hooks and all properties.
+             */
+            destroy() {
+                const guiElement = this;
+                // Remove bindedGUIElement event.
+                if (guiElement.removeBindedEventFn) {
+                    guiElement.removeBindedEventFn();
+                }
+                // Remove HTML container.
+                if (guiElement.container && guiElement.container.parentNode) {
+                    guiElement.container.parentNode.removeChild(guiElement.container);
+                }
+                // Delete all properties.
+                objectEach(guiElement, function (val, key) {
+                    delete guiElement[key];
+                });
+            }
+            /**
+             * Return the GUIElement instance type.
+             *
+             * @returns
+             * The GUIElement instance type
+             */
+            getType() {
+                return this.type;
+            }
+            changeVisibility(setVisible = true, displayStyle) {
+                const visibilityChanged = (this.isVisible && !setVisible ||
+                    !this.isVisible && setVisible);
+                if (this.container && visibilityChanged) {
+                    this.container.style.display = (setVisible ?
+                        (displayStyle || 'block') :
+                        'none');
+                    this.isVisible = setVisible;
+                }
+            }
+            hide() {
+                this.changeVisibility(false);
+            }
+            show() {
+                this.changeVisibility();
+            }
+        }
+
+        return GUIElement;
+    });
+    _registerModule(_modules, 'Dashboards/Layout/CellHTML.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js']], function (EditGlobals, Globals, GUIElement) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *  - Wojciech Chmiel
+         *  - Gøran Slettemark
+         *  - Sophie Bremer
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * @internal
+         **/
+        class CellHTML extends GUIElement {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the CellHTML class.
+             *
+             * @param {Cell.Options} options
+             * Options for the cell.
+             */
+            constructor(options) {
+                super();
+                /**
+                 * The type of a GUIElement instance.
+                 */
+                this.type = 'cell-html';
+                this.options = options;
+                this.id = options.id;
+                this.container = options.container;
+                this.mountedComponent = options.mountedComponent;
+            }
+            /**
+             * Destroy the element, its container, event hooks
+             * and mounted component.
+             */
+            destroy() {
+                const cell = this;
+                // Destroy mounted component.
+                cell.mountedComponent?.destroy();
+                super.destroy();
+            }
+            /**
+             * Highlight the cell.
+             */
+            setHighlight() {
+                const cell = this;
+                cell.container.classList.toggle(EditGlobals.classNames.cellEditHighlight);
+                cell.mountedComponent?.board.container.classList.toggle(EditGlobals.classNames.dashboardCellEditHighlightActive);
+            }
+            setActiveState() {
+                const cell = this;
+                // Apply class
+                if (cell.container) {
+                    cell.container.classList.add(Globals.classNames.cellActive);
+                }
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CellHTML;
+    });
+    _registerModule(_modules, 'Dashboards/Actions/Bindings.js', [_modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Layout/CellHTML.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (ComponentRegistry, CellHTML, Globals, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *  - Wojciech Chmiel
+         *  - Gøran Slettemark
+         *  - Sophie Bremer
+         *
+         * */
+        const { addEvent, fireEvent } = U;
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        var Bindings;
+        (function (Bindings) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            function getGUIElement(idOrElement, parentElement) {
+                let guiElement;
+                if (typeof idOrElement === 'string' &&
+                    document.querySelectorAll('#' + idOrElement).length > 1) {
+                    // eslint-disable-next-line no-console
+                    console.warn(`Multiple cells have identical ID %c${idOrElement}%c, potentially leading to unexpected behavior. \nEnsure that each cell has a unique ID on the page.`, 'font-weight: bold', '');
+                }
+                const container = parentElement ?
+                    parentElement.querySelector('#' + idOrElement) :
+                    document.getElementById(idOrElement);
+                if (container !== null) {
+                    fireEvent(container, 'bindedGUIElement', {}, function (e) {
+                        guiElement = e.guiElement;
+                    });
+                }
+                return guiElement;
+            }
+            async function addComponent(options, board, cell) {
+                const optionsStates = options.states;
+                const optionsEvents = options.events;
+                const renderTo = options.renderTo || options.cell;
+                if (!renderTo) {
+                    // eslint-disable-next-line no-console
+                    console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
+                    return;
+                }
+                if (board.mountedComponents.filter((el) => ((el.options.renderTo || el.options.cell) === renderTo)).length > 0) {
+                    // eslint-disable-next-line no-console
+                    console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
+                    return;
+                }
+                cell = cell || Bindings.getCell(renderTo, board.container);
+                const componentContainer = cell?.container || document.querySelector('#' + renderTo);
+                if (!componentContainer || !options.type) {
+                    // eslint-disable-next-line no-console
+                    console.error(`The component is unable to find the HTML cell element %c${renderTo}%c to render the content.`, 'font-weight: bold', '');
+                    return;
+                }
+                let ComponentClass = ComponentRegistry.types[options.type];
+                if (!ComponentClass) {
+                    // eslint-disable-next-line no-console
+                    console.error(`The component's type %c${options.type}%c does not exist.`, 'font-weight: bold', '');
+                    if (cell) {
+                        ComponentClass =
+                            ComponentRegistry.types['HTML'];
+                        options.title = {
+                            text: board.editMode?.lang.errorMessage ||
+                                'Something went wrong',
+                            className: Globals.classNamePrefix + 'component-title-error ' +
+                                Globals.classNamePrefix + 'component-title'
+                        };
+                    }
+                }
+                const component = new ComponentClass(cell, options, board);
+                const promise = component.load()['catch']((e) => {
+                    // eslint-disable-next-line no-console
+                    console.error(e);
+                    component.update({
+                        connector: {
+                            id: ''
+                        },
+                        title: {
+                            text: board.editMode?.lang.errorMessage ||
+                                'Something went wrong',
+                            className: Globals.classNamePrefix + 'component-title-error ' +
+                                Globals.classNamePrefix + 'component-title'
+                        }
+                    });
+                });
+                if (cell) {
+                    component.setCell(cell);
+                    cell.mountedComponent = component;
+                }
+                board.mountedComponents.push({
+                    options: options,
+                    component: component,
+                    cell: cell || new CellHTML({
+                        id: renderTo,
+                        container: componentContainer,
+                        mountedComponent: component
+                    })
+                });
+                fireEvent(component, 'mount');
+                // Events
+                if (optionsEvents && optionsEvents.click) {
+                    addEvent(componentContainer, 'click', () => {
+                        optionsEvents.click();
+                        if (cell &&
+                            component &&
+                            componentContainer &&
+                            optionsStates &&
+                            optionsStates.active) {
+                            cell.setActiveState();
+                        }
+                    });
+                }
+                // States
+                if (optionsStates?.hover) {
+                    componentContainer.classList.add(Globals.classNames.cellHover);
+                }
+                fireEvent(component, 'afterLoad');
+                return promise;
+            }
+            Bindings.addComponent = addComponent;
+            /** @internal */
+            function componentFromJSON(json) {
+                const componentClass = ComponentRegistry.types[json.$class];
+                if (!componentClass) {
+                    return;
+                }
+                const cell = Bindings.getCell(json.options.renderTo || '');
+                if (!cell) {
+                    return;
+                }
+                const component = componentClass.fromJSON(json, cell);
+                if (component) {
+                    component.render();
+                }
+                return component;
+            }
+            Bindings.componentFromJSON = componentFromJSON;
+            function getCell(idOrElement, parentElement) {
+                const cell = getGUIElement(idOrElement, parentElement);
+                if (!(cell && cell.getType() === 'cell')) {
+                    return;
+                }
+                return cell;
+            }
+            Bindings.getCell = getCell;
+            function getRow(idOrElement, parentElement) {
+                const row = getGUIElement(idOrElement, parentElement);
+                if (!(row && row.getType() === 'row')) {
+                    return;
+                }
+                return row;
+            }
+            Bindings.getRow = getRow;
+            function getLayout(idOrElement, parentElement) {
+                const layout = getGUIElement(idOrElement, parentElement);
+                if (!(layout && layout.getType() === 'layout')) {
+                    return;
+                }
+                return layout;
+            }
+            Bindings.getLayout = getLayout;
+        })(Bindings || (Bindings = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Bindings;
+    });
+    _registerModule(_modules, 'Dashboards/Layout/Cell.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (Bindings, EditGlobals, Globals, GUIElement, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *  - Wojciech Chmiel
+         *  - Gøran Slettemark
+         *  - Sophie Bremer
+         *
+         * */
+        const { componentFromJSON } = Bindings;
+        const { merge, fireEvent } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * @internal
+         **/
+        class Cell extends GUIElement {
+            /* *
+             *
+             *  Static Properties
+             *
+             * */
+            /** @internal */
+            static fromJSON(json, row) {
+                if (row) {
+                    const options = json.options;
+                    let id = options.containerId;
+                    if (row.layout.copyId) {
+                        id = id + '_' + row.layout.copyId;
+                    }
+                    return new Cell(row, {
+                        id: id,
+                        parentContainerId: (row.container && row.container.id) ||
+                            options.parentContainerId,
+                        mountedComponentJSON: options.mountedComponentJSON,
+                        style: options.style,
+                        layoutJSON: options.layoutJSON,
+                        width: options.width,
+                        height: options.height
+                    });
+                }
+                return void 0;
+            }
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the Cell class.
+             *
+             * @param {Row} row
+             * Reference to the row instance.
+             *
+             * @param {Cell.Options} options
+             * Options for the cell.
+             *
+             * @param {HTMLElement} cellElement
+             * The container of the cell HTML element.
+             */
+            constructor(row, options, cellElement) {
+                super();
+                /**
+                 * The type of GUI element.
+                 */
+                this.type = Globals.guiElementType.cell;
+                this.id = options.id;
+                this.options = options;
+                this.row = row;
+                this.isVisible = true;
+                // Get parent container
+                const parentContainer = document.getElementById(options.parentContainerId || '') ||
+                    row.container;
+                const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
+                let cellHeight;
+                if (options.height) {
+                    if (typeof options.height === 'number') {
+                        cellHeight = options.height + 'px';
+                    }
+                    else {
+                        cellHeight = options.height;
+                    }
+                }
+                this.container = this.getElementContainer({
+                    render: row.layout.board.guiEnabled,
+                    parentContainer: parentContainer,
+                    attribs: {
+                        id: options.id,
+                        className: Globals.classNames.cell + ' ' +
+                            cellClassName
+                    },
+                    element: cellElement,
+                    elementId: options.id,
+                    style: merge(layoutOptions.style, rowOptions.style, options.style, {
+                        height: cellHeight
+                    })
+                });
+                // Mount component from JSON.
+                if (this.options.mountedComponentJSON) {
+                    this.mountComponentFromJSON(this.options.mountedComponentJSON);
+                }
+                // Nested layout
+                if (this.options.layout) {
+                    this.setNestedLayout();
+                }
+                if (this.options.layoutJSON) {
+                    const layout = this.row.layout, board = layout.board, layoutFromJSON = layout.constructor.fromJSON;
+                    this.nestedLayout = layoutFromJSON(merge(this.options.layoutJSON, {
+                        parentContainerId: this.options.id
+                    }), board, this);
+                }
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Create a nested layout in the cell and assign it to the nestedCell
+             * property.
+             * @internal
+             */
+            setNestedLayout() {
+                const board = this.row.layout.board, Layout = this.row.layout.constructor;
+                const optionsGui = board.options.gui;
+                this.nestedLayout = new Layout(board, merge({}, optionsGui && optionsGui.layoutOptions, this.options.layout, {
+                    parentContainerId: this.options.id
+                }), this);
+            }
+            /**
+             * Mount component from JSON.
+             * @internal
+             *
+             * @param {Component.JSON} [json]
+             * Component JSON.
+             *
+             * @return {boolean}
+             * Returns true, if the component created from JSON is mounted,
+             * otherwise false.
+             */
+            mountComponentFromJSON(json) {
+                const cell = this;
+                if (cell.id !== json.options.parentElement) {
+                    json.options.parentElement = cell.id;
+                }
+                const component = componentFromJSON(json);
+                if (component) {
+                    cell.mountedComponent = component;
+                    return true;
+                }
+                return false;
+            }
+            /**
+             * Destroy the element, its container, event hooks
+             * and mounted component.
+             */
+            destroy() {
+                const cell = this;
+                const { row } = cell;
+                // Destroy mounted component.
+                cell.mountedComponent?.destroy();
+                // If layout exists in the cell - destroy it
+                cell.nestedLayout?.destroy();
+                row.unmountCell(cell);
+                const destroyRow = row.cells?.length === 0;
+                super.destroy();
+                if (destroyRow) {
+                    row.destroy();
+                }
+            }
+            /**
+             * Converts the class instance to a class JSON.
+             * @internal
+             *
+             * @return {Cell.JSON}
+             * Class JSON of this Cell instance.
+             */
+            toJSON() {
+                const cell = this, rowContainerId = (cell.row.container || {}).id || '';
+                return {
+                    $class: 'Dashboards.Layout.Cell',
+                    options: {
+                        containerId: cell.container.id,
+                        parentContainerId: rowContainerId,
+                        width: cell.options.width,
+                        height: cell.options.height,
+                        mountedComponentJSON: cell.mountedComponent && cell.mountedComponent.toJSON(),
+                        style: cell.options.style,
+                        layoutJSON: cell.nestedLayout && cell.nestedLayout.toJSON()
+                    }
+                };
+            }
+            /**
+             * Get the cell's options.
+             * @returns
+             * The JSON of cell's options.
+             *
+             * @internal
+             *
+             */
+            getOptions() {
+                return this.options;
+            }
+            changeVisibility(setVisible = true) {
+                super.changeVisibility(setVisible);
+                const cell = this, row = cell.row;
+                // Change row visibility if needed.
+                if (!cell.row.getVisibleCells().length) {
+                    cell.row.hide();
+                }
+                else if (cell.isVisible && !row.isVisible) {
+                    cell.row.show();
+                }
+                setTimeout(() => {
+                    fireEvent(row, 'cellChange', { row, cell });
+                }, 0);
+            }
+            getParentCell(level) {
+                const cell = this;
+                let parentCell;
+                if (level <= cell.row.layout.level) {
+                    if (cell.row.layout.level === level) {
+                        return cell;
+                    }
+                    if (cell.row.layout.level - 1 >= 0) {
+                        parentCell = cell.row.layout.parentCell;
+                        if (parentCell) {
+                            return parentCell.getParentCell(level);
+                        }
+                    }
+                }
+            }
+            // Method to get array of overlapping levels.
+            getOverlappingLevels(align, levelMaxGap, // Max distance between levels
+            offset // Analyzed cell offset
+            ) {
+                const cell = this, parentCell = cell.row.layout.parentCell;
+                let levels = [cell.row.layout.level];
+                if (parentCell) {
+                    const cellOffset = offset || GUIElement.getOffsets(cell)[align];
+                    const parentCellOffset = GUIElement.getOffsets(parentCell)[align];
+                    if (Math.abs(cellOffset - parentCellOffset) < levelMaxGap) {
+                        levels = [
+                            ...levels,
+                            ...parentCell.getOverlappingLevels(align, levelMaxGap, parentCellOffset)
+                        ];
+                    }
+                }
+                return levels;
+            }
+            /**
+             * Set cell size.
+             *
+             * @param width
+             * % value or 'auto' or px
+             *
+             * @param height
+             * value in px
+             */
+            setSize(width, height) {
+                const cell = this, editMode = cell.row.layout.board.editMode;
+                if (cell.container) {
+                    if (width) {
+                        if (width === 'auto' &&
+                            cell.container.style.flex !== '1 1 0%') {
+                            cell.container.style.flex = '1 1 0%';
+                        }
+                        else {
+                            const cellWidth = cell.convertWidthToValue(width);
+                            if (cellWidth &&
+                                cell.container.style.flex !== '0 0 ' + cellWidth) {
+                                cell.container.style.flex = '0 0 ' + cellWidth;
+                            }
+                            cell.options.width = cellWidth;
+                        }
+                    }
+                    if (height) {
+                        cell.options.height = cell.container.style.height =
+                            height + 'px';
+                    }
+                    if (editMode) {
+                        editMode.hideContextPointer();
+                        if (editMode.cellToolbar &&
+                            editMode.cellToolbar.isVisible) {
+                            if (editMode.cellToolbar.cell === cell) {
+                                editMode.cellToolbar.showToolbar(cell);
+                            }
+                            else {
+                                editMode.cellToolbar.hide();
+                            }
+                        }
+                    }
+                    // Call cellResize board event.
+                    fireEvent(cell.row.layout.board, 'cellResize', { cell: cell });
+                    fireEvent(cell.row, 'cellChange', { cell: cell, row: cell.row });
+                }
+            }
+            setHighlight(remove) {
+                const cell = this, editMode = cell.row.layout.board.editMode;
+                if (cell.container && editMode) {
+                    const cnt = cell.container, isSet = cnt.classList.contains(EditGlobals.classNames.cellEditHighlight);
+                    if (!remove && !isSet) {
+                        cnt.classList.add(EditGlobals.classNames.cellEditHighlight);
+                        cell.row.layout.board.container.classList.add(EditGlobals.classNames.dashboardCellEditHighlightActive);
+                        cell.isHighlighted = true;
+                    }
+                    else if (remove && isSet) {
+                        cnt.classList.remove(EditGlobals.classNames.cellEditHighlight);
+                        cell.row.layout.board.container.classList.remove(EditGlobals.classNames.dashboardCellEditHighlightActive);
+                        cell.isHighlighted = false;
+                    }
+                }
+            }
+            setActiveState() {
+                // Reset other boxes
+                const cell = this;
+                cell.row.layout.board.mountedComponents.forEach((mountedComponent) => {
+                    if (mountedComponent.cell.container) {
+                        mountedComponent.cell.container.classList.remove(Globals.classNames.cellActive);
+                    }
+                });
+                // Apply class
+                if (cell.container) {
+                    cell.container.classList.add(Globals.classNames.cellActive);
+                }
+            }
+            /**
+             * Enables or disables the loading indicator in the cell.
+             *
+             * @internal
+             */
+            setLoadingState(enabled = true) {
+                this.container?.classList?.toggle(Globals.classNames.cellLoading, enabled);
+            }
+            convertWidthToValue(width) {
+                if (typeof width === 'number') {
+                    return width + 'px';
+                }
+                if (/px/.test(width)) {
+                    return width;
+                }
+                return GUIElement.getPercentageWidth(width) || '';
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Cell;
+    });
+    _registerModule(_modules, 'Dashboards/CallbackRegistry.js', [], function () {
+        class CallbackRegistry {
+            constructor() {
+                this.registry = {};
+            }
+            addCallback(id, callback) {
+                this.registry[id] = callback;
+            }
+            getCallback(id) {
+                return this.registry[id];
+            }
+            /** @internal */
+            toJSON() {
+                const json = {};
+                Object.keys(this.registry).forEach((key) => {
+                    const entry = this.getCallback(key);
+                    const { func, type } = entry;
+                    json[key] = {
+                        func: func.toString(),
+                        type
+                    };
+                });
+                return json;
+            }
+        }
+
+        return CallbackRegistry;
+    });
+    _registerModule(_modules, 'Dashboards/Components/ConnectorHandler.js', [_modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/Globals.js']], function (Cell, Globals) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -3007,7 +4067,9 @@
                 if (connectorId &&
                     (this.connectorId !== connectorId ||
                         dataPool.isNewConnector(connectorId))) {
-                    component.cell?.setLoadingState();
+                    if (component.cell instanceof Cell) {
+                        component.cell.setLoadingState();
+                    }
                     const connector = await dataPool.getConnector(connectorId);
                     this.setConnector(connector);
                 }
@@ -3498,9 +4560,7 @@
                     }
                     let { emitter: emitterConfig, handler: handlerConfig } = syncOptions;
                     if (handlerConfig) {
-                        // Avoid registering the same handler multiple times
-                        // i.e. panning and selection uses the same handler
-                        if (typeof handlerConfig === 'boolean') {
+                        if (handlerConfig === true) {
                             handlerConfig =
                                 Sync.defaultHandlers[id]
                                     .handler;
@@ -3512,7 +4572,7 @@
                         }
                     }
                     if (emitterConfig) {
-                        if (typeof emitterConfig === 'boolean') {
+                        if (emitterConfig === true) {
                             emitterConfig =
                                 Sync.defaultHandlers[id]
                                     .emitter;
@@ -3804,7 +4864,7 @@
 
         return Utilities;
     });
-    _registerModule(_modules, 'Dashboards/Components/Component.js', [_modules['Dashboards/CallbackRegistry.js'], _modules['Dashboards/Components/ConnectorHandler.js'], _modules['Dashboards/Components/EditableOptions.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/ComponentUtilities.js'], _modules['Dashboards/Utilities.js']], function (CallbackRegistry, ConnectorHandler, EditableOptions, Sync, Globals, U, CU, DU) {
+    _registerModule(_modules, 'Dashboards/Components/Component.js', [_modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/CallbackRegistry.js'], _modules['Dashboards/Components/ConnectorHandler.js'], _modules['Dashboards/Components/EditableOptions.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/ComponentUtilities.js'], _modules['Dashboards/Utilities.js']], function (Cell, CallbackRegistry, ConnectorHandler, EditableOptions, Sync, Globals, U, CU, DU) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -3959,16 +5019,20 @@
                 this.setupEventListeners();
                 if (cell) {
                     this.attachCellListeners();
-                    this.on('tableChanged', () => {
-                        this.onTableChanged();
-                    });
                     this.on('update', () => {
-                        this.cell.setLoadingState();
+                        if (this.cell instanceof Cell) {
+                            this.cell.setLoadingState();
+                        }
                     });
                     this.on('afterRender', () => {
-                        this.cell.setLoadingState(false);
+                        if (this.cell instanceof Cell) {
+                            this.cell.setLoadingState(false);
+                        }
                     });
                 }
+                this.on('tableChanged', () => {
+                    this.onTableChanged();
+                });
             }
             /**
              * Returns the component's options when it is dropped from the sidebar.
@@ -4002,7 +5066,9 @@
                         destroy();
                     }
                 }
-                if (this.cell && Object.keys(this.cell).length) {
+                if (this.cell &&
+                    this.cell instanceof Cell &&
+                    Object.keys(this.cell).length) {
                     const board = this.cell.row.layout.board;
                     this.cellListeners.push(
                     // Listen for resize on dashboard
@@ -4384,6 +5450,12 @@
                         return;
                     }
                     result = result[propertyPath[i]];
+                    if (result === false &&
+                        (propertyPath.indexOf('title') >= 0 ||
+                            propertyPath.indexOf('subtitle') >= 0 ||
+                            propertyPath.indexOf('caption') >= 0)) {
+                        result = '';
+                    }
                 }
                 return result;
             }
@@ -4412,10 +5484,6 @@
             caption: false,
             sync: Sync.defaultHandlers,
             editableOptions: [{
-                    name: 'connectorName',
-                    propertyPath: ['connector', 'id'],
-                    type: 'select'
-                }, {
                     name: 'title',
                     propertyPath: ['title'],
                     type: 'input'
@@ -4632,8 +5700,7 @@
                 this.constructTree();
                 this.emit({ type: 'afterLoad' });
                 if (isError) {
-                    throw new Error('Missing tagName param in component: ' +
-                        options.cell);
+                    throw new Error(`Missing tagName param in component: ${options.renderTo}`);
                 }
                 return this;
             }
@@ -4765,6 +5832,7 @@
          *  Authors:
          *  - Sophie Bremer
          *  - Gøran Slettemark
+         *  - Jomar Hønsi
          *
          * */
         const { addEvent, fireEvent, uniqueKey } = U;
@@ -4868,7 +5936,7 @@
                 this.autoId = !options.id;
                 this.columns = {};
                 /**
-                 * ID of the table for indentification purposes.
+                 * ID of the table for identification purposes.
                  *
                  * @name Highcharts.DataTable#id
                  * @type {string}
@@ -4877,6 +5945,7 @@
                 this.modified = this;
                 this.rowCount = 0;
                 this.versionTag = uniqueKey();
+                this.rowKeysId = options.rowKeysId;
                 const columns = options.columns || {}, columnNames = Object.keys(columns), thisColumns = this.columns;
                 let rowCount = 0;
                 for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
@@ -4894,6 +5963,7 @@
                     alias = aliasKeys[i];
                     thisAliases[alias] = aliases[alias];
                 }
+                this.setRowKeysColumn(rowCount);
             }
             /* *
              *
@@ -4928,6 +5998,9 @@
                 }
                 if (!table.autoId) {
                     tableOptions.id = table.id;
+                }
+                if (table.rowKeysId) {
+                    tableOptions.rowKeysId = table.rowKeysId;
                 }
                 const tableClone = new DataTable(tableOptions);
                 if (!skipColumns) {
@@ -4999,7 +6072,13 @@
                         }
                         delete columns[columnName];
                     }
-                    if (!Object.keys(columns).length) {
+                    let nColumns = Object.keys(columns).length;
+                    if (table.rowKeysId && nColumns === 1) {
+                        // All columns deleted, remove row keys column
+                        delete columns[table.rowKeysId];
+                        nColumns = 0;
+                    }
+                    if (!nColumns) {
                         table.rowCount = 0;
                     }
                     if (modifier) {
@@ -5169,7 +6248,7 @@
                     case 'number':
                         return (isNaN(cellValue) && !useNaN ? null : cellValue);
                 }
-                cellValue = parseFloat(`${cellValue}`);
+                cellValue = parseFloat(`${cellValue ?? ''}`);
                 return (isNaN(cellValue) && !useNaN ? null : cellValue);
             }
             /**
@@ -5191,6 +6270,7 @@
                 columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
                     columnNameOrAlias);
                 const column = table.columns[columnNameOrAlias];
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 return `${(column && column[rowIndex])}`;
             }
             /**
@@ -5270,6 +6350,7 @@
              */
             getColumnNames() {
                 const table = this, columnNames = Object.keys(table.columns);
+                this.removeRowKeysColumn(columnNames);
                 return columnNames;
             }
             /**
@@ -5290,6 +6371,7 @@
             getColumns(columnNamesOrAliases, asReference) {
                 const table = this, tableAliasMap = table.aliases, tableColumns = table.columns, columns = {};
                 columnNamesOrAliases = (columnNamesOrAliases || Object.keys(tableColumns));
+                this.removeRowKeysColumn(columnNamesOrAliases);
                 for (let i = 0, iEnd = columnNamesOrAliases.length, column, columnName; i < iEnd; ++i) {
                     columnName = columnNamesOrAliases[i];
                     column = tableColumns[(tableAliasMap[columnName] || columnName)];
@@ -5406,6 +6488,7 @@
             getRowObjects(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNamesOrAliases) {
                 const table = this, aliases = table.aliases, columns = table.columns, rows = new Array(rowCount);
                 columnNamesOrAliases = (columnNamesOrAliases || Object.keys(columns));
+                this.removeRowKeysColumn(columnNamesOrAliases);
                 for (let i = rowIndex, i2 = 0, iEnd = Math.min(table.rowCount, (rowIndex + rowCount)), column, row; i < iEnd; ++i, ++i2) {
                     row = rows[i2] = {};
                     for (const columnName of columnNamesOrAliases) {
@@ -5542,6 +6625,10 @@
                         }
                         columns[newColumnName] = columns[columnName];
                         delete columns[columnName];
+                        if (table.rowKeysId) {
+                            // Ensure that row keys column is last
+                            this.moveRowKeysColumnToLast(columns, table.rowKeysId);
+                        }
                     }
                     return true;
                 }
@@ -5677,6 +6764,10 @@
                 if (tableModifier) {
                     tableModifier.modifyColumns(table, columns, (rowIndex || 0));
                 }
+                if (table.rowKeysId) {
+                    // Ensure that the row keys column is always last
+                    this.moveRowKeysColumnToLast(tableColumns, table.rowKeysId);
+                }
                 table.emit({
                     type: 'afterSetColumns',
                     columns,
@@ -5684,6 +6775,63 @@
                     detail: eventDetail,
                     rowIndex
                 });
+            }
+            /**
+             * Sets the row key column. This column is invisible and the cells
+             * serve as identifiers to the rows they are contained in. Accessing
+             * rows by keys instead of indexes is necessary in cases where rows
+             * are rearranged by a DataModifier (e.g. SortModifier or RangeModifier).
+             *
+             * @function Highcharts.DataTable#setRowKeysColumn
+             *
+             * @param {number} nRows
+             * Number of rows to add to the column.
+             *
+             */
+            setRowKeysColumn(nRows) {
+                const id = this.rowKeysId;
+                if (!id) {
+                    return;
+                }
+                this.columns[id] = [];
+                const keysArray = this.columns[id];
+                for (let i = 0; i < nRows; i++) {
+                    keysArray.push(id + '_' + i);
+                }
+            }
+            /**
+             * Get the row key column.
+             *
+             * @function Highcharts.DataTable#getRowKeysColumn
+             *     *
+             * @return {DataTable.Column|undefined}
+             * Returns row keys if rowKeysId is defined, else undefined.
+             */
+            getRowKeysColumn() {
+                const id = this.rowKeysId;
+                if (id) {
+                    return this.columns[id];
+                }
+            }
+            /**
+             * Get the row index in the original (unmodified) data table.
+             *
+             * @function Highcharts.DataTable#getRowIndexOriginal
+             *
+             * @param {number} idx
+             * Row index in the modified data table.
+             *
+             * @return {string}
+             * Row index in the original data table.
+             */
+            getRowIndexOriginal(idx) {
+                const id = this.rowKeysId;
+                if (id) {
+                    const rowKeyCol = this.columns[id];
+                    const idxOrig = '' + rowKeyCol[idx];
+                    return idxOrig.split('_')[1];
+                }
+                return String(idx);
             }
             /**
              * Sets or unsets the modifier for the table.
@@ -5696,7 +6844,7 @@
              * Custom information for pending events.
              *
              * @return {Promise<Highcharts.DataTable>}
-             * Resolves to this table if successfull, or rejects on failure.
+             * Resolves to this table if successful, or rejects on failure.
              *
              * @emits #setModifier
              * @emits #afterSetModifier
@@ -5772,7 +6920,7 @@
              * Row values to set.
              *
              * @param {number} [rowIndex]
-             * Index of the first row to set. Leave `undefind` to add as new rows.
+             * Index of the first row to set. Leave `undefined` to add as new rows.
              *
              * @param {Highcharts.DataTableEventDetail} [eventDetail]
              * Custom information for pending events.
@@ -5820,6 +6968,9 @@
                         columns[columnNames[i]].length = indexRowCount;
                     }
                 }
+                if (this.rowKeysId && !columnNames.includes(this.rowKeysId)) {
+                    this.setRowKeysColumn(rowCount);
+                }
                 if (modifier) {
                     modifier.modifyRows(table, rows, rowIndex);
                 }
@@ -5830,6 +6981,23 @@
                     rowIndex,
                     rows
                 });
+            }
+            // The row keys column must always be the last column
+            moveRowKeysColumnToLast(columns, id) {
+                const rowKeyColumn = columns[id];
+                delete columns[id];
+                columns[id] = rowKeyColumn;
+            }
+            // The row keys column must be removed in some methods
+            // (API backwards compatibility)
+            removeRowKeysColumn(columnNamesOrAliases) {
+                if (this.rowKeysId) {
+                    const pos = columnNamesOrAliases.indexOf(this.rowKeysId);
+                    if (pos !== -1) {
+                        // Always the last column
+                        columnNamesOrAliases.pop();
+                    }
+                }
             }
         }
         /* *
@@ -5915,7 +7083,7 @@
                  */
                 this.dateFormats = {
                     'YYYY/mm/dd': {
-                        regex: /^([0-9]{4})([\-\.\/])([0-9]{1,2})\2([0-9]{1,2})$/,
+                        regex: /^(\d{4})([\-\.\/])(\d{1,2})\2(\d{1,2})$/,
                         parser: function (match) {
                             return (match ?
                                 Date.UTC(+match[1], match[3] - 1, +match[4]) :
@@ -5923,7 +7091,7 @@
                         }
                     },
                     'dd/mm/YYYY': {
-                        regex: /^([0-9]{1,2})([\-\.\/])([0-9]{1,2})\2([0-9]{4})$/,
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
                         parser: function (match) {
                             return (match ?
                                 Date.UTC(+match[4], match[3] - 1, +match[1]) :
@@ -5932,7 +7100,7 @@
                         alternative: 'mm/dd/YYYY' // Different format with the same regex
                     },
                     'mm/dd/YYYY': {
-                        regex: /^([0-9]{1,2})([\-\.\/])([0-9]{1,2})\2([0-9]{4})$/,
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
                         parser: function (match) {
                             return (match ?
                                 Date.UTC(+match[4], match[1] - 1, +match[3]) :
@@ -5940,7 +7108,7 @@
                         }
                     },
                     'dd/mm/YY': {
-                        regex: /^([0-9]{1,2})([\-\.\/])([0-9]{1,2})\2([0-9]{2})$/,
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
                         parser: function (match) {
                             const d = new Date();
                             if (!match) {
@@ -5958,7 +7126,7 @@
                         alternative: 'mm/dd/YY' // Different format with the same regex
                     },
                     'mm/dd/YY': {
-                        regex: /^([0-9]{1,2})([\-\.\/])([0-9]{1,2})\2([0-9]{2})$/,
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
                         parser: function (match) {
                             return (match ?
                                 Date.UTC(+match[4] + 2000, match[1] - 1, +match[3]) :
@@ -6120,7 +7288,7 @@
                         data[i] && data[i].length) {
                         thing = data[i]
                             .trim()
-                            .replace(/[-\.\/]/g, ' ')
+                            .replace(/[\-\.\/]/g, ' ')
                             .split(' ');
                         guessedFormat = [
                             '',
@@ -6387,7 +7555,7 @@
                 if (typeof str === 'string') {
                     str = str.replace(/^\s+|\s+$/g, '');
                     // Clear white space insdie the string, like thousands separators
-                    if (inside && /^[0-9\s]+$/.test(str)) {
+                    if (inside && /^[\d\s]+$/.test(str)) {
                         str = str.replace(/\s/g, '');
                     }
                 }
@@ -6752,7 +7920,7 @@
                     read(i);
                     if (c === '#') {
                         // If there are hexvalues remaining (#13283)
-                        if (!/^#[0-F]{3,3}|[0-F]{6,6}/i.test(columnStr.substring(i))) {
+                        if (!/^#[A-F\d]{3,3}|[A-F\d]{6,6}/i.test(columnStr.substring(i))) {
                             // The rest of the row is a comment
                             push();
                             return;
@@ -8652,6 +9820,7 @@
                         table.deleteColumns();
                         converter.parse({ data });
                         table.setColumns(converter.getTable().getColumns());
+                        table.setRowKeysColumn(data.length);
                     }
                     return connector.setModifierOptions(dataModifier).then(() => data);
                 })
@@ -9649,258 +10818,6 @@
 
         return SortModifier;
     });
-    _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [], function () {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        var ComponentRegistry;
-        (function (ComponentRegistry) {
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            /**
-             *
-             * Record of component classes
-             * @todo
-             *
-             */
-            ComponentRegistry.types = {};
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Method used to register new component classes.
-             *
-             * @param {string} key
-             * Registry key of the component class.
-             *
-             * @param {ComponentType} DataConnectorClass
-             * Component class (aka class constructor) to register.
-             */
-            function registerComponent(key, ComponentClass) {
-                return (!!key &&
-                    !ComponentRegistry.types[key] &&
-                    !!(ComponentRegistry.types[key] = ComponentClass));
-            }
-            ComponentRegistry.registerComponent = registerComponent;
-        })(ComponentRegistry || (ComponentRegistry = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return ComponentRegistry;
-    });
-    _registerModule(_modules, 'Dashboards/Actions/Bindings.js', [_modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (ComponentRegistry, Globals, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const { addEvent, fireEvent, error } = U;
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        var Bindings;
-        (function (Bindings) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            function getGUIElement(idOrElement, parentElement) {
-                let container;
-                let guiElement;
-                if (typeof idOrElement === 'string') {
-                    if (document.querySelectorAll('#' + idOrElement).length > 1) {
-                        error('Multiple cells have identical ID ' +
-                            '("' + idOrElement + '"), potentially leading to ' +
-                            'unexpected behaviour. Ensure that each cell has a ' +
-                            'unique ID on the page.');
-                    }
-                    container = parentElement ?
-                        parentElement.querySelector('#' + idOrElement) :
-                        document.getElementById(idOrElement);
-                }
-                else {
-                    container = idOrElement;
-                }
-                if (container !== null) {
-                    fireEvent(container, 'bindedGUIElement', {}, function (e) {
-                        guiElement = e.guiElement;
-                    });
-                }
-                return guiElement;
-            }
-            async function addComponent(options, board, cell) {
-                const optionsStates = options.states;
-                const optionsEvents = options.events;
-                const renderTo = options.renderTo || options.cell;
-                if (!renderTo) {
-                    error('The `renderTo` option is required to render the component.');
-                    return;
-                }
-                if (board.mountedComponents.filter((el) => ((el.options.renderTo || el.options.cell) === renderTo)).length > 0) {
-                    error('The component is misconfigured and is unable to initialize ' +
-                        'it. A different component has already been declared in the`' +
-                        renderTo + '` cell.');
-                    return;
-                }
-                cell = cell || Bindings.getCell(renderTo, board.container);
-                const componentContainer = cell?.container || document.querySelector('#' + renderTo);
-                if (!componentContainer || !options.type) {
-                    error('The component is misconfigured and is unable to find the' +
-                        'HTML cell element ${renderTo} to render the content.');
-                    return;
-                }
-                let ComponentClass = ComponentRegistry.types[options.type];
-                if (!ComponentClass) {
-                    error(`The component's type ${options.type} does not exist.`);
-                    if (cell) {
-                        ComponentClass =
-                            ComponentRegistry.types['HTML'];
-                        options.title = {
-                            text: board.editMode?.lang.errorMessage ||
-                                'Something went wrong',
-                            className: Globals.classNamePrefix + 'component-title-error ' +
-                                Globals.classNamePrefix + 'component-title'
-                        };
-                    }
-                }
-                const component = new ComponentClass(cell, options, board);
-                const promise = component.load()['catch']((e) => {
-                    // eslint-disable-next-line no-console
-                    console.error(e);
-                    component.update({
-                        connector: {
-                            id: ''
-                        },
-                        title: {
-                            text: board.editMode?.lang.errorMessage ||
-                                'Something went wrong',
-                            className: Globals.classNamePrefix + 'component-title-error ' +
-                                Globals.classNamePrefix + 'component-title'
-                        }
-                    });
-                });
-                if (cell) {
-                    component.setCell(cell);
-                    cell.mountedComponent = component;
-                }
-                board.mountedComponents.push({
-                    options: options,
-                    component: component,
-                    cell: cell || {
-                        id: renderTo,
-                        container: componentContainer,
-                        mountedComponent: component
-                    }
-                });
-                fireEvent(component, 'mount');
-                // Events
-                if (optionsEvents && optionsEvents.click) {
-                    addEvent(componentContainer, 'click', () => {
-                        optionsEvents.click();
-                        if (cell &&
-                            component &&
-                            componentContainer &&
-                            optionsStates &&
-                            optionsStates.active) {
-                            cell.setActiveState();
-                        }
-                    });
-                }
-                // States
-                if (optionsStates?.hover) {
-                    componentContainer.classList.add(Globals.classNames.cellHover);
-                }
-                fireEvent(component, 'afterLoad');
-                return promise;
-            }
-            Bindings.addComponent = addComponent;
-            /** @internal */
-            function componentFromJSON(json) {
-                const componentClass = ComponentRegistry.types[json.$class];
-                if (!componentClass) {
-                    return;
-                }
-                const cell = Bindings.getCell(json.options.renderTo || '');
-                if (!cell) {
-                    return;
-                }
-                const component = componentClass.fromJSON(json, cell);
-                if (component) {
-                    component.render();
-                }
-                return component;
-            }
-            Bindings.componentFromJSON = componentFromJSON;
-            function getCell(idOrElement, parentElement) {
-                const cell = getGUIElement(idOrElement, parentElement);
-                if (!(cell && cell.getType() === 'cell')) {
-                    return;
-                }
-                return cell;
-            }
-            Bindings.getCell = getCell;
-            function getRow(idOrElement, parentElement) {
-                const row = getGUIElement(idOrElement, parentElement);
-                if (!(row && row.getType() === 'row')) {
-                    return;
-                }
-                return row;
-            }
-            Bindings.getRow = getRow;
-            function getLayout(idOrElement, parentElement) {
-                const layout = getGUIElement(idOrElement, parentElement);
-                if (!(layout && layout.getType() === 'layout')) {
-                    return;
-                }
-                return layout;
-            }
-            Bindings.getLayout = getLayout;
-        })(Bindings || (Bindings = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Bindings;
-    });
     _registerModule(_modules, 'Dashboards/Accessibility/DashboardsAccessibility.js', [], function () {
         /* *
          *
@@ -10056,20 +10973,41 @@
                         e.cursor.type
                     ]).join('\0');
             }
-            // Implementation
-            emitCursor(table, groupOrCursor, cursorOrEvent, eventOrLasting, lasting) {
-                const cursor = (typeof groupOrCursor === 'object' ?
-                    groupOrCursor :
-                    cursorOrEvent), event = (typeof eventOrLasting === 'object' ?
-                    eventOrLasting :
-                    cursorOrEvent), group = (typeof groupOrCursor === 'string' ?
-                    groupOrCursor :
-                    void 0), tableId = table.id, state = cursor.state, listeners = (this.listenerMap[tableId] &&
+            /**
+             * This function emits a state cursor related to a table. It will provide
+             * lasting state cursors of the table to listeners.
+             *
+             * @example
+             * ```ts
+             * dataCursor.emit(myTable, {
+             *     type: 'position',
+             *     column: 'city',
+             *     row: 4,
+             *     state: 'hover',
+             * });
+             * ```
+             *
+             * @param {Data.DataTable} table
+             * The related table of the cursor.
+             *
+             * @param {Data.DataCursor.Type} cursor
+             * The state cursor to emit.
+             *
+             * @param {Event} [event]
+             * Optional event information from a related source.
+             *
+             * @param {boolean} [lasting]
+             * Whether this state cursor should be kept until it is cleared with
+             * {@link DataCursor#remitCursor}.
+             *
+             * @return {Data.DataCursor}
+             * Returns the DataCursor instance for a call chain.
+             */
+            emitCursor(table, cursor, event, lasting) {
+                const tableId = table.id, state = cursor.state, listeners = (this.listenerMap[tableId] &&
                     this.listenerMap[tableId][state]);
-                lasting = (lasting || eventOrLasting === true);
                 if (listeners) {
-                    const stateMap = this.stateMap[tableId] = (this.stateMap[tableId] ||
-                        {});
+                    const stateMap = this.stateMap[tableId] = (this.stateMap[tableId] ?? {});
                     const cursors = stateMap[cursor.state] || [];
                     if (lasting) {
                         if (!cursors.length) {
@@ -10086,9 +11024,6 @@
                     };
                     if (event) {
                         e.event = event;
-                    }
-                    if (group) {
-                        e.group = group;
                     }
                     const emittingRegister = this.emittingRegister, emittingTag = this.buildEmittingTag(e);
                     if (emittingRegister.indexOf(emittingTag) >= 0) {
@@ -10157,7 +11092,7 @@
                     this.listenerMap[tableId][state]);
                 if (listeners) {
                     const index = listeners.indexOf(listener);
-                    if (index) {
+                    if (index >= 0) {
                         listeners.splice(index, 1);
                     }
                 }
@@ -10675,7 +11610,7 @@
                     waitingList = this.waiting[connectorId] = [];
                     const connectorOptions = this.getConnectorOptions(connectorId);
                     if (!connectorOptions) {
-                        throw new Error(`Connector not found. (${connectorId})`);
+                        throw new Error(`Connector '${connectorId}' not found.`);
                     }
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this
@@ -10858,679 +11793,6 @@
          * */
 
         return DataPool;
-    });
-    _registerModule(_modules, 'Dashboards/EditMode/EditGlobals.js', [_modules['Dashboards/Globals.js']], function (DG) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const PREFIX = DG.classNamePrefix + 'edit-';
-        /**
-         * @internal
-         */
-        const EditGlobals = {
-            classNames: {
-                resizeSnap: PREFIX + 'resize-snap',
-                resizeSnapX: PREFIX + 'resize-snap-x',
-                resizeSnapY: PREFIX + 'resize-snap-y',
-                separator: PREFIX + 'separator',
-                contextMenuBtn: PREFIX + 'context-menu-btn',
-                contextMenuBtnText: PREFIX + 'context-menu-btn-text',
-                contextMenu: PREFIX + 'context-menu',
-                contextMenuItem: PREFIX + 'context-menu-item',
-                editModeEnabled: PREFIX + 'enabled',
-                editToolbar: PREFIX + 'toolbar',
-                editToolbarCellOutline: PREFIX + 'toolbar-cell-outline',
-                editToolbarRowOutline: PREFIX + 'toolbar-row-outline',
-                editToolbarItem: PREFIX + 'toolbar-item',
-                editToolbarRow: PREFIX + 'toolbar-row',
-                editToolbarCell: PREFIX + 'toolbar-cell',
-                editSidebar: PREFIX + 'sidebar',
-                editSidebarShow: PREFIX + 'sidebar-show',
-                editSidebarHide: PREFIX + 'sidebar-hide',
-                editSidebarTitle: PREFIX + 'sidebar-title',
-                editSidebarMenuItem: PREFIX + 'sidebar-item',
-                rowContextHighlight: PREFIX + 'row-context-highlight',
-                cellEditHighlight: PREFIX + 'cell-highlight',
-                dashboardCellEditHighlightActive: PREFIX + 'cell-highlight-active',
-                dragMock: PREFIX + 'drag-mock',
-                dropPointer: PREFIX + 'drop-pointer',
-                contextDetectionPointer: PREFIX + 'ctx-detection-pointer',
-                resizePointer: PREFIX + 'resize-pointer',
-                currentEditedElement: PREFIX + 'unmask',
-                maskElement: PREFIX + 'mask',
-                menuItem: PREFIX + 'menu-item',
-                menu: PREFIX + 'menu',
-                menuVerticalSeparator: PREFIX + 'menu-vertical-separator',
-                menuHorizontalSeparator: PREFIX + 'menu-horizontal-separator',
-                menuDestroy: PREFIX + 'menu-destroy',
-                editSidebarWrapper: PREFIX + 'sidebar-wrapper',
-                customSelect: PREFIX + 'custom-select',
-                customSelectButton: PREFIX + 'custom-option-button',
-                toggleContainer: PREFIX + 'toggle-container',
-                toggleWrapper: PREFIX + 'toggle-wrapper',
-                toggleSlider: PREFIX + 'toggle-slider',
-                toggleWrapperColored: PREFIX + 'toggle-wrapper-colored',
-                toggleLabels: PREFIX + 'toggle-labels',
-                button: PREFIX + 'button',
-                sidebarNavButton: PREFIX + 'sidebar-button-nav',
-                labelText: PREFIX + 'label-text',
-                editSidebarTabBtn: PREFIX + 'sidebar-tab-btn',
-                editToolsBtn: PREFIX + 'tools-btn',
-                editTools: PREFIX + 'tools',
-                editGridItems: PREFIX + 'grid-items',
-                // Confirmation popup
-                confirmationPopup: PREFIX + 'confirmation-popup',
-                popupButtonContainer: PREFIX + 'confirmation-popup-button-container',
-                popupContentContainer: PREFIX + 'confirmation-popup-content',
-                popupCancelBtn: PREFIX + 'confirmation-popup-cancel-btn',
-                popupConfirmBtn: PREFIX + 'confirmation-popup-confirm-btn',
-                popupCloseButton: PREFIX + 'popup-close',
-                editOverlay: PREFIX + 'overlay',
-                editOverlayActive: PREFIX + 'overlay-active',
-                resizerMenuBtnActive: PREFIX + 'resizer-menu-btn-active',
-                sidebarCloseButton: PREFIX + 'close-btn',
-                editSidebarTabBtnWrapper: PREFIX + 'tabs-buttons-wrapper',
-                editSidebarRight: PREFIX + 'sidebar-right',
-                editSidebarRightShow: PREFIX + 'sidebar-right-show',
-                viewFullscreen: PREFIX + 'view-fullscreen',
-                // Accordion
-                accordionMenu: PREFIX + 'accordion-menu',
-                accordionContainer: PREFIX + 'accordion',
-                accordionHeader: PREFIX + 'accordion-header',
-                accordionHeaderBtn: PREFIX + 'accordion-header-btn',
-                accordionHeaderIcon: PREFIX + 'accordion-header-icon',
-                accordionContent: PREFIX + 'accordion-content',
-                accordionNestedWrapper: PREFIX + 'accordion-nested',
-                accordionMenuButtonsContainer: PREFIX + 'accordion-menu-buttons-container',
-                accordionMenuButton: PREFIX + 'accordion-menu-button',
-                hiddenElement: PREFIX + 'hidden-element',
-                collapsableContentHeader: PREFIX + 'collapsable-content-header',
-                // Custom dropdown with icons
-                collapsedElement: PREFIX + 'collapsed-element',
-                dropdown: PREFIX + 'dropdown',
-                dropdownContent: PREFIX + 'dropdown-content',
-                dropdownButton: PREFIX + 'dropdown-button',
-                dropdownButtonContent: PREFIX + 'dropdown-button-content',
-                dropdownIcon: PREFIX + 'pointer',
-                icon: PREFIX + 'icon'
-            },
-            lang: {
-                accessibility: {
-                    contextMenu: {
-                        button: 'Context menu'
-                    },
-                    editMode: {
-                        editMode: 'Edit mode toggle button'
-                    }
-                },
-                addComponent: 'Add component',
-                cancelButton: 'Cancel',
-                caption: 'Caption',
-                chartClassName: 'Chart class name',
-                chartConfig: 'Chart configuration',
-                chartID: 'Chart ID',
-                chartOptions: 'Chart options',
-                chartType: 'Chart type',
-                connectorName: 'Connector name',
-                confirmButton: 'Confirm',
-                confirmDestroyCell: 'Do you really want to destroy the cell?',
-                confirmDestroyRow: 'Do you really want to destroy the row?',
-                dataLabels: 'Data labels',
-                editMode: 'Edit mode',
-                errorMessage: 'Something went wrong',
-                exitFullscreen: 'Exit full screen',
-                id: 'Id',
-                off: 'off',
-                on: 'on',
-                pointFormat: 'Point format',
-                settings: 'Settings',
-                style: 'Styles',
-                title: 'Title',
-                viewFullscreen: 'View in full screen',
-                sidebar: {
-                    HTML: 'HTML',
-                    layout: 'Layout',
-                    Highcharts: 'Highcharts',
-                    DataGrid: 'DataGrid',
-                    KPI: 'KPI'
-                }
-            }
-        };
-
-        return EditGlobals;
-    });
-    _registerModule(_modules, 'Dashboards/Layout/GUIElement.js', [_modules['Core/Utilities.js'], _modules['Dashboards/Globals.js']], function (U, Globals) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const { addEvent, createElement, uniqueKey, objectEach, error } = U;
-        class GUIElement {
-            /* *
-            *
-            *  Static Properties
-            *
-            * */
-            // Get offsets of the guiElement relative to
-            // the referenceElement or the Viewport.
-            static getOffsets(guiElement, referenceElement) {
-                const offset = { left: 0, top: 0, right: 0, bottom: 0 };
-                if (guiElement.container) {
-                    const guiElementClientRect = guiElement.container.getBoundingClientRect();
-                    const referenceClientRect = referenceElement ?
-                        referenceElement.getBoundingClientRect() : { left: 0, top: 0 };
-                    offset.left = guiElementClientRect.left - referenceClientRect.left;
-                    offset.top = guiElementClientRect.top - referenceClientRect.top;
-                    offset.right =
-                        guiElementClientRect.right - referenceClientRect.left;
-                    offset.bottom =
-                        guiElementClientRect.bottom - referenceClientRect.top;
-                }
-                return offset;
-            }
-            // Get dimensions of the guiElement container from offsets.
-            static getDimFromOffsets(offsets) {
-                return {
-                    width: offsets.right - offsets.left,
-                    height: offsets.bottom - offsets.top
-                };
-            }
-            // Method for element id generation.
-            static createElementId(elementType // 'col', 'row', 'layout'
-            ) {
-                return (Globals.classNamePrefix + elementType + '-' +
-                    uniqueKey().slice(11));
-            }
-            // Get width in percentages (0% - 100%).
-            static getPercentageWidth(width // Supported formats '50%' or '1/2'
-            ) {
-                const fractionRegEx = /^([0-9]{1})[\-\/\.]([0-9]{1,2})$/;
-                let result;
-                if (fractionRegEx.test(width)) {
-                    const match = width.match(fractionRegEx) || [], multiplier = +match[1], divider = +match[2];
-                    result = 100 * multiplier / divider;
-                    result = (result <= 100 ? result : 100) + '%';
-                }
-                else if (width.indexOf('%') !== -1) {
-                    const value = parseFloat(width);
-                    result = (value <= 100 ?
-                        (value >= 0 ? value : 0) : 100) + '%';
-                }
-                return result;
-            }
-            /* *
-            *
-            *  Functions
-            *
-            * */
-            /**
-             * Create or get existing HTML element as a GUIElement container.
-             *
-             * @param {GUIElement.ContainerOptions} options
-             * Options.
-             */
-            getElementContainer(options) {
-                const guiElement = this;
-                let elem;
-                if (options.render) {
-                    if (options.attribs && !options.attribs.id) {
-                        delete options.attribs.id;
-                    }
-                }
-                else if (typeof options.elementId === 'string') {
-                    const div = document.getElementById(options.elementId);
-                    if (div) {
-                        guiElement.container = div;
-                    }
-                    else {
-                        error('Element ' + options.elementId + ' does not exist');
-                    }
-                }
-                if (options.element instanceof HTMLElement) {
-                    elem = options.element;
-                }
-                else {
-                    elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
-                }
-                // Set bindedGUIElement event on GUIElement container.
-                guiElement.removeBindedEventFn = addEvent(elem, 'bindedGUIElement', function (e) {
-                    e.guiElement = guiElement;
-                    e.stopImmediatePropagation();
-                });
-                return elem;
-            }
-            /**
-             * Destroy the element, its container, event hooks
-             * and all properties.
-             */
-            destroy() {
-                const guiElement = this;
-                // Remove bindedGUIElement event.
-                if (guiElement.removeBindedEventFn) {
-                    guiElement.removeBindedEventFn();
-                }
-                // Remove HTML container.
-                if (guiElement.container && guiElement.container.parentNode) {
-                    guiElement.container.parentNode.removeChild(guiElement.container);
-                }
-                // Delete all properties.
-                objectEach(guiElement, function (val, key) {
-                    delete guiElement[key];
-                });
-            }
-            /**
-             * Return the GUIElement instance type.
-             * @return {GUIElement.GUIElementType|undefined}
-             * The GUIElement instance type
-             */
-            getType() {
-                return this.type;
-            }
-            changeVisibility(setVisible = true, displayStyle) {
-                const visibilityChanged = (this.isVisible && !setVisible ||
-                    !this.isVisible && setVisible);
-                if (this.container && visibilityChanged) {
-                    this.container.style.display = (setVisible ?
-                        (displayStyle || 'block') :
-                        'none');
-                    this.isVisible = setVisible;
-                }
-            }
-            hide() {
-                this.changeVisibility(false);
-            }
-            show() {
-                this.changeVisibility();
-            }
-        }
-
-        return GUIElement;
-    });
-    _registerModule(_modules, 'Dashboards/Layout/Cell.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (Bindings, EditGlobals, Globals, GUIElement, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const { componentFromJSON } = Bindings;
-        const { merge, fireEvent } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * @internal
-         **/
-        class Cell extends GUIElement {
-            /* *
-             *
-             *  Static Properties
-             *
-             * */
-            /** @internal */
-            static fromJSON(json, row) {
-                if (row) {
-                    const options = json.options;
-                    let id = options.containerId;
-                    if (row.layout.copyId) {
-                        id = id + '_' + row.layout.copyId;
-                    }
-                    return new Cell(row, {
-                        id: id,
-                        parentContainerId: (row.container && row.container.id) ||
-                            options.parentContainerId,
-                        mountedComponentJSON: options.mountedComponentJSON,
-                        style: options.style,
-                        layoutJSON: options.layoutJSON,
-                        width: options.width,
-                        height: options.height
-                    });
-                }
-                return void 0;
-            }
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            /**
-             * Constructs an instance of the Cell class.
-             *
-             * @param {Row} row
-             * Reference to the row instance.
-             *
-             * @param {Cell.Options} options
-             * Options for the cell.
-             *
-             * @param {HTMLElement} cellElement
-             * The container of the cell HTML element.
-             */
-            constructor(row, options, cellElement) {
-                super();
-                /**
-                 * The type of GUI element.
-                 */
-                this.type = Globals.guiElementType.cell;
-                this.id = options.id;
-                this.options = options;
-                this.row = row;
-                this.isVisible = true;
-                // Get parent container
-                const parentContainer = document.getElementById(options.parentContainerId || '') ||
-                    row.container;
-                const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
-                let cellHeight;
-                if (options.height) {
-                    if (typeof options.height === 'number') {
-                        cellHeight = options.height + 'px';
-                    }
-                    else {
-                        cellHeight = options.height;
-                    }
-                }
-                this.container = this.getElementContainer({
-                    render: row.layout.board.guiEnabled,
-                    parentContainer: parentContainer,
-                    attribs: {
-                        id: options.id,
-                        className: Globals.classNames.cell + ' ' +
-                            cellClassName
-                    },
-                    element: cellElement,
-                    elementId: options.id,
-                    style: merge(layoutOptions.style, rowOptions.style, options.style, {
-                        height: cellHeight
-                    })
-                });
-                // Mount component from JSON.
-                if (this.options.mountedComponentJSON) {
-                    this.mountComponentFromJSON(this.options.mountedComponentJSON);
-                }
-                // Nested layout
-                if (this.options.layout) {
-                    this.setNestedLayout();
-                }
-                if (this.options.layoutJSON) {
-                    const layout = this.row.layout, board = layout.board, layoutFromJSON = layout.constructor.fromJSON;
-                    this.nestedLayout = layoutFromJSON(merge(this.options.layoutJSON, {
-                        parentContainerId: this.options.id
-                    }), board, this);
-                }
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Create a nested layout in the cell and assign it to the nestedCell
-             * property.
-             * @internal
-             */
-            setNestedLayout() {
-                const board = this.row.layout.board, Layout = this.row.layout.constructor;
-                const optionsGui = board.options.gui;
-                this.nestedLayout = new Layout(board, merge({}, optionsGui && optionsGui.layoutOptions, this.options.layout, {
-                    parentContainerId: this.options.id
-                }), this);
-            }
-            /**
-             * Mount component from JSON.
-             * @internal
-             *
-             * @param {Component.JSON} [json]
-             * Component JSON.
-             *
-             * @return {boolean}
-             * Returns true, if the component created from JSON is mounted,
-             * otherwise false.
-             */
-            mountComponentFromJSON(json) {
-                const cell = this;
-                if (cell.id !== json.options.parentElement) {
-                    json.options.parentElement = cell.id;
-                }
-                const component = componentFromJSON(json);
-                if (component) {
-                    cell.mountedComponent = component;
-                    return true;
-                }
-                return false;
-            }
-            /**
-             * Destroy the element, its container, event hooks
-             * and mounted component.
-             */
-            destroy() {
-                const cell = this;
-                const { row } = cell;
-                // Destroy mounted component.
-                cell.mountedComponent?.destroy();
-                // If layout exists in the cell - destroy it
-                cell.nestedLayout?.destroy();
-                row.unmountCell(cell);
-                const destroyRow = row.cells?.length === 0;
-                super.destroy();
-                if (destroyRow) {
-                    row.destroy();
-                }
-            }
-            /**
-             * Converts the class instance to a class JSON.
-             * @internal
-             *
-             * @return {Cell.JSON}
-             * Class JSON of this Cell instance.
-             */
-            toJSON() {
-                const cell = this, rowContainerId = (cell.row.container || {}).id || '';
-                return {
-                    $class: 'Dashboards.Layout.Cell',
-                    options: {
-                        containerId: cell.container.id,
-                        parentContainerId: rowContainerId,
-                        width: cell.options.width,
-                        height: cell.options.height,
-                        mountedComponentJSON: cell.mountedComponent && cell.mountedComponent.toJSON(),
-                        style: cell.options.style,
-                        layoutJSON: cell.nestedLayout && cell.nestedLayout.toJSON()
-                    }
-                };
-            }
-            /**
-             * Get the cell's options.
-             * @returns
-             * The JSON of cell's options.
-             *
-             * @internal
-             *
-             */
-            getOptions() {
-                return this.options;
-            }
-            changeVisibility(setVisible = true) {
-                super.changeVisibility(setVisible);
-                const cell = this, row = cell.row;
-                // Change row visibility if needed.
-                if (!cell.row.getVisibleCells().length) {
-                    cell.row.hide();
-                }
-                else if (cell.isVisible && !row.isVisible) {
-                    cell.row.show();
-                }
-                setTimeout(() => {
-                    fireEvent(row, 'cellChange', { row, cell });
-                }, 0);
-            }
-            getParentCell(level) {
-                const cell = this;
-                let parentCell;
-                if (level <= cell.row.layout.level) {
-                    if (cell.row.layout.level === level) {
-                        return cell;
-                    }
-                    if (cell.row.layout.level - 1 >= 0) {
-                        parentCell = cell.row.layout.parentCell;
-                        if (parentCell) {
-                            return parentCell.getParentCell(level);
-                        }
-                    }
-                }
-            }
-            // Method to get array of overlapping levels.
-            getOverlappingLevels(align, // 'left', 'right', 'top', 'bottom'
-            levelMaxGap, // Max distance between levels
-            offset // Analyzed cell offset
-            ) {
-                const cell = this, parentCell = cell.row.layout.parentCell;
-                let levels = [cell.row.layout.level];
-                if (parentCell) {
-                    const cellOffset = offset || GUIElement.getOffsets(cell)[align];
-                    const parentCellOffset = GUIElement.getOffsets(parentCell)[align];
-                    if (Math.abs(cellOffset - parentCellOffset) < levelMaxGap) {
-                        levels = [
-                            ...levels,
-                            ...parentCell.getOverlappingLevels(align, levelMaxGap, parentCellOffset)
-                        ];
-                    }
-                }
-                return levels;
-            }
-            /**
-             * Set cell size.
-             *
-             * @param width
-             * % value or 'auto' or px
-             *
-             * @param height
-             * value in px
-             */
-            setSize(width, height) {
-                const cell = this, editMode = cell.row.layout.board.editMode;
-                if (cell.container) {
-                    if (width) {
-                        if (width === 'auto' &&
-                            cell.container.style.flex !== '1 1 0%') {
-                            cell.container.style.flex = '1 1 0%';
-                        }
-                        else {
-                            const cellWidth = cell.convertWidthToValue(width);
-                            if (cellWidth &&
-                                cell.container.style.flex !== '0 0 ' + cellWidth) {
-                                cell.container.style.flex = '0 0 ' + cellWidth;
-                            }
-                            cell.options.width = cellWidth;
-                        }
-                    }
-                    if (height) {
-                        cell.options.height = cell.container.style.height =
-                            height + 'px';
-                    }
-                    if (editMode) {
-                        editMode.hideContextPointer();
-                        if (editMode.cellToolbar &&
-                            editMode.cellToolbar.isVisible) {
-                            if (editMode.cellToolbar.cell === cell) {
-                                editMode.cellToolbar.showToolbar(cell);
-                            }
-                            else {
-                                editMode.cellToolbar.hide();
-                            }
-                        }
-                    }
-                    // Call cellResize board event.
-                    fireEvent(cell.row.layout.board, 'cellResize', { cell: cell });
-                    fireEvent(cell.row, 'cellChange', { cell: cell, row: cell.row });
-                }
-            }
-            setHighlight(remove) {
-                const cell = this, editMode = cell.row.layout.board.editMode;
-                if (cell.container && editMode) {
-                    const cnt = cell.container, isSet = cnt.classList.contains(EditGlobals.classNames.cellEditHighlight);
-                    if (!remove && !isSet) {
-                        cnt.classList.add(EditGlobals.classNames.cellEditHighlight);
-                        cell.row.layout.board.container.classList.add(EditGlobals.classNames.dashboardCellEditHighlightActive);
-                        cell.isHighlighted = true;
-                    }
-                    else if (remove && isSet) {
-                        cnt.classList.remove(EditGlobals.classNames.cellEditHighlight);
-                        cell.row.layout.board.container.classList.remove(EditGlobals.classNames.dashboardCellEditHighlightActive);
-                        cell.isHighlighted = false;
-                    }
-                }
-            }
-            setActiveState() {
-                // Reset other boxes
-                const cell = this;
-                cell.row.layout.board.mountedComponents.forEach((mountedComponent) => {
-                    if (mountedComponent.cell.container) {
-                        mountedComponent.cell.container.classList.remove(Globals.classNames.cellActive);
-                    }
-                });
-                // Apply class
-                if (cell.container) {
-                    cell.container.classList.add(Globals.classNames.cellActive);
-                }
-            }
-            /**
-             * Enables or disables the loading indicator in the cell.
-             *
-             * @internal
-             */
-            setLoadingState(enabled = true) {
-                this.container?.classList?.toggle(Globals.classNames.cellLoading, enabled);
-            }
-            convertWidthToValue(width) {
-                if (typeof width === 'number') {
-                    return width + 'px';
-                }
-                if (/px/.test(width)) {
-                    return width;
-                }
-                return GUIElement.getPercentageWidth(width) || '';
-            }
-        }
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Cell;
     });
     _registerModule(_modules, 'Dashboards/Layout/Row.js', [_modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js']], function (Globals, Cell, GUIElement, U, EditGlobals) {
         /* *
@@ -11840,16 +12102,9 @@
             show() {
                 this.changeVisibility(true, 'flex');
             }
-            setHighlight(remove) {
-                if (this.container) {
-                    const cnt = this.container, isSet = cnt.classList.contains(EditGlobals.classNames.rowContextHighlight);
-                    if (!remove && !isSet) {
-                        cnt.classList.add(EditGlobals.classNames.rowContextHighlight);
-                    }
-                    else if (remove && isSet) {
-                        cnt.classList.remove(EditGlobals.classNames.rowContextHighlight);
-                    }
-                }
+            setHighlight() {
+                const container = this.container;
+                container.classList.toggle(EditGlobals.classNames.rowContextHighlight);
             }
             // Row can have cells below each others.
             // This method returns cells split into levels.
@@ -12213,7 +12468,7 @@
          *  - Karol Kolodziej
          *
          * */
-        const { merge, addEvent, error, objectEach, uniqueKey, createElement } = U;
+        const { merge, addEvent, error, objectEach, uniqueKey } = U;
         /* *
          *
          *  Class
@@ -12282,10 +12537,7 @@
                 this.layouts = [];
                 this.mountedComponents = [];
                 this.initContainer(renderTo);
-                // Init edit mode.
-                if (this.guiEnabled) {
-                    this.initLayout();
-                }
+                this.initEditMode();
                 // Add table cursors support.
                 this.dataCursor = new DataCursor();
                 this.index = Globals.boards.length;
@@ -12338,79 +12590,19 @@
                 if (!renderTo) {
                     error(13, true);
                 }
-                // Clear the container from any content.
-                if (this.guiEnabled) {
-                    renderTo.innerHTML = '';
-                    // Set the main wrapper container.
-                    board.boardWrapper = renderTo;
-                    // Add container for the board.
-                    board.container = createElement('div', {
-                        className: Globals.classNames.boardContainer
-                    }, {}, this.boardWrapper);
-                }
-                else {
-                    board.container = renderTo;
-                }
+                board.container = renderTo;
             }
             /**
              * Inits creating a layouts and setup the EditMode tools.
              * @internal
              *
              */
-            initLayout() {
-                const options = this.options;
-                if (!Dashboards.EditMode) {
+            initEditMode() {
+                if (Dashboards.EditMode) {
+                    this.editMode = new Dashboards.EditMode(this, this.options.editMode);
+                }
+                else if (this.editModeEnabled) {
                     throw new Error('Missing layout.js module');
-                }
-                else {
-                    // Create layouts wrapper.
-                    this.layoutsWrapper = createElement('div', {
-                        className: Globals.classNames.layoutsWrapper
-                    }, {}, this.container);
-                    if (options.gui) {
-                        this.setLayouts(options.gui);
-                    }
-                    // Init layouts from JSON.
-                    if (options.layoutsJSON && !this.layouts.length) {
-                        this.setLayoutsFromJSON(options.layoutsJSON);
-                    }
-                    if (this.editModeEnabled) {
-                        this.editMode = new Dashboards.EditMode(this, this.options.editMode);
-                        // Add fullscreen support.
-                        this.fullscreen = new Dashboards.FullScreen(this);
-                    }
-                }
-            }
-            /**
-             * Creates a new layouts and adds it to the dashboard based on the options.
-             * @internal
-             *
-             * @param guiOptions
-             * The GUI options for the layout.
-             *
-             */
-            setLayouts(guiOptions) {
-                const board = this, layoutsOptions = guiOptions.layouts;
-                for (let i = 0, iEnd = layoutsOptions.length; i < iEnd; ++i) {
-                    board.layouts.push(new Layout(board, merge({}, guiOptions.layoutOptions, layoutsOptions[i])));
-                }
-            }
-            /**
-             * Set the layouts from JSON.
-             * @internal
-             *
-             * @param json
-             * An array of layout JSON objects.
-             *
-             */
-            setLayoutsFromJSON(json) {
-                const board = this;
-                let layout;
-                for (let i = 0, iEnd = json.length; i < iEnd; ++i) {
-                    layout = Layout.fromJSON(json[i], board);
-                    if (layout) {
-                        board.layouts.push(layout);
-                    }
                 }
             }
             /**
@@ -12558,6 +12750,30 @@
                 }
                 return options;
             }
+            /**
+             * Get a Dashboards component by its identifier.
+             *
+             * @param id
+             * The identifier of the requested component.
+             *
+             * @returns
+             * The component with the given identifier.
+             */
+            getComponentById(id) {
+                return this.mountedComponents.find((c) => c.component.id === id)?.component;
+            }
+            /**
+             * Get a Dashboards component by its cell identifier.
+             *
+             * @param id
+             * The identifier of the cell that contains the requested component.
+             *
+             * @returns
+             * The component with the given cell identifier.
+             */
+            getComponentByCellId(id) {
+                return this.mountedComponents.find((c) => c.cell.id === id)?.component;
+            }
         }
         /* *
          *
@@ -12612,7 +12828,7 @@
                             .fromJSON(JSON.parse(dashboardJSON));
                     }
                     catch (e) {
-                        // Nothing to do
+                        throw new Error('' + e);
                     }
                 }
             }
@@ -12659,6 +12875,9 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.extremes;
+                const groupKey = syncOptions.group ?
+                    ':' + syncOptions.group : '';
                 const { board } = component;
                 const handleChangeExtremes = (e) => {
                     const cursor = e.cursor;
@@ -12678,7 +12897,7 @@
                     if (!table) {
                         return;
                     }
-                    cursor.addListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
+                    cursor.addListener(table.id, 'xAxis.extremes.min' + groupKey, handleChangeExtremes);
                 };
                 const unregisterCursorListeners = () => {
                     const table = component.connectorHandlers?.[0]?.connector?.table;
@@ -12686,7 +12905,7 @@
                     if (!table) {
                         return;
                     }
-                    cursor.removeListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
+                    cursor.removeListener(table.id, 'xAxis.extremes.min' + groupKey, handleChangeExtremes);
                 };
                 if (board) {
                     registerCursorListeners();
@@ -12721,7 +12940,9 @@
          *  Constants
          *
          * */
-        const defaultOptions = {};
+        const defaultOptions = {
+            autoScroll: false
+        };
         const syncPair = {
             emitter: function () {
                 if (this.type !== 'DataGrid') {
@@ -12730,6 +12951,8 @@
                 const component = this;
                 const { dataGrid, board } = component;
                 const highlightOptions = this.sync.syncConfig.highlight;
+                const groupKey = highlightOptions.group ?
+                    ':' + highlightOptions.group : '';
                 if (!board || !dataGrid || !highlightOptions?.enabled) {
                     return;
                 }
@@ -12742,7 +12965,7 @@
                             type: 'position',
                             row: parseInt(row.dataset.rowIndex, 10),
                             column: e.columnName,
-                            state: 'dataGrid.hoverRow'
+                            state: 'dataGrid.hoverRow' + groupKey
                         });
                     }
                 };
@@ -12751,7 +12974,7 @@
                     if (table) {
                         cursor.emitCursor(table, {
                             type: 'position',
-                            state: 'dataGrid.hoverOut'
+                            state: 'dataGrid.hoverOut' + groupKey
                         });
                     }
                 };
@@ -12770,23 +12993,36 @@
                 const component = this;
                 const { board } = component;
                 const highlightOptions = component.sync.syncConfig.highlight;
+                const groupKey = highlightOptions.group ?
+                    ':' + highlightOptions.group : '';
                 if (!highlightOptions?.enabled) {
                     return;
                 }
+                let highlightTimeout;
                 const handleCursor = (e) => {
                     const cursor = e.cursor;
-                    if (cursor.type === 'position') {
-                        const { row } = cursor;
-                        const { dataGrid } = component;
-                        if (row !== void 0 && dataGrid) {
-                            const highlightedDataRow = dataGrid.container
-                                .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
-                            if (highlightedDataRow) {
-                                dataGrid.toggleRowHighlight(highlightedDataRow);
-                                dataGrid.hoveredRow = highlightedDataRow;
-                            }
-                        }
+                    if (cursor.type !== 'position') {
+                        return;
                     }
+                    const { row } = cursor;
+                    const { dataGrid } = component;
+                    if (row === void 0 || !dataGrid) {
+                        return;
+                    }
+                    if (highlightOptions.autoScroll) {
+                        dataGrid.scrollToRow(row - Math.round(dataGrid.rowElements.length / 2) + 1);
+                    }
+                    if (highlightTimeout) {
+                        clearTimeout(highlightTimeout);
+                    }
+                    highlightTimeout = setTimeout(() => {
+                        const highlightedDataRow = dataGrid.container
+                            .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
+                        if (highlightedDataRow) {
+                            dataGrid.toggleRowHighlight(highlightedDataRow);
+                            dataGrid.hoveredRow = highlightedDataRow;
+                        }
+                    }, highlightOptions.autoScroll ? 10 : 0);
                 };
                 const handleCursorOut = () => {
                     const { dataGrid } = component;
@@ -12803,8 +13039,8 @@
                     if (!table) {
                         return;
                     }
-                    cursor.addListener(table.id, 'point.mouseOver', handleCursor);
-                    cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
+                    cursor.addListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
+                    cursor.addListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
                 };
                 const unregisterCursorListeners = () => {
                     const cursor = board.dataCursor;
@@ -12812,8 +13048,8 @@
                     if (!table) {
                         return;
                     }
-                    cursor.removeListener(table.id, 'point.mouseOver', handleCursor);
-                    cursor.removeListener(table.id, 'point.mouseOut', handleCursorOut);
+                    cursor.removeListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
+                    cursor.removeListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
                 };
                 if (board) {
                     registerCursorListeners();
@@ -12855,6 +13091,9 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.visibility;
+                const groupKey = syncOptions.group ?
+                    ':' + syncOptions.group : '';
                 const { board } = component;
                 const handleVisibilityChange = (e) => {
                     const cursor = e.cursor, dataGrid = component.dataGrid;
@@ -12865,7 +13104,7 @@
                     dataGrid.update({
                         columns: {
                             [columnName]: {
-                                show: cursor.state !== 'series.hide'
+                                show: cursor.state !== 'series.hide' + groupKey
                             }
                         }
                     });
@@ -12879,8 +13118,8 @@
                     if (!table) {
                         return;
                     }
-                    cursor.addListener(table.id, 'series.show', handleVisibilityChange);
-                    cursor.addListener(table.id, 'series.hide', handleVisibilityChange);
+                    cursor.addListener(table.id, 'series.show' + groupKey, handleVisibilityChange);
+                    cursor.addListener(table.id, 'series.hide' + groupKey, handleVisibilityChange);
                 };
                 const unregisterCursorListeners = () => {
                     const table = component.connectorHandlers?.[0]?.connector?.table;
@@ -12888,8 +13127,8 @@
                     if (!table) {
                         return;
                     }
-                    cursor.removeListener(table.id, 'series.show', handleVisibilityChange);
-                    cursor.removeListener(table.id, 'series.hide', handleVisibilityChange);
+                    cursor.removeListener(table.id, 'series.show' + groupKey, handleVisibilityChange);
+                    cursor.removeListener(table.id, 'series.hide' + groupKey, handleVisibilityChange);
                 };
                 if (board) {
                     registerCursorListeners();
@@ -12977,24 +13216,23 @@
                     const parentRow = inputElement
                         .closest('.highcharts-datagrid-row');
                     const cell = inputElement.closest('.highcharts-datagrid-cell');
-                    const converter = new DataConverter();
                     if (parentRow &&
                         parentRow instanceof HTMLElement &&
                         cell &&
                         cell instanceof HTMLElement) {
-                        const dataTableRowIndex = parentRow
-                            .dataset.rowIndex;
+                        const dataTableRowIndex = parentRow.dataset.rowIndex;
                         const { columnName } = cell.dataset;
                         if (dataTableRowIndex !== void 0 &&
                             columnName !== void 0) {
                             const table = connector.table;
                             if (table) {
+                                const converter = new DataConverter();
                                 let valueToSet = converter
                                     .asGuessedType(inputElement.value);
                                 if (valueToSet instanceof Date) {
                                     valueToSet = valueToSet.toString();
                                 }
-                                table.setCell(columnName, parseInt(dataTableRowIndex, 10), valueToSet);
+                                table.setCell(columnName, Number(dataTableRowIndex), valueToSet);
                             }
                         }
                     }
@@ -13421,6 +13659,9 @@
                 const { chart, board } = component;
                 const connector = component.connectorHandlers?.[0]?.connector;
                 const table = connector && connector.table;
+                const syncOptions = this.sync.syncConfig.extremes;
+                const groupKey = syncOptions.group ?
+                    ':' + syncOptions.group : '';
                 const { dataCursor: cursor } = board;
                 if (table && chart) {
                     const extremesEventHandler = (e) => {
@@ -13439,11 +13680,11 @@
                                 const visiblePoints = series.points.filter((point) => point.isInside || false);
                                 const minCursorData = {
                                     type: 'position',
-                                    state: `${axis.coll}.extremes.min`
+                                    state: `${axis.coll}.extremes.min${groupKey}`
                                 };
                                 const maxCursorData = {
                                     type: 'position',
-                                    state: `${axis.coll}.extremes.max`
+                                    state: `${axis.coll}.extremes.max${groupKey}`
                                 };
                                 if (seriesFromConnectorArray.length > 0 &&
                                     axis.coll === 'xAxis' &&
@@ -13495,7 +13736,7 @@
                             resetExtremesEvent();
                             cursor.emitCursor(table, {
                                 type: 'position',
-                                state: 'chart.zoomOut'
+                                state: 'chart.zoomOut' + groupKey
                             }, e);
                             addExtremesEventCallbacks.push(...addExtremesEvent());
                         }
@@ -13504,11 +13745,11 @@
                     cleanupCallbacks.push(() => {
                         cursor.remitCursor(table.id, {
                             type: 'position',
-                            state: 'xAxis.extremes.min'
+                            state: 'xAxis.extremes.min' + groupKey
                         });
                         cursor.remitCursor(table.id, {
                             type: 'position',
-                            state: 'xAxis.extremes.max'
+                            state: 'xAxis.extremes.max' + groupKey
                         });
                         resetExtremesEvent();
                     });
@@ -13526,6 +13767,9 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.extremes;
+                const groupKey = syncOptions.group ?
+                    ':' + syncOptions.group : '';
                 const { chart, board } = component;
                 if (chart && board && chart.zooming?.type) {
                     const dimensions = chart.zooming.type.split('')
@@ -13563,8 +13807,8 @@
                             const connector = component.connectorHandlers?.[0]?.connector;
                             if (connector) {
                                 const { table } = connector;
-                                cursor.addListener(table.id, `${dimension}.extremes.min`, handleUpdateExtremes);
-                                cursor.addListener(table.id, `${dimension}.extremes.max`, handleUpdateExtremes);
+                                cursor.addListener(table.id, `${dimension}.extremes.min${groupKey}`, handleUpdateExtremes);
+                                cursor.addListener(table.id, `${dimension}.extremes.max${groupKey}`, handleUpdateExtremes);
                                 const handleChartZoomOut = () => {
                                     chart.zoomOut();
                                     setTimeout(() => {
@@ -13578,9 +13822,9 @@
                                 };
                                 cursor.addListener(table.id, 'chart.zoomOut', handleChartZoomOut);
                                 unregisterCallbacks.push(() => {
-                                    cursor.removeListener(table.id, `${dimension}.extremes.min`, handleUpdateExtremes);
-                                    cursor.removeListener(table.id, `${dimension}.extremes.max`, handleUpdateExtremes);
-                                    cursor.removeListener(table.id, 'chart.zoomOut', handleChartZoomOut);
+                                    cursor.removeListener(table.id, `${dimension}.extremes.min${groupKey}`, handleUpdateExtremes);
+                                    cursor.removeListener(table.id, `${dimension}.extremes.max${groupKey}`, handleUpdateExtremes);
+                                    cursor.removeListener(table.id, 'chart.zoomOut' + groupKey, handleChartZoomOut);
                                 });
                             }
                         };
@@ -13671,6 +13915,8 @@
                 const component = this;
                 const { chart, board } = component;
                 const highlightOptions = this.sync.syncConfig.highlight;
+                const groupKey = highlightOptions.group ?
+                    ':' + highlightOptions.group : '';
                 if (!highlightOptions.enabled || !chart) {
                     return;
                 }
@@ -13715,7 +13961,7 @@
                                         type: 'position',
                                         row: offset + this.index,
                                         column: columnName,
-                                        state: 'point.mouseOver'
+                                        state: 'point.mouseOver' + groupKey
                                     });
                                 },
                                 mouseOut: function () {
@@ -13728,7 +13974,7 @@
                                         type: 'position',
                                         row: offset + this.index,
                                         column: columnName,
-                                        state: 'point.mouseOut'
+                                        state: 'point.mouseOut' + groupKey
                                     });
                                 }
                             }
@@ -13758,6 +14004,8 @@
                     return;
                 }
                 const component = this;
+                const groupKey = this.sync.syncConfig.highlight.group ?
+                    ':' + this.sync.syncConfig.highlight.group : '';
                 const { chart, board } = component;
                 const getHoveredPoint = (e) => {
                     const { table, cursor } = e;
@@ -13940,10 +14188,10 @@
                         if (!table) {
                             continue;
                         }
-                        cursor.addListener(table.id, 'point.mouseOver', handleCursor);
-                        cursor.addListener(table.id, 'dataGrid.hoverRow', handleCursor);
-                        cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
-                        cursor.addListener(table.id, 'dataGrid.hoverOut', handleCursorOut);
+                        cursor.addListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
+                        cursor.addListener(table.id, 'dataGrid.hoverRow' + groupKey, handleCursor);
+                        cursor.addListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
+                        cursor.addListener(table.id, 'dataGrid.hoverOut' + groupKey, handleCursorOut);
                     }
                 };
                 const unregisterCursorListeners = () => {
@@ -13957,10 +14205,10 @@
                         if (!table) {
                             continue;
                         }
-                        cursor.removeListener(table.id, 'point.mouseOver', handleCursor);
-                        cursor.removeListener(table.id, 'dataGrid.hoverRow', handleCursor);
-                        cursor.removeListener(table.id, 'point.mouseOut', handleCursorOut);
-                        cursor.removeListener(table.id, 'dataGrid.hoverOut', handleCursorOut);
+                        cursor.removeListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
+                        cursor.removeListener(table.id, 'dataGrid.hoverRow' + groupKey, handleCursor);
+                        cursor.removeListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
+                        cursor.removeListener(table.id, 'dataGrid.hoverOut' + groupKey, handleCursorOut);
                     }
                 };
                 if (board) {
@@ -14002,6 +14250,8 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.visibility;
+                const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
                 const { chart, board } = component;
                 const connector = this.getFirstConnector();
                 if (!board || !chart) {
@@ -14017,14 +14267,14 @@
                                 show: function () {
                                     cursor.emitCursor(table, {
                                         type: 'position',
-                                        state: 'series.show',
+                                        state: 'series.show' + groupKey,
                                         column: this.name
                                     });
                                 },
                                 hide: function () {
                                     cursor.emitCursor(table, {
                                         type: 'position',
-                                        state: 'series.hide',
+                                        state: 'series.hide' + groupKey,
                                         column: this.name
                                     });
                                 }
@@ -14053,6 +14303,8 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.visibility;
+                const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
                 const { board } = component;
                 const findSeries = (seriesArray, name) => {
                     for (const series of seriesArray) {
@@ -14094,14 +14346,14 @@
                     if (!table) {
                         return;
                     }
-                    dataCursor.addListener(table.id, 'series.show', handleShow);
-                    dataCursor.addListener(table.id, 'series.hide', handleHide);
+                    dataCursor.addListener(table.id, 'series.show' + groupKey, handleShow);
+                    dataCursor.addListener(table.id, 'series.hide' + groupKey, handleHide);
                 };
                 const unregisterCursorListeners = () => {
                     const table = component.connectorHandlers?.[0]?.connector?.table;
                     if (table) {
-                        board.dataCursor.removeListener(table.id, 'series.show', handleShow);
-                        board.dataCursor.removeListener(table.id, 'series.hide', handleHide);
+                        board.dataCursor.removeListener(table.id, 'series.show' + groupKey, handleShow);
+                        board.dataCursor.removeListener(table.id, 'series.hide' + groupKey, handleHide);
                     }
                 };
                 if (board) {
@@ -14190,7 +14442,13 @@
                 series: []
             },
             chartConstructor: 'chart',
-            editableOptions: (Component.defaultOptions.editableOptions || []).concat([
+            editableOptions: [
+                {
+                    name: 'connectorName',
+                    propertyPath: ['connector', 'id'],
+                    type: 'select'
+                },
+                ...Component.defaultOptions.editableOptions || [],
                 {
                     name: 'chartOptions',
                     type: 'nested',
@@ -14346,7 +14604,7 @@
                     propertyPath: ['chartID'],
                     type: 'input'
                 }
-            ]),
+            ],
             editableOptionsBindings: merge(Component.defaultOptions.editableOptionsBindings, {
                 skipRedraw: [
                     'chartOptions',
@@ -14781,9 +15039,8 @@
                         }
                         return new Factory(this.chartContainer, this.chartOptions);
                     }
-                    catch {
-                        throw new Error('The Highcharts component is misconfigured: `' +
-                            this.cell.id + '`');
+                    catch (e) {
+                        throw new Error(`The Highcharts component in cell '${this.cell.id}' is misconfigured. \n____________\n${e}`);
                     }
                 }
                 if (typeof charter.chart !== 'function') {
@@ -14903,13 +15160,19 @@
                     type: 'Highcharts'
                 };
             }
+            /**
+             * Retrieves editable options for the chart.
+             *
+             * @returns
+             * The editable options for the chart and its values.
+             */
             getEditableOptions() {
                 const component = this;
                 const componentOptions = component.options;
                 const chart = component.chart;
                 const chartOptions = chart && chart.options;
-                const chartType = chartOptions && chartOptions.chart?.type || 'line';
-                return merge(componentOptions, {
+                const chartType = chartOptions?.chart?.type || 'line';
+                return merge({
                     chartOptions
                 }, {
                     chartOptions: {
@@ -14920,7 +15183,7 @@
                                 {})[chartType]
                         }
                     }
-                });
+                }, componentOptions);
             }
             getEditableOptionValue(propertyPath) {
                 const component = this;
@@ -14976,6 +15239,8 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.extremes;
+                const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
                 const { board } = this;
                 const handleChangeExtremes = (e) => {
                     const cursor = e.cursor;
@@ -14998,7 +15263,7 @@
                     if (!table) {
                         return;
                     }
-                    cursor.addListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
+                    cursor.addListener(table.id, 'xAxis.extremes.max' + groupKey, handleChangeExtremes);
                 };
                 const unregisterCursorListeners = () => {
                     const table = this.getFirstConnector()?.table;
@@ -15006,7 +15271,7 @@
                     if (!table) {
                         return;
                     }
-                    cursor.removeListener(table.id, 'xAxis.extremes.max', handleChangeExtremes);
+                    cursor.removeListener(table.id, 'xAxis.extremes.max' + groupKey, handleChangeExtremes);
                 };
                 if (board) {
                     registerCursorListeners();
@@ -15082,7 +15347,14 @@
             ].join(' '),
             minFontSize: 20,
             thresholdColors: ['#f45b5b', '#90ed7d'],
-            editableOptions: (Component.defaultOptions.editableOptions || []).concat([{
+            editableOptions: [
+                {
+                    name: 'connectorName',
+                    propertyPath: ['connector', 'id'],
+                    type: 'select'
+                },
+                ...Component.defaultOptions.editableOptions || [],
+                {
                     name: 'Value',
                     type: 'input',
                     propertyPath: ['value']
@@ -15094,7 +15366,8 @@
                     name: 'Value format',
                     type: 'input',
                     propertyPath: ['valueFormat']
-                }]),
+                }
+            ],
             linkedValueTo: {
                 enabled: true,
                 seriesIndex: 0,
@@ -15524,7 +15797,7 @@
              *
              * @type      {number}
              * @default   2
-             * @since     @next
+             * @since     11.3.0
              * @apioption chart.axisLayoutRuns
              */
             /**
@@ -16266,13 +16539,15 @@
              * element's height is 0.
              *
              * @sample {highcharts} highcharts/chart/height/
-             *         500px height
+             *         Forced 200px height
              * @sample {highstock} stock/chart/height/
              *         300px height
              * @sample {highmaps} maps/chart/size/
              *         Chart with explicit size
              * @sample highcharts/chart/height-percent/
              *         Highcharts with percentage height
+             * @sample highcharts/chart/height-inherited/
+             *         Chart with inherited height
              *
              * @type {null|number|string}
              */
@@ -17171,8 +17446,8 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        const { isTouchDevice, svg } = H;
-        const { merge } = U;
+        const { isTouchDevice } = H;
+        const { fireEvent, merge } = U;
         /* *
          *
          *  API Options
@@ -17403,84 +17678,163 @@
              * ```js
              * Highcharts.setOptions({
              *     global: {
-             *         useUTC: false
+             *         buttonTheme: {
+             *             fill: '#d0d0d0'
+             *         }
              *     }
              * });
              * ```
              */
-            /**
-             * _Canvg rendering for Android 2.x is removed as of Highcharts 5.0\.
-             * Use the [libURL](#exporting.libURL) option to configure exporting._
-             *
-             * The URL to the additional file to lazy load for Android 2.x devices.
-             * These devices don't support SVG, so we download a helper file that
-             * contains [canvg](https://github.com/canvg/canvg), its dependency
-             * rbcolor, and our own CanVG Renderer class. To avoid hotlinking to
-             * our site, you can install canvas-tools.js on your own server and
-             * change this option accordingly.
-             *
-             * @deprecated
-             *
-             * @type      {string}
-             * @default   https://code.highcharts.com/{version}/modules/canvas-tools.js
-             * @product   highcharts highmaps
-             * @apioption global.canvasToolsURL
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.useUTC](#time.useUTC) that supports individual time settings
-             * per chart.
-             *
-             * @deprecated
-             *
-             * @type      {boolean}
-             * @apioption global.useUTC
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.Date](#time.Date) that supports individual time settings
-             * per chart.
-             *
-             * @deprecated
-             *
-             * @type      {Function}
-             * @product   highcharts highstock
-             * @apioption global.Date
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.getTimezoneOffset](#time.getTimezoneOffset) that supports
-             * individual time settings per chart.
-             *
-             * @deprecated
-             *
-             * @type      {Function}
-             * @product   highcharts highstock
-             * @apioption global.getTimezoneOffset
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.timezone](#time.timezone) that supports individual time
-             * settings per chart.
-             *
-             * @deprecated
-             *
-             * @type      {string}
-             * @product   highcharts highstock
-             * @apioption global.timezone
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.timezoneOffset](#time.timezoneOffset) that supports individual
-             * time settings per chart.
-             *
-             * @deprecated
-             *
-             * @type      {number}
-             * @product   highcharts highstock
-             * @apioption global.timezoneOffset
-             */
-            global: {},
+            global: {
+                /**
+                 * _Canvg rendering for Android 2.x is removed as of Highcharts 5.0\.
+                 * Use the [libURL](#exporting.libURL) option to configure exporting._
+                 *
+                 * The URL to the additional file to lazy load for Android 2.x devices.
+                 * These devices don't support SVG, so we download a helper file that
+                 * contains [canvg](https://github.com/canvg/canvg), its dependency
+                 * rbcolor, and our own CanVG Renderer class. To avoid hotlinking to
+                 * our site, you can install canvas-tools.js on your own server and
+                 * change this option accordingly.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {string}
+                 * @default   https://code.highcharts.com/{version}/modules/canvas-tools.js
+                 * @product   highcharts highmaps
+                 * @apioption global.canvasToolsURL
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.useUTC](#time.useUTC) that supports individual time settings
+                 * per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {boolean}
+                 * @apioption global.useUTC
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.Date](#time.Date) that supports individual time settings
+                 * per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {Function}
+                 * @product   highcharts highstock
+                 * @apioption global.Date
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.getTimezoneOffset](#time.getTimezoneOffset) that supports
+                 * individual time settings per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {Function}
+                 * @product   highcharts highstock
+                 * @apioption global.getTimezoneOffset
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.timezone](#time.timezone) that supports individual time
+                 * settings per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {string}
+                 * @product   highcharts highstock
+                 * @apioption global.timezone
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.timezoneOffset](#time.timezoneOffset) that supports individual
+                 * time settings per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {number}
+                 * @product   highcharts highstock
+                 * @apioption global.timezoneOffset
+                 */
+                /**
+                 * General theme for buttons. This applies to the zoom button, exporting
+                 * context menu, map navigation, range selector buttons and custom
+                 * buttons generated using the `SVGRenderer.button` function. However,
+                 * each of these may be overridden with more specific options.
+                 *
+                 * @sample highcharts/global/buttontheme
+                 *         General button theme
+                 * @since 11.4.2
+                 */
+                buttonTheme: {
+                    /**
+                     * The fill color for buttons
+                     */
+                    fill: "#f7f7f7" /* Palette.neutralColor3 */,
+                    /**
+                     * The padding of buttons
+                     */
+                    padding: 8,
+                    /**
+                     * The border radius for buttons
+                     */
+                    r: 2,
+                    /**
+                     * The stroke color for buttons
+                     */
+                    stroke: "#cccccc" /* Palette.neutralColor20 */,
+                    /**
+                     * The stroke width for buttons
+                     */
+                    'stroke-width': 1,
+                    /**
+                     * CSS styling for the buttons' text
+                     */
+                    style: {
+                        color: "#333333" /* Palette.neutralColor80 */,
+                        cursor: 'pointer',
+                        fontSize: '0.8em',
+                        fontWeight: 'normal'
+                    },
+                    /**
+                     * State overrides for the buttons
+                     */
+                    states: {
+                        /**
+                         * Hover state overrides for the buttons are applied in addition
+                         * to the normal state options
+                         */
+                        hover: {
+                            fill: "#e6e6e6" /* Palette.neutralColor10 */
+                        },
+                        /**
+                         * Select state overrides for the buttons are applied in
+                         * addition to the normal state options
+                         */
+                        select: {
+                            fill: "#e6e9ff" /* Palette.highlightColor10 */,
+                            style: {
+                                color: "#000000" /* Palette.neutralColor100 */,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        /**
+                         * Disabled state overrides for the buttons are applied in
+                         * addition to the normal state options
+                         */
+                        disabled: {
+                            /**
+                             * Disabled state CSS style overrides for the buttons' text
+                             */
+                            style: {
+                                color: "#cccccc" /* Palette.neutralColor20 */
+                            }
+                        }
+                    }
+                }
+            },
             /**
              * Time options that can apply globally or to individual charts. These
              * settings affect how `datetime` axes are laid out, how tooltips are
@@ -17550,13 +17904,16 @@
                  * for drawing time based charts in specific time zones using their
                  * local DST crossover dates, with the help of external libraries.
                  *
-                 * @see [global.timezoneOffset](#global.timezoneOffset)
+                 * This option is deprecated as of v11.4.1 and will be removed in a
+                 * future release. Use the [time.timezone](#time.timezone) option
+                 * instead.
                  *
                  * @sample {highcharts|highstock} highcharts/time/gettimezoneoffset/
                  *         Use moment.js to draw Oslo time regardless of browser locale
                  *
                  * @type      {Highcharts.TimezoneOffsetCallbackFunction}
                  * @since     4.1.0
+                 * @deprecated 11.4.2
                  * @product   highcharts highstock gantt
                  */
                 getTimezoneOffset: void 0,
@@ -17566,11 +17923,9 @@
                  * docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timezone).
                  * If the given time zone is not recognized by the browser, Highcharts
                  * provides a warning and falls back to returning a 0 offset,
-                 * corresponding to the UCT time zone.
+                 * corresponding to the UTC time zone.
                  *
                  * Until v11.2.0, this option depended on moment.js.
-                 *
-                 * @see [getTimezoneOffset](#time.getTimezoneOffset)
                  *
                  * @sample {highcharts|highstock} highcharts/time/timezone/ Europe/Oslo
                  *
@@ -17585,12 +17940,17 @@
                  * [getTimezoneOffset](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTimezoneOffset)
                  * method. Use this to display UTC based data in a predefined time zone.
                  *
+                 * This option is deprecated as of v11.4.1 and will be removed in a
+                 * future release. Use the [time.timezone](#time.timezone) option
+                 * instead.
+                 *
                  * @see [time.getTimezoneOffset](#time.getTimezoneOffset)
                  *
                  * @sample {highcharts|highstock} highcharts/time/timezoneoffset/
                  *         Timezone offset
                  *
                  * @since     3.0.8
+                 * @deprecated 11.4.2
                  * @product   highcharts highstock gantt
                  */
                 timezoneOffset: 0,
@@ -18110,6 +18470,32 @@
                  */
                 className: 'highcharts-no-tooltip',
                 /**
+                 * General event handlers for the legend. These event hooks can
+                 * also be attached to the legend at run time using the
+                 * `Highcharts.addEvent` function.
+                 *
+                 * @declare Highcharts.LegendEventsOptionsObject
+                 *
+                 * @private
+                 */
+                events: {},
+                /**
+                 * Fires when the legend item belonging to the series is clicked. One
+                 * parameter, `event`, is passed to the function. The default action
+                 * is to toggle the visibility of the series, point or data class. This
+                 * can be prevented by returning `false` or calling
+                 * `event.preventDefault()`.
+                 *
+                 * @sample {highcharts} highcharts/legend/series-legend-itemclick/
+                 *         Confirm hiding and showing
+                 * @sample {highcharts} highcharts/legend/pie-legend-itemclick/
+                 *         Confirm toggle visibility of pie slices
+                 *
+                 * @type      {Highcharts.LegendItemClickCallbackFunction}
+                 * @context   Highcharts.Legend
+                 * @apioption legend.events.itemClick
+                 */
+                /**
                  * When the legend is floating, the plot area ignores it and is allowed
                  * to be placed below it.
                  *
@@ -18476,7 +18862,7 @@
                  *         Item text styles
                  *
                  * @type    {Highcharts.CSSObject}
-                 * @default {"color": "#333333", "cursor": "pointer", "fontSize": "0.75em", "fontWeight": "bold", "textOverflow": "ellipsis"}
+                 * @default {"color": "#333333", "cursor": "pointer", "fontSize": "0.8em", "fontWeight": "bold", "textOverflow": "ellipsis"}
                  */
                 itemStyle: {
                     /**
@@ -18578,7 +18964,7 @@
                     /**
                      * @ignore
                      */
-                    width: '13px',
+                    width: '13px', // For IE precision
                     /**
                      * @ignore
                      */
@@ -18788,7 +19174,7 @@
                      *      `.highcharts-legend-title` class.
                      *
                      * @type    {Highcharts.CSSObject}
-                     * @default {"fontSize": "0.75em", "fontWeight": "bold"}
+                     * @default {"fontSize": "0.8em", "fontWeight": "bold"}
                      * @since   3.0
                      */
                     style: {
@@ -18995,20 +19381,20 @@
                  */
                 /**
                  * A [format string](https://www.highcharts.com/docs/chart-concepts/labels-and-string-formatting)
-                 * for the whole tooltip. When format strings are a requirement, it is
-                 * usually more convenient to use `headerFormat`, `pointFormat` and
-                 * `footerFormat`, but the `format` option allows combining them into
-                 * one setting.
+                 * for the whole shared tooltip. When format strings are a requirement,
+                 * it is usually more convenient to use `headerFormat`, `pointFormat`
+                 * and `footerFormat`, but the `format` option allows combining them
+                 * into one setting.
                  *
                  * The context of the format string is the same as that of the
-                 * `formatter` callback.
+                 * `tooltip.formatter` callback.
                  *
                  * @sample {highcharts} highcharts/tooltip/format-shared/
                  *         Format for shared tooltip
                  *
                  * @type      {string}
                  * @default   undefined
-                 * @since 11.1.0
+                 * @since     11.1.0
                  * @apioption tooltip.format
                  */
                 /**
@@ -19281,11 +19667,14 @@
                 /**
                  * Enable or disable animation of the tooltip.
                  *
-                 * @type       {boolean}
-                 * @default    true
+                 * @type       {boolean|Partial<Highcharts.AnimationOptionsObject>}
                  * @since      2.3.0
                  */
-                animation: svg,
+                animation: {
+                    duration: 300,
+                    // EaseOutCirc
+                    easing: (x) => Math.sqrt(1 - Math.pow(x - 1, 2))
+                },
                 /**
                  * The radius of the rounded border corners.
                  *
@@ -19740,6 +20129,7 @@
          * Updated options.
          */
         function setOptions(options) {
+            fireEvent(H, 'setOptions', { options });
             // Copy in the default options
             merge(true, defaultOptions, options);
             // Update the time object
@@ -20035,11 +20425,11 @@
          *         The formatted string.
          */
         function format(str = '', ctx, chart) {
-            const regex = /\{([a-zA-Z0-9\:\.\,;\-\/<>%_@"'= #\(\)]+)\}/g, 
+            const regex = /\{([\w\:\.\,;\-\/<>%@"'’= #\(\)]+)\}/g, 
             // The sub expression regex is the same as the top expression regex,
             // but except parens and block helpers (#), and surrounded by parens
             // instead of curly brackets.
-            subRegex = /\(([a-zA-Z0-9\:\.\,;\-\/<>%_@"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.([0-9])/, lang = defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
+            subRegex = /\(([\w\:\.\,;\-\/<>%@"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
             /*
              * Get a literal or variable value inside a template expression. May be
              * extended with other types like string or null if needed, but keep it
@@ -20145,7 +20535,7 @@
                     // Block helpers may return true or false. They may also return a
                     // string, like the `each` helper.
                     if (match.isBlock && typeof replacement === 'boolean') {
-                        replacement = format(replacement ? body : elseBody, ctx);
+                        replacement = format(replacement ? body : elseBody, ctx, chart);
                     }
                     // Simple variable replacement
                 }
@@ -20261,6 +20651,9 @@
             if (decimals) {
                 // Get the decimal component
                 ret += decimalPoint + roundedNumber.slice(-decimals);
+            }
+            else if (+ret === 0) { // Remove signed minus #20564
+                ret = '0';
             }
             if (exponent[1] && +ret !== 0) {
                 ret += 'e' + exponent[1];
@@ -20981,6 +21374,8 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.crossfilter;
+                const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
                 const afterSetExtremes = async (extremes) => {
                     if (component.connectorHandlers?.[0]?.connector) {
                         const table = component.connectorHandlers[0].connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
@@ -20999,11 +21394,16 @@
                         }
                         await table.setModifier(modifier);
                         dataCursor.emitCursor(table, {
-                            type: 'range',
-                            columns: [filterColumn],
-                            firstRow: 0,
-                            lastRow: table.getRowCount() - 1,
-                            state: 'crossfilter'
+                            type: 'position',
+                            column: filterColumn,
+                            row: table.getRowIndexBy(filterColumn, min),
+                            state: 'crossfilter' + groupKey
+                        }, extremes);
+                        dataCursor.emitCursor(table, {
+                            type: 'position',
+                            column: filterColumn,
+                            row: table.getRowIndexBy(filterColumn, max),
+                            state: 'crossfilter' + groupKey
                         }, extremes);
                     }
                 };
@@ -21050,6 +21450,8 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.extremes;
+                const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
                 const afterSetExtremes = (extremes) => {
                     if (component.connectorHandlers?.[0]?.connector) {
                         const table = component.connectorHandlers[0].connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
@@ -21057,13 +21459,13 @@
                             type: 'position',
                             column: filterColumn,
                             row: table.getRowIndexBy(filterColumn, min),
-                            state: 'xAxis.extremes.min'
+                            state: 'xAxis.extremes.min' + groupKey
                         }, extremes);
                         dataCursor.emitCursor(table, {
                             type: 'position',
                             column: filterColumn,
                             row: table.getRowIndexBy(filterColumn, max),
-                            state: 'xAxis.extremes.max'
+                            state: 'xAxis.extremes.max' + groupKey
                         }, extremes);
                     }
                 };
@@ -21078,6 +21480,8 @@
                     return;
                 }
                 const component = this;
+                const syncOptions = this.sync.syncConfig.extremes;
+                const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
                 const dataCursor = component.board.dataCursor;
                 const extremesListener = (e) => {
                     const cursor = e.cursor;
@@ -21094,7 +21498,7 @@
                             extremesColumn = pick(cursor.columns[0], extremesColumn);
                         }
                     }
-                    else if (cursor.state === 'xAxis.extremes.max') {
+                    else if (cursor.state === 'xAxis.extremes.max' + groupKey) {
                         extremesColumn = pick(cursor.column, extremesColumn);
                         maxIndex = pick(cursor.row, maxIndex);
                     }
@@ -21121,17 +21525,17 @@
                 const registerCursorListeners = () => {
                     const table = component.connectorHandlers?.[0]?.connector?.table;
                     if (table) {
-                        dataCursor.addListener(table.id, 'xAxis.extremes', extremesListener);
-                        dataCursor.addListener(table.id, 'xAxis.extremes.max', extremesListener);
-                        dataCursor.addListener(table.id, 'xAxis.extremes.min', extremesListener);
+                        dataCursor.addListener(table.id, 'xAxis.extremes' + groupKey, extremesListener);
+                        dataCursor.addListener(table.id, 'xAxis.extremes.max' + groupKey, extremesListener);
+                        dataCursor.addListener(table.id, 'xAxis.extremes.min' + groupKey, extremesListener);
                     }
                 };
                 const unregisterCursorListeners = () => {
                     const table = component.connectorHandlers?.[0]?.connector?.table;
                     if (table) {
-                        dataCursor.removeListener(table.id, 'xAxis.extremes', extremesListener);
-                        dataCursor.removeListener(table.id, 'xAxis.extremes.max', extremesListener);
-                        dataCursor.removeListener(table.id, 'xAxis.extremes.min', extremesListener);
+                        dataCursor.removeListener(table.id, 'xAxis.extremes' + groupKey, extremesListener);
+                        dataCursor.removeListener(table.id, 'xAxis.extremes.max' + groupKey, extremesListener);
+                        dataCursor.removeListener(table.id, 'xAxis.extremes.min' + groupKey, extremesListener);
                     }
                 };
                 registerCursorListeners();

@@ -223,6 +223,7 @@ export interface ToggleFormFieldOptions {
 export interface NestedHeaderFormFieldOptions {
     name: string;
     showToggle?: boolean;
+    isStandalone?: boolean;
     onchange?: (value: boolean) => void;
     isEnabled?: boolean;
     isNested?: boolean;

@@ -25,6 +25,7 @@ declare namespace Responsive {
         matchResponsiveRule(rule: RuleOptions, matches: Array<string>): void;
         /** @requires Core/Responsive */
         setResponsive(redraw?: boolean, reset?: boolean): void;
+        updatingResponsive: boolean;
     }
     interface CurrentObject {
         mergedOptions: Partial<GlobalOptions>;

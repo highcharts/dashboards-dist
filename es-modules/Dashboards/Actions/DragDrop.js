@@ -251,6 +251,8 @@ class DragDrop {
     }
     /**
      * Unmounts dropped row and mounts it in a new position.
+     *
+     * @fires DragDrop#layoutChanged
      */
     onRowDragEnd() {
         const dragDrop = this, draggedRow = dragDrop.context, dropContext = dragDrop.dropContext;
@@ -270,6 +272,11 @@ class DragDrop {
         }
         dragDrop.hideDropPointer();
         draggedRow.show();
+        fireEvent(dragDrop.editMode, 'layoutChanged', {
+            type: 'rowDragEnd',
+            target: draggedRow,
+            board: dragDrop.editMode.board
+        });
     }
     /**
      * Method used as middleware when cell is dragged.
@@ -411,6 +418,8 @@ class DragDrop {
      *
      * @param {Cell} contextCell
      * Cell used as a dragDrop context.
+     *
+     * @fires DragDrop#layoutChanged
      */
     onCellDragEnd(contextCell) {
         const dragDrop = this, draggedCell = contextCell || dragDrop.context;
@@ -437,7 +446,7 @@ class DragDrop {
                 const dropContextCellIndex = row.getCellIndex(dropContextCell);
                 row.unmountCell(dropContextCell);
                 const newCell = row.addCell({
-                    id: GUIElement.createElementId('col-nested-'),
+                    id: GUIElement.getElementId('col-nested'),
                     layout: {
                         rows: [{}, {}]
                     }
@@ -458,6 +467,11 @@ class DragDrop {
         fireEvent(draggedCell.row, 'cellChange', { cell: draggedCell, row: draggedCell.row });
         dragDrop.hideDropPointer();
         draggedCell.show();
+        fireEvent(dragDrop.editMode, 'layoutChanged', {
+            type: 'cellDragEnd',
+            target: draggedCell,
+            board: dragDrop.editMode.board
+        });
     }
 }
 /* *

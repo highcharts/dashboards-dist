@@ -13,6 +13,8 @@
  *  - Sophie Bremer
  *
  * */
+import Cell from '../Layout/Cell.js';
+import CellHTML from '../Layout/CellHTML.js';
 import EditGlobals from './EditGlobals.js';
 import EditRenderer from './EditRenderer.js';
 import CellEditToolbar from './Toolbar/CellEditToolbar.js';
@@ -22,8 +24,9 @@ import EditContextMenu from './EditContextMenu.js';
 import DragDrop from '../Actions/DragDrop.js';
 import Resizer from '../Actions/Resizer.js';
 import ConfirmationPopup from './ConfirmationPopup.js';
-import ContextDetection from '../Actions/ContextDetection.js';
 import GUIElement from '../Layout/GUIElement.js';
+import Globals from '../Globals.js';
+import Layout from '../Layout/Layout.js';
 import U from '../../Core/Utilities.js';
 const { addEvent, createElement, css, merge } = U;
 /* *
@@ -58,9 +61,13 @@ class EditMode {
          */
         this.active = false;
         /**
+         * Whether the board is generated with custom HTML.
+         */
+        this.customHTMLMode = false;
+        /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.1.0/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.2.0/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(
@@ -101,20 +108,33 @@ class EditMode {
         }, options || {});
         this.board = board;
         this.lang = merge({}, EditGlobals.lang, this.options.lang);
-        this.contextPointer = {
-            isVisible: false,
-            element: createElement('div', { className: EditGlobals.classNames.contextDetectionPointer }, {}, this.board.container)
-        };
+        board.boardWrapper = board.container;
+        if (board.guiEnabled) {
+            this.initLayout();
+        }
         this.isInitialized = false;
         this.isContextDetectionActive = false;
         this.tools = {};
-        this.createTools();
-        this.confirmationPopup = new ConfirmationPopup(board.container, this.iconsURLPrefix, this, this.options.confirmationPopup);
-        // Create edit overlay.
-        this.editOverlay = createElement('div', {
-            className: EditGlobals.classNames.editOverlay
-        }, {}, board.container);
-        this.isEditOverlayActive = false;
+        if (board.editModeEnabled) {
+            this.customHTMLMode = !this.board.layoutsWrapper;
+            this.contextPointer = {
+                isVisible: false,
+                element: createElement('div', {
+                    className: EditGlobals.classNames.contextDetectionPointer
+                }, {}, board.container)
+            };
+            this.createTools();
+            this.confirmationPopup = new ConfirmationPopup(board.container, this.iconsURLPrefix, this, this.options.confirmationPopup);
+            // Create edit overlay.
+            this.editOverlay = createElement('div', {
+                className: EditGlobals.classNames.editOverlay
+            }, {}, board.container);
+            this.isEditOverlayActive = false;
+            board.fullscreen = new Dashboards.FullScreen(board);
+            if (this.customHTMLMode) {
+                board.container.classList.add(Globals.classNames.boardContainer);
+            }
+        }
     }
     /* *
     *
@@ -139,7 +159,7 @@ class EditMode {
     /**
      * Activate or deactivate edit mode.
      */
-    onEditModeToggle() {
+    toggleEditMode() {
         const editMode = this;
         if (editMode.active) {
             editMode.deactivate();
@@ -154,12 +174,14 @@ class EditMode {
      */
     init() {
         const editMode = this;
-        if (this.options.resize?.enabled) {
+        if (this.options.resize?.enabled && !editMode.customHTMLMode) {
             editMode.resizer = new Resizer(editMode, editMode.options.resize);
         }
         editMode.dragDrop = new DragDrop(editMode, editMode.options.dragDrop);
         // Init rowToolbar.
-        if (editMode.options.toolbars?.row?.enabled && !editMode.rowToolbar) {
+        if (editMode.options.toolbars?.row?.enabled &&
+            !editMode.rowToolbar &&
+            !editMode.customHTMLMode) {
             editMode.rowToolbar = new RowEditToolbar(editMode);
         }
         // Init cellToolbar.
@@ -178,8 +200,16 @@ class EditMode {
      */
     initEvents() {
         const editMode = this, board = editMode.board;
-        for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-            editMode.setLayoutEvents(board.layouts[i]);
+        if (this.customHTMLMode) {
+            const length = board.mountedComponents.length;
+            for (let i = 0, iEnd = length; i < iEnd; ++i) {
+                editMode.setCellEvents(board.mountedComponents[i].cell);
+            }
+        }
+        else {
+            for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
+                editMode.setLayoutEvents(board.layouts[i]);
+            }
         }
         if (editMode.cellToolbar) {
             // Stop context detection when mouse on cell toolbar.
@@ -199,12 +229,68 @@ class EditMode {
                 editMode.isContextDetectionActive = true;
             });
         }
-        if (board.layoutsWrapper) {
-            addEvent(board.layoutsWrapper, 'mousemove', editMode.onDetectContext.bind(editMode));
-            addEvent(board.layoutsWrapper, 'click', editMode.onContextConfirm.bind(editMode));
-            addEvent(board.layoutsWrapper, 'mouseleave', () => {
-                editMode.hideContextPointer();
-            });
+        const elementForEvents = this.customHTMLMode ?
+            board.container : board.layoutsWrapper;
+        addEvent(elementForEvents, 'mousemove', editMode.onDetectContext.bind(editMode));
+        addEvent(elementForEvents, 'click', editMode.onContextConfirm.bind(editMode));
+        addEvent(elementForEvents, 'mouseleave', () => {
+            editMode.hideContextPointer();
+        });
+    }
+    /**
+     * Initialize the container for the layouts.
+     * @internal
+     *
+     */
+    initLayout() {
+        const board = this.board;
+        // Clear the container from any content.
+        board.container.innerHTML = '';
+        // Add container for the board.
+        board.container = createElement('div', {
+            className: Globals.classNames.boardContainer
+        }, {}, board.boardWrapper);
+        // Create layouts wrapper.
+        board.layoutsWrapper = createElement('div', {
+            className: Globals.classNames.layoutsWrapper
+        }, {}, board.container);
+        if (board.options.gui) {
+            this.setLayouts(board.options.gui);
+        }
+        if (board.options.layoutsJSON && !board.layouts.length) {
+            this.setLayoutsFromJSON(board.options.layoutsJSON);
+        }
+    }
+    /**
+     * Creates a new layouts and adds it to the dashboard based on the options.
+     * @internal
+     *
+     * @param guiOptions
+     * The GUI options for the layout.
+     *
+     */
+    setLayouts(guiOptions) {
+        const board = this.board, layoutsOptions = guiOptions.layouts;
+        for (let i = 0, iEnd = layoutsOptions.length; i < iEnd; ++i) {
+            board.layouts.push(new Layout(board, merge({}, guiOptions.layoutOptions, layoutsOptions[i])));
+        }
+    }
+    /**
+     * Set the layouts from JSON.
+     * @internal
+     *
+     * @param json
+     * An array of layout JSON objects.
+     *
+     */
+    setLayoutsFromJSON(json) {
+        const board = this.board;
+        let layout;
+        for (let i = 0, iEnd = json.length; i < iEnd; ++i) {
+            layout = Layout.fromJSON(json[i], board);
+            if (layout) {
+                board.layouts.push(layout);
+            }
         }
     }
     /**
@@ -256,36 +342,45 @@ class EditMode {
      */
     setCellEvents(cell) {
         const editMode = this;
-        if (cell.nestedLayout) {
-            editMode.setLayoutEvents(cell.nestedLayout);
+        if (cell instanceof CellHTML) {
+            addEvent(cell.container, 'mouseenter', function () {
+                if (editMode.isContextDetectionActive) {
+                    editMode.mouseCellContext = cell;
+                }
+            });
         }
-        else if (editMode.cellToolbar && cell.container) {
-            // Init dragDrop cell events.
-            if (editMode.dragDrop || editMode.resizer) {
-                const dragDrop = editMode.dragDrop;
+        else {
+            if (cell.nestedLayout) {
+                editMode.setLayoutEvents(cell.nestedLayout);
+            }
+            else if (editMode.cellToolbar && cell.container) {
                 addEvent(cell.container, 'mouseenter', function () {
                     if (editMode.isContextDetectionActive) {
                         editMode.mouseCellContext = cell;
                     }
                 });
-                addEvent(cell.container, 'mousemove', function (e) {
-                    if (dragDrop &&
-                        dragDrop.isActive &&
-                        e.target === cell.container) {
-                        dragDrop.mouseCellContext = cell;
-                        dragDrop.mouseRowContext = void 0;
-                    }
-                });
-                addEvent(cell.container, 'mouseleave', function () {
-                    if (dragDrop &&
-                        dragDrop.isActive &&
-                        dragDrop.mouseCellContext === cell) {
-                        dragDrop.mouseCellContext = void 0;
-                    }
-                    if (editMode.isContextDetectionActive) {
-                        editMode.mouseCellContext = void 0;
-                    }
-                });
+                // Init dragDrop cell events only when using layouts.
+                if ((editMode.dragDrop || editMode.resizer)) {
+                    const dragDrop = editMode.dragDrop;
+                    addEvent(cell.container, 'mousemove', function (e) {
+                        if (dragDrop &&
+                            dragDrop.isActive &&
+                            e.target === cell.container) {
+                            dragDrop.mouseCellContext = cell;
+                            dragDrop.mouseRowContext = void 0;
+                        }
+                    });
+                    addEvent(cell.container, 'mouseleave', function () {
+                        if (dragDrop &&
+                            dragDrop.isActive &&
+                            dragDrop.mouseCellContext === cell) {
+                            dragDrop.mouseCellContext = void 0;
+                        }
+                        if (editMode.isContextDetectionActive) {
+                            editMode.mouseCellContext = void 0;
+                        }
+                    });
+                }
             }
         }
     }
@@ -302,7 +397,6 @@ class EditMode {
         }
         // Set edit mode active class to dashboard.
         editMode.board.container.classList.add(EditGlobals.classNames.editModeEnabled);
-        // TODO all buttons should be activated, add some wrapper?
         if (this.addComponentBtn) {
             this.addComponentBtn.style.display = 'block';
         }
@@ -319,8 +413,8 @@ class EditMode {
         // Hide toolbars.
         editMode.hideToolbars();
         // Remove highlight from the context row if exists.
-        if (this.editCellContext) {
-            this.editCellContext.row?.setHighlight(true);
+        if (this.editCellContext && this.editCellContext instanceof Cell) {
+            this.editCellContext.row?.setHighlight();
         }
         // TODO all buttons should be deactivated.
         if (this.addComponentBtn) {
@@ -403,14 +497,12 @@ class EditMode {
             switch (toolbarsToShow[i]) {
                 case 'cell': {
                     if (currentCell && editMode.cellToolbar) {
-                        editMode.cellToolbar.isVisible = true;
                         editMode.cellToolbar.showToolbar(currentCell);
                     }
                     break;
                 }
                 case 'row': {
                     if (currentCell && currentCell.row && editMode.rowToolbar) {
-                        editMode.rowToolbar.isVisible = true;
                         editMode.rowToolbar.showToolbar(currentCell.row);
                     }
                     break;
@@ -434,14 +526,21 @@ class EditMode {
      */
     createTools() {
         const editMode = this;
-        const options = this.options;
+        const { board, options, tools } = editMode;
         // Create tools container
-        this.tools.container = document.createElement('div');
-        this.tools.container.classList.add(EditGlobals.classNames.editTools);
-        this.board.layoutsWrapper?.parentNode.insertBefore(this.tools.container, this.board.layoutsWrapper);
+        tools.container = document.createElement('div');
+        tools.container.classList.add(EditGlobals.classNames.editTools);
+        if (board.layoutsWrapper) {
+            // For the generated layout
+            board.layoutsWrapper.parentNode.insertBefore(tools.container, board.layoutsWrapper);
+        }
+        else {
+            // For the custom layout
+            board.container.insertBefore(tools.container, board.container.firstChild);
+        }
         // Create context menu button
         if (options.contextMenu && options.contextMenu.enabled) {
-            this.tools.contextButtonElement = EditRenderer.renderContextButton(this.tools.container, editMode);
+            tools.contextButtonElement = EditRenderer.renderContextButton(tools.container, editMode);
             // Init contextMenu if doesn't exist.
             if (!editMode.tools.contextMenu) {
                 editMode.tools.contextMenu = new EditContextMenu(editMode.board.container, editMode.options.contextMenu || {}, editMode);
@@ -449,9 +548,10 @@ class EditMode {
         }
         // Create add component button
         if (options.tools?.addComponentBtn?.enabled &&
-            options.toolbars?.cell?.enabled) {
+            options.toolbars?.cell?.enabled &&
+            !this.customHTMLMode) {
             const addIconURL = options.tools.addComponentBtn.icon;
-            this.addComponentBtn = EditRenderer.renderButton(this.tools.container, {
+            this.addComponentBtn = EditRenderer.renderButton(tools.container, {
                 className: EditGlobals.classNames.editToolsBtn,
                 icon: addIconURL,
                 text: this.lang.addComponent,
@@ -470,33 +570,31 @@ class EditMode {
     }
     /**
      * Event fired when detecting context on drag&drop.
-     *
-     * @param e
-     * Mouse pointer event.
      */
-    onDetectContext(e) {
-        const editMode = this, offset = 50; // TODO - add it from options.
-        if (editMode.isActive() &&
-            editMode.isContextDetectionActive &&
-            (editMode.mouseCellContext || editMode.mouseRowContext) &&
-            !(editMode.dragDrop || {}).isActive) {
-            let cellContext, rowContext;
-            if (editMode.mouseCellContext) {
-                cellContext = ContextDetection
-                    .getContext(editMode.mouseCellContext, e, offset).cell;
-            }
-            else if (editMode.mouseRowContext) {
-                rowContext = editMode.mouseRowContext;
-                cellContext = rowContext.layout.parentCell;
-            }
-            this.potentialCellContext = cellContext;
-            if (cellContext) {
-                const cellContextOffsets = GUIElement
-                    .getOffsets(cellContext, editMode.board.container);
-                const { width, height } = GUIElement
-                    .getDimFromOffsets(cellContextOffsets);
-                editMode.showContextPointer(cellContextOffsets.left, cellContextOffsets.top, width, height);
-            }
+    onDetectContext() {
+        const editMode = this;
+        if (!editMode.isActive() ||
+            !editMode.isContextDetectionActive ||
+            (!editMode.mouseCellContext && !editMode.mouseRowContext) ||
+            (editMode.dragDrop || {}).isActive) {
+            return;
+        }
+        let cellContext;
+        let rowContext;
+        if (editMode.mouseCellContext) {
+            cellContext = editMode.mouseCellContext;
+        }
+        else if (editMode.mouseRowContext) {
+            rowContext = editMode.mouseRowContext;
+            cellContext = rowContext.layout.parentCell;
+        }
+        this.potentialCellContext = cellContext;
+        if (cellContext) {
+            const cellContextOffsets = GUIElement
+                .getOffsets(cellContext, editMode.board.container);
+            const { width, height } = GUIElement
+                .getDimFromOffsets(cellContextOffsets);
+            editMode.showContextPointer(cellContextOffsets.left, cellContextOffsets.top, width, height);
         }
     }
     /**
@@ -525,19 +623,30 @@ class EditMode {
      * @internal
      */
     setEditCellContext(editCellContext, oldEditCellContext) {
-        const editMode = this, oldContextRow = oldEditCellContext && oldEditCellContext.row;
-        editMode.editCellContext = editCellContext;
-        editMode.showToolbars(['row', 'cell'], editCellContext);
-        if (!oldContextRow || oldContextRow !== editCellContext.row) {
-            if (oldContextRow) {
-                // Remove highlight from the previous row.
-                oldContextRow.setHighlight(true);
-            }
-            // Add highlight to the context row.
-            editCellContext.row.setHighlight();
+        const editMode = this;
+        const oldContext = oldEditCellContext;
+        if (editCellContext instanceof CellHTML ||
+            oldContext instanceof CellHTML) {
+            editMode.editCellContext = editCellContext;
+            editMode.cellToolbar?.showToolbar(editCellContext);
         }
-        if (editMode.resizer) {
-            editMode.resizer.setSnapPositions(editCellContext);
+        else {
+            const oldContextRow = oldContext?.row;
+            editMode.editCellContext = editCellContext;
+            editMode.showToolbars(['row', 'cell'], editCellContext);
+            if (!oldContextRow || oldContextRow !== editCellContext.row) {
+                if (oldContextRow) {
+                    // Remove highlight from the previous row.
+                    oldContextRow.setHighlight();
+                }
+                // Add highlight to the context row.
+                if (editCellContext.row) {
+                    editCellContext.row.setHighlight();
+                }
+            }
+            if (editMode.resizer) {
+                editMode.resizer.setSnapPositions(editCellContext);
+            }
         }
     }
     /**
@@ -545,6 +654,9 @@ class EditMode {
      * @internal
      */
     showContextPointer(left, top, width, height) {
+        if (!this.contextPointer) {
+            return;
+        }
         this.contextPointer.isVisible = true;
         css(this.contextPointer.element, {
             display: 'block',
@@ -559,7 +671,7 @@ class EditMode {
      * @internal
      */
     hideContextPointer() {
-        if (this.contextPointer.isVisible) {
+        if (this.contextPointer?.isVisible) {
             this.contextPointer.isVisible = false;
             this.contextPointer.element.style.display = 'none';
         }
@@ -572,13 +684,13 @@ class EditMode {
      * Whether the edit overlay should be removed.
      */
     setEditOverlay(remove) {
-        const editMode = this, cnt = editMode.editOverlay, isSet = cnt.classList.contains(EditGlobals.classNames.editOverlayActive);
+        const editMode = this, cnt = editMode.editOverlay, isSet = cnt?.classList.contains(EditGlobals.classNames.editOverlayActive);
         if (!remove && !isSet) {
-            cnt.classList.add(EditGlobals.classNames.editOverlayActive);
+            cnt?.classList.add(EditGlobals.classNames.editOverlayActive);
             editMode.isEditOverlayActive = true;
         }
         else if (remove && isSet) {
-            cnt.classList.remove(EditGlobals.classNames.editOverlayActive);
+            cnt?.classList.remove(EditGlobals.classNames.editOverlayActive);
             editMode.isEditOverlayActive = false;
         }
     }

@@ -94,7 +94,7 @@ declare class Row extends GUIElement {
     getVisibleCells(): Array<Cell>;
     protected changeVisibility(setVisible?: boolean, displayStyle?: string): void;
     show(): void;
-    setHighlight(remove?: boolean): void;
+    setHighlight(): void;
     getRowLevels(): Array<Row.RowLevel>;
     getRowLevelInfo(posY: number): Row.RowLevelInfo | undefined;
 }

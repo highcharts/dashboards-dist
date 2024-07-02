@@ -740,6 +740,7 @@ declare const Utilities: {
     clearTimeout: typeof internalClearTimeout;
     correctFloat: typeof correctFloat;
     createElement: typeof createElement;
+    crisp: (value: number, lineWidth?: number, inverted?: boolean) => number;
     css: typeof css;
     defined: typeof defined;
     destroyObjectProperties: typeof destroyObjectProperties;
@@ -749,7 +750,7 @@ declare const Utilities: {
     error: typeof error;
     extend: typeof extend;
     extendClass: typeof extendClass;
-    find: <T>(arr: T[], callback: Utilities.FindCallback<T>) => T | undefined;
+    find: <T>(arr: Array<T>, callback: Utilities.FindCallback<T>) => (T | undefined);
     fireEvent: typeof fireEvent;
     getClosestDistance: typeof getClosestDistance;
     getMagnitude: typeof getMagnitude;

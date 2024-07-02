@@ -97,6 +97,7 @@ const EditGlobals = {
         accordionMenuButton: PREFIX + 'accordion-menu-button',
         hiddenElement: PREFIX + 'hidden-element',
         collapsableContentHeader: PREFIX + 'collapsable-content-header',
+        standaloneElement: PREFIX + 'standalone-element',
         // Custom dropdown with icons
         collapsedElement: PREFIX + 'collapsed-element',
         dropdown: PREFIX + 'dropdown',
@@ -127,6 +128,7 @@ const EditGlobals = {
         confirmButton: 'Confirm',
         confirmDestroyCell: 'Do you really want to destroy the cell?',
         confirmDestroyRow: 'Do you really want to destroy the row?',
+        confirmDiscardChanges: 'Do you really want to discard the changes?',
         dataLabels: 'Data labels',
         editMode: 'Edit mode',
         errorMessage: 'Something went wrong',

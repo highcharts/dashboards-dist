@@ -62,7 +62,7 @@ declare class DataCursor {
      * lasting state cursors of the table to listeners.
      *
      * @example
-     * ```TypeScript
+     * ```ts
      * dataCursor.emit(myTable, {
      *     type: 'position',
      *     column: 'city',
@@ -88,27 +88,6 @@ declare class DataCursor {
      * Returns the DataCursor instance for a call chain.
      */
     emitCursor(table: DataTable, cursor: DataCursor.Type, event?: Event, lasting?: boolean): this;
-    /**
-     * @param {Data.DataTable} table
-     * The related table of the cursor.
-     *
-     * @param {string} group
-     * The related group on the table.
-     *
-     * @param {Data.DataCursor.Type} cursor
-     * The state cursor to emit.
-     *
-     * @param {Event} [event]
-     * Optional event information from a related source.
-     *
-     * @param {boolean} [lasting]
-     * Whether this state cursor should be kept until it is cleared with
-     * {@link DataCursor#remitCursor}.
-     *
-     * @return {Data.DataCursor}
-     * Returns the DataCursor instance for a call chain.
-     */
-    emitCursor(table: DataTable, group: string, cursor: DataCursor.Type, event?: Event, lasting?: boolean): this;
     /**
      * Removes a lasting state cursor.
      *
@@ -165,7 +144,6 @@ declare namespace DataCursor {
         cursor: Type;
         cursors: Array<Type>;
         event?: globalThis.Event;
-        group?: string;
         table: DataTable;
     }
     type Listener = (this: DataCursor, e: Event) => void;

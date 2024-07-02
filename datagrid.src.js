@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.1.0 (2024-04-17)
+ * @license Highcharts Dashboards v2.2.0 (2024-07-02)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,12 +62,12 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.1.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.2.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
                 Globals.doc.createElementNS &&
-                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.hasBidiBug = (Globals.isFirefox &&
+                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.hasBidiBug = (Globals.isFirefox &&
                 parseInt(Globals.userAgent.split('Firefox/')[1], 10) < 4 // Issue #38
             ), Globals.marginNames = [
                 'plotTop',
@@ -339,6 +339,21 @@
         function clamp(value, min, max) {
             return value > min ? value < max ? value : max : min;
         }
+        /**
+         * Utility for crisping a line position to the nearest full pixel depening on
+         * the line width
+         * @param {number} value       The raw pixel position
+         * @param {number} lineWidth   The line width
+         * @param {boolean} [inverted] Whether the containing group is inverted.
+         *                             Crisping round numbers on the y-scale need to go
+         *                             to the other side because the coordinate system
+         *                             is flipped (scaleY is -1)
+         * @return {number}            The pixel position to use for a crisp display
+         */
+        const crisp = (value, lineWidth = 0, inverted) => {
+            const mod = lineWidth % 2 / 2, inverter = inverted ? -1 : 1;
+            return (Math.round(value * inverter - mod) + mod) * inverter;
+        };
         // eslint-disable-next-line valid-jsdoc
         /**
          * Return the deep difference between two objects. It can either return the new
@@ -1904,6 +1919,7 @@
             clearTimeout: internalClearTimeout,
             correctFloat,
             createElement,
+            crisp,
             css,
             defined,
             destroyObjectProperties,
@@ -2277,6 +2293,569 @@
 
         return Utilities;
     });
+    _registerModule(_modules, 'Core/Renderer/HTML/AST.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
+        /* *
+         *
+         *  (c) 2010-2024 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        const { SVG_NS, win } = H;
+        const { attr, createElement, css, error, isFunction, isString, objectEach, splat } = U;
+        const { trustedTypes } = win;
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        // Create the trusted type policy. This should not be exposed.
+        const trustedTypesPolicy = (trustedTypes &&
+            isFunction(trustedTypes.createPolicy) &&
+            trustedTypes.createPolicy('highcharts', {
+                createHTML: (s) => s
+            }));
+        const emptyHTML = trustedTypesPolicy ?
+            trustedTypesPolicy.createHTML('') :
+            '';
+        // IE9 and PhantomJS are only able to parse XML.
+        const hasValidDOMParser = (function () {
+            try {
+                return Boolean(new DOMParser().parseFromString(emptyHTML, 'text/html'));
+            }
+            catch (e) {
+                return false;
+            }
+        }());
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * The AST class represents an abstract syntax tree of HTML or SVG content. It
+         * can take HTML as an argument, parse it, optionally transform it to SVG, then
+         * perform sanitation before inserting it into the DOM.
+         *
+         * @class
+         * @name Highcharts.AST
+         *
+         * @param {string|Array<Highcharts.ASTNode>} source
+         * Either an HTML string or an ASTNode list to populate the tree.
+         */
+        class AST {
+            /* *
+             *
+             *  Static Functions
+             *
+             * */
+            /**
+             * Filter an object of SVG or HTML attributes against the allow list.
+             *
+             * @static
+             *
+             * @function Highcharts.AST#filterUserAttributes
+             *
+             * @param {Highcharts.SVGAttributes} attributes The attributes to filter
+             *
+             * @return {Highcharts.SVGAttributes}
+             * The filtered attributes
+             */
+            static filterUserAttributes(attributes) {
+                objectEach(attributes, (val, key) => {
+                    let valid = true;
+                    if (AST.allowedAttributes.indexOf(key) === -1) {
+                        valid = false;
+                    }
+                    if (['background', 'dynsrc', 'href', 'lowsrc', 'src']
+                        .indexOf(key) !== -1) {
+                        valid = isString(val) && AST.allowedReferences.some((ref) => val.indexOf(ref) === 0);
+                    }
+                    if (!valid) {
+                        error(33, false, void 0, {
+                            'Invalid attribute in config': `${key}`
+                        });
+                        delete attributes[key];
+                    }
+                    // #17753, < is not allowed in SVG attributes
+                    if (isString(val) && attributes[key]) {
+                        attributes[key] = val.replace(/</g, '&lt;');
+                    }
+                });
+                return attributes;
+            }
+            static parseStyle(style) {
+                return style
+                    .split(';')
+                    .reduce((styles, line) => {
+                    const pair = line.split(':').map((s) => s.trim()), key = pair.shift();
+                    if (key && pair.length) {
+                        styles[key.replace(/-([a-z])/g, (g) => g[1].toUpperCase())] = pair.join(':'); // #17146
+                    }
+                    return styles;
+                }, {});
+            }
+            /**
+             * Utility function to set html content for an element by passing in a
+             * markup string. The markup is safely parsed by the AST class to avoid
+             * XSS vulnerabilities. This function should be used instead of setting
+             * `innerHTML` in all cases where the content is not fully trusted.
+             *
+             * @static
+             * @function Highcharts.AST#setElementHTML
+             *
+             * @param {SVGDOMElement|HTMLDOMElement} el
+             * Node to set content of.
+             *
+             * @param {string} html
+             * Markup string
+             */
+            static setElementHTML(el, html) {
+                el.innerHTML = AST.emptyHTML; // Clear previous
+                if (html) {
+                    const ast = new AST(html);
+                    ast.addToDOM(el);
+                }
+            }
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            // Construct an AST from HTML markup, or wrap an array of existing AST nodes
+            constructor(source) {
+                this.nodes = typeof source === 'string' ?
+                    this.parseMarkup(source) : source;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Add the tree defined as a hierarchical JS structure to the DOM
+             *
+             * @function Highcharts.AST#addToDOM
+             *
+             * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} parent
+             * The node where it should be added
+             *
+             * @return {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement}
+             * The inserted node.
+             */
+            addToDOM(parent) {
+                /**
+                 * @private
+                 * @param {Highcharts.ASTNode} subtree
+                 * HTML/SVG definition
+                 * @param {Element} [subParent]
+                 * parent node
+                 * @return {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement}
+                 * The inserted node.
+                 */
+                function recurse(subtree, subParent) {
+                    let ret;
+                    splat(subtree).forEach(function (item) {
+                        const tagName = item.tagName;
+                        const textNode = item.textContent ?
+                            H.doc.createTextNode(item.textContent) :
+                            void 0;
+                        // Whether to ignore the AST filtering totally, #15345
+                        const bypassHTMLFiltering = AST.bypassHTMLFiltering;
+                        let node;
+                        if (tagName) {
+                            if (tagName === '#text') {
+                                node = textNode;
+                            }
+                            else if (AST.allowedTags.indexOf(tagName) !== -1 ||
+                                bypassHTMLFiltering) {
+                                const NS = tagName === 'svg' ?
+                                    SVG_NS :
+                                    (subParent.namespaceURI || SVG_NS);
+                                const element = H.doc.createElementNS(NS, tagName);
+                                const attributes = item.attributes || {};
+                                // Apply attributes from root of AST node, legacy from
+                                // from before TextBuilder
+                                objectEach(item, function (val, key) {
+                                    if (key !== 'tagName' &&
+                                        key !== 'attributes' &&
+                                        key !== 'children' &&
+                                        key !== 'style' &&
+                                        key !== 'textContent') {
+                                        attributes[key] = val;
+                                    }
+                                });
+                                attr(element, bypassHTMLFiltering ?
+                                    attributes :
+                                    AST.filterUserAttributes(attributes));
+                                if (item.style) {
+                                    css(element, item.style);
+                                }
+                                // Add text content
+                                if (textNode) {
+                                    element.appendChild(textNode);
+                                }
+                                // Recurse
+                                recurse(item.children || [], element);
+                                node = element;
+                            }
+                            else {
+                                error(33, false, void 0, {
+                                    'Invalid tagName in config': tagName
+                                });
+                            }
+                        }
+                        // Add to the tree
+                        if (node) {
+                            subParent.appendChild(node);
+                        }
+                        ret = node;
+                    });
+                    // Return last node added (on top level it's the only one)
+                    return ret;
+                }
+                return recurse(this.nodes, parent);
+            }
+            /**
+             * Parse HTML/SVG markup into AST Node objects. Used internally from the
+             * constructor.
+             *
+             * @private
+             *
+             * @function Highcharts.AST#getNodesFromMarkup
+             *
+             * @param {string} markup The markup string.
+             *
+             * @return {Array<Highcharts.ASTNode>} The parsed nodes.
+             */
+            parseMarkup(markup) {
+                const nodes = [];
+                markup = markup
+                    .trim()
+                    // The style attribute throws a warning when parsing when CSP is
+                    // enabled (#6884), so use an alias and pick it up below
+                    // Make all quotation marks parse correctly to DOM (#17627)
+                    .replace(/ style=(["'])/g, ' data-style=$1');
+                let doc;
+                if (hasValidDOMParser) {
+                    doc = new DOMParser().parseFromString(trustedTypesPolicy ?
+                        trustedTypesPolicy.createHTML(markup) :
+                        markup, 'text/html');
+                }
+                else {
+                    const body = createElement('div');
+                    body.innerHTML = markup;
+                    doc = { body };
+                }
+                const appendChildNodes = (node, addTo) => {
+                    const tagName = node.nodeName.toLowerCase();
+                    // Add allowed tags
+                    const astNode = {
+                        tagName
+                    };
+                    if (tagName === '#text') {
+                        astNode.textContent = node.textContent || '';
+                    }
+                    const parsedAttributes = node.attributes;
+                    // Add attributes
+                    if (parsedAttributes) {
+                        const attributes = {};
+                        [].forEach.call(parsedAttributes, (attrib) => {
+                            if (attrib.name === 'data-style') {
+                                astNode.style = AST.parseStyle(attrib.value);
+                            }
+                            else {
+                                attributes[attrib.name] = attrib.value;
+                            }
+                        });
+                        astNode.attributes = attributes;
+                    }
+                    // Handle children
+                    if (node.childNodes.length) {
+                        const children = [];
+                        [].forEach.call(node.childNodes, (childNode) => {
+                            appendChildNodes(childNode, children);
+                        });
+                        if (children.length) {
+                            astNode.children = children;
+                        }
+                    }
+                    addTo.push(astNode);
+                };
+                [].forEach.call(doc.body.childNodes, (childNode) => appendChildNodes(childNode, nodes));
+                return nodes;
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * The list of allowed SVG or HTML attributes, used for sanitizing
+         * potentially harmful content from the chart configuration before adding to
+         * the DOM.
+         *
+         * @see [Source code with default values](
+         * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedAttributes)
+         *
+         * @example
+         * // Allow a custom, trusted attribute
+         * Highcharts.AST.allowedAttributes.push('data-value');
+         *
+         * @name Highcharts.AST.allowedAttributes
+         * @type {Array<string>}
+         */
+        AST.allowedAttributes = [
+            'alt',
+            'aria-controls',
+            'aria-describedby',
+            'aria-expanded',
+            'aria-haspopup',
+            'aria-hidden',
+            'aria-label',
+            'aria-labelledby',
+            'aria-live',
+            'aria-pressed',
+            'aria-readonly',
+            'aria-roledescription',
+            'aria-selected',
+            'class',
+            'clip-path',
+            'color',
+            'colspan',
+            'cx',
+            'cy',
+            'd',
+            'dx',
+            'dy',
+            'disabled',
+            'fill',
+            'filterUnits',
+            'flood-color',
+            'flood-opacity',
+            'height',
+            'href',
+            'id',
+            'in',
+            'in2',
+            'markerHeight',
+            'markerWidth',
+            'offset',
+            'opacity',
+            'operator',
+            'orient',
+            'padding',
+            'paddingLeft',
+            'paddingRight',
+            'patternUnits',
+            'r',
+            'radius',
+            'refX',
+            'refY',
+            'role',
+            'scope',
+            'slope',
+            'src',
+            'startOffset',
+            'stdDeviation',
+            'stroke',
+            'stroke-linecap',
+            'stroke-width',
+            'style',
+            'tableValues',
+            'result',
+            'rowspan',
+            'summary',
+            'target',
+            'tabindex',
+            'text-align',
+            'text-anchor',
+            'textAnchor',
+            'textLength',
+            'title',
+            'type',
+            'valign',
+            'width',
+            'x',
+            'x1',
+            'x2',
+            'xlink:href',
+            'y',
+            'y1',
+            'y2',
+            'zIndex'
+        ];
+        /**
+         * The list of allowed references for referring attributes like `href` and
+         * `src`. Attribute values will only be allowed if they start with one of
+         * these strings.
+         *
+         * @see [Source code with default values](
+         * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedReferences)
+         *
+         * @example
+         * // Allow tel:
+         * Highcharts.AST.allowedReferences.push('tel:');
+         *
+         * @name    Highcharts.AST.allowedReferences
+         * @type    {Array<string>}
+         */
+        AST.allowedReferences = [
+            'https://',
+            'http://',
+            'mailto:',
+            '/',
+            '../',
+            './',
+            '#'
+        ];
+        /**
+         * The list of allowed SVG or HTML tags, used for sanitizing potentially
+         * harmful content from the chart configuration before adding to the DOM.
+         *
+         * @see [Source code with default values](
+         * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedTags)
+         *
+         * @example
+         * // Allow a custom, trusted tag
+         * Highcharts.AST.allowedTags.push('blink'); // ;)
+         *
+         * @name    Highcharts.AST.allowedTags
+         * @type    {Array<string>}
+         */
+        AST.allowedTags = [
+            'a',
+            'abbr',
+            'b',
+            'br',
+            'button',
+            'caption',
+            'circle',
+            'clipPath',
+            'code',
+            'dd',
+            'defs',
+            'div',
+            'dl',
+            'dt',
+            'em',
+            'feComponentTransfer',
+            'feComposite',
+            'feDropShadow',
+            'feFlood',
+            'feFuncA',
+            'feFuncB',
+            'feFuncG',
+            'feFuncR',
+            'feGaussianBlur',
+            'feMorphology',
+            'feOffset',
+            'feMerge',
+            'feMergeNode',
+            'filter',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'hr',
+            'i',
+            'img',
+            'li',
+            'linearGradient',
+            'marker',
+            'ol',
+            'p',
+            'path',
+            'pattern',
+            'pre',
+            'rect',
+            'small',
+            'span',
+            'stop',
+            'strong',
+            'style',
+            'sub',
+            'sup',
+            'svg',
+            'table',
+            'text',
+            'textPath',
+            'thead',
+            'title',
+            'tbody',
+            'tspan',
+            'td',
+            'th',
+            'tr',
+            'u',
+            'ul',
+            '#text'
+        ];
+        AST.emptyHTML = emptyHTML;
+        /**
+         * Allow all custom SVG and HTML attributes, references and tags (together
+         * with potentially harmful ones) to be added to the DOM from the chart
+         * configuration. In other words, disable the allow-listing which is the
+         * primary functionality of the AST.
+         *
+         * WARNING: Setting this property to `true` while allowing untrusted user
+         * data in the chart configuration will expose your application to XSS
+         * security risks!
+         *
+         * Note that in case you want to allow a known set of tags or attributes,
+         * you should allow-list them instead of disabling the filtering totally.
+         * See [allowedAttributes](Highcharts.AST#.allowedAttributes),
+         * [allowedReferences](Highcharts.AST#.allowedReferences) and
+         * [allowedTags](Highcharts.AST#.allowedTags). The `bypassHTMLFiltering`
+         * setting is intended only for those cases where allow-listing is not
+         * practical, and the chart configuration already comes from a secure
+         * source.
+         *
+         * @example
+         * // Allow all custom attributes, references and tags (disable DOM XSS
+         * // filtering)
+         * Highcharts.AST.bypassHTMLFiltering = true;
+         *
+         * @name Highcharts.AST.bypassHTMLFiltering
+         * @static
+         */
+        AST.bypassHTMLFiltering = false;
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+        /* *
+         *
+         *  API Declarations
+         *
+         * */
+        /**
+         * Serialized form of an SVG/HTML definition, including children.
+         *
+         * @interface Highcharts.ASTNode
+         */ /**
+        * @name Highcharts.ASTNode#attributes
+        * @type {Highcharts.SVGAttributes|undefined}
+        */ /**
+        * @name Highcharts.ASTNode#children
+        * @type {Array<Highcharts.ASTNode>|undefined}
+        */ /**
+        * @name Highcharts.ASTNode#tagName
+        * @type {string|undefined}
+        */ /**
+        * @name Highcharts.ASTNode#textContent
+        * @type {string|undefined}
+        */
+        (''); // Keeps doclets above in file
+
+        return AST;
+    });
     _registerModule(_modules, 'Data/Modifiers/DataModifier.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
@@ -2573,6 +3152,7 @@
          *  Authors:
          *  - Sophie Bremer
          *  - Gøran Slettemark
+         *  - Jomar Hønsi
          *
          * */
         const { addEvent, fireEvent, uniqueKey } = U;
@@ -2676,7 +3256,7 @@
                 this.autoId = !options.id;
                 this.columns = {};
                 /**
-                 * ID of the table for indentification purposes.
+                 * ID of the table for identification purposes.
                  *
                  * @name Highcharts.DataTable#id
                  * @type {string}
@@ -2685,6 +3265,7 @@
                 this.modified = this;
                 this.rowCount = 0;
                 this.versionTag = uniqueKey();
+                this.rowKeysId = options.rowKeysId;
                 const columns = options.columns || {}, columnNames = Object.keys(columns), thisColumns = this.columns;
                 let rowCount = 0;
                 for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
@@ -2702,6 +3283,7 @@
                     alias = aliasKeys[i];
                     thisAliases[alias] = aliases[alias];
                 }
+                this.setRowKeysColumn(rowCount);
             }
             /* *
              *
@@ -2736,6 +3318,9 @@
                 }
                 if (!table.autoId) {
                     tableOptions.id = table.id;
+                }
+                if (table.rowKeysId) {
+                    tableOptions.rowKeysId = table.rowKeysId;
                 }
                 const tableClone = new DataTable(tableOptions);
                 if (!skipColumns) {
@@ -2807,7 +3392,13 @@
                         }
                         delete columns[columnName];
                     }
-                    if (!Object.keys(columns).length) {
+                    let nColumns = Object.keys(columns).length;
+                    if (table.rowKeysId && nColumns === 1) {
+                        // All columns deleted, remove row keys column
+                        delete columns[table.rowKeysId];
+                        nColumns = 0;
+                    }
+                    if (!nColumns) {
                         table.rowCount = 0;
                     }
                     if (modifier) {
@@ -2977,7 +3568,7 @@
                     case 'number':
                         return (isNaN(cellValue) && !useNaN ? null : cellValue);
                 }
-                cellValue = parseFloat(`${cellValue}`);
+                cellValue = parseFloat(`${cellValue ?? ''}`);
                 return (isNaN(cellValue) && !useNaN ? null : cellValue);
             }
             /**
@@ -2999,6 +3590,7 @@
                 columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
                     columnNameOrAlias);
                 const column = table.columns[columnNameOrAlias];
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 return `${(column && column[rowIndex])}`;
             }
             /**
@@ -3078,6 +3670,7 @@
              */
             getColumnNames() {
                 const table = this, columnNames = Object.keys(table.columns);
+                this.removeRowKeysColumn(columnNames);
                 return columnNames;
             }
             /**
@@ -3098,6 +3691,7 @@
             getColumns(columnNamesOrAliases, asReference) {
                 const table = this, tableAliasMap = table.aliases, tableColumns = table.columns, columns = {};
                 columnNamesOrAliases = (columnNamesOrAliases || Object.keys(tableColumns));
+                this.removeRowKeysColumn(columnNamesOrAliases);
                 for (let i = 0, iEnd = columnNamesOrAliases.length, column, columnName; i < iEnd; ++i) {
                     columnName = columnNamesOrAliases[i];
                     column = tableColumns[(tableAliasMap[columnName] || columnName)];
@@ -3214,6 +3808,7 @@
             getRowObjects(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNamesOrAliases) {
                 const table = this, aliases = table.aliases, columns = table.columns, rows = new Array(rowCount);
                 columnNamesOrAliases = (columnNamesOrAliases || Object.keys(columns));
+                this.removeRowKeysColumn(columnNamesOrAliases);
                 for (let i = rowIndex, i2 = 0, iEnd = Math.min(table.rowCount, (rowIndex + rowCount)), column, row; i < iEnd; ++i, ++i2) {
                     row = rows[i2] = {};
                     for (const columnName of columnNamesOrAliases) {
@@ -3350,6 +3945,10 @@
                         }
                         columns[newColumnName] = columns[columnName];
                         delete columns[columnName];
+                        if (table.rowKeysId) {
+                            // Ensure that row keys column is last
+                            this.moveRowKeysColumnToLast(columns, table.rowKeysId);
+                        }
                     }
                     return true;
                 }
@@ -3485,6 +4084,10 @@
                 if (tableModifier) {
                     tableModifier.modifyColumns(table, columns, (rowIndex || 0));
                 }
+                if (table.rowKeysId) {
+                    // Ensure that the row keys column is always last
+                    this.moveRowKeysColumnToLast(tableColumns, table.rowKeysId);
+                }
                 table.emit({
                     type: 'afterSetColumns',
                     columns,
@@ -3492,6 +4095,63 @@
                     detail: eventDetail,
                     rowIndex
                 });
+            }
+            /**
+             * Sets the row key column. This column is invisible and the cells
+             * serve as identifiers to the rows they are contained in. Accessing
+             * rows by keys instead of indexes is necessary in cases where rows
+             * are rearranged by a DataModifier (e.g. SortModifier or RangeModifier).
+             *
+             * @function Highcharts.DataTable#setRowKeysColumn
+             *
+             * @param {number} nRows
+             * Number of rows to add to the column.
+             *
+             */
+            setRowKeysColumn(nRows) {
+                const id = this.rowKeysId;
+                if (!id) {
+                    return;
+                }
+                this.columns[id] = [];
+                const keysArray = this.columns[id];
+                for (let i = 0; i < nRows; i++) {
+                    keysArray.push(id + '_' + i);
+                }
+            }
+            /**
+             * Get the row key column.
+             *
+             * @function Highcharts.DataTable#getRowKeysColumn
+             *     *
+             * @return {DataTable.Column|undefined}
+             * Returns row keys if rowKeysId is defined, else undefined.
+             */
+            getRowKeysColumn() {
+                const id = this.rowKeysId;
+                if (id) {
+                    return this.columns[id];
+                }
+            }
+            /**
+             * Get the row index in the original (unmodified) data table.
+             *
+             * @function Highcharts.DataTable#getRowIndexOriginal
+             *
+             * @param {number} idx
+             * Row index in the modified data table.
+             *
+             * @return {string}
+             * Row index in the original data table.
+             */
+            getRowIndexOriginal(idx) {
+                const id = this.rowKeysId;
+                if (id) {
+                    const rowKeyCol = this.columns[id];
+                    const idxOrig = '' + rowKeyCol[idx];
+                    return idxOrig.split('_')[1];
+                }
+                return String(idx);
             }
             /**
              * Sets or unsets the modifier for the table.
@@ -3504,7 +4164,7 @@
              * Custom information for pending events.
              *
              * @return {Promise<Highcharts.DataTable>}
-             * Resolves to this table if successfull, or rejects on failure.
+             * Resolves to this table if successful, or rejects on failure.
              *
              * @emits #setModifier
              * @emits #afterSetModifier
@@ -3580,7 +4240,7 @@
              * Row values to set.
              *
              * @param {number} [rowIndex]
-             * Index of the first row to set. Leave `undefind` to add as new rows.
+             * Index of the first row to set. Leave `undefined` to add as new rows.
              *
              * @param {Highcharts.DataTableEventDetail} [eventDetail]
              * Custom information for pending events.
@@ -3628,6 +4288,9 @@
                         columns[columnNames[i]].length = indexRowCount;
                     }
                 }
+                if (this.rowKeysId && !columnNames.includes(this.rowKeysId)) {
+                    this.setRowKeysColumn(rowCount);
+                }
                 if (modifier) {
                     modifier.modifyRows(table, rows, rowIndex);
                 }
@@ -3638,6 +4301,23 @@
                     rowIndex,
                     rows
                 });
+            }
+            // The row keys column must always be the last column
+            moveRowKeysColumnToLast(columns, id) {
+                const rowKeyColumn = columns[id];
+                delete columns[id];
+                columns[id] = rowKeyColumn;
+            }
+            // The row keys column must be removed in some methods
+            // (API backwards compatibility)
+            removeRowKeysColumn(columnNamesOrAliases) {
+                if (this.rowKeysId) {
+                    const pos = columnNamesOrAliases.indexOf(this.rowKeysId);
+                    if (pos !== -1) {
+                        // Always the last column
+                        columnNamesOrAliases.pop();
+                    }
+                }
             }
         }
         /* *
@@ -4048,20 +4728,41 @@
                         e.cursor.type
                     ]).join('\0');
             }
-            // Implementation
-            emitCursor(table, groupOrCursor, cursorOrEvent, eventOrLasting, lasting) {
-                const cursor = (typeof groupOrCursor === 'object' ?
-                    groupOrCursor :
-                    cursorOrEvent), event = (typeof eventOrLasting === 'object' ?
-                    eventOrLasting :
-                    cursorOrEvent), group = (typeof groupOrCursor === 'string' ?
-                    groupOrCursor :
-                    void 0), tableId = table.id, state = cursor.state, listeners = (this.listenerMap[tableId] &&
+            /**
+             * This function emits a state cursor related to a table. It will provide
+             * lasting state cursors of the table to listeners.
+             *
+             * @example
+             * ```ts
+             * dataCursor.emit(myTable, {
+             *     type: 'position',
+             *     column: 'city',
+             *     row: 4,
+             *     state: 'hover',
+             * });
+             * ```
+             *
+             * @param {Data.DataTable} table
+             * The related table of the cursor.
+             *
+             * @param {Data.DataCursor.Type} cursor
+             * The state cursor to emit.
+             *
+             * @param {Event} [event]
+             * Optional event information from a related source.
+             *
+             * @param {boolean} [lasting]
+             * Whether this state cursor should be kept until it is cleared with
+             * {@link DataCursor#remitCursor}.
+             *
+             * @return {Data.DataCursor}
+             * Returns the DataCursor instance for a call chain.
+             */
+            emitCursor(table, cursor, event, lasting) {
+                const tableId = table.id, state = cursor.state, listeners = (this.listenerMap[tableId] &&
                     this.listenerMap[tableId][state]);
-                lasting = (lasting || eventOrLasting === true);
                 if (listeners) {
-                    const stateMap = this.stateMap[tableId] = (this.stateMap[tableId] ||
-                        {});
+                    const stateMap = this.stateMap[tableId] = (this.stateMap[tableId] ?? {});
                     const cursors = stateMap[cursor.state] || [];
                     if (lasting) {
                         if (!cursors.length) {
@@ -4078,9 +4779,6 @@
                     };
                     if (event) {
                         e.event = event;
-                    }
-                    if (group) {
-                        e.group = group;
                     }
                     const emittingRegister = this.emittingRegister, emittingTag = this.buildEmittingTag(e);
                     if (emittingRegister.indexOf(emittingTag) >= 0) {
@@ -4149,7 +4847,7 @@
                     this.listenerMap[tableId][state]);
                 if (listeners) {
                     const index = listeners.indexOf(listener);
-                    if (index) {
+                    if (index >= 0) {
                         listeners.splice(index, 1);
                     }
                 }
@@ -4427,7 +5125,7 @@
             };
             Globals.win = window;
             Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '';
-            Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1;
+            Globals.isChrome = Globals.win.chrome;
             Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1;
         })(Globals || (Globals = {}));
         /* *
@@ -4853,7 +5551,7 @@
              *
              * @type      {number}
              * @default   2
-             * @since     @next
+             * @since     11.3.0
              * @apioption chart.axisLayoutRuns
              */
             /**
@@ -5595,13 +6293,15 @@
              * element's height is 0.
              *
              * @sample {highcharts} highcharts/chart/height/
-             *         500px height
+             *         Forced 200px height
              * @sample {highstock} stock/chart/height/
              *         300px height
              * @sample {highmaps} maps/chart/size/
              *         Chart with explicit size
              * @sample highcharts/chart/height-percent/
              *         Highcharts with percentage height
+             * @sample highcharts/chart/height-inherited/
+             *         Chart with inherited height
              *
              * @type {null|number|string}
              */
@@ -6500,8 +7200,8 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        const { isTouchDevice, svg } = H;
-        const { merge } = U;
+        const { isTouchDevice } = H;
+        const { fireEvent, merge } = U;
         /* *
          *
          *  API Options
@@ -6732,84 +7432,163 @@
              * ```js
              * Highcharts.setOptions({
              *     global: {
-             *         useUTC: false
+             *         buttonTheme: {
+             *             fill: '#d0d0d0'
+             *         }
              *     }
              * });
              * ```
              */
-            /**
-             * _Canvg rendering for Android 2.x is removed as of Highcharts 5.0\.
-             * Use the [libURL](#exporting.libURL) option to configure exporting._
-             *
-             * The URL to the additional file to lazy load for Android 2.x devices.
-             * These devices don't support SVG, so we download a helper file that
-             * contains [canvg](https://github.com/canvg/canvg), its dependency
-             * rbcolor, and our own CanVG Renderer class. To avoid hotlinking to
-             * our site, you can install canvas-tools.js on your own server and
-             * change this option accordingly.
-             *
-             * @deprecated
-             *
-             * @type      {string}
-             * @default   https://code.highcharts.com/{version}/modules/canvas-tools.js
-             * @product   highcharts highmaps
-             * @apioption global.canvasToolsURL
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.useUTC](#time.useUTC) that supports individual time settings
-             * per chart.
-             *
-             * @deprecated
-             *
-             * @type      {boolean}
-             * @apioption global.useUTC
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.Date](#time.Date) that supports individual time settings
-             * per chart.
-             *
-             * @deprecated
-             *
-             * @type      {Function}
-             * @product   highcharts highstock
-             * @apioption global.Date
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.getTimezoneOffset](#time.getTimezoneOffset) that supports
-             * individual time settings per chart.
-             *
-             * @deprecated
-             *
-             * @type      {Function}
-             * @product   highcharts highstock
-             * @apioption global.getTimezoneOffset
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.timezone](#time.timezone) that supports individual time
-             * settings per chart.
-             *
-             * @deprecated
-             *
-             * @type      {string}
-             * @product   highcharts highstock
-             * @apioption global.timezone
-             */
-            /**
-             * This option is deprecated since v6.0.5. Instead, use
-             * [time.timezoneOffset](#time.timezoneOffset) that supports individual
-             * time settings per chart.
-             *
-             * @deprecated
-             *
-             * @type      {number}
-             * @product   highcharts highstock
-             * @apioption global.timezoneOffset
-             */
-            global: {},
+            global: {
+                /**
+                 * _Canvg rendering for Android 2.x is removed as of Highcharts 5.0\.
+                 * Use the [libURL](#exporting.libURL) option to configure exporting._
+                 *
+                 * The URL to the additional file to lazy load for Android 2.x devices.
+                 * These devices don't support SVG, so we download a helper file that
+                 * contains [canvg](https://github.com/canvg/canvg), its dependency
+                 * rbcolor, and our own CanVG Renderer class. To avoid hotlinking to
+                 * our site, you can install canvas-tools.js on your own server and
+                 * change this option accordingly.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {string}
+                 * @default   https://code.highcharts.com/{version}/modules/canvas-tools.js
+                 * @product   highcharts highmaps
+                 * @apioption global.canvasToolsURL
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.useUTC](#time.useUTC) that supports individual time settings
+                 * per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {boolean}
+                 * @apioption global.useUTC
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.Date](#time.Date) that supports individual time settings
+                 * per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {Function}
+                 * @product   highcharts highstock
+                 * @apioption global.Date
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.getTimezoneOffset](#time.getTimezoneOffset) that supports
+                 * individual time settings per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {Function}
+                 * @product   highcharts highstock
+                 * @apioption global.getTimezoneOffset
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.timezone](#time.timezone) that supports individual time
+                 * settings per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {string}
+                 * @product   highcharts highstock
+                 * @apioption global.timezone
+                 */
+                /**
+                 * This option is deprecated since v6.0.5. Instead, use
+                 * [time.timezoneOffset](#time.timezoneOffset) that supports individual
+                 * time settings per chart.
+                 *
+                 * @deprecated
+                 *
+                 * @type      {number}
+                 * @product   highcharts highstock
+                 * @apioption global.timezoneOffset
+                 */
+                /**
+                 * General theme for buttons. This applies to the zoom button, exporting
+                 * context menu, map navigation, range selector buttons and custom
+                 * buttons generated using the `SVGRenderer.button` function. However,
+                 * each of these may be overridden with more specific options.
+                 *
+                 * @sample highcharts/global/buttontheme
+                 *         General button theme
+                 * @since 11.4.2
+                 */
+                buttonTheme: {
+                    /**
+                     * The fill color for buttons
+                     */
+                    fill: "#f7f7f7" /* Palette.neutralColor3 */,
+                    /**
+                     * The padding of buttons
+                     */
+                    padding: 8,
+                    /**
+                     * The border radius for buttons
+                     */
+                    r: 2,
+                    /**
+                     * The stroke color for buttons
+                     */
+                    stroke: "#cccccc" /* Palette.neutralColor20 */,
+                    /**
+                     * The stroke width for buttons
+                     */
+                    'stroke-width': 1,
+                    /**
+                     * CSS styling for the buttons' text
+                     */
+                    style: {
+                        color: "#333333" /* Palette.neutralColor80 */,
+                        cursor: 'pointer',
+                        fontSize: '0.8em',
+                        fontWeight: 'normal'
+                    },
+                    /**
+                     * State overrides for the buttons
+                     */
+                    states: {
+                        /**
+                         * Hover state overrides for the buttons are applied in addition
+                         * to the normal state options
+                         */
+                        hover: {
+                            fill: "#e6e6e6" /* Palette.neutralColor10 */
+                        },
+                        /**
+                         * Select state overrides for the buttons are applied in
+                         * addition to the normal state options
+                         */
+                        select: {
+                            fill: "#e6e9ff" /* Palette.highlightColor10 */,
+                            style: {
+                                color: "#000000" /* Palette.neutralColor100 */,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        /**
+                         * Disabled state overrides for the buttons are applied in
+                         * addition to the normal state options
+                         */
+                        disabled: {
+                            /**
+                             * Disabled state CSS style overrides for the buttons' text
+                             */
+                            style: {
+                                color: "#cccccc" /* Palette.neutralColor20 */
+                            }
+                        }
+                    }
+                }
+            },
             /**
              * Time options that can apply globally or to individual charts. These
              * settings affect how `datetime` axes are laid out, how tooltips are
@@ -6879,13 +7658,16 @@
                  * for drawing time based charts in specific time zones using their
                  * local DST crossover dates, with the help of external libraries.
                  *
-                 * @see [global.timezoneOffset](#global.timezoneOffset)
+                 * This option is deprecated as of v11.4.1 and will be removed in a
+                 * future release. Use the [time.timezone](#time.timezone) option
+                 * instead.
                  *
                  * @sample {highcharts|highstock} highcharts/time/gettimezoneoffset/
                  *         Use moment.js to draw Oslo time regardless of browser locale
                  *
                  * @type      {Highcharts.TimezoneOffsetCallbackFunction}
                  * @since     4.1.0
+                 * @deprecated 11.4.2
                  * @product   highcharts highstock gantt
                  */
                 getTimezoneOffset: void 0,
@@ -6895,11 +7677,9 @@
                  * docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timezone).
                  * If the given time zone is not recognized by the browser, Highcharts
                  * provides a warning and falls back to returning a 0 offset,
-                 * corresponding to the UCT time zone.
+                 * corresponding to the UTC time zone.
                  *
                  * Until v11.2.0, this option depended on moment.js.
-                 *
-                 * @see [getTimezoneOffset](#time.getTimezoneOffset)
                  *
                  * @sample {highcharts|highstock} highcharts/time/timezone/ Europe/Oslo
                  *
@@ -6914,12 +7694,17 @@
                  * [getTimezoneOffset](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTimezoneOffset)
                  * method. Use this to display UTC based data in a predefined time zone.
                  *
+                 * This option is deprecated as of v11.4.1 and will be removed in a
+                 * future release. Use the [time.timezone](#time.timezone) option
+                 * instead.
+                 *
                  * @see [time.getTimezoneOffset](#time.getTimezoneOffset)
                  *
                  * @sample {highcharts|highstock} highcharts/time/timezoneoffset/
                  *         Timezone offset
                  *
                  * @since     3.0.8
+                 * @deprecated 11.4.2
                  * @product   highcharts highstock gantt
                  */
                 timezoneOffset: 0,
@@ -7439,6 +8224,32 @@
                  */
                 className: 'highcharts-no-tooltip',
                 /**
+                 * General event handlers for the legend. These event hooks can
+                 * also be attached to the legend at run time using the
+                 * `Highcharts.addEvent` function.
+                 *
+                 * @declare Highcharts.LegendEventsOptionsObject
+                 *
+                 * @private
+                 */
+                events: {},
+                /**
+                 * Fires when the legend item belonging to the series is clicked. One
+                 * parameter, `event`, is passed to the function. The default action
+                 * is to toggle the visibility of the series, point or data class. This
+                 * can be prevented by returning `false` or calling
+                 * `event.preventDefault()`.
+                 *
+                 * @sample {highcharts} highcharts/legend/series-legend-itemclick/
+                 *         Confirm hiding and showing
+                 * @sample {highcharts} highcharts/legend/pie-legend-itemclick/
+                 *         Confirm toggle visibility of pie slices
+                 *
+                 * @type      {Highcharts.LegendItemClickCallbackFunction}
+                 * @context   Highcharts.Legend
+                 * @apioption legend.events.itemClick
+                 */
+                /**
                  * When the legend is floating, the plot area ignores it and is allowed
                  * to be placed below it.
                  *
@@ -7805,7 +8616,7 @@
                  *         Item text styles
                  *
                  * @type    {Highcharts.CSSObject}
-                 * @default {"color": "#333333", "cursor": "pointer", "fontSize": "0.75em", "fontWeight": "bold", "textOverflow": "ellipsis"}
+                 * @default {"color": "#333333", "cursor": "pointer", "fontSize": "0.8em", "fontWeight": "bold", "textOverflow": "ellipsis"}
                  */
                 itemStyle: {
                     /**
@@ -7907,7 +8718,7 @@
                     /**
                      * @ignore
                      */
-                    width: '13px',
+                    width: '13px', // For IE precision
                     /**
                      * @ignore
                      */
@@ -8117,7 +8928,7 @@
                      *      `.highcharts-legend-title` class.
                      *
                      * @type    {Highcharts.CSSObject}
-                     * @default {"fontSize": "0.75em", "fontWeight": "bold"}
+                     * @default {"fontSize": "0.8em", "fontWeight": "bold"}
                      * @since   3.0
                      */
                     style: {
@@ -8324,20 +9135,20 @@
                  */
                 /**
                  * A [format string](https://www.highcharts.com/docs/chart-concepts/labels-and-string-formatting)
-                 * for the whole tooltip. When format strings are a requirement, it is
-                 * usually more convenient to use `headerFormat`, `pointFormat` and
-                 * `footerFormat`, but the `format` option allows combining them into
-                 * one setting.
+                 * for the whole shared tooltip. When format strings are a requirement,
+                 * it is usually more convenient to use `headerFormat`, `pointFormat`
+                 * and `footerFormat`, but the `format` option allows combining them
+                 * into one setting.
                  *
                  * The context of the format string is the same as that of the
-                 * `formatter` callback.
+                 * `tooltip.formatter` callback.
                  *
                  * @sample {highcharts} highcharts/tooltip/format-shared/
                  *         Format for shared tooltip
                  *
                  * @type      {string}
                  * @default   undefined
-                 * @since 11.1.0
+                 * @since     11.1.0
                  * @apioption tooltip.format
                  */
                 /**
@@ -8610,11 +9421,14 @@
                 /**
                  * Enable or disable animation of the tooltip.
                  *
-                 * @type       {boolean}
-                 * @default    true
+                 * @type       {boolean|Partial<Highcharts.AnimationOptionsObject>}
                  * @since      2.3.0
                  */
-                animation: svg,
+                animation: {
+                    duration: 300,
+                    // EaseOutCirc
+                    easing: (x) => Math.sqrt(1 - Math.pow(x - 1, 2))
+                },
                 /**
                  * The radius of the rounded border corners.
                  *
@@ -9069,6 +9883,7 @@
          * Updated options.
          */
         function setOptions(options) {
+            fireEvent(H, 'setOptions', { options });
             // Copy in the default options
             merge(true, defaultOptions, options);
             // Update the time object
@@ -9364,11 +10179,11 @@
          *         The formatted string.
          */
         function format(str = '', ctx, chart) {
-            const regex = /\{([a-zA-Z0-9\:\.\,;\-\/<>%_@"'= #\(\)]+)\}/g, 
+            const regex = /\{([\w\:\.\,;\-\/<>%@"'’= #\(\)]+)\}/g, 
             // The sub expression regex is the same as the top expression regex,
             // but except parens and block helpers (#), and surrounded by parens
             // instead of curly brackets.
-            subRegex = /\(([a-zA-Z0-9\:\.\,;\-\/<>%_@"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.([0-9])/, lang = defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
+            subRegex = /\(([\w\:\.\,;\-\/<>%@"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
             /*
              * Get a literal or variable value inside a template expression. May be
              * extended with other types like string or null if needed, but keep it
@@ -9474,7 +10289,7 @@
                     // Block helpers may return true or false. They may also return a
                     // string, like the `each` helper.
                     if (match.isBlock && typeof replacement === 'boolean') {
-                        replacement = format(replacement ? body : elseBody, ctx);
+                        replacement = format(replacement ? body : elseBody, ctx, chart);
                     }
                     // Simple variable replacement
                 }
@@ -9591,6 +10406,9 @@
                 // Get the decimal component
                 ret += decimalPoint + roundedNumber.slice(-decimals);
             }
+            else if (+ret === 0) { // Remove signed minus #20564
+                ret = '0';
+            }
             if (exponent[1] && +ret !== 0) {
                 ret += 'e' + exponent[1];
             }
@@ -9656,7 +10474,7 @@
 
         return DataGridDefaults;
     });
-    _registerModule(_modules, 'DataGrid/DataGrid.js', [_modules['Data/DataTable.js'], _modules['DataGrid/DataGridUtils.js'], _modules['DataGrid/Globals.js'], _modules['Core/Templating.js'], _modules['DataGrid/DataGridDefaults.js'], _modules['Core/Utilities.js']], function (DataTable, DataGridUtils, Globals, Templating, DataGridDefaults, U) {
+    _registerModule(_modules, 'DataGrid/DataGrid.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/DataTable.js'], _modules['DataGrid/DataGridUtils.js'], _modules['DataGrid/Globals.js'], _modules['Core/Templating.js'], _modules['DataGrid/DataGridDefaults.js'], _modules['Core/Utilities.js']], function (AST, DataTable, DataGridUtils, Globals, Templating, DataGridDefaults, U) {
         /* *
          *
          *  Data Grid class
@@ -9673,7 +10491,7 @@
          *  - Sebastian Bochan
          *
          * */
-        const { dataTableCellToString, emptyHTMLElement, makeDiv } = DataGridUtils;
+        const { emptyHTMLElement, makeDiv } = DataGridUtils;
         const { isSafari, win } = Globals;
         const { addEvent, clamp, defined, fireEvent, isNumber, merge, pick } = U;
         /* *
@@ -9685,6 +10503,18 @@
          * Creates a scrollable grid structure with editable data cells.
          */
         class DataGrid {
+            /**
+             * Factory function for data grid instances.
+             *
+             * @param container
+             * Element or element ID to create the grid structure into.
+             *
+             * @param options
+             * Options to create the grid structure.
+             */
+            static dataGrid(container, options) {
+                return new DataGrid(container, options);
+            }
             /* *
              *
              *  Functions
@@ -10016,12 +10846,18 @@
                 const rowCount = this.dataTable.modified.getRowCount();
                 for (let j = 0; j < this.rowElements.length && i < rowCount; j++, i++) {
                     const rowElement = this.rowElements[j];
-                    rowElement.dataset.rowIndex = String(i);
+                    rowElement.dataset.rowIndex =
+                        this.dataTable.getRowIndexOriginal(i);
                     const cellElements = rowElement.childNodes;
                     for (let k = 0, kEnd = columnsInPresentationOrder.length; k < kEnd; k++) {
                         const cell = cellElements[k], column = columnsInPresentationOrder[k], value = this.dataTable.modified
-                            .getCell(columnsInPresentationOrder[k], i);
-                        cell.textContent = this.formatCell(value, column);
+                            .getCell(columnsInPresentationOrder[k], i), formattedContent = this.formatCell(value, column);
+                        if (this.options.useHTML) {
+                            this.renderHTMLCellContent(formattedContent, cell);
+                        }
+                        else {
+                            cell.textContent = formattedContent;
+                        }
                         // TODO: consider adding these dynamically to the input element
                         cell.dataset.originalData = '' + value;
                         cell.dataset.columnName = columnsInPresentationOrder[k];
@@ -10174,7 +11010,6 @@
              * @internal
              */
             updateScrollingLength() {
-                const columnsInPresentationOrder = this.columnNames;
                 let i = this.dataTable.modified.getRowCount() - 1;
                 let height = 0;
                 const top = i - this.getNumRowsToDraw();
@@ -10182,17 +11017,6 @@
                 // Explicit height is needed for overflow: hidden to work, to make sure
                 // innerContainer is not scrollable by user input
                 this.innerContainer.style.height = outerHeight + 'px';
-                // Calculate how many of the bottom rows is needed to potentially
-                // overflow innerContainer and use it to add extra rows to scrollHeight
-                // to ensure it is possible to scroll to the last row when rows have
-                // variable heights
-                for (let j = 0; j < this.rowElements.length; j++) {
-                    const cellElements = this.rowElements[j].childNodes;
-                    for (let k = 0; k < columnsInPresentationOrder.length; k++) {
-                        cellElements[k].textContent = dataTableCellToString(this.dataTable.modified
-                            .getCell(columnsInPresentationOrder[k], i - j));
-                    }
-                }
                 this.scrollContainer.appendChild(this.innerContainer);
                 for (let j = 0; i > top; i--, j++) {
                     height += this.rowElements[j].offsetHeight;
@@ -10317,6 +11141,20 @@
                     return cellFormatter.call({ value: cellValue });
                 }
                 return formattedCell.toString();
+            }
+            /**
+             * When useHTML enabled, parse the syntax and render HTML.
+             *
+             * @param cellContent
+             * Content to render.
+             *
+             * @param parentElement
+             * Parent element where the content should be.
+             *
+             */
+            renderHTMLCellContent(cellContent, parentElement) {
+                const formattedNodes = new AST(cellContent);
+                formattedNodes.addToDOM(parentElement);
             }
             /**
              * Render a column header for a column.
@@ -10764,7 +11602,7 @@
                     waitingList = this.waiting[connectorId] = [];
                     const connectorOptions = this.getConnectorOptions(connectorId);
                     if (!connectorOptions) {
-                        throw new Error(`Connector not found. (${connectorId})`);
+                        throw new Error(`Connector '${connectorId}' not found.`);
                     }
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this
@@ -10999,7 +11837,7 @@
                  */
                 this.dateFormats = {
                     'YYYY/mm/dd': {
-                        regex: /^([0-9]{4})([\-\.\/])([0-9]{1,2})\2([0-9]{1,2})$/,
+                        regex: /^(\d{4})([\-\.\/])(\d{1,2})\2(\d{1,2})$/,
                         parser: function (match) {
                             return (match ?
                                 Date.UTC(+match[1], match[3] - 1, +match[4]) :
@@ -11007,7 +11845,7 @@
                         }
                     },
                     'dd/mm/YYYY': {
-                        regex: /^([0-9]{1,2})([\-\.\/])([0-9]{1,2})\2([0-9]{4})$/,
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
                         parser: function (match) {
                             return (match ?
                                 Date.UTC(+match[4], match[3] - 1, +match[1]) :
@@ -11016,7 +11854,7 @@
                         alternative: 'mm/dd/YYYY' // Different format with the same regex
                     },
                     'mm/dd/YYYY': {
-                        regex: /^([0-9]{1,2})([\-\.\/])([0-9]{1,2})\2([0-9]{4})$/,
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
                         parser: function (match) {
                             return (match ?
                                 Date.UTC(+match[4], match[1] - 1, +match[3]) :
@@ -11024,7 +11862,7 @@
                         }
                     },
                     'dd/mm/YY': {
-                        regex: /^([0-9]{1,2})([\-\.\/])([0-9]{1,2})\2([0-9]{2})$/,
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
                         parser: function (match) {
                             const d = new Date();
                             if (!match) {
@@ -11042,7 +11880,7 @@
                         alternative: 'mm/dd/YY' // Different format with the same regex
                     },
                     'mm/dd/YY': {
-                        regex: /^([0-9]{1,2})([\-\.\/])([0-9]{1,2})\2([0-9]{2})$/,
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
                         parser: function (match) {
                             return (match ?
                                 Date.UTC(+match[4] + 2000, match[1] - 1, +match[3]) :
@@ -11204,7 +12042,7 @@
                         data[i] && data[i].length) {
                         thing = data[i]
                             .trim()
-                            .replace(/[-\.\/]/g, ' ')
+                            .replace(/[\-\.\/]/g, ' ')
                             .split(' ');
                         guessedFormat = [
                             '',
@@ -11471,7 +12309,7 @@
                 if (typeof str === 'string') {
                     str = str.replace(/^\s+|\s+$/g, '');
                     // Clear white space insdie the string, like thousands separators
-                    if (inside && /^[0-9\s]+$/.test(str)) {
+                    if (inside && /^[\d\s]+$/.test(str)) {
                         str = str.replace(/\s/g, '');
                     }
                 }
@@ -11836,7 +12674,7 @@
                     read(i);
                     if (c === '#') {
                         // If there are hexvalues remaining (#13283)
-                        if (!/^#[0-F]{3,3}|[0-F]{6,6}/i.test(columnStr.substring(i))) {
+                        if (!/^#[A-F\d]{3,3}|[A-F\d]{6,6}/i.test(columnStr.substring(i))) {
                             // The rest of the row is a comment
                             push();
                             return;
@@ -13173,6 +14011,7 @@
                         table.deleteColumns();
                         converter.parse({ data });
                         table.setColumns(converter.getTable().getColumns());
+                        table.setRowKeysColumn(data.length);
                     }
                     return connector.setModifierOptions(dataModifier).then(() => data);
                 })
@@ -14170,7 +15009,7 @@
 
         return SortModifier;
     });
-    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/DataCursor.js'], _modules['DataGrid/DataGrid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['DataGrid/Globals.js']], function (DataConnector, DataCursor, _DataGrid, DataModifier, DataPool, DataTable, Globals) {
+    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/DataCursor.js'], _modules['DataGrid/DataGrid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['DataGrid/Globals.js']], function (AST, DataConnector, DataCursor, _DataGrid, DataModifier, DataPool, DataTable, Globals) {
 
         /* *
          *
@@ -14184,9 +15023,11 @@
          *
          * */
         const G = Globals;
+        G.AST = AST;
         G.DataConnector = DataConnector;
         G.DataCursor = DataCursor;
         G.DataGrid = _DataGrid;
+        G.dataGrid = _DataGrid.dataGrid;
         G.DataModifier = DataModifier;
         G.DataPool = DataPool;
         G.DataTable = DataTable;

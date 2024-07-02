@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 2.1.0 (2024-04-17)
+ * @license Highcharts Dashboards Math 2.2.0 (2024-07-02)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -26,7 +26,7 @@
             obj[path] = fn.apply(null, args);
 
             if (typeof CustomEvent === 'function') {
-                window.dispatchEvent(new CustomEvent(
+                Dashboards.win.dispatchEvent(new CustomEvent(
                     'DashboardsModuleLoaded',
                     { detail: { path: path, module: obj[path] } }
                 ));
@@ -59,12 +59,12 @@
          * `.`-separated decimal.
          * @private
          */
-        const decimal1RegExp = /^[+-]?\d+(?:\.\d+)?(?:e[+-]\d+)?/;
+        const decimal1RegExp = /^[+\-]?\d+(?:\.\d+)?(?:e[+\-]\d+)?/;
         /**
          * `,`-separated decimal.
          * @private
          */
-        const decimal2RegExp = /^[+-]?\d+(?:,\d+)?(?:e[+-]\d+)?/;
+        const decimal2RegExp = /^[+\-]?\d+(?:,\d+)?(?:e[+\-]\d+)?/;
         /**
          * - Group 1: Function name
          * @private

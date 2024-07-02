@@ -13,12 +13,11 @@
  *  - Sophie Bremer
  *
  * */
-import U from '../../Core/Utilities.js';
 import GUIElement from '../Layout/GUIElement.js';
+import U from '../../Core/Utilities.js';
 const { defined } = U;
 class ContextDetection {
-    static isGUIElementOnParentEdge(mouseContext, side // 'right', 'left', 'top', 'bottom'
-    ) {
+    static isGUIElementOnParentEdge(mouseContext, side) {
         const visibleElements = (side === 'top' || side === 'bottom') ?
             mouseContext.row.layout.getVisibleRows() :
             (side === 'left' || side === 'right') ?
@@ -58,15 +57,19 @@ class ContextDetection {
         const leftSideX = e.clientX - mouseCellContextOffsets.left;
         const topSideY = e.clientY - mouseCellContextOffsets.top;
         // Get cell side - right, left, top, bottom
-        const sideY = topSideY >= -offset && topSideY <= offset ? 'top' :
-            topSideY - height >= -offset && topSideY - height <= offset ?
-                'bottom' :
-                '';
-        const sideX = leftSideX >= -offset && leftSideX <= offset ? 'left' :
-            leftSideX - width >= -offset && leftSideX - width <= offset ?
-                'right' :
-                '';
-        const side = sideX ? sideX : sideY; // X is prioritized.
+        let side = 'bottom';
+        if (leftSideX >= -offset && leftSideX <= offset) {
+            side = 'left';
+        }
+        else if (leftSideX - width >= -offset && leftSideX - width <= offset) {
+            side = 'right';
+        }
+        else if (topSideY >= -offset && topSideY <= offset) {
+            side = 'top';
+        }
+        else if (topSideY - height >= -offset && topSideY - height <= offset) {
+            side = 'bottom';
+        }
         switch (side) {
             case 'right':
                 sideOffset = leftSideX - width + offset;
@@ -86,7 +89,7 @@ class ContextDetection {
             side: side
         };
         // Nested layouts.
-        if (mouseCellContext.row.layout.level !== 0 &&
+        if (mouseCellContext.row?.layout.level &&
             side &&
             ContextDetection.isGUIElementOnParentEdge(mouseCellContext, side) &&
             defined(sideOffset)) {

@@ -182,6 +182,12 @@ declare class HighchartsComponent extends Component {
      *
      */
     getOptions(): Partial<Options>;
+    /**
+     * Retrieves editable options for the chart.
+     *
+     * @returns
+     * The editable options for the chart and its values.
+     */
     getEditableOptions(): Options;
     getEditableOptionValue(propertyPath?: string[]): number | boolean | undefined | string;
 }

@@ -86,6 +86,7 @@ declare namespace EditGlobals {
         separator: string;
         sidebarCloseButton: string;
         sidebarNavButton: string;
+        standaloneElement: string;
         toggleContainer: string;
         toggleLabels: string;
         toggleSlider: string;
@@ -146,6 +147,10 @@ declare namespace EditGlobals {
          * @default 'Do you really want to destroy the row?'
          */
         confirmDestroyRow: string;
+        /**
+         * @default 'Do you really want to discard the changes?'
+         */
+        confirmDiscardChanges: string;
         /**
          * @default 'Data labels'
          */

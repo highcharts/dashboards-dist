@@ -1,12 +1,13 @@
 import type { ComponentType } from '../Components/ComponentType';
+import type Board from '../Board';
 import type Cell from '../Layout/Cell';
 import type Layout from '../Layout/Layout';
 import type Row from '../Layout/Row';
 import type Component from '../Components/Component.js';
-import Board from '../Board';
+import CellHTML from '../Layout/CellHTML.js';
 declare namespace Bindings {
     interface MountedComponent {
-        cell: Cell | Cell.DOMCell;
+        cell: Cell | CellHTML;
         component: ComponentType;
         options: Partial<Component.Options>;
     }

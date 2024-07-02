@@ -1015,7 +1015,11 @@ class Chart {
         let chartWidth = chart.chartWidth;
         // Allow table cells and flex-boxes to shrink without the chart blocking
         // them out (#6427)
-        css(renderTo, { overflow: 'hidden' });
+        css(renderTo, {
+            overflow: 'hidden',
+            // #21144, retest and remove in future version of Chrome
+            pointerEvents: H.isChrome ? 'fill' : 'auto'
+        });
         // Create the inner container
         if (!chart.styledMode) {
             containerStyle = extend({
@@ -1026,10 +1030,10 @@ class Chart {
                 width: chartWidth + 'px',
                 height: chartHeight + 'px',
                 textAlign: 'left',
-                lineHeight: 'normal',
-                zIndex: 0,
+                lineHeight: 'normal', // #427
+                zIndex: 0, // #1072
                 '-webkit-tap-highlight-color': 'rgba(0,0,0,0)',
-                userSelect: 'none',
+                userSelect: 'none', // #13503
                 'touch-action': 'manipulation',
                 outline: 'none'
             }, optionsChart.style || {});
@@ -1321,7 +1325,7 @@ class Chart {
      * @emits Highcharts.Chart#event:afterSetChartSize
      */
     setChartSize(skipAxes) {
-        const chart = this, inverted = chart.inverted, renderer = chart.renderer, chartWidth = chart.chartWidth, chartHeight = chart.chartHeight, optionsChart = chart.options.chart, spacing = chart.spacing, clipOffset = chart.clipOffset;
+        const chart = this, { chartHeight, chartWidth, inverted, spacing, renderer } = chart, clipOffset = chart.clipOffset, clipRoundFunc = Math[inverted ? 'floor' : 'round'];
         let plotLeft, plotTop, plotWidth, plotHeight;
         /**
          * The current left position of the plot area in pixels.
@@ -1353,7 +1357,6 @@ class Chart {
         chart.plotHeight = plotHeight = Math.max(0, Math.round(chartHeight - plotTop - chart.marginBottom));
         chart.plotSizeX = inverted ? plotHeight : plotWidth;
         chart.plotSizeY = inverted ? plotWidth : plotHeight;
-        chart.plotBorderWidth = optionsChart.plotBorderWidth || 0;
         // Set boxes used for alignment
         chart.spacingBox = renderer.spacingBox = {
             x: spacing[3],
@@ -1367,17 +1370,15 @@ class Chart {
             width: plotWidth,
             height: plotHeight
         };
-        const plotBorderWidth = 2 * Math.floor(chart.plotBorderWidth / 2), clipX = Math.ceil(Math.max(plotBorderWidth, clipOffset[3]) / 2), clipY = Math.ceil(Math.max(plotBorderWidth, clipOffset[0]) / 2);
-        chart.clipBox = {
-            x: clipX,
-            y: clipY,
-            width: Math.floor(chart.plotSizeX -
-                Math.max(plotBorderWidth, clipOffset[1]) / 2 -
-                clipX),
-            height: Math.max(0, Math.floor(chart.plotSizeY -
-                Math.max(plotBorderWidth, clipOffset[2]) / 2 -
-                clipY))
-        };
+        // Compute the clipping box
+        if (clipOffset) {
+            chart.clipBox = {
+                x: clipRoundFunc(clipOffset[3]),
+                y: clipRoundFunc(clipOffset[0]),
+                width: clipRoundFunc(chart.plotSizeX - clipOffset[1] - clipOffset[3]),
+                height: clipRoundFunc(chart.plotSizeY - clipOffset[0] - clipOffset[2])
+            };
+        }
         if (!skipAxes) {
             chart.axes.forEach(function (axis) {
                 axis.setAxisSize();
@@ -1395,7 +1396,7 @@ class Chart {
      */
     resetMargins() {
         fireEvent(this, 'resetMargins');
-        const chart = this, chartOptions = chart.options.chart;
+        const chart = this, chartOptions = chart.options.chart, plotBorderWidth = chartOptions.plotBorderWidth || 0, halfWidth = plotBorderWidth / 2;
         // Create margin and spacing array
         ['margin', 'spacing'].forEach(function splashArrays(target) {
             const value = chartOptions[target], values = isObject(value) ? value : [value, value, value, value];
@@ -1414,7 +1415,13 @@ class Chart {
             chart[m] = pick(chart.margin[side], chart.spacing[side]);
         });
         chart.axisOffset = [0, 0, 0, 0]; // Top, right, bottom, left
-        chart.clipOffset = [0, 0, 0, 0];
+        chart.clipOffset = [
+            halfWidth,
+            halfWidth,
+            halfWidth,
+            halfWidth
+        ];
+        chart.plotBorderWidth = plotBorderWidth;
     }
     /**
      * Internal function to draw or redraw the borders and backgrounds for chart
@@ -1657,7 +1664,8 @@ class Chart {
         chart.setChartSize();
         for (const axis of axes) {
             const { options } = axis, { labels } = options;
-            if (axis.horiz &&
+            if (chart.hasCartesianSeries && // #20948
+                axis.horiz &&
                 axis.visible &&
                 labels.enabled &&
                 axis.series.length &&
@@ -2575,11 +2583,11 @@ class Chart {
      */
     transform(params) {
         const { axes = this.axes, event, from = {}, reset, selection, to = {}, trigger } = params, { inverted } = this;
-        let hasZoomed = false, displayButton;
+        let hasZoomed = false, displayButton, isAnyAxisPanning;
         // Remove active points for shared tooltip
         this.hoverPoints?.forEach((point) => point.setState());
         for (const axis of axes) {
-            const { horiz, len, minPointOffset = 0, options, reversed } = axis, wh = horiz ? 'width' : 'height', xy = horiz ? 'x' : 'y', toLength = to[wh] || axis.len, fromLength = from[wh] || axis.len, 
+            const { horiz, len, minPointOffset = 0, options, reversed } = axis, wh = horiz ? 'width' : 'height', xy = horiz ? 'x' : 'y', toLength = pick(to[wh], axis.len), fromLength = pick(from[wh], axis.len), 
             // If fingers pinched very close on this axis, treat as pan
             scale = Math.abs(toLength) < 10 ?
                 1 :
@@ -2674,6 +2682,9 @@ class Chart {
                         // panning/zooming hard. Reset and redraw after the
                         // operation has finished.
                         axis.isPanning = trigger !== 'zoom';
+                        if (axis.isPanning) {
+                            isAnyAxisPanning = true; // #21319
+                        }
                         axis.setExtremes(reset ? void 0 : newMin, reset ? void 0 : newMax, false, false, { move, trigger, scale });
                         if (!reset &&
                             (newMin > floor || newMax < ceiling) &&
@@ -2701,8 +2712,10 @@ class Chart {
                 });
             }
             else {
-                // Show or hide the Reset zoom button
-                if (displayButton && !this.resetZoomButton) {
+                // Show or hide the Reset zoom button, but not while panning
+                if (displayButton &&
+                    !isAnyAxisPanning &&
+                    !this.resetZoomButton) {
                     this.showResetZoom();
                 }
                 else if (!displayButton && this.resetZoomButton) {

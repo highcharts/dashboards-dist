@@ -18,7 +18,9 @@ const { addEvent, removeEvent } = U;
  *  Constants
  *
  * */
-const defaultOptions = {};
+const defaultOptions = {
+    autoScroll: false
+};
 const syncPair = {
     emitter: function () {
         if (this.type !== 'DataGrid') {
@@ -27,6 +29,8 @@ const syncPair = {
         const component = this;
         const { dataGrid, board } = component;
         const highlightOptions = this.sync.syncConfig.highlight;
+        const groupKey = highlightOptions.group ?
+            ':' + highlightOptions.group : '';
         if (!board || !dataGrid || !highlightOptions?.enabled) {
             return;
         }
@@ -39,7 +43,7 @@ const syncPair = {
                     type: 'position',
                     row: parseInt(row.dataset.rowIndex, 10),
                     column: e.columnName,
-                    state: 'dataGrid.hoverRow'
+                    state: 'dataGrid.hoverRow' + groupKey
                 });
             }
         };
@@ -48,7 +52,7 @@ const syncPair = {
             if (table) {
                 cursor.emitCursor(table, {
                     type: 'position',
-                    state: 'dataGrid.hoverOut'
+                    state: 'dataGrid.hoverOut' + groupKey
                 });
             }
         };
@@ -67,23 +71,36 @@ const syncPair = {
         const component = this;
         const { board } = component;
         const highlightOptions = component.sync.syncConfig.highlight;
+        const groupKey = highlightOptions.group ?
+            ':' + highlightOptions.group : '';
         if (!highlightOptions?.enabled) {
             return;
         }
+        let highlightTimeout;
         const handleCursor = (e) => {
             const cursor = e.cursor;
-            if (cursor.type === 'position') {
-                const { row } = cursor;
-                const { dataGrid } = component;
-                if (row !== void 0 && dataGrid) {
-                    const highlightedDataRow = dataGrid.container
-                        .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
-                    if (highlightedDataRow) {
-                        dataGrid.toggleRowHighlight(highlightedDataRow);
-                        dataGrid.hoveredRow = highlightedDataRow;
-                    }
-                }
+            if (cursor.type !== 'position') {
+                return;
             }
+            const { row } = cursor;
+            const { dataGrid } = component;
+            if (row === void 0 || !dataGrid) {
+                return;
+            }
+            if (highlightOptions.autoScroll) {
+                dataGrid.scrollToRow(row - Math.round(dataGrid.rowElements.length / 2) + 1);
+            }
+            if (highlightTimeout) {
+                clearTimeout(highlightTimeout);
+            }
+            highlightTimeout = setTimeout(() => {
+                const highlightedDataRow = dataGrid.container
+                    .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
+                if (highlightedDataRow) {
+                    dataGrid.toggleRowHighlight(highlightedDataRow);
+                    dataGrid.hoveredRow = highlightedDataRow;
+                }
+            }, highlightOptions.autoScroll ? 10 : 0);
         };
         const handleCursorOut = () => {
             const { dataGrid } = component;
@@ -100,8 +117,8 @@ const syncPair = {
             if (!table) {
                 return;
             }
-            cursor.addListener(table.id, 'point.mouseOver', handleCursor);
-            cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
+            cursor.addListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
+            cursor.addListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
         };
         const unregisterCursorListeners = () => {
             const cursor = board.dataCursor;
@@ -109,8 +126,8 @@ const syncPair = {
             if (!table) {
                 return;
             }
-            cursor.removeListener(table.id, 'point.mouseOver', handleCursor);
-            cursor.removeListener(table.id, 'point.mouseOut', handleCursorOut);
+            cursor.removeListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
+            cursor.removeListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
         };
         if (board) {
             registerCursorListeners();

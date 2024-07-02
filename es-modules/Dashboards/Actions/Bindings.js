@@ -15,9 +15,10 @@
  * */
 'use strict';
 import ComponentRegistry from '../Components/ComponentRegistry.js';
+import CellHTML from '../Layout/CellHTML.js';
 import Globals from '../Globals.js';
 import U from '../../Core/Utilities.js';
-const { addEvent, fireEvent, error } = U;
+const { addEvent, fireEvent } = U;
 /* *
  *
  *  Namespace
@@ -36,22 +37,15 @@ var Bindings;
      *
      * */
     function getGUIElement(idOrElement, parentElement) {
-        let container;
         let guiElement;
-        if (typeof idOrElement === 'string') {
-            if (document.querySelectorAll('#' + idOrElement).length > 1) {
-                error('Multiple cells have identical ID ' +
-                    '("' + idOrElement + '"), potentially leading to ' +
-                    'unexpected behaviour. Ensure that each cell has a ' +
-                    'unique ID on the page.');
-            }
-            container = parentElement ?
-                parentElement.querySelector('#' + idOrElement) :
-                document.getElementById(idOrElement);
+        if (typeof idOrElement === 'string' &&
+            document.querySelectorAll('#' + idOrElement).length > 1) {
+            // eslint-disable-next-line no-console
+            console.warn(`Multiple cells have identical ID %c${idOrElement}%c, potentially leading to unexpected behavior. \nEnsure that each cell has a unique ID on the page.`, 'font-weight: bold', '');
         }
-        else {
-            container = idOrElement;
-        }
+        const container = parentElement ?
+            parentElement.querySelector('#' + idOrElement) :
+            document.getElementById(idOrElement);
         if (container !== null) {
             fireEvent(container, 'bindedGUIElement', {}, function (e) {
                 guiElement = e.guiElement;
@@ -64,25 +58,26 @@ var Bindings;
         const optionsEvents = options.events;
         const renderTo = options.renderTo || options.cell;
         if (!renderTo) {
-            error('The `renderTo` option is required to render the component.');
+            // eslint-disable-next-line no-console
+            console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
             return;
         }
         if (board.mountedComponents.filter((el) => ((el.options.renderTo || el.options.cell) === renderTo)).length > 0) {
-            error('The component is misconfigured and is unable to initialize ' +
-                'it. A different component has already been declared in the`' +
-                renderTo + '` cell.');
+            // eslint-disable-next-line no-console
+            console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
             return;
         }
         cell = cell || Bindings.getCell(renderTo, board.container);
         const componentContainer = cell?.container || document.querySelector('#' + renderTo);
         if (!componentContainer || !options.type) {
-            error('The component is misconfigured and is unable to find the' +
-                'HTML cell element ${renderTo} to render the content.');
+            // eslint-disable-next-line no-console
+            console.error(`The component is unable to find the HTML cell element %c${renderTo}%c to render the content.`, 'font-weight: bold', '');
             return;
         }
         let ComponentClass = ComponentRegistry.types[options.type];
         if (!ComponentClass) {
-            error(`The component's type ${options.type} does not exist.`);
+            // eslint-disable-next-line no-console
+            console.error(`The component's type %c${options.type}%c does not exist.`, 'font-weight: bold', '');
             if (cell) {
                 ComponentClass =
                     ComponentRegistry.types['HTML'];
@@ -117,11 +112,11 @@ var Bindings;
         board.mountedComponents.push({
             options: options,
             component: component,
-            cell: cell || {
+            cell: cell || new CellHTML({
                 id: renderTo,
                 container: componentContainer,
                 mountedComponent: component
-            }
+            })
         });
         fireEvent(component, 'mount');
         // Events

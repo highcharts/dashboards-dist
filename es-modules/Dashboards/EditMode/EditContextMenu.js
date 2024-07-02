@@ -121,7 +121,7 @@ EditContextMenu.items = merge(Menu.items, {
         langKey: 'editMode',
         events: {
             click: function () {
-                this.menu.editMode.onEditModeToggle();
+                this.menu.editMode.toggleEditMode();
             }
         }
     }

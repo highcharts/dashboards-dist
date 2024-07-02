@@ -11,6 +11,16 @@ declare class DataGrid {
      */
     static readonly defaultOptions: Required<DataGridOptions>;
     /**
+     * Factory function for data grid instances.
+     *
+     * @param container
+     * Element or element ID to create the grid structure into.
+     *
+     * @param options
+     * Options to create the grid structure.
+     */
+    static dataGrid(container: (string | HTMLElement), options: Globals.DeepPartial<DataGridOptions>): DataGrid;
+    /**
      * Container to create the grid structure into.
      */
     container: HTMLElement;
@@ -366,6 +376,17 @@ declare class DataGrid {
      * The column name the cell belongs to.
      */
     private formatCell;
+    /**
+     * When useHTML enabled, parse the syntax and render HTML.
+     *
+     * @param cellContent
+     * Content to render.
+     *
+     * @param parentElement
+     * Parent element where the content should be.
+     *
+     */
+    private renderHTMLCellContent;
     /**
      * Render a column header for a column.
      *

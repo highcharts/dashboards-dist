@@ -1,3 +1,4 @@
+import type ButtonThemeObject from './Renderer/SVG/ButtonThemeObject';
 import type GlobalsLike from './GlobalsLike';
 declare global {
     type AnyRecord = Record<string, any>;
@@ -79,6 +80,7 @@ declare global {
         changedTouches: Array<Touch>;
     }
     interface Window {
+        chrome?: unknown;
         /** @deprecated */
         opera?: unknown;
         /** @deprecated */
@@ -87,6 +89,7 @@ declare global {
         webkitURL?: typeof URL;
     }
     interface GlobalOptions {
+        buttonTheme: ButtonThemeObject;
         /** @deprecated */
         canvasToolsURL?: string;
         /** @deprecated */

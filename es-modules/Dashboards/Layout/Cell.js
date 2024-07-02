@@ -246,8 +246,7 @@ class Cell extends GUIElement {
         }
     }
     // Method to get array of overlapping levels.
-    getOverlappingLevels(align, // 'left', 'right', 'top', 'bottom'
-    levelMaxGap, // Max distance between levels
+    getOverlappingLevels(align, levelMaxGap, // Max distance between levels
     offset // Analyzed cell offset
     ) {
         const cell = this, parentCell = cell.row.layout.parentCell;

@@ -11,9 +11,4 @@
  *
  * */
 'use strict';
-/* *
- *
- *  Default Export
- *
- * */
-export default H;
+export {};

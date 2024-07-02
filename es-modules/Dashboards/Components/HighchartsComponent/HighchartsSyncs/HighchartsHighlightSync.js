@@ -66,6 +66,8 @@ const syncPair = {
         const component = this;
         const { chart, board } = component;
         const highlightOptions = this.sync.syncConfig.highlight;
+        const groupKey = highlightOptions.group ?
+            ':' + highlightOptions.group : '';
         if (!highlightOptions.enabled || !chart) {
             return;
         }
@@ -110,7 +112,7 @@ const syncPair = {
                                 type: 'position',
                                 row: offset + this.index,
                                 column: columnName,
-                                state: 'point.mouseOver'
+                                state: 'point.mouseOver' + groupKey
                             });
                         },
                         mouseOut: function () {
@@ -123,7 +125,7 @@ const syncPair = {
                                 type: 'position',
                                 row: offset + this.index,
                                 column: columnName,
-                                state: 'point.mouseOut'
+                                state: 'point.mouseOut' + groupKey
                             });
                         }
                     }
@@ -153,6 +155,8 @@ const syncPair = {
             return;
         }
         const component = this;
+        const groupKey = this.sync.syncConfig.highlight.group ?
+            ':' + this.sync.syncConfig.highlight.group : '';
         const { chart, board } = component;
         const getHoveredPoint = (e) => {
             const { table, cursor } = e;
@@ -335,10 +339,10 @@ const syncPair = {
                 if (!table) {
                     continue;
                 }
-                cursor.addListener(table.id, 'point.mouseOver', handleCursor);
-                cursor.addListener(table.id, 'dataGrid.hoverRow', handleCursor);
-                cursor.addListener(table.id, 'point.mouseOut', handleCursorOut);
-                cursor.addListener(table.id, 'dataGrid.hoverOut', handleCursorOut);
+                cursor.addListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
+                cursor.addListener(table.id, 'dataGrid.hoverRow' + groupKey, handleCursor);
+                cursor.addListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
+                cursor.addListener(table.id, 'dataGrid.hoverOut' + groupKey, handleCursorOut);
             }
         };
         const unregisterCursorListeners = () => {
@@ -352,10 +356,10 @@ const syncPair = {
                 if (!table) {
                     continue;
                 }
-                cursor.removeListener(table.id, 'point.mouseOver', handleCursor);
-                cursor.removeListener(table.id, 'dataGrid.hoverRow', handleCursor);
-                cursor.removeListener(table.id, 'point.mouseOut', handleCursorOut);
-                cursor.removeListener(table.id, 'dataGrid.hoverOut', handleCursorOut);
+                cursor.removeListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
+                cursor.removeListener(table.id, 'dataGrid.hoverRow' + groupKey, handleCursor);
+                cursor.removeListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
+                cursor.removeListener(table.id, 'dataGrid.hoverOut' + groupKey, handleCursorOut);
             }
         };
         if (board) {

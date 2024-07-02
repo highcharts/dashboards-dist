@@ -121,11 +121,11 @@ function dateFormat(format, timestamp, capitalize) {
  *         The formatted string.
  */
 function format(str = '', ctx, chart) {
-    const regex = /\{([a-zA-Z0-9\:\.\,;\-\/<>%_@"'= #\(\)]+)\}/g, 
+    const regex = /\{([\w\:\.\,;\-\/<>%@"'’= #\(\)]+)\}/g, 
     // The sub expression regex is the same as the top expression regex,
     // but except parens and block helpers (#), and surrounded by parens
     // instead of curly brackets.
-    subRegex = /\(([a-zA-Z0-9\:\.\,;\-\/<>%_@"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.([0-9])/, lang = defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
+    subRegex = /\(([\w\:\.\,;\-\/<>%@"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
     /*
      * Get a literal or variable value inside a template expression. May be
      * extended with other types like string or null if needed, but keep it
@@ -231,7 +231,7 @@ function format(str = '', ctx, chart) {
             // Block helpers may return true or false. They may also return a
             // string, like the `each` helper.
             if (match.isBlock && typeof replacement === 'boolean') {
-                replacement = format(replacement ? body : elseBody, ctx);
+                replacement = format(replacement ? body : elseBody, ctx, chart);
             }
             // Simple variable replacement
         }
@@ -347,6 +347,9 @@ function numberFormat(number, decimals, decimalPoint, thousandsSep) {
     if (decimals) {
         // Get the decimal component
         ret += decimalPoint + roundedNumber.slice(-decimals);
+    }
+    else if (+ret === 0) { // Remove signed minus #20564
+        ret = '0';
     }
     if (exponent[1] && +ret !== 0) {
         ret += 'e' + exponent[1];

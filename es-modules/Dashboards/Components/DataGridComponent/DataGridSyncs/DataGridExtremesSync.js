@@ -24,6 +24,9 @@ const syncPair = {
             return;
         }
         const component = this;
+        const syncOptions = this.sync.syncConfig.extremes;
+        const groupKey = syncOptions.group ?
+            ':' + syncOptions.group : '';
         const { board } = component;
         const handleChangeExtremes = (e) => {
             const cursor = e.cursor;
@@ -43,7 +46,7 @@ const syncPair = {
             if (!table) {
                 return;
             }
-            cursor.addListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
+            cursor.addListener(table.id, 'xAxis.extremes.min' + groupKey, handleChangeExtremes);
         };
         const unregisterCursorListeners = () => {
             const table = component.connectorHandlers?.[0]?.connector?.table;
@@ -51,7 +54,7 @@ const syncPair = {
             if (!table) {
                 return;
             }
-            cursor.removeListener(table.id, 'xAxis.extremes.min', handleChangeExtremes);
+            cursor.removeListener(table.id, 'xAxis.extremes.min' + groupKey, handleChangeExtremes);
         };
         if (board) {
             registerCursorListeners();

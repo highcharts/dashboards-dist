@@ -14,6 +14,10 @@ export interface DataTableOptions {
      * Custom ID to identify the new DataTable instance.
      */
     id?: string;
+    /**
+     * Name of the (invisible) column that contains all row keys.
+     */
+    rowKeysId?: string;
 }
 export type DataTableValue = (boolean | null | number | string | undefined);
 export default DataTableOptions;

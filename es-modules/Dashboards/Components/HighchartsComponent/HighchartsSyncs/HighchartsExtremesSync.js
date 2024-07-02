@@ -29,6 +29,9 @@ const syncPair = {
         const { chart, board } = component;
         const connector = component.connectorHandlers?.[0]?.connector;
         const table = connector && connector.table;
+        const syncOptions = this.sync.syncConfig.extremes;
+        const groupKey = syncOptions.group ?
+            ':' + syncOptions.group : '';
         const { dataCursor: cursor } = board;
         if (table && chart) {
             const extremesEventHandler = (e) => {
@@ -47,11 +50,11 @@ const syncPair = {
                         const visiblePoints = series.points.filter((point) => point.isInside || false);
                         const minCursorData = {
                             type: 'position',
-                            state: `${axis.coll}.extremes.min`
+                            state: `${axis.coll}.extremes.min${groupKey}`
                         };
                         const maxCursorData = {
                             type: 'position',
-                            state: `${axis.coll}.extremes.max`
+                            state: `${axis.coll}.extremes.max${groupKey}`
                         };
                         if (seriesFromConnectorArray.length > 0 &&
                             axis.coll === 'xAxis' &&
@@ -103,7 +106,7 @@ const syncPair = {
                     resetExtremesEvent();
                     cursor.emitCursor(table, {
                         type: 'position',
-                        state: 'chart.zoomOut'
+                        state: 'chart.zoomOut' + groupKey
                     }, e);
                     addExtremesEventCallbacks.push(...addExtremesEvent());
                 }
@@ -112,11 +115,11 @@ const syncPair = {
             cleanupCallbacks.push(() => {
                 cursor.remitCursor(table.id, {
                     type: 'position',
-                    state: 'xAxis.extremes.min'
+                    state: 'xAxis.extremes.min' + groupKey
                 });
                 cursor.remitCursor(table.id, {
                     type: 'position',
-                    state: 'xAxis.extremes.max'
+                    state: 'xAxis.extremes.max' + groupKey
                 });
                 resetExtremesEvent();
             });
@@ -134,6 +137,9 @@ const syncPair = {
             return;
         }
         const component = this;
+        const syncOptions = this.sync.syncConfig.extremes;
+        const groupKey = syncOptions.group ?
+            ':' + syncOptions.group : '';
         const { chart, board } = component;
         if (chart && board && chart.zooming?.type) {
             const dimensions = chart.zooming.type.split('')
@@ -171,8 +177,8 @@ const syncPair = {
                     const connector = component.connectorHandlers?.[0]?.connector;
                     if (connector) {
                         const { table } = connector;
-                        cursor.addListener(table.id, `${dimension}.extremes.min`, handleUpdateExtremes);
-                        cursor.addListener(table.id, `${dimension}.extremes.max`, handleUpdateExtremes);
+                        cursor.addListener(table.id, `${dimension}.extremes.min${groupKey}`, handleUpdateExtremes);
+                        cursor.addListener(table.id, `${dimension}.extremes.max${groupKey}`, handleUpdateExtremes);
                         const handleChartZoomOut = () => {
                             chart.zoomOut();
                             setTimeout(() => {
@@ -186,9 +192,9 @@ const syncPair = {
                         };
                         cursor.addListener(table.id, 'chart.zoomOut', handleChartZoomOut);
                         unregisterCallbacks.push(() => {
-                            cursor.removeListener(table.id, `${dimension}.extremes.min`, handleUpdateExtremes);
-                            cursor.removeListener(table.id, `${dimension}.extremes.max`, handleUpdateExtremes);
-                            cursor.removeListener(table.id, 'chart.zoomOut', handleChartZoomOut);
+                            cursor.removeListener(table.id, `${dimension}.extremes.min${groupKey}`, handleUpdateExtremes);
+                            cursor.removeListener(table.id, `${dimension}.extremes.max${groupKey}`, handleUpdateExtremes);
+                            cursor.removeListener(table.id, 'chart.zoomOut' + groupKey, handleChartZoomOut);
                         });
                     }
                 };

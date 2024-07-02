@@ -1,9 +1,10 @@
-import type Cell from '../Layout/Cell';
 import type ComponentType from '../Components/ComponentType';
 import type EditMode from './EditMode';
 import type Row from '../Layout/Row';
+import CellHTML from '../Layout/CellHTML.js';
 import AccordionMenu from './AccordionMenu.js';
 import BaseForm from '../../Shared/BaseForm.js';
+import Cell from '../Layout/Cell.js';
 /**
  * Class which creates the sidebar and handles its behavior.
  *
@@ -75,8 +76,8 @@ declare class SidebarPopup extends BaseForm {
      * @param context
      * The cell or row which is the context of the sidebar.
      */
-    show(context?: Cell | Row): void;
-    generateContent(context?: Cell | Row): void;
+    show(context?: Cell | CellHTML | Row): void;
+    generateContent(context?: Cell | Row | CellHTML): void;
     renderAddComponentsList(): void;
     onDropNewComponent(dropContext: Cell | Row, componentOptions: Partial<ComponentType['options']>): Cell | void;
     /**
@@ -85,6 +86,8 @@ declare class SidebarPopup extends BaseForm {
     hide(): void;
     /**
      * Function called when the close button is pressed.
+     *
+     * @override BaseForm.closeButtonEvents
      */
     closeButtonEvents(): void;
     renderHeader(title: string, iconURL: string): void;

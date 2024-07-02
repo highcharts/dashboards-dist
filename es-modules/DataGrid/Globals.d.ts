@@ -24,7 +24,7 @@ declare namespace Globals {
     };
     const win: Window & typeof globalThis;
     const userAgent: string;
-    const isChrome: boolean;
+    const isChrome: unknown;
     const isSafari: boolean;
 }
 export default Globals;

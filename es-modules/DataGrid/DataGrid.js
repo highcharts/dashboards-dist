@@ -15,9 +15,10 @@
  *
  * */
 'use strict';
+import AST from '../Core/Renderer/HTML/AST.js';
 import DataTable from '../Data/DataTable.js';
 import DataGridUtils from './DataGridUtils.js';
-const { dataTableCellToString, emptyHTMLElement, makeDiv } = DataGridUtils;
+const { emptyHTMLElement, makeDiv } = DataGridUtils;
 import Globals from './Globals.js';
 const { isSafari, win } = Globals;
 import Templating from '../Core/Templating.js';
@@ -33,6 +34,18 @@ const { addEvent, clamp, defined, fireEvent, isNumber, merge, pick } = U;
  * Creates a scrollable grid structure with editable data cells.
  */
 class DataGrid {
+    /**
+     * Factory function for data grid instances.
+     *
+     * @param container
+     * Element or element ID to create the grid structure into.
+     *
+     * @param options
+     * Options to create the grid structure.
+     */
+    static dataGrid(container, options) {
+        return new DataGrid(container, options);
+    }
     /* *
      *
      *  Functions
@@ -364,12 +377,18 @@ class DataGrid {
         const rowCount = this.dataTable.modified.getRowCount();
         for (let j = 0; j < this.rowElements.length && i < rowCount; j++, i++) {
             const rowElement = this.rowElements[j];
-            rowElement.dataset.rowIndex = String(i);
+            rowElement.dataset.rowIndex =
+                this.dataTable.getRowIndexOriginal(i);
             const cellElements = rowElement.childNodes;
             for (let k = 0, kEnd = columnsInPresentationOrder.length; k < kEnd; k++) {
                 const cell = cellElements[k], column = columnsInPresentationOrder[k], value = this.dataTable.modified
-                    .getCell(columnsInPresentationOrder[k], i);
-                cell.textContent = this.formatCell(value, column);
+                    .getCell(columnsInPresentationOrder[k], i), formattedContent = this.formatCell(value, column);
+                if (this.options.useHTML) {
+                    this.renderHTMLCellContent(formattedContent, cell);
+                }
+                else {
+                    cell.textContent = formattedContent;
+                }
                 // TODO: consider adding these dynamically to the input element
                 cell.dataset.originalData = '' + value;
                 cell.dataset.columnName = columnsInPresentationOrder[k];
@@ -522,7 +541,6 @@ class DataGrid {
      * @internal
      */
     updateScrollingLength() {
-        const columnsInPresentationOrder = this.columnNames;
         let i = this.dataTable.modified.getRowCount() - 1;
         let height = 0;
         const top = i - this.getNumRowsToDraw();
@@ -530,17 +548,6 @@ class DataGrid {
         // Explicit height is needed for overflow: hidden to work, to make sure
         // innerContainer is not scrollable by user input
         this.innerContainer.style.height = outerHeight + 'px';
-        // Calculate how many of the bottom rows is needed to potentially
-        // overflow innerContainer and use it to add extra rows to scrollHeight
-        // to ensure it is possible to scroll to the last row when rows have
-        // variable heights
-        for (let j = 0; j < this.rowElements.length; j++) {
-            const cellElements = this.rowElements[j].childNodes;
-            for (let k = 0; k < columnsInPresentationOrder.length; k++) {
-                cellElements[k].textContent = dataTableCellToString(this.dataTable.modified
-                    .getCell(columnsInPresentationOrder[k], i - j));
-            }
-        }
         this.scrollContainer.appendChild(this.innerContainer);
         for (let j = 0; i > top; i--, j++) {
             height += this.rowElements[j].offsetHeight;
@@ -665,6 +672,20 @@ class DataGrid {
             return cellFormatter.call({ value: cellValue });
         }
         return formattedCell.toString();
+    }
+    /**
+     * When useHTML enabled, parse the syntax and render HTML.
+     *
+     * @param cellContent
+     * Content to render.
+     *
+     * @param parentElement
+     * Parent element where the content should be.
+     *
+     */
+    renderHTMLCellContent(cellContent, parentElement) {
+        const formattedNodes = new AST(cellContent);
+        formattedNodes.addToDOM(parentElement);
     }
     /**
      * Render a column header for a column.

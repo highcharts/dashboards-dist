@@ -11,14 +11,4 @@
  *
  * */
 'use strict';
-/* *
- *
- *  Declarations
- *
- * */
-/* *
- *
- *  Default Export
- *
- * */
-export default D;
+export {};

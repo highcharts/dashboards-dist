@@ -37,5 +37,12 @@ declare namespace GeometryUtilities {
      * @return {number} Returns the angle in radians.
      */
     function getAngleBetweenPoints(p1: PositionObject, p2: PositionObject): number;
+    /**
+     * Test for point in polygon. Polygon defined as array of [x,y] points.
+     * @private
+     * @param {PositionObject} point The point potentially within a polygon.
+     * @param {Array<Array<number>>} polygon The polygon potentially containing the point.
+     */
+    function pointInPolygon({ x, y }: PositionObject, polygon: Array<Array<number>>): boolean;
 }
 export default GeometryUtilities;

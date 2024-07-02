@@ -40,6 +40,10 @@ declare class ConfirmationPopup extends BaseForm {
      */
     options?: ConfirmationPopup.Options;
     /**
+     * Show options for confirmation popup.
+     */
+    contentOptions?: ConfirmationPopup.ContentOptions;
+    /**
      * Returns popup container.
      *
      * @param parentDiv
@@ -57,12 +61,15 @@ declare class ConfirmationPopup extends BaseForm {
      */
     protected addCloseButton(className?: string): HTMLElement;
     /**
-     * Adds content inside the popup.
+     * Adds events to the close button.
      *
-     * @param options
-     * Options for confirmation popup.
+     * @override BaseForm.closeButtonEvents
      */
-    renderContent(options: ConfirmationPopup.ContentOptions): void;
+    closeButtonEvents(): void;
+    /**
+     * Adds content inside the popup.
+     */
+    renderContent(): void;
     /**
      * Shows confirmation popup.
      *
@@ -106,7 +113,7 @@ declare namespace ConfirmationPopup {
     interface ConfirmButton {
         value: string;
         callback: Function;
-        context: RowEditToolbar | CellEditToolbar;
+        context?: RowEditToolbar | CellEditToolbar;
     }
     interface CancelButton {
         value: string;

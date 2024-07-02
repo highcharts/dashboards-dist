@@ -13,10 +13,11 @@
  *  - Sophie Bremer
  *
  * */
-import U from '../../../Core/Utilities.js';
+import Cell from '../../Layout/Cell.js';
 import EditGlobals from '../EditGlobals.js';
 import EditToolbar from './EditToolbar.js';
 import GUIElement from '../../Layout/GUIElement.js';
+import U from '../../../Core/Utilities.js';
 const { merge, fireEvent, objectEach } = U;
 /**
  * @internal
@@ -34,7 +35,9 @@ class CellEditToolbar extends EditToolbar {
                         const cellEditToolbar = this.menu
                             .parent;
                         const dragDrop = cellEditToolbar.editMode.dragDrop;
-                        if (dragDrop && cellEditToolbar.cell) {
+                        if (dragDrop &&
+                            cellEditToolbar.cell &&
+                            cellEditToolbar.cell instanceof Cell) {
                             dragDrop.onDragStart(e, cellEditToolbar.cell);
                         }
                     }
@@ -92,6 +95,9 @@ class CellEditToolbar extends EditToolbar {
                 items: CellEditToolbar.getItemsConfig(editMode.options, editMode.iconsURLPrefix)
             }
         }));
+        if (editMode.customHTMLMode) {
+            this.filterOptionsAvailableInCustomHTMLMode();
+        }
         this.menu.initItems({});
     }
     /* *
@@ -99,15 +105,26 @@ class CellEditToolbar extends EditToolbar {
      *  Functions
      *
      * */
+    /**
+     * Show toolbar for given cell.
+     *
+     * @param cell
+     * Cell to show toolbar for.
+     */
     showToolbar(cell) {
-        const toolbar = this, cellCnt = cell.container, toolbarWidth = 30, toolbarMargin = 10;
-        let x, y;
-        if (cellCnt &&
-            toolbar.editMode.isActive() &&
+        const toolbar = this;
+        const cellCnt = cell.container;
+        const toolbarWidth = 30;
+        const toolbarMargin = 10;
+        const cellToolbar = toolbar.editMode.cellToolbar;
+        if (!cellToolbar) {
+            return;
+        }
+        if (cellCnt && toolbar.editMode.isActive() &&
             !(toolbar.editMode.dragDrop || {}).isActive) {
             const cellOffsets = GUIElement.getOffsets(cell, toolbar.editMode.board.container);
-            x = cellOffsets.right - toolbarWidth - toolbarMargin;
-            y = cellOffsets.top + toolbarMargin;
+            const x = cellOffsets.right - toolbarWidth - toolbarMargin;
+            const y = cellOffsets.top + toolbarMargin;
             // Temp - activate all items.
             objectEach(toolbar.menu.items, (item) => {
                 item.activate();
@@ -115,9 +132,11 @@ class CellEditToolbar extends EditToolbar {
             toolbar.setPosition(x, y);
             toolbar.cell = cell;
             toolbar.refreshOutline();
+            cellToolbar.isVisible = true;
         }
         else if (toolbar.isVisible) {
             toolbar.hide();
+            cellToolbar.isVisible = false;
         }
     }
     refreshOutline() {
@@ -126,19 +145,23 @@ class CellEditToolbar extends EditToolbar {
             super.refreshOutline(-toolbar.cell.container.offsetWidth, 0, this.cell, offsetWidth);
         }
     }
+    /**
+     * When options icon is clicked, show sidebar with options.
+     */
     onCellOptions() {
         const toolbar = this;
-        if (toolbar.editMode.sidebar) {
-            toolbar.editMode.sidebar.show(toolbar.cell);
-            if (this.cell) {
-                this.cell.setHighlight();
-            }
+        const editMode = toolbar.editMode;
+        if (!editMode.sidebar) {
+            return;
         }
+        editMode.sidebar.show(toolbar.cell);
+        toolbar.highlightCell();
     }
     onCellDestroy() {
         const toolbar = this;
-        if (toolbar.cell) {
+        if (toolbar.cell && toolbar.cell instanceof Cell) {
             const row = toolbar.cell.row;
+            const cellId = toolbar.cell.id;
             toolbar.resetEditedCell();
             toolbar.cell.destroy();
             toolbar.cell = void 0;
@@ -150,11 +173,43 @@ class CellEditToolbar extends EditToolbar {
                     cell: row.cells[0]
                 });
                 fireEvent(row, 'cellChange', { cell: row.cells[0], row });
+                fireEvent(toolbar.editMode, 'layoutChanged', {
+                    type: 'cellDestroyed',
+                    target: cellId,
+                    board: toolbar.editMode.board
+                });
             }
         }
     }
     resetEditedCell() {
         this.editedCell = void 0;
+    }
+    /**
+     * Filter options available in custom HTML mode, only settings available.
+     */
+    filterOptionsAvailableInCustomHTMLMode() {
+        this.options.menu.items = this.options.menu.items?.filter((item) => {
+            if (typeof item === 'string') {
+                return false;
+            }
+            return item.id === 'settings';
+        });
+    }
+    /**
+     * Highlight cell and gray out the rest of the dashboard.
+     */
+    highlightCell() {
+        const toolbar = this;
+        if (!toolbar.cell) {
+            return;
+        }
+        if (toolbar.cell.setHighlight) {
+            toolbar.cell.setHighlight();
+        }
+        else {
+            toolbar.cell.container.classList.add(EditGlobals.classNames.cellEditHighlight);
+            toolbar.editMode.board.container.classList.add(EditGlobals.classNames.dashboardCellEditHighlightActive);
+        }
     }
 }
 /* *

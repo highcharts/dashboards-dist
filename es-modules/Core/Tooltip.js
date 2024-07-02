@@ -8,6 +8,8 @@
  *
  * */
 'use strict';
+import A from './Animation/AnimationUtilities.js';
+const { animObject } = A;
 import F from './Templating.js';
 const { format } = F;
 import H from './Globals.js';
@@ -34,6 +36,9 @@ const { addEvent, clamp, css, discardElement, extend, fireEvent, isArray, isNumb
  *
  * @param {Highcharts.TooltipOptions} options
  * Tooltip options.
+ *
+ * @param {Highcharts.Pointer} pointer
+ * The pointer instance.
  */
 class Tooltip {
     /* *
@@ -52,7 +57,6 @@ class Tooltip {
         this.distance = 0;
         this.isHidden = true;
         this.isSticky = false;
-        this.now = {};
         this.options = {};
         this.outside = false;
         this.chart = chart;
@@ -146,7 +150,6 @@ class Tooltip {
             discardElement(this.container);
         }
         U.clearTimeout(this.hideTimer);
-        U.clearTimeout(this.tooltipTimeout);
     }
     /**
      * Extendable method to get the anchor position of the tooltip
@@ -307,19 +310,15 @@ class Tooltip {
             // container.
             if (tooltip.outside) {
                 const label = this.label;
-                const { xSetter, ySetter } = label;
-                label.xSetter = function (value) {
-                    xSetter.call(label, tooltip.distance);
-                    if (container) {
-                        container.style.left = value + 'px';
-                    }
-                };
-                label.ySetter = function (value) {
-                    ySetter.call(label, tooltip.distance);
-                    if (container) {
-                        container.style.top = value + 'px';
-                    }
-                };
+                [label.xSetter, label.ySetter].forEach((setter, i) => {
+                    label[i ? 'ySetter' : 'xSetter'] = (value) => {
+                        setter.call(label, tooltip.distance);
+                        label[i ? 'y' : 'x'] = value;
+                        if (container) {
+                            container.style[i ? 'top' : 'left'] = `${value}px`;
+                        }
+                    };
+                });
             }
             this.label
                 .attr({ zIndex: 8 })
@@ -375,7 +374,7 @@ class Tooltip {
         buildDimensionArray = (dim) => {
             const isX = dim === 'x';
             return [
-                dim,
+                dim, // Dimension - x or y
                 isX ? outerWidth : outerHeight,
                 isX ? boxWidth : boxHeight
             ].concat(outside ? [
@@ -571,15 +570,6 @@ class Tooltip {
          */
         this.crosshairs = [];
         /**
-         * Current values of x and y when animating.
-         *
-         * @private
-         * @readonly
-         * @name Highcharts.Tooltip#now
-         * @type {Highcharts.PositionObject}
-         */
-        this.now = { x: 0, y: 0 };
-        /**
          * Tooltips are initially hidden.
          *
          * @private
@@ -642,38 +632,13 @@ class Tooltip {
      * @param {number} anchorY
      */
     move(x, y, anchorX, anchorY) {
-        const tooltip = this, now = tooltip.now, animate = tooltip.options.animation !== false &&
-            !tooltip.isHidden &&
-            // When we get close to the target position, abort animation and
-            // land on the right place (#3056)
-            (Math.abs(x - now.x) > 1 || Math.abs(y - now.y) > 1), skipAnchor = tooltip.followPointer || tooltip.len > 1;
-        // Get intermediate values for animation
-        extend(now, {
-            x: animate ? (2 * now.x + x) / 3 : x,
-            y: animate ? (now.y + y) / 2 : y,
-            anchorX: skipAnchor ?
-                void 0 :
-                animate ? (2 * now.anchorX + anchorX) / 3 : anchorX,
-            anchorY: skipAnchor ?
-                void 0 :
-                animate ? (now.anchorY + anchorY) / 2 : anchorY
-        });
-        // Move to the intermediate value
-        tooltip.getLabel().attr(now);
-        tooltip.drawTracker();
-        // Run on next tick of the mouse tracker
-        if (animate) {
-            // Never allow two timeouts
-            U.clearTimeout(this.tooltipTimeout);
-            // Set the fixed interval ticking for the smooth tooltip
-            this.tooltipTimeout = setTimeout(function () {
-                // The interval function may still be running during destroy,
-                // so check that the chart is really there before calling.
-                if (tooltip) {
-                    tooltip.move(x, y, anchorX, anchorY);
-                }
-            }, 32);
+        const tooltip = this, animation = animObject(!tooltip.isHidden && tooltip.options.animation), skipAnchor = tooltip.followPointer || (tooltip.len || 0) > 1, attr = { x, y };
+        if (!skipAnchor) {
+            attr.anchorX = anchorX;
+            attr.anchorY = anchorY;
         }
+        animation.step = () => tooltip.drawTracker();
+        tooltip.getLabel().animate(attr, animation);
     }
     /**
      * Refresh the tooltip's text and position.
@@ -757,12 +722,12 @@ class Tooltip {
                         });
                     }
                     label.attr({
+                        // Add class before the label BBox calculation (#21035)
+                        'class': tooltip.getClassName(point),
                         text: text && text.join ?
                             text.join('') :
                             text
                     });
-                    // Set the stroke color of the box to reflect the point
-                    label.addClass(tooltip.getClassName(point), true);
                     if (!styledMode) {
                         label.attr({
                             stroke: (options.borderColor ||

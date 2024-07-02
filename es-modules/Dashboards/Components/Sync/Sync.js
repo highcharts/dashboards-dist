@@ -144,9 +144,7 @@ class Sync {
             }
             let { emitter: emitterConfig, handler: handlerConfig } = syncOptions;
             if (handlerConfig) {
-                // Avoid registering the same handler multiple times
-                // i.e. panning and selection uses the same handler
-                if (typeof handlerConfig === 'boolean') {
+                if (handlerConfig === true) {
                     handlerConfig =
                         Sync.defaultHandlers[id]
                             .handler;
@@ -158,7 +156,7 @@ class Sync {
                 }
             }
             if (emitterConfig) {
-                if (typeof emitterConfig === 'boolean') {
+                if (emitterConfig === true) {
                     emitterConfig =
                         Sync.defaultHandlers[id]
                             .emitter;

@@ -10,6 +10,7 @@
  *  - Dawid Dragula
  *
  * */
+import Cell from '../Layout/Cell.js';
 import Globals from '../Globals.js';
 /* *
  *
@@ -65,7 +66,9 @@ class ConnectorHandler {
         if (connectorId &&
             (this.connectorId !== connectorId ||
                 dataPool.isNewConnector(connectorId))) {
-            component.cell?.setLoadingState();
+            if (component.cell instanceof Cell) {
+                component.cell.setLoadingState();
+            }
             const connector = await dataPool.getConnector(connectorId);
             this.setConnector(connector);
         }

@@ -128,7 +128,7 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * Flag to determine if the EditMode is enabled.
      * @internal
      * */
-    private editModeEnabled?;
+    editModeEnabled?: boolean;
     /**
      * The unique id of the dashboard, it is generated automatically.
      * */
@@ -203,25 +203,7 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * @internal
      *
      */
-    private initLayout;
-    /**
-     * Creates a new layouts and adds it to the dashboard based on the options.
-     * @internal
-     *
-     * @param guiOptions
-     * The GUI options for the layout.
-     *
-     */
-    private setLayouts;
-    /**
-     * Set the layouts from JSON.
-     * @internal
-     *
-     * @param json
-     * An array of layout JSON objects.
-     *
-     */
-    private setLayoutsFromJSON;
+    private initEditMode;
     /**
      * Set the components from options.
      * @internal
@@ -276,6 +258,26 @@ declare class Board implements Serializable<Board, Board.JSON> {
      * The JSON of boards's options.
      */
     getOptions(): Globals.DeepPartial<Board.Options>;
+    /**
+     * Get a Dashboards component by its identifier.
+     *
+     * @param id
+     * The identifier of the requested component.
+     *
+     * @returns
+     * The component with the given identifier.
+     */
+    getComponentById(id: string): ComponentType | undefined;
+    /**
+     * Get a Dashboards component by its cell identifier.
+     *
+     * @param id
+     * The identifier of the cell that contains the requested component.
+     *
+     * @returns
+     * The component with the given cell identifier.
+     */
+    getComponentByCellId(id: string): ComponentType | undefined;
 }
 declare namespace Board {
     /**

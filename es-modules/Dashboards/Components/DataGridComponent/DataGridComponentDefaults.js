@@ -34,24 +34,23 @@ const DataGridComponentDefaults = {
             const parentRow = inputElement
                 .closest('.highcharts-datagrid-row');
             const cell = inputElement.closest('.highcharts-datagrid-cell');
-            const converter = new DataConverter();
             if (parentRow &&
                 parentRow instanceof HTMLElement &&
                 cell &&
                 cell instanceof HTMLElement) {
-                const dataTableRowIndex = parentRow
-                    .dataset.rowIndex;
+                const dataTableRowIndex = parentRow.dataset.rowIndex;
                 const { columnName } = cell.dataset;
                 if (dataTableRowIndex !== void 0 &&
                     columnName !== void 0) {
                     const table = connector.table;
                     if (table) {
+                        const converter = new DataConverter();
                         let valueToSet = converter
                             .asGuessedType(inputElement.value);
                         if (valueToSet instanceof Date) {
                             valueToSet = valueToSet.toString();
                         }
-                        table.setCell(columnName, parseInt(dataTableRowIndex, 10), valueToSet);
+                        table.setCell(columnName, Number(dataTableRowIndex), valueToSet);
                     }
                 }
             }
