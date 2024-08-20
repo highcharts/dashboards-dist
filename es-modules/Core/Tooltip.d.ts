@@ -130,7 +130,7 @@ declare class Tooltip {
      * @return {Highcharts.SVGElement}
      * Tooltip label
      */
-    getLabel(): SVGElement;
+    getLabel({ anchorX, anchorY }?: Partial<SVGElement>): SVGElement;
     /**
      * Get the total area available area to place the tooltip
      *

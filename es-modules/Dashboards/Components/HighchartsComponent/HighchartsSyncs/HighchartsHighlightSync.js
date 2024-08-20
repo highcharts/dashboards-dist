@@ -247,7 +247,7 @@ const syncPair = {
                 const hoverSeries = hoverPoint?.series ||
                     chart.hoverSeries;
                 const points = chart.pointer?.getHoverData(point, hoverSeries, chart.series, true, true);
-                if (chart.tooltip && points) {
+                if (chart.tooltip && points?.hoverPoints.length) {
                     tooltip.refresh(useSharedTooltip ? points.hoverPoints : point);
                 }
             }

@@ -53,17 +53,10 @@ function jsonSupportFor(obj) {
  * Returns the JSON of the class instance or object.
  */
 function toJSON(obj) {
-    const aliases = obj.aliases, aliasKeys = Object.keys(aliases), json = {
+    const json = {
         $class: 'Data.DataTable',
         columns: obj.getColumns()
     };
-    // Aliases
-    if (aliasKeys.length) {
-        const jsonAliases = json.aliases = {};
-        for (let i = 0, iEnd = aliasKeys.length; i < iEnd; ++i) {
-            jsonAliases[aliasKeys[i]] = aliases[aliasKeys[i]];
-        }
-    }
     // Custom ID
     if (!obj.autoId) {
         json.id = obj.id;

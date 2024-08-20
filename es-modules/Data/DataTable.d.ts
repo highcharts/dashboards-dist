@@ -59,15 +59,15 @@ declare class DataTable implements DataEvent.Emitter {
      * Options to initialize the new DataTable instance.
      */
     constructor(options?: DataTableOptions);
-    readonly aliases: DataTable.ColumnAliases;
     readonly autoId: boolean;
     private columns;
     readonly id: string;
+    private localRowIndexes?;
     modified: DataTable;
     private modifier?;
+    private originalRowIndexes?;
     private rowCount;
     private versionTag;
-    private rowKeysId;
     /**
      * Returns a clone of this table. The cloned table is completely independent
      * of the original, and any changes made to the clone will not affect
@@ -89,26 +89,12 @@ declare class DataTable implements DataEvent.Emitter {
      */
     clone(skipColumns?: boolean, eventDetail?: DataEvent.Detail): DataTable;
     /**
-     * Deletes a column alias and returns the original column name. If the alias
-     * is not found, the method returns `undefined`. Deleting an alias does not
-     * affect the data in the table, only the way columns are accessed.
-     *
-     * @function Highcharts.DataTable#deleteColumnAlias
-     *
-     * @param {string} alias
-     * The alias to delete.
-     *
-     * @return {string|undefined}
-     * Returns the original column name, if found.
-     */
-    deleteColumnAlias(alias: string): (string | undefined);
-    /**
      * Deletes columns from the table.
      *
      * @function Highcharts.DataTable#deleteColumns
      *
      * @param {Array<string>} [columnNames]
-     * Names (no alias) of columns to delete. If no array is provided, all
+     * Names of columns to delete. If no array is provided, all
      * columns will be deleted.
      *
      * @param {Highcharts.DataTableEventDetail} [eventDetail]
@@ -121,6 +107,13 @@ declare class DataTable implements DataEvent.Emitter {
      * @emits #afterDeleteColumns
      */
     deleteColumns(columnNames?: Array<string>, eventDetail?: DataEvent.Detail): (DataTable.ColumnCollection | undefined);
+    /**
+     * Deletes the row index references. This is useful when the original table
+     * is deleted, and the references are no longer needed. This table is
+     * then considered an original table or a table that has the same row's
+     * order as the original table.
+     */
+    deleteRowIndexReferences(): void;
     /**
      * Deletes rows in this table.
      *
@@ -157,8 +150,8 @@ declare class DataTable implements DataEvent.Emitter {
      *
      * @function Highcharts.DataTable#getCell
      *
-     * @param {string} columnNameOrAlias
-     * Column name or alias of the cell to retrieve.
+     * @param {string} columnName
+     * Column name of the cell to retrieve.
      *
      * @param {number} rowIndex
      * Row index of the cell to retrieve.
@@ -166,14 +159,14 @@ declare class DataTable implements DataEvent.Emitter {
      * @return {Highcharts.DataTableCellType|undefined}
      * Returns the cell value or `undefined`.
      */
-    getCell(columnNameOrAlias: string, rowIndex: number): (DataTable.CellType | undefined);
+    getCell(columnName: string, rowIndex: number): (DataTable.CellType | undefined);
     /**
      * Fetches a cell value for the given row as a boolean.
      *
      * @function Highcharts.DataTable#getCellAsBoolean
      *
-     * @param {string} columnNameOrAlias
-     * Column name or alias to fetch.
+     * @param {string} columnName
+     * Column name to fetch.
      *
      * @param {number} rowIndex
      * Row index to fetch.
@@ -181,16 +174,16 @@ declare class DataTable implements DataEvent.Emitter {
      * @return {boolean}
      * Returns the cell value of the row as a boolean.
      */
-    getCellAsBoolean(columnNameOrAlias: string, rowIndex: number): boolean;
-    getCellAsNumber(columnNameOrAlias: string, rowIndex: number, useNaN: true): number;
-    getCellAsNumber(columnNameOrAlias: string, rowIndex: number, useNaN?: false): (number | null);
+    getCellAsBoolean(columnName: string, rowIndex: number): boolean;
+    getCellAsNumber(columnName: string, rowIndex: number, useNaN: true): number;
+    getCellAsNumber(columnName: string, rowIndex: number, useNaN?: false): (number | null);
     /**
      * Fetches a cell value for the given row as a string.
      *
      * @function Highcharts.DataTable#getCellAsString
      *
-     * @param {string} columnNameOrAlias
-     * Column name or alias to fetch.
+     * @param {string} columnName
+     * Column name to fetch.
      *
      * @param {number} rowIndex
      * Row index to fetch.
@@ -198,11 +191,11 @@ declare class DataTable implements DataEvent.Emitter {
      * @return {string}
      * Returns the cell value of the row as a string.
      */
-    getCellAsString(columnNameOrAlias: string, rowIndex: number): string;
-    getColumn(columnNameOrAlias: string, asReference?: boolean): (DataTable.Column | undefined);
-    getColumn(columnNameOrAlias: string, asReference: true): (DataTable.Column | undefined);
-    getColumnAsNumbers(columnNameOrAlias: string, useNaN: true): Array<number>;
-    getColumnAsNumbers(columnNameOrAlias: string, useNaN?: false): Array<(number | null)>;
+    getCellAsString(columnName: string, rowIndex: number): string;
+    getColumn(columnName: string, asReference?: boolean): (DataTable.Column | undefined);
+    getColumn(columnName: string, asReference: true): (DataTable.Column | undefined);
+    getColumnAsNumbers(columnName: string, useNaN: true): Array<number>;
+    getColumnAsNumbers(columnName: string, useNaN?: false): Array<(number | null)>;
     /**
      * Fetches all column names.
      *
@@ -212,8 +205,19 @@ declare class DataTable implements DataEvent.Emitter {
      * Returns all column names.
      */
     getColumnNames(): Array<string>;
-    getColumns(columnNamesOrAliases?: Array<string>, asReference?: boolean): DataTable.ColumnCollection;
-    getColumns(columnNamesOrAliases: (Array<string> | undefined), asReference: true): Record<string, DataTable.Column>;
+    getColumns(columnNames?: Array<string>, asReference?: boolean): DataTable.ColumnCollection;
+    getColumns(columnNames: (Array<string> | undefined), asReference: true): Record<string, DataTable.Column>;
+    /**
+     * Takes the original row index and returns the local row index in the
+     * modified table for which this function is called.
+     *
+     * @param {number} originalRowIndex
+     * Original row index to get the local row index for.
+     *
+     * @return {number|undefined}
+     * Returns the local row index or `undefined` if not found.
+     */
+    getLocalRowIndex(originalRowIndex: number): (number | undefined);
     /**
      * Retrieves the modifier for the table.
      * @private
@@ -223,6 +227,17 @@ declare class DataTable implements DataEvent.Emitter {
      */
     getModifier(): (DataModifier | undefined);
     /**
+     * Takes the local row index and returns the index of the corresponding row
+     * in the original table.
+     *
+     * @param {number} rowIndex
+     * Local row index to get the original row index for.
+     *
+     * @return {number|undefined}
+     * Returns the original row index or `undefined` if not found.
+     */
+    getOriginalRowIndex(rowIndex: number): (number | undefined);
+    /**
      * Retrieves the row at a given index. This function is a simplified wrap of
      * {@link getRows}.
      *
@@ -231,13 +246,13 @@ declare class DataTable implements DataEvent.Emitter {
      * @param {number} rowIndex
      * Row index to retrieve. First row has index 0.
      *
-     * @param {Array<string>} [columnNamesOrAliases]
-     * Column names or aliases in order to retrieve.
+     * @param {Array<string>} [columnNames]
+     * Column names in order to retrieve.
      *
      * @return {Highcharts.DataTableRow}
      * Returns the row values, or `undefined` if not found.
      */
-    getRow(rowIndex: number, columnNamesOrAliases?: Array<string>): (DataTable.Row | undefined);
+    getRow(rowIndex: number, columnNames?: Array<string>): (DataTable.Row | undefined);
     /**
      * Returns the number of rows in this table.
      *
@@ -252,7 +267,7 @@ declare class DataTable implements DataEvent.Emitter {
      *
      * @function Highcharts.DataTable#getRowIndexBy
      *
-     * @param {string} columnNameOrAlias
+     * @param {string} columnName
      * Column to search in.
      *
      * @param {Highcharts.DataTableCellType} cellValue
@@ -264,7 +279,7 @@ declare class DataTable implements DataEvent.Emitter {
      * @return {number|undefined}
      * Index of the first row matching the cell value.
      */
-    getRowIndexBy(columnNameOrAlias: string, cellValue: DataTable.CellType, rowIndexOffset?: number): (number | undefined);
+    getRowIndexBy(columnName: string, cellValue: DataTable.CellType, rowIndexOffset?: number): (number | undefined);
     /**
      * Retrieves the row at a given index. This function is a simplified wrap of
      * {@link getRowObjects}.
@@ -274,13 +289,13 @@ declare class DataTable implements DataEvent.Emitter {
      * @param {number} rowIndex
      * Row index.
      *
-     * @param {Array<string>} [columnNamesOrAliases]
-     * Column names or aliases and their order to retrieve.
+     * @param {Array<string>} [columnNames]
+     * Column names and their order to retrieve.
      *
      * @return {Highcharts.DataTableRowObject}
      * Returns the row values, or `undefined` if not found.
      */
-    getRowObject(rowIndex: number, columnNamesOrAliases?: Array<string>): (DataTable.RowObject | undefined);
+    getRowObject(rowIndex: number, columnNames?: Array<string>): (DataTable.RowObject | undefined);
     /**
      * Fetches all or a number of rows.
      *
@@ -292,13 +307,13 @@ declare class DataTable implements DataEvent.Emitter {
      * @param {number} [rowCount]
      * Number of rows to fetch. Defaults to maximal number of rows.
      *
-     * @param {Array<string>} [columnNamesOrAliases]
-     * Column names or aliases and their order to retrieve.
+     * @param {Array<string>} [columnNames]
+     * Column names and their order to retrieve.
      *
      * @return {Highcharts.DataTableRowObject}
      * Returns retrieved rows.
      */
-    getRowObjects(rowIndex?: number, rowCount?: number, columnNamesOrAliases?: Array<string>): (Array<DataTable.RowObject>);
+    getRowObjects(rowIndex?: number, rowCount?: number, columnNames?: Array<string>): (Array<DataTable.RowObject>);
     /**
      * Fetches all or a number of rows.
      *
@@ -310,13 +325,13 @@ declare class DataTable implements DataEvent.Emitter {
      * @param {number} [rowCount]
      * Number of rows to fetch. Defaults to maximal number of rows.
      *
-     * @param {Array<string>} [columnNamesOrAliases]
-     * Column names or aliases and their order to retrieve.
+     * @param {Array<string>} [columnNames]
+     * Column names and their order to retrieve.
      *
      * @return {Highcharts.DataTableRow}
      * Returns retrieved rows.
      */
-    getRows(rowIndex?: number, rowCount?: number, columnNamesOrAliases?: Array<string>): (Array<DataTable.Row>);
+    getRows(rowIndex?: number, rowCount?: number, columnNames?: Array<string>): (Array<DataTable.Row>);
     /**
      * Returns the unique version tag of the current state of the table.
      *
@@ -327,23 +342,23 @@ declare class DataTable implements DataEvent.Emitter {
      */
     getVersionTag(): string;
     /**
-     * Checks for given column names or aliases.
+     * Checks for given column names.
      *
      * @function Highcharts.DataTable#hasColumns
      *
-     * @param {Array<string>} columnNamesOrAliases
-     * Column names of aliases to check.
+     * @param {Array<string>} columnNames
+     * Column names to check.
      *
      * @return {boolean}
      * Returns `true` if all columns have been found, otherwise `false`.
      */
-    hasColumns(columnNamesOrAliases: Array<string>): boolean;
+    hasColumns(columnNames: Array<string>): boolean;
     /**
      * Searches for a specific cell value.
      *
      * @function Highcharts.DataTable#hasRowWith
      *
-     * @param {string} columnNameOrAlias
+     * @param {string} columnName
      * Column to search in.
      *
      * @param {Highcharts.DataTableCellType} cellValue
@@ -352,7 +367,7 @@ declare class DataTable implements DataEvent.Emitter {
      * @return {boolean}
      * True, if a row has been found, otherwise false.
      */
-    hasRowWith(columnNameOrAlias: string, cellValue: DataTable.CellType): boolean;
+    hasRowWith(columnName: string, cellValue: DataTable.CellType): boolean;
     /**
      * Registers a callback for a specific event.
      *
@@ -385,13 +400,13 @@ declare class DataTable implements DataEvent.Emitter {
      */
     renameColumn(columnName: string, newColumnName: string): boolean;
     /**
-     * Sets a cell value based on the row index and column name or alias.  Will
+     * Sets a cell value based on the row index and column.  Will
      * insert a new column, if not found.
      *
      * @function Highcharts.DataTable#setCell
      *
-     * @param {string} columnNameOrAlias
-     * Column name or alias to set.
+     * @param {string} columnName
+     * Column name to set.
      *
      * @param {number|undefined} rowIndex
      * Row index to set.
@@ -405,14 +420,14 @@ declare class DataTable implements DataEvent.Emitter {
      * @emits #setCell
      * @emits #afterSetCell
      */
-    setCell(columnNameOrAlias: string, rowIndex: number, cellValue: DataTable.CellType, eventDetail?: DataEvent.Detail): void;
+    setCell(columnName: string, rowIndex: number, cellValue: DataTable.CellType, eventDetail?: DataEvent.Detail): void;
     /**
      * Sets cell values for a column. Will insert a new column, if not found.
      *
      * @function Highcharts.DataTable#setColumn
      *
-     * @param {string} columnNameOrAlias
-     * Column name or alias to set.
+     * @param {string} columnName
+     * Column name to set.
      *
      * @param {Highcharts.DataTableColumn} [column]
      * Values to set in the column.
@@ -426,7 +441,7 @@ declare class DataTable implements DataEvent.Emitter {
      * @emits #setColumns
      * @emits #afterSetColumns
      */
-    setColumn(columnNameOrAlias: string, column?: DataTable.Column, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
+    setColumn(columnName: string, column?: DataTable.Column, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
     /**
      * Sets cell values for multiple columns. Will insert new columns, if not
      * found.
@@ -434,7 +449,7 @@ declare class DataTable implements DataEvent.Emitter {
      * @function Highcharts.DataTable#setColumns
      *
      * @param {Highcharts.DataTableColumnCollection} columns
-     * Columns as a collection, where the keys are the column names or aliases.
+     * Columns as a collection, where the keys are the column names.
      *
      * @param {number} [rowIndex]
      * Index of the first row to change. Keep undefined to reset.
@@ -447,42 +462,7 @@ declare class DataTable implements DataEvent.Emitter {
      */
     setColumns(columns: DataTable.ColumnCollection, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
     /**
-     * Sets the row key column. This column is invisible and the cells
-     * serve as identifiers to the rows they are contained in. Accessing
-     * rows by keys instead of indexes is necessary in cases where rows
-     * are rearranged by a DataModifier (e.g. SortModifier or RangeModifier).
-     *
-     * @function Highcharts.DataTable#setRowKeysColumn
-     *
-     * @param {number} nRows
-     * Number of rows to add to the column.
-     *
-     */
-    setRowKeysColumn(nRows: number): void;
-    /**
-     * Get the row key column.
-     *
-     * @function Highcharts.DataTable#getRowKeysColumn
-     *     *
-     * @return {DataTable.Column|undefined}
-     * Returns row keys if rowKeysId is defined, else undefined.
-     */
-    getRowKeysColumn(): DataTable.Column | undefined;
-    /**
-     * Get the row index in the original (unmodified) data table.
-     *
-     * @function Highcharts.DataTable#getRowIndexOriginal
-     *
-     * @param {number} idx
-     * Row index in the modified data table.
-     *
-     * @return {string}
-     * Row index in the original data table.
-     */
-    getRowIndexOriginal(idx: number): string;
-    /**
      * Sets or unsets the modifier for the table.
-     * @private
      *
      * @param {Highcharts.DataModifier} [modifier]
      * Modifier to set, or `undefined` to unset.
@@ -497,6 +477,17 @@ declare class DataTable implements DataEvent.Emitter {
      * @emits #afterSetModifier
      */
     setModifier(modifier?: DataModifier, eventDetail?: DataEvent.Detail): Promise<this>;
+    /**
+     * Sets the original row indexes for the table. It is used to keep the
+     * reference to the original rows when modifying the table.
+     *
+     * @param {Array<number|undefined>} originalRowIndexes
+     * Original row indexes array.
+     *
+     * @param {boolean} omitLocalRowIndexes
+     * Whether to omit the local row indexes calculation. Defaults to `false`.
+     */
+    setOriginalRowIndexes(originalRowIndexes: Array<number | undefined>, omitLocalRowIndexes?: boolean): void;
     /**
      * Sets cell values of a row. Will insert a new row, if no index was
      * provided, or if the index is higher than the total number of table rows.
@@ -539,8 +530,6 @@ declare class DataTable implements DataEvent.Emitter {
      * @emits #afterSetRows
      */
     setRows(rows: Array<(DataTable.Row | DataTable.RowObject)>, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
-    private moveRowKeysColumnToLast;
-    private removeRowKeysColumn;
 }
 /**
  * Additionally it provides necessary types for events.
@@ -573,15 +562,11 @@ declare namespace DataTable {
         [index: number]: CellType;
     }
     /**
-     * Map of column alias to column name.
-     */
-    type ColumnAliases = Record<string, string>;
-    /**
-     * Collection of columns, where the key is the column name (or alias) and
+     * Collection of columns, where the key is the column name and
      * the value is an array of column values.
      */
     interface ColumnCollection {
-        [columnNameOrAlias: string]: Column;
+        [columnName: string]: Column;
     }
     /**
      * Event object for column-related events.

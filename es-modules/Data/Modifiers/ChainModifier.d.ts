@@ -6,7 +6,6 @@ import DataTable from '../DataTable.js';
 /**
  * Modifies a table with the help of modifiers in an ordered chain.
  *
- * @private
  */
 declare class ChainModifier extends DataModifier {
     /**
@@ -163,7 +162,6 @@ declare class ChainModifier extends DataModifier {
 }
 /**
  * Additionally provided types for modifier events and options.
- * @private
  */
 declare namespace ChainModifier {
     /**

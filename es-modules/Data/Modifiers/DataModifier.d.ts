@@ -5,7 +5,6 @@ import type { DataModifierTypes } from './DataModifierType';
 /**
  * Abstract class to provide an interface for modifying a table.
  *
- * @private
  */
 declare abstract class DataModifier implements DataEvent.Emitter {
     /**
@@ -140,7 +139,6 @@ declare abstract class DataModifier implements DataEvent.Emitter {
 }
 /**
  * Additionally provided types for modifier events and options.
- * @private
  */
 declare namespace DataModifier {
     /**

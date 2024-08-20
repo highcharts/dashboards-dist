@@ -11,6 +11,7 @@
  *
  * */
 'use strict';
+import Component from '../Component.js';
 /* *
  *
  *  Constants
@@ -18,7 +19,19 @@
  * */
 const HTMLComponentDefaults = {
     type: 'HTML',
-    elements: []
+    className: [
+        Component.defaultOptions.className,
+        `${Component.defaultOptions.className}-html`
+    ].join(' '),
+    elements: [],
+    editableOptions: [
+        ...Component.defaultOptions.editableOptions || [],
+        {
+            name: 'htmlInput',
+            propertyPath: ['html'],
+            type: 'textarea'
+        }
+    ]
 };
 /* *
  *

@@ -10,7 +10,6 @@ interface SortRowReference {
 /**
  * Sort table rows according to values of a column.
  *
- * @private
  */
 declare class SortModifier extends DataModifier {
     /**
@@ -118,7 +117,6 @@ declare class SortModifier extends DataModifier {
 }
 /**
  * Additionally provided types for modifier events and options.
- * @private
  */
 declare namespace SortModifier {
 }

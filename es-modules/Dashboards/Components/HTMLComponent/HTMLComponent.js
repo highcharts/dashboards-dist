@@ -109,6 +109,9 @@ class HTMLComponent extends Component {
      * The options for the component.
      */
     constructor(cell, options) {
+        if (options.className) {
+            options.className = `${HTMLComponent.defaultOptions.className} ${options.className}`;
+        }
         options = merge(HTMLComponent.defaultOptions, options);
         super(cell, options);
         this.options = options;
@@ -143,6 +146,7 @@ class HTMLComponent extends Component {
         }
         else if (options.html) {
             this.elements = this.getElementsFromString(options.html);
+            this.options.elements = this.elements;
         }
         this.constructTree();
         this.emit({ type: 'afterLoad' });
@@ -164,11 +168,17 @@ class HTMLComponent extends Component {
     }
     /**
      * Handles updating via options.
+     *
      * @param options
      * The options to apply.
      */
-    async update(options) {
-        await super.update(options);
+    async update(options, shouldRerender = true) {
+        if (options.html) {
+            this.elements = this.getElementsFromString(options.html);
+            this.options.elements = this.elements;
+            this.constructTree();
+        }
+        await super.update(options, shouldRerender);
         this.emit({ type: 'afterUpdate' });
     }
     getOptionsOnDrop() {
@@ -176,10 +186,8 @@ class HTMLComponent extends Component {
             cell: '',
             type: 'HTML',
             elements: [{
-                    tagName: 'img',
-                    attributes: {
-                        src: 'https://www.highcharts.com/samples/graphics/stock-dark.svg'
-                    }
+                    tagName: 'span',
+                    textContent: '[Your custom HTML here- edit the component]'
                 }]
         };
     }
@@ -191,7 +199,7 @@ class HTMLComponent extends Component {
         while (this.contentElement.firstChild) {
             this.contentElement.firstChild.remove();
         }
-        const parser = new AST(this.elements);
+        const parser = new AST(this.options.elements || []);
         parser.addToDOM(this.contentElement);
     }
     /**
@@ -236,6 +244,83 @@ class HTMLComponent extends Component {
             ...diffObjects(this.options, HTMLComponent.defaultOptions),
             type: 'HTML'
         };
+    }
+    /**
+     * Retrieves editable options for the HTML component.
+     */
+    getEditableOptions() {
+        const component = this;
+        // When adding a new component, the elements are not yet set.
+        if (this.elements.length) {
+            return merge(component.options, {
+                elements: this.elements
+            });
+        }
+        return component.options;
+    }
+    /**
+     * Get the value of the editable option by property path. Parse the elements
+     * if the HTML options is not set.
+     *
+     * @param propertyPath
+     * The property path of the option.
+     */
+    getEditableOptionValue(propertyPath) {
+        if (!propertyPath) {
+            return;
+        }
+        if (propertyPath[0] === 'html') {
+            const result = this.getEditableOptions();
+            if (!result.html && result.elements) {
+                return this.getStringFromElements(result.elements);
+            }
+            return result[propertyPath[0]];
+        }
+        return super.getEditableOptionValue(propertyPath);
+    }
+    /**
+     * Returns the HTML string from the given elements.
+     *
+     * @param elements
+     * The array of elements to serialize.
+     */
+    getStringFromElements(elements) {
+        let html = '';
+        for (const element of elements) {
+            html += this.serializeNode(element);
+        }
+        return html;
+    }
+    /**
+     * Serializes the HTML node to string.
+     *
+     * @param node
+     * The HTML node to serialize.
+     */
+    serializeNode(node) {
+        if (!node.tagName || node.tagName === '#text') {
+            // Text node
+            return node.textContent || '';
+        }
+        const attributes = node.attributes;
+        let html = `<${node.tagName}`;
+        if (attributes) {
+            for (const key in attributes) {
+                if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+                    const value = attributes[key];
+                    if (value !== void 0) {
+                        html += ` ${key}="${value}"`;
+                    }
+                }
+            }
+        }
+        html += '>';
+        html += node.textContent || '';
+        (node.children || []).forEach((child) => {
+            html += this.serializeNode(child);
+        });
+        html += `</${node.tagName}>`;
+        return html;
     }
     /**
      * @internal

@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.2.0 (2024-07-02)
+ * @license Highcharts Dashboards v2.3.0-test (2024-08-20)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -28,7 +28,7 @@
         if (!obj.hasOwnProperty(path)) {
             obj[path] = fn.apply(null, args);
 
-            if (typeof CustomEvent === 'function') {
+            if (window && typeof CustomEvent === 'function') {
                 window.dispatchEvent(new CustomEvent(
                     'DataGridModuleLoaded',
                     { detail: { path: path, module: obj[path] } }
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.2.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.3.0-test', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -2879,7 +2879,6 @@
         /**
          * Abstract class to provide an interface for modifying a table.
          *
-         * @private
          */
         class DataModifier {
             /* *
@@ -3085,7 +3084,6 @@
          * */
         /**
          * Additionally provided types for modifier events and options.
-         * @private
          */
         (function (DataModifier) {
             /* *
@@ -3153,9 +3151,10 @@
          *  - Sophie Bremer
          *  - Gøran Slettemark
          *  - Jomar Hønsi
+         *  - Dawid Dragula
          *
          * */
-        const { addEvent, fireEvent, uniqueKey } = U;
+        const { addEvent, defined, fireEvent, uniqueKey } = U;
         /* *
          *
          *  Class
@@ -3237,17 +3236,6 @@
              */
             constructor(options = {}) {
                 /**
-                 * Dictionary of all column aliases and their mapped column. If a column
-                 * for one of the get-methods matches an column alias, this column will
-                 * be replaced with the mapped column by the column alias.
-                 *
-                 * @name Highcharts.DataTable#aliases
-                 * @type {Highcharts.Dictionary<string>}
-                 */
-                this.aliases = (options.aliases ?
-                    JSON.parse(JSON.stringify(options.aliases)) :
-                    {});
-                /**
                  * Whether the ID was automatic generated or given in the constructor.
                  *
                  * @name Highcharts.DataTable#autoId
@@ -3265,7 +3253,6 @@
                 this.modified = this;
                 this.rowCount = 0;
                 this.versionTag = uniqueKey();
-                this.rowKeysId = options.rowKeysId;
                 const columns = options.columns || {}, columnNames = Object.keys(columns), thisColumns = this.columns;
                 let rowCount = 0;
                 for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
@@ -3278,12 +3265,6 @@
                     thisColumns[columnNames[i]].length = rowCount;
                 }
                 this.rowCount = rowCount;
-                const aliases = options.aliases || {}, aliasKeys = Object.keys(aliases), thisAliases = this.aliases;
-                for (let i = 0, iEnd = aliasKeys.length, alias; i < iEnd; ++i) {
-                    alias = aliasKeys[i];
-                    thisAliases[alias] = aliases[alias];
-                }
-                this.setRowKeysColumn(rowCount);
             }
             /* *
              *
@@ -3313,18 +3294,16 @@
                 const table = this, tableOptions = {};
                 table.emit({ type: 'cloneTable', detail: eventDetail });
                 if (!skipColumns) {
-                    tableOptions.aliases = table.aliases;
                     tableOptions.columns = table.columns;
                 }
                 if (!table.autoId) {
                     tableOptions.id = table.id;
                 }
-                if (table.rowKeysId) {
-                    tableOptions.rowKeysId = table.rowKeysId;
-                }
                 const tableClone = new DataTable(tableOptions);
                 if (!skipColumns) {
                     tableClone.versionTag = table.versionTag;
+                    tableClone.originalRowIndexes = table.originalRowIndexes;
+                    tableClone.localRowIndexes = table.localRowIndexes;
                 }
                 table.emit({
                     type: 'afterCloneTable',
@@ -3334,35 +3313,12 @@
                 return tableClone;
             }
             /**
-             * Deletes a column alias and returns the original column name. If the alias
-             * is not found, the method returns `undefined`. Deleting an alias does not
-             * affect the data in the table, only the way columns are accessed.
-             *
-             * @function Highcharts.DataTable#deleteColumnAlias
-             *
-             * @param {string} alias
-             * The alias to delete.
-             *
-             * @return {string|undefined}
-             * Returns the original column name, if found.
-             */
-            deleteColumnAlias(alias) {
-                const table = this, aliases = table.aliases, deletedAlias = aliases[alias], modifier = table.modifier;
-                if (deletedAlias) {
-                    delete table.aliases[alias];
-                    if (modifier) {
-                        modifier.modifyColumns(table, { [deletedAlias]: new Array(table.rowCount) }, 0);
-                    }
-                }
-                return deletedAlias;
-            }
-            /**
              * Deletes columns from the table.
              *
              * @function Highcharts.DataTable#deleteColumns
              *
              * @param {Array<string>} [columnNames]
-             * Names (no alias) of columns to delete. If no array is provided, all
+             * Names of columns to delete. If no array is provided, all
              * columns will be deleted.
              *
              * @param {Highcharts.DataTableEventDetail} [eventDetail]
@@ -3392,14 +3348,9 @@
                         }
                         delete columns[columnName];
                     }
-                    let nColumns = Object.keys(columns).length;
-                    if (table.rowKeysId && nColumns === 1) {
-                        // All columns deleted, remove row keys column
-                        delete columns[table.rowKeysId];
-                        nColumns = 0;
-                    }
-                    if (!nColumns) {
+                    if (!Object.keys(columns).length) {
                         table.rowCount = 0;
+                        this.deleteRowIndexReferences();
                     }
                     if (modifier) {
                         modifier.modifyColumns(table, modifiedColumns, 0, eventDetail);
@@ -3412,6 +3363,18 @@
                     });
                     return deletedColumns;
                 }
+            }
+            /**
+             * Deletes the row index references. This is useful when the original table
+             * is deleted, and the references are no longer needed. This table is
+             * then considered an original table or a table that has the same row's
+             * order as the original table.
+             */
+            deleteRowIndexReferences() {
+                delete this.originalRowIndexes;
+                delete this.localRowIndexes;
+                // Here, in case of future need, can be implemented updating of the
+                // modified tables' row indexes references.
             }
             /**
              * Deletes rows in this table.
@@ -3500,8 +3463,8 @@
              *
              * @function Highcharts.DataTable#getCell
              *
-             * @param {string} columnNameOrAlias
-             * Column name or alias of the cell to retrieve.
+             * @param {string} columnName
+             * Column name of the cell to retrieve.
              *
              * @param {number} rowIndex
              * Row index of the cell to retrieve.
@@ -3509,11 +3472,9 @@
              * @return {Highcharts.DataTableCellType|undefined}
              * Returns the cell value or `undefined`.
              */
-            getCell(columnNameOrAlias, rowIndex) {
+            getCell(columnName, rowIndex) {
                 const table = this;
-                columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
-                    columnNameOrAlias);
-                const column = table.columns[columnNameOrAlias];
+                const column = table.columns[columnName];
                 if (column) {
                     return column[rowIndex];
                 }
@@ -3523,8 +3484,8 @@
              *
              * @function Highcharts.DataTable#getCellAsBoolean
              *
-             * @param {string} columnNameOrAlias
-             * Column name or alias to fetch.
+             * @param {string} columnName
+             * Column name to fetch.
              *
              * @param {number} rowIndex
              * Row index to fetch.
@@ -3532,11 +3493,9 @@
              * @return {boolean}
              * Returns the cell value of the row as a boolean.
              */
-            getCellAsBoolean(columnNameOrAlias, rowIndex) {
+            getCellAsBoolean(columnName, rowIndex) {
                 const table = this;
-                columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
-                    columnNameOrAlias);
-                const column = table.columns[columnNameOrAlias];
+                const column = table.columns[columnName];
                 return !!(column && column[rowIndex]);
             }
             /**
@@ -3544,8 +3503,8 @@
              *
              * @function Highcharts.DataTable#getCellAsNumber
              *
-             * @param {string} columnNameOrAlias
-             * Column name or alias to fetch.
+             * @param {string} columnName
+             * Column name or to fetch.
              *
              * @param {number} rowIndex
              * Row index to fetch.
@@ -3556,11 +3515,9 @@
              * @return {number|null}
              * Returns the cell value of the row as a number.
              */
-            getCellAsNumber(columnNameOrAlias, rowIndex, useNaN) {
+            getCellAsNumber(columnName, rowIndex, useNaN) {
                 const table = this;
-                columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
-                    columnNameOrAlias);
-                const column = table.columns[columnNameOrAlias];
+                const column = table.columns[columnName];
                 let cellValue = (column && column[rowIndex]);
                 switch (typeof cellValue) {
                     case 'boolean':
@@ -3576,8 +3533,8 @@
              *
              * @function Highcharts.DataTable#getCellAsString
              *
-             * @param {string} columnNameOrAlias
-             * Column name or alias to fetch.
+             * @param {string} columnName
+             * Column name to fetch.
              *
              * @param {number} rowIndex
              * Row index to fetch.
@@ -3585,22 +3542,20 @@
              * @return {string}
              * Returns the cell value of the row as a string.
              */
-            getCellAsString(columnNameOrAlias, rowIndex) {
+            getCellAsString(columnName, rowIndex) {
                 const table = this;
-                columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
-                    columnNameOrAlias);
-                const column = table.columns[columnNameOrAlias];
+                const column = table.columns[columnName];
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 return `${(column && column[rowIndex])}`;
             }
             /**
-             * Fetches the given column by the canonical column name or by an alias.
+             * Fetches the given column by the canonical column name.
              * This function is a simplified wrap of {@link getColumns}.
              *
              * @function Highcharts.DataTable#getColumn
              *
-             * @param {string} columnNameOrAlias
-             * Name or alias of the column to get, alias takes precedence.
+             * @param {string} columnName
+             * Name of the column to get.
              *
              * @param {boolean} [asReference]
              * Whether to return the column as a readonly reference.
@@ -3608,11 +3563,11 @@
              * @return {Highcharts.DataTableColumn|undefined}
              * A copy of the column, or `undefined` if not found.
              */
-            getColumn(columnNameOrAlias, asReference) {
-                return this.getColumns([columnNameOrAlias], asReference)[columnNameOrAlias];
+            getColumn(columnName, asReference) {
+                return this.getColumns([columnName], asReference)[columnName];
             }
             /**
-             * Fetches the given column by the canonical column name or by an alias, and
+             * Fetches the given column by the canonical column name, and
              * validates the type of the first few cells. If the first defined cell is
              * of type number, it assumes for performance reasons, that all cells are of
              * type number or `null`. Otherwise it will convert all cells to number
@@ -3620,8 +3575,8 @@
              *
              * @function Highcharts.DataTable#getColumnAsNumbers
              *
-             * @param {string} columnNameOrAlias
-             * Name or alias of the column to get, alias takes precedence.
+             * @param {string} columnName
+             * Name of the column to get.
              *
              * @param {boolean} [useNaN]
              * Whether to use NaN instead of `null` and `undefined`.
@@ -3629,16 +3584,14 @@
              * @return {Array<(number|null)>}
              * A copy of the column, or an empty array if not found.
              */
-            getColumnAsNumbers(columnNameOrAlias, useNaN) {
+            getColumnAsNumbers(columnName, useNaN) {
                 const table = this, columns = table.columns;
-                columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
-                    columnNameOrAlias);
-                const column = columns[columnNameOrAlias], columnAsNumber = [];
+                const column = columns[columnName], columnAsNumber = [];
                 if (column) {
                     const columnLength = column.length;
                     if (useNaN) {
                         for (let i = 0; i < columnLength; ++i) {
-                            columnAsNumber.push(table.getCellAsNumber(columnNameOrAlias, i, true));
+                            columnAsNumber.push(table.getCellAsNumber(columnName, i, true));
                         }
                     }
                     else {
@@ -3654,7 +3607,7 @@
                             }
                         }
                         for (let i = 0; i < columnLength; ++i) {
-                            columnAsNumber.push(table.getCellAsNumber(columnNameOrAlias, i));
+                            columnAsNumber.push(table.getCellAsNumber(columnName, i));
                         }
                     }
                 }
@@ -3670,7 +3623,6 @@
              */
             getColumnNames() {
                 const table = this, columnNames = Object.keys(table.columns);
-                this.removeRowKeysColumn(columnNames);
                 return columnNames;
             }
             /**
@@ -3678,8 +3630,8 @@
              *
              * @function Highcharts.DataTable#getColumns
              *
-             * @param {Array<string>} [columnNamesOrAliases]
-             * Column names or aliases to retrieve. Aliases taking precedence.
+             * @param {Array<string>} [columnNames]
+             * Column names to retrieve.
              *
              * @param {boolean} [asReference]
              * Whether to return columns as a readonly reference.
@@ -3688,18 +3640,34 @@
              * Collection of columns. If a requested column was not found, it is
              * `undefined`.
              */
-            getColumns(columnNamesOrAliases, asReference) {
-                const table = this, tableAliasMap = table.aliases, tableColumns = table.columns, columns = {};
-                columnNamesOrAliases = (columnNamesOrAliases || Object.keys(tableColumns));
-                this.removeRowKeysColumn(columnNamesOrAliases);
-                for (let i = 0, iEnd = columnNamesOrAliases.length, column, columnName; i < iEnd; ++i) {
-                    columnName = columnNamesOrAliases[i];
-                    column = tableColumns[(tableAliasMap[columnName] || columnName)];
+            getColumns(columnNames, asReference) {
+                const table = this, tableColumns = table.columns, columns = {};
+                columnNames = (columnNames || Object.keys(tableColumns));
+                for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
+                    columnName = columnNames[i];
+                    column = tableColumns[columnName];
                     if (column) {
                         columns[columnName] = (asReference ? column : column.slice());
                     }
                 }
                 return columns;
+            }
+            /**
+             * Takes the original row index and returns the local row index in the
+             * modified table for which this function is called.
+             *
+             * @param {number} originalRowIndex
+             * Original row index to get the local row index for.
+             *
+             * @return {number|undefined}
+             * Returns the local row index or `undefined` if not found.
+             */
+            getLocalRowIndex(originalRowIndex) {
+                const { localRowIndexes } = this;
+                if (localRowIndexes) {
+                    return localRowIndexes[originalRowIndex];
+                }
+                return originalRowIndex;
             }
             /**
              * Retrieves the modifier for the table.
@@ -3712,6 +3680,23 @@
                 return this.modifier;
             }
             /**
+             * Takes the local row index and returns the index of the corresponding row
+             * in the original table.
+             *
+             * @param {number} rowIndex
+             * Local row index to get the original row index for.
+             *
+             * @return {number|undefined}
+             * Returns the original row index or `undefined` if not found.
+             */
+            getOriginalRowIndex(rowIndex) {
+                const { originalRowIndexes } = this;
+                if (originalRowIndexes) {
+                    return originalRowIndexes[rowIndex];
+                }
+                return rowIndex;
+            }
+            /**
              * Retrieves the row at a given index. This function is a simplified wrap of
              * {@link getRows}.
              *
@@ -3720,14 +3705,14 @@
              * @param {number} rowIndex
              * Row index to retrieve. First row has index 0.
              *
-             * @param {Array<string>} [columnNamesOrAliases]
-             * Column names or aliases in order to retrieve.
+             * @param {Array<string>} [columnNames]
+             * Column names in order to retrieve.
              *
              * @return {Highcharts.DataTableRow}
              * Returns the row values, or `undefined` if not found.
              */
-            getRow(rowIndex, columnNamesOrAliases) {
-                return this.getRows(rowIndex, 1, columnNamesOrAliases)[0];
+            getRow(rowIndex, columnNames) {
+                return this.getRows(rowIndex, 1, columnNames)[0];
             }
             /**
              * Returns the number of rows in this table.
@@ -3746,7 +3731,7 @@
              *
              * @function Highcharts.DataTable#getRowIndexBy
              *
-             * @param {string} columnNameOrAlias
+             * @param {string} columnName
              * Column to search in.
              *
              * @param {Highcharts.DataTableCellType} cellValue
@@ -3758,11 +3743,9 @@
              * @return {number|undefined}
              * Index of the first row matching the cell value.
              */
-            getRowIndexBy(columnNameOrAlias, cellValue, rowIndexOffset) {
+            getRowIndexBy(columnName, cellValue, rowIndexOffset) {
                 const table = this;
-                columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
-                    columnNameOrAlias);
-                const column = table.columns[columnNameOrAlias];
+                const column = table.columns[columnName];
                 if (column) {
                     const rowIndex = column.indexOf(cellValue, rowIndexOffset);
                     if (rowIndex !== -1) {
@@ -3779,14 +3762,14 @@
              * @param {number} rowIndex
              * Row index.
              *
-             * @param {Array<string>} [columnNamesOrAliases]
-             * Column names or aliases and their order to retrieve.
+             * @param {Array<string>} [columnNames]
+             * Column names and their order to retrieve.
              *
              * @return {Highcharts.DataTableRowObject}
              * Returns the row values, or `undefined` if not found.
              */
-            getRowObject(rowIndex, columnNamesOrAliases) {
-                return this.getRowObjects(rowIndex, 1, columnNamesOrAliases)[0];
+            getRowObject(rowIndex, columnNames) {
+                return this.getRowObjects(rowIndex, 1, columnNames)[0];
             }
             /**
              * Fetches all or a number of rows.
@@ -3799,20 +3782,19 @@
              * @param {number} [rowCount]
              * Number of rows to fetch. Defaults to maximal number of rows.
              *
-             * @param {Array<string>} [columnNamesOrAliases]
-             * Column names or aliases and their order to retrieve.
+             * @param {Array<string>} [columnNames]
+             * Column names and their order to retrieve.
              *
              * @return {Highcharts.DataTableRowObject}
              * Returns retrieved rows.
              */
-            getRowObjects(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNamesOrAliases) {
-                const table = this, aliases = table.aliases, columns = table.columns, rows = new Array(rowCount);
-                columnNamesOrAliases = (columnNamesOrAliases || Object.keys(columns));
-                this.removeRowKeysColumn(columnNamesOrAliases);
+            getRowObjects(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNames) {
+                const table = this, columns = table.columns, rows = new Array(rowCount);
+                columnNames = (columnNames || Object.keys(columns));
                 for (let i = rowIndex, i2 = 0, iEnd = Math.min(table.rowCount, (rowIndex + rowCount)), column, row; i < iEnd; ++i, ++i2) {
                     row = rows[i2] = {};
-                    for (const columnName of columnNamesOrAliases) {
-                        column = columns[(aliases[columnName] || columnName)];
+                    for (const columnName of columnNames) {
+                        column = columns[columnName];
                         row[columnName] = (column ? column[i] : void 0);
                     }
                 }
@@ -3829,19 +3811,19 @@
              * @param {number} [rowCount]
              * Number of rows to fetch. Defaults to maximal number of rows.
              *
-             * @param {Array<string>} [columnNamesOrAliases]
-             * Column names or aliases and their order to retrieve.
+             * @param {Array<string>} [columnNames]
+             * Column names and their order to retrieve.
              *
              * @return {Highcharts.DataTableRow}
              * Returns retrieved rows.
              */
-            getRows(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNamesOrAliases) {
-                const table = this, aliases = table.aliases, columns = table.columns, rows = new Array(rowCount);
-                columnNamesOrAliases = (columnNamesOrAliases || Object.keys(columns));
+            getRows(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNames) {
+                const table = this, columns = table.columns, rows = new Array(rowCount);
+                columnNames = (columnNames || Object.keys(columns));
                 for (let i = rowIndex, i2 = 0, iEnd = Math.min(table.rowCount, (rowIndex + rowCount)), column, row; i < iEnd; ++i, ++i2) {
                     row = rows[i2] = [];
-                    for (const columnName of columnNamesOrAliases) {
-                        column = columns[(aliases[columnName] || columnName)];
+                    for (const columnName of columnNames) {
+                        column = columns[columnName];
                         row.push(column ? column[i] : void 0);
                     }
                 }
@@ -3859,21 +3841,21 @@
                 return this.versionTag;
             }
             /**
-             * Checks for given column names or aliases.
+             * Checks for given column names.
              *
              * @function Highcharts.DataTable#hasColumns
              *
-             * @param {Array<string>} columnNamesOrAliases
-             * Column names of aliases to check.
+             * @param {Array<string>} columnNames
+             * Column names to check.
              *
              * @return {boolean}
              * Returns `true` if all columns have been found, otherwise `false`.
              */
-            hasColumns(columnNamesOrAliases) {
-                const table = this, aliases = table.aliases, columns = table.columns;
-                for (let i = 0, iEnd = columnNamesOrAliases.length, columnName; i < iEnd; ++i) {
-                    columnName = columnNamesOrAliases[i];
-                    if (!columns[columnName] && !aliases[columnName]) {
+            hasColumns(columnNames) {
+                const table = this, columns = table.columns;
+                for (let i = 0, iEnd = columnNames.length, columnName; i < iEnd; ++i) {
+                    columnName = columnNames[i];
+                    if (!columns[columnName]) {
                         return false;
                     }
                 }
@@ -3884,7 +3866,7 @@
              *
              * @function Highcharts.DataTable#hasRowWith
              *
-             * @param {string} columnNameOrAlias
+             * @param {string} columnName
              * Column to search in.
              *
              * @param {Highcharts.DataTableCellType} cellValue
@@ -3893,11 +3875,9 @@
              * @return {boolean}
              * True, if a row has been found, otherwise false.
              */
-            hasRowWith(columnNameOrAlias, cellValue) {
+            hasRowWith(columnName, cellValue) {
                 const table = this;
-                columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
-                    columnNameOrAlias);
-                const column = table.columns[columnNameOrAlias];
+                const column = table.columns[columnName];
                 if (column) {
                     return (column.indexOf(cellValue) !== -1);
                 }
@@ -3939,29 +3919,21 @@
                 const table = this, columns = table.columns;
                 if (columns[columnName]) {
                     if (columnName !== newColumnName) {
-                        const aliases = table.aliases;
-                        if (aliases[newColumnName]) {
-                            delete aliases[newColumnName];
-                        }
                         columns[newColumnName] = columns[columnName];
                         delete columns[columnName];
-                        if (table.rowKeysId) {
-                            // Ensure that row keys column is last
-                            this.moveRowKeysColumnToLast(columns, table.rowKeysId);
-                        }
                     }
                     return true;
                 }
                 return false;
             }
             /**
-             * Sets a cell value based on the row index and column name or alias.  Will
+             * Sets a cell value based on the row index and column.  Will
              * insert a new column, if not found.
              *
              * @function Highcharts.DataTable#setCell
              *
-             * @param {string} columnNameOrAlias
-             * Column name or alias to set.
+             * @param {string} columnName
+             * Column name to set.
              *
              * @param {number|undefined} rowIndex
              * Row index to set.
@@ -3975,35 +3947,33 @@
              * @emits #setCell
              * @emits #afterSetCell
              */
-            setCell(columnNameOrAlias, rowIndex, cellValue, eventDetail) {
+            setCell(columnName, rowIndex, cellValue, eventDetail) {
                 const table = this, columns = table.columns, modifier = table.modifier;
-                columnNameOrAlias = (table.aliases[columnNameOrAlias] ||
-                    columnNameOrAlias);
-                let column = columns[columnNameOrAlias];
+                let column = columns[columnName];
                 if (column && column[rowIndex] === cellValue) {
                     return;
                 }
                 table.emit({
                     type: 'setCell',
                     cellValue,
-                    columnName: columnNameOrAlias,
+                    columnName: columnName,
                     detail: eventDetail,
                     rowIndex
                 });
                 if (!column) {
-                    column = columns[columnNameOrAlias] = new Array(table.rowCount);
+                    column = columns[columnName] = new Array(table.rowCount);
                 }
                 if (rowIndex >= table.rowCount) {
                     table.rowCount = (rowIndex + 1);
                 }
                 column[rowIndex] = cellValue;
                 if (modifier) {
-                    modifier.modifyCell(table, columnNameOrAlias, rowIndex, cellValue);
+                    modifier.modifyCell(table, columnName, rowIndex, cellValue);
                 }
                 table.emit({
                     type: 'afterSetCell',
                     cellValue,
-                    columnName: columnNameOrAlias,
+                    columnName: columnName,
                     detail: eventDetail,
                     rowIndex
                 });
@@ -4013,8 +3983,8 @@
              *
              * @function Highcharts.DataTable#setColumn
              *
-             * @param {string} columnNameOrAlias
-             * Column name or alias to set.
+             * @param {string} columnName
+             * Column name to set.
              *
              * @param {Highcharts.DataTableColumn} [column]
              * Values to set in the column.
@@ -4028,8 +3998,8 @@
              * @emits #setColumns
              * @emits #afterSetColumns
              */
-            setColumn(columnNameOrAlias, column = [], rowIndex = 0, eventDetail) {
-                this.setColumns({ [columnNameOrAlias]: column }, rowIndex, eventDetail);
+            setColumn(columnName, column = [], rowIndex = 0, eventDetail) {
+                this.setColumns({ [columnName]: column }, rowIndex, eventDetail);
             }
             /**
              * Sets cell values for multiple columns. Will insert new columns, if not
@@ -4038,7 +4008,7 @@
              * @function Highcharts.DataTable#setColumns
              *
              * @param {Highcharts.DataTableColumnCollection} columns
-             * Columns as a collection, where the keys are the column names or aliases.
+             * Columns as a collection, where the keys are the column names.
              *
              * @param {number} [rowIndex]
              * Index of the first row to change. Keep undefined to reset.
@@ -4061,8 +4031,6 @@
                 for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
                     columnName = columnNames[i];
                     column = columns[columnName];
-                    columnName = (table.aliases[columnName] ||
-                        columnName);
                     if (reset) {
                         tableColumns[columnName] = column.slice();
                         table.rowCount = column.length;
@@ -4084,10 +4052,6 @@
                 if (tableModifier) {
                     tableModifier.modifyColumns(table, columns, (rowIndex || 0));
                 }
-                if (table.rowKeysId) {
-                    // Ensure that the row keys column is always last
-                    this.moveRowKeysColumnToLast(tableColumns, table.rowKeysId);
-                }
                 table.emit({
                     type: 'afterSetColumns',
                     columns,
@@ -4097,65 +4061,7 @@
                 });
             }
             /**
-             * Sets the row key column. This column is invisible and the cells
-             * serve as identifiers to the rows they are contained in. Accessing
-             * rows by keys instead of indexes is necessary in cases where rows
-             * are rearranged by a DataModifier (e.g. SortModifier or RangeModifier).
-             *
-             * @function Highcharts.DataTable#setRowKeysColumn
-             *
-             * @param {number} nRows
-             * Number of rows to add to the column.
-             *
-             */
-            setRowKeysColumn(nRows) {
-                const id = this.rowKeysId;
-                if (!id) {
-                    return;
-                }
-                this.columns[id] = [];
-                const keysArray = this.columns[id];
-                for (let i = 0; i < nRows; i++) {
-                    keysArray.push(id + '_' + i);
-                }
-            }
-            /**
-             * Get the row key column.
-             *
-             * @function Highcharts.DataTable#getRowKeysColumn
-             *     *
-             * @return {DataTable.Column|undefined}
-             * Returns row keys if rowKeysId is defined, else undefined.
-             */
-            getRowKeysColumn() {
-                const id = this.rowKeysId;
-                if (id) {
-                    return this.columns[id];
-                }
-            }
-            /**
-             * Get the row index in the original (unmodified) data table.
-             *
-             * @function Highcharts.DataTable#getRowIndexOriginal
-             *
-             * @param {number} idx
-             * Row index in the modified data table.
-             *
-             * @return {string}
-             * Row index in the original data table.
-             */
-            getRowIndexOriginal(idx) {
-                const id = this.rowKeysId;
-                if (id) {
-                    const rowKeyCol = this.columns[id];
-                    const idxOrig = '' + rowKeyCol[idx];
-                    return idxOrig.split('_')[1];
-                }
-                return String(idx);
-            }
-            /**
              * Sets or unsets the modifier for the table.
-             * @private
              *
              * @param {Highcharts.DataModifier} [modifier]
              * Modifier to set, or `undefined` to unset.
@@ -4206,6 +4112,29 @@
                 });
             }
             /**
+             * Sets the original row indexes for the table. It is used to keep the
+             * reference to the original rows when modifying the table.
+             *
+             * @param {Array<number|undefined>} originalRowIndexes
+             * Original row indexes array.
+             *
+             * @param {boolean} omitLocalRowIndexes
+             * Whether to omit the local row indexes calculation. Defaults to `false`.
+             */
+            setOriginalRowIndexes(originalRowIndexes, omitLocalRowIndexes = false) {
+                this.originalRowIndexes = originalRowIndexes;
+                if (omitLocalRowIndexes) {
+                    return;
+                }
+                const modifiedIndexes = this.localRowIndexes = [];
+                for (let i = 0, iEnd = originalRowIndexes.length, originalIndex; i < iEnd; ++i) {
+                    originalIndex = originalRowIndexes[i];
+                    if (defined(originalIndex)) {
+                        modifiedIndexes[originalIndex] = i;
+                    }
+                }
+            }
+            /**
              * Sets cell values of a row. Will insert a new row, if no index was
              * provided, or if the index is higher than the total number of table rows.
              *
@@ -4249,7 +4178,7 @@
              * @emits #afterSetRows
              */
             setRows(rows, rowIndex = this.rowCount, eventDetail) {
-                const table = this, aliases = table.aliases, columns = table.columns, columnNames = Object.keys(columns), modifier = table.modifier, rowCount = rows.length;
+                const table = this, columns = table.columns, columnNames = Object.keys(columns), modifier = table.modifier, rowCount = rows.length;
                 table.emit({
                     type: 'setRows',
                     detail: eventDetail,
@@ -4273,7 +4202,6 @@
                         const rowColumnNames = Object.keys(row);
                         for (let j = 0, jEnd = rowColumnNames.length, rowColumnName; j < jEnd; ++j) {
                             rowColumnName = rowColumnNames[j];
-                            rowColumnName = (aliases[rowColumnName] || rowColumnName);
                             if (!columns[rowColumnName]) {
                                 columns[rowColumnName] = new Array(i2 + 1);
                             }
@@ -4288,9 +4216,6 @@
                         columns[columnNames[i]].length = indexRowCount;
                     }
                 }
-                if (this.rowKeysId && !columnNames.includes(this.rowKeysId)) {
-                    this.setRowKeysColumn(rowCount);
-                }
                 if (modifier) {
                     modifier.modifyRows(table, rows, rowIndex);
                 }
@@ -4301,23 +4226,6 @@
                     rowIndex,
                     rows
                 });
-            }
-            // The row keys column must always be the last column
-            moveRowKeysColumnToLast(columns, id) {
-                const rowKeyColumn = columns[id];
-                delete columns[id];
-                columns[id] = rowKeyColumn;
-            }
-            // The row keys column must be removed in some methods
-            // (API backwards compatibility)
-            removeRowKeysColumn(columnNamesOrAliases) {
-                if (this.rowKeysId) {
-                    const pos = columnNamesOrAliases.indexOf(this.rowKeysId);
-                    if (pos !== -1) {
-                        // Always the last column
-                        columnNamesOrAliases.pop();
-                    }
-                }
             }
         }
         /* *
@@ -4630,6 +4538,601 @@
          * */
 
         return DataConnector;
+    });
+    _registerModule(_modules, 'Data/Converters/DataConverter.js', [_modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataTable, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Sebastian Bochan
+         *  - Gøran Slettemark
+         *  - Torstein Hønsi
+         *  - Wojciech Chmiel
+         *
+         * */
+        const { addEvent, fireEvent, isNumber, merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Base class providing an interface and basic methods for a DataConverter
+         *
+         * @private
+         */
+        class DataConverter {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the DataConverter.
+             *
+             * @param {DataConverter.UserOptions} [options]
+             * Options for the DataConverter.
+             */
+            constructor(options) {
+                /* *
+                 *
+                 *  Properties
+                 *
+                 * */
+                /**
+                 * A collection of available date formats.
+                 */
+                this.dateFormats = {
+                    'YYYY/mm/dd': {
+                        regex: /^(\d{4})([\-\.\/])(\d{1,2})\2(\d{1,2})$/,
+                        parser: function (match) {
+                            return (match ?
+                                Date.UTC(+match[1], match[3] - 1, +match[4]) :
+                                NaN);
+                        }
+                    },
+                    'dd/mm/YYYY': {
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
+                        parser: function (match) {
+                            return (match ?
+                                Date.UTC(+match[4], match[3] - 1, +match[1]) :
+                                NaN);
+                        },
+                        alternative: 'mm/dd/YYYY' // Different format with the same regex
+                    },
+                    'mm/dd/YYYY': {
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
+                        parser: function (match) {
+                            return (match ?
+                                Date.UTC(+match[4], match[1] - 1, +match[3]) :
+                                NaN);
+                        }
+                    },
+                    'dd/mm/YY': {
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
+                        parser: function (match) {
+                            const d = new Date();
+                            if (!match) {
+                                return NaN;
+                            }
+                            let year = +match[4];
+                            if (year > (d.getFullYear() - 2000)) {
+                                year += 1900;
+                            }
+                            else {
+                                year += 2000;
+                            }
+                            return Date.UTC(year, match[3] - 1, +match[1]);
+                        },
+                        alternative: 'mm/dd/YY' // Different format with the same regex
+                    },
+                    'mm/dd/YY': {
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
+                        parser: function (match) {
+                            return (match ?
+                                Date.UTC(+match[4] + 2000, match[1] - 1, +match[3]) :
+                                NaN);
+                        }
+                    }
+                };
+                const mergedOptions = merge(DataConverter.defaultOptions, options);
+                let regExpPoint = mergedOptions.decimalPoint;
+                if (regExpPoint === '.' || regExpPoint === ',') {
+                    regExpPoint = regExpPoint === '.' ? '\\.' : ',';
+                    this.decimalRegExp =
+                        new RegExp('^(-?[0-9]+)' + regExpPoint + '([0-9]+)$');
+                }
+                this.options = mergedOptions;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Converts a value to a boolean.
+             *
+             * @param {DataConverter.Type} value
+             * Value to convert.
+             *
+             * @return {boolean}
+             * Converted value as a boolean.
+             */
+            asBoolean(value) {
+                if (typeof value === 'boolean') {
+                    return value;
+                }
+                if (typeof value === 'string') {
+                    return value !== '' && value !== '0' && value !== 'false';
+                }
+                return !!this.asNumber(value);
+            }
+            /**
+             * Converts a value to a Date.
+             *
+             * @param {DataConverter.Type} value
+             * Value to convert.
+             *
+             * @return {globalThis.Date}
+             * Converted value as a Date.
+             */
+            asDate(value) {
+                let timestamp;
+                if (typeof value === 'string') {
+                    timestamp = this.parseDate(value);
+                }
+                else if (typeof value === 'number') {
+                    timestamp = value;
+                }
+                else if (value instanceof Date) {
+                    return value;
+                }
+                else {
+                    timestamp = this.parseDate(this.asString(value));
+                }
+                return new Date(timestamp);
+            }
+            /**
+             * Casts a string value to it's guessed type
+             *
+             * @param {*} value
+             * The value to examine.
+             *
+             * @return {number|string|Date}
+             * The converted value.
+             */
+            asGuessedType(value) {
+                const converter = this, typeMap = {
+                    'number': converter.asNumber,
+                    'Date': converter.asDate,
+                    'string': converter.asString
+                };
+                return typeMap[converter.guessType(value)].call(converter, value);
+            }
+            /**
+             * Converts a value to a number.
+             *
+             * @param {DataConverter.Type} value
+             * Value to convert.
+             *
+             * @return {number}
+             * Converted value as a number.
+             */
+            asNumber(value) {
+                if (typeof value === 'number') {
+                    return value;
+                }
+                if (typeof value === 'boolean') {
+                    return value ? 1 : 0;
+                }
+                if (typeof value === 'string') {
+                    const decimalRegex = this.decimalRegExp;
+                    if (value.indexOf(' ') > -1) {
+                        value = value.replace(/\s+/g, '');
+                    }
+                    if (decimalRegex) {
+                        if (!decimalRegex.test(value)) {
+                            return NaN;
+                        }
+                        value = value.replace(decimalRegex, '$1.$2');
+                    }
+                    return parseFloat(value);
+                }
+                if (value instanceof Date) {
+                    return value.getDate();
+                }
+                if (value) {
+                    return value.getRowCount();
+                }
+                return NaN;
+            }
+            /**
+             * Converts a value to a string.
+             *
+             * @param {DataConverter.Type} value
+             * Value to convert.
+             *
+             * @return {string}
+             * Converted value as a string.
+             */
+            asString(value) {
+                return '' + value;
+            }
+            /**
+             * Tries to guess the date format
+             *  - Check if either month candidate exceeds 12
+             *  - Check if year is missing (use current year)
+             *  - Check if a shortened year format is used (e.g. 1/1/99)
+             *  - If no guess can be made, the user must be prompted
+             * data is the data to deduce a format based on
+             * @private
+             *
+             * @param {Array<string>} data
+             * Data to check the format.
+             *
+             * @param {number} limit
+             * Max data to check the format.
+             *
+             * @param {boolean} save
+             * Whether to save the date format in the converter options.
+             */
+            deduceDateFormat(data, limit, save) {
+                const parser = this, stable = [], max = [];
+                let format = 'YYYY/mm/dd', thing, guessedFormat = [], i = 0, madeDeduction = false, 
+                /// candidates = {},
+                elem, j;
+                if (!limit || limit > data.length) {
+                    limit = data.length;
+                }
+                for (; i < limit; i++) {
+                    if (typeof data[i] !== 'undefined' &&
+                        data[i] && data[i].length) {
+                        thing = data[i]
+                            .trim()
+                            .replace(/[\-\.\/]/g, ' ')
+                            .split(' ');
+                        guessedFormat = [
+                            '',
+                            '',
+                            ''
+                        ];
+                        for (j = 0; j < thing.length; j++) {
+                            if (j < guessedFormat.length) {
+                                elem = parseInt(thing[j], 10);
+                                if (elem) {
+                                    max[j] = (!max[j] || max[j] < elem) ? elem : max[j];
+                                    if (typeof stable[j] !== 'undefined') {
+                                        if (stable[j] !== elem) {
+                                            stable[j] = false;
+                                        }
+                                    }
+                                    else {
+                                        stable[j] = elem;
+                                    }
+                                    if (elem > 31) {
+                                        if (elem < 100) {
+                                            guessedFormat[j] = 'YY';
+                                        }
+                                        else {
+                                            guessedFormat[j] = 'YYYY';
+                                        }
+                                        /// madeDeduction = true;
+                                    }
+                                    else if (elem > 12 &&
+                                        elem <= 31) {
+                                        guessedFormat[j] = 'dd';
+                                        madeDeduction = true;
+                                    }
+                                    else if (!guessedFormat[j].length) {
+                                        guessedFormat[j] = 'mm';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (madeDeduction) {
+                    // This handles a few edge cases with hard to guess dates
+                    for (j = 0; j < stable.length; j++) {
+                        if (stable[j] !== false) {
+                            if (max[j] > 12 &&
+                                guessedFormat[j] !== 'YY' &&
+                                guessedFormat[j] !== 'YYYY') {
+                                guessedFormat[j] = 'YY';
+                            }
+                        }
+                        else if (max[j] > 12 && guessedFormat[j] === 'mm') {
+                            guessedFormat[j] = 'dd';
+                        }
+                    }
+                    // If the middle one is dd, and the last one is dd,
+                    // the last should likely be year.
+                    if (guessedFormat.length === 3 &&
+                        guessedFormat[1] === 'dd' &&
+                        guessedFormat[2] === 'dd') {
+                        guessedFormat[2] = 'YY';
+                    }
+                    format = guessedFormat.join('/');
+                    // If the caculated format is not valid, we need to present an
+                    // error.
+                }
+                // Save the deduced format in the converter options.
+                if (save) {
+                    parser.options.dateFormat = format;
+                }
+                return format;
+            }
+            /**
+             * Emits an event on the DataConverter instance.
+             *
+             * @param {DataConverter.Event} [e]
+             * Event object containing additional event data
+             */
+            emit(e) {
+                fireEvent(this, e.type, e);
+            }
+            /**
+             * Initiates the data exporting. Should emit `exportError` on failure.
+             *
+             * @param {DataConnector} connector
+             * Connector to export from.
+             *
+             * @param {DataConverter.Options} [options]
+             * Options for the export.
+             */
+            export(
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            connector, options
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
+                this.emit({
+                    type: 'exportError',
+                    columns: [],
+                    headers: []
+                });
+                throw new Error('Not implemented');
+            }
+            /**
+             * Getter for the data table.
+             *
+             * @return {DataTable}
+             * Table of parsed data.
+             */
+            getTable() {
+                throw new Error('Not implemented');
+            }
+            /**
+             * Guesses the potential type of a string value for parsing CSV etc.
+             *
+             * @param {*} value
+             * The value to examine.
+             *
+             * @return {'number'|'string'|'Date'}
+             * Type string, either `string`, `Date`, or `number`.
+             */
+            guessType(value) {
+                const converter = this;
+                let result = 'string';
+                if (typeof value === 'string') {
+                    const trimedValue = converter.trim(`${value}`), decimalRegExp = converter.decimalRegExp;
+                    let innerTrimedValue = converter.trim(trimedValue, true);
+                    if (decimalRegExp) {
+                        innerTrimedValue = (decimalRegExp.test(innerTrimedValue) ?
+                            innerTrimedValue.replace(decimalRegExp, '$1.$2') :
+                            '');
+                    }
+                    const floatValue = parseFloat(innerTrimedValue);
+                    if (+innerTrimedValue === floatValue) {
+                        // String is numeric
+                        value = floatValue;
+                    }
+                    else {
+                        // Determine if a date string
+                        const dateValue = converter.parseDate(value);
+                        result = isNumber(dateValue) ? 'Date' : 'string';
+                    }
+                }
+                if (typeof value === 'number') {
+                    // Greater than milliseconds in a year assumed timestamp
+                    result = value > 365 * 24 * 3600 * 1000 ? 'Date' : 'number';
+                }
+                return result;
+            }
+            /**
+             * Registers a callback for a specific event.
+             *
+             * @param {string} type
+             * Event type as a string.
+             *
+             * @param {DataEventEmitter.Callback} callback
+             * Function to register for an modifier callback.
+             *
+             * @return {Function}
+             * Function to unregister callback from the modifier event.
+             */
+            on(type, callback) {
+                return addEvent(this, type, callback);
+            }
+            /**
+             * Initiates the data parsing. Should emit `parseError` on failure.
+             *
+             * @param {DataConverter.UserOptions} options
+             * Options of the DataConverter.
+             */
+            parse(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            options) {
+                this.emit({
+                    type: 'parseError',
+                    columns: [],
+                    headers: []
+                });
+                throw new Error('Not implemented');
+            }
+            /**
+             * Parse a date and return it as a number.
+             *
+             * @param {string} value
+             * Value to parse.
+             *
+             * @param {string} dateFormatProp
+             * Which of the predefined date formats
+             * to use to parse date values.
+             */
+            parseDate(value, dateFormatProp) {
+                const converter = this, options = converter.options;
+                let dateFormat = dateFormatProp || options.dateFormat, result = NaN, key, format, match;
+                if (options.parseDate) {
+                    result = options.parseDate(value);
+                }
+                else {
+                    // Auto-detect the date format the first time
+                    if (!dateFormat) {
+                        for (key in converter.dateFormats) { // eslint-disable-line guard-for-in
+                            format = converter.dateFormats[key];
+                            match = value.match(format.regex);
+                            if (match) {
+                                // `converter.options.dateFormat` = dateFormat = key;
+                                dateFormat = key;
+                                // `converter.options.alternativeFormat` =
+                                // format.alternative || '';
+                                result = format.parser(match);
+                                break;
+                            }
+                        }
+                        // Next time, use the one previously found
+                    }
+                    else {
+                        format = converter.dateFormats[dateFormat];
+                        if (!format) {
+                            // The selected format is invalid
+                            format = converter.dateFormats['YYYY/mm/dd'];
+                        }
+                        match = value.match(format.regex);
+                        if (match) {
+                            result = format.parser(match);
+                        }
+                    }
+                    // Fall back to Date.parse
+                    if (!match) {
+                        match = Date.parse(value);
+                        // External tools like Date.js and MooTools extend Date object
+                        // and returns a date.
+                        if (typeof match === 'object' &&
+                            match !== null &&
+                            match.getTime) {
+                            result = (match.getTime() -
+                                match.getTimezoneOffset() *
+                                    60000);
+                            // Timestamp
+                        }
+                        else if (isNumber(match)) {
+                            result = match - (new Date(match)).getTimezoneOffset() * 60000;
+                            if ( // Reset dates without year in Chrome
+                            value.indexOf('2001') === -1 &&
+                                (new Date(result)).getFullYear() === 2001) {
+                                result = NaN;
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
+            /**
+             * Trim a string from whitespaces.
+             *
+             * @param {string} str
+             * String to trim.
+             *
+             * @param {boolean} [inside=false]
+             * Remove all spaces between numbers.
+             *
+             * @return {string}
+             * Trimed string
+             */
+            trim(str, inside) {
+                if (typeof str === 'string') {
+                    str = str.replace(/^\s+|\s+$/g, '');
+                    // Clear white space insdie the string, like thousands separators
+                    if (inside && /^[\d\s]+$/.test(str)) {
+                        str = str.replace(/\s/g, '');
+                    }
+                }
+                return str;
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Default options
+         */
+        DataConverter.defaultOptions = {
+            dateFormat: '',
+            alternativeFormat: '',
+            startColumn: 0,
+            endColumn: Number.MAX_VALUE,
+            startRow: 0,
+            endRow: Number.MAX_VALUE,
+            firstRowAsNames: true,
+            switchRowsAndColumns: false
+        };
+        /* *
+         *
+         *  Class Namespace
+         *
+         * */
+        /**
+         * Additionally provided types for events and conversion.
+         */
+        (function (DataConverter) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Converts an array of columns to a table instance. Second dimension of the
+             * array are the row cells.
+             *
+             * @param {Array<DataTable.Column>} [columns]
+             * Array to convert.
+             *
+             * @param {Array<string>} [headers]
+             * Column names to use.
+             *
+             * @return {DataTable}
+             * Table instance from the arrays.
+             */
+            function getTableFromColumns(columns = [], headers = []) {
+                const table = new DataTable();
+                for (let i = 0, iEnd = Math.max(headers.length, columns.length); i < iEnd; ++i) {
+                    table.setColumn(headers[i] || `${i}`, columns[i]);
+                }
+                return table;
+            }
+            DataConverter.getTableFromColumns = getTableFromColumns;
+        })(DataConverter || (DataConverter = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataConverter;
     });
     _registerModule(_modules, 'Data/DataCursor.js', [], function () {
         /* *
@@ -8240,7 +8743,7 @@
                  * can be prevented by returning `false` or calling
                  * `event.preventDefault()`.
                  *
-                 * @sample {highcharts} highcharts/legend/series-legend-itemclick/
+                 * @sample {highcharts} highcharts/legend/itemclick/
                  *         Confirm hiding and showing
                  * @sample {highcharts} highcharts/legend/pie-legend-itemclick/
                  *         Confirm toggle visibility of pie slices
@@ -10843,11 +11346,12 @@
                 }
                 this.prevTop = i;
                 const columnsInPresentationOrder = this.columnNames;
-                const rowCount = this.dataTable.modified.getRowCount();
+                const presentationTable = this.dataTable.modified;
+                const rowCount = presentationTable.modified.getRowCount();
                 for (let j = 0; j < this.rowElements.length && i < rowCount; j++, i++) {
                     const rowElement = this.rowElements[j];
                     rowElement.dataset.rowIndex =
-                        this.dataTable.getRowIndexOriginal(i);
+                        presentationTable.getOriginalRowIndex(i)?.toString();
                     const cellElements = rowElement.childNodes;
                     for (let k = 0, kEnd = columnsInPresentationOrder.length; k < kEnd; k++) {
                         const cell = cellElements[k], column = columnsInPresentationOrder[k], value = this.dataTable.modified
@@ -11154,6 +11658,7 @@
              */
             renderHTMLCellContent(cellContent, parentElement) {
                 const formattedNodes = new AST(cellContent);
+                parentElement.innerHTML = '';
                 formattedNodes.addToDOM(parentElement);
             }
             /**
@@ -11786,603 +12291,6 @@
 
         return DataPool;
     });
-    _registerModule(_modules, 'Data/Converters/DataConverter.js', [_modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataTable, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Sebastian Bochan
-         *  - Gøran Slettemark
-         *  - Torstein Hønsi
-         *  - Wojciech Chmiel
-         *
-         * */
-        const { addEvent, fireEvent, isNumber, merge } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Base class providing an interface and basic methods for a DataConverter
-         *
-         * @private
-         */
-        class DataConverter {
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            /**
-             * Constructs an instance of the DataConverter.
-             *
-             * @param {DataConverter.UserOptions} [options]
-             * Options for the DataConverter.
-             */
-            constructor(options) {
-                /* *
-                 *
-                 *  Properties
-                 *
-                 * */
-                /**
-                 * A collection of available date formats.
-                 */
-                this.dateFormats = {
-                    'YYYY/mm/dd': {
-                        regex: /^(\d{4})([\-\.\/])(\d{1,2})\2(\d{1,2})$/,
-                        parser: function (match) {
-                            return (match ?
-                                Date.UTC(+match[1], match[3] - 1, +match[4]) :
-                                NaN);
-                        }
-                    },
-                    'dd/mm/YYYY': {
-                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
-                        parser: function (match) {
-                            return (match ?
-                                Date.UTC(+match[4], match[3] - 1, +match[1]) :
-                                NaN);
-                        },
-                        alternative: 'mm/dd/YYYY' // Different format with the same regex
-                    },
-                    'mm/dd/YYYY': {
-                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
-                        parser: function (match) {
-                            return (match ?
-                                Date.UTC(+match[4], match[1] - 1, +match[3]) :
-                                NaN);
-                        }
-                    },
-                    'dd/mm/YY': {
-                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
-                        parser: function (match) {
-                            const d = new Date();
-                            if (!match) {
-                                return NaN;
-                            }
-                            let year = +match[4];
-                            if (year > (d.getFullYear() - 2000)) {
-                                year += 1900;
-                            }
-                            else {
-                                year += 2000;
-                            }
-                            return Date.UTC(year, match[3] - 1, +match[1]);
-                        },
-                        alternative: 'mm/dd/YY' // Different format with the same regex
-                    },
-                    'mm/dd/YY': {
-                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
-                        parser: function (match) {
-                            return (match ?
-                                Date.UTC(+match[4] + 2000, match[1] - 1, +match[3]) :
-                                NaN);
-                        }
-                    }
-                };
-                const mergedOptions = merge(DataConverter.defaultOptions, options);
-                let regExpPoint = mergedOptions.decimalPoint;
-                if (regExpPoint === '.' || regExpPoint === ',') {
-                    regExpPoint = regExpPoint === '.' ? '\\.' : ',';
-                    this.decimalRegExp =
-                        new RegExp('^(-?[0-9]+)' + regExpPoint + '([0-9]+)$');
-                }
-                this.options = mergedOptions;
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Converts a value to a boolean.
-             *
-             * @param {DataConverter.Type} value
-             * Value to convert.
-             *
-             * @return {boolean}
-             * Converted value as a boolean.
-             */
-            asBoolean(value) {
-                if (typeof value === 'boolean') {
-                    return value;
-                }
-                if (typeof value === 'string') {
-                    return value !== '' && value !== '0' && value !== 'false';
-                }
-                return !!this.asNumber(value);
-            }
-            /**
-             * Converts a value to a Date.
-             *
-             * @param {DataConverter.Type} value
-             * Value to convert.
-             *
-             * @return {globalThis.Date}
-             * Converted value as a Date.
-             */
-            asDate(value) {
-                let timestamp;
-                if (typeof value === 'string') {
-                    timestamp = this.parseDate(value);
-                }
-                else if (typeof value === 'number') {
-                    timestamp = value;
-                }
-                else if (value instanceof Date) {
-                    return value;
-                }
-                else {
-                    timestamp = this.parseDate(this.asString(value));
-                }
-                return new Date(timestamp);
-            }
-            /**
-             * Casts a string value to it's guessed type
-             *
-             * @param {*} value
-             * The value to examine.
-             *
-             * @return {number|string|Date}
-             * The converted value.
-             */
-            asGuessedType(value) {
-                const converter = this, typeMap = {
-                    'number': converter.asNumber,
-                    'Date': converter.asDate,
-                    'string': converter.asString
-                };
-                return typeMap[converter.guessType(value)].call(converter, value);
-            }
-            /**
-             * Converts a value to a number.
-             *
-             * @param {DataConverter.Type} value
-             * Value to convert.
-             *
-             * @return {number}
-             * Converted value as a number.
-             */
-            asNumber(value) {
-                if (typeof value === 'number') {
-                    return value;
-                }
-                if (typeof value === 'boolean') {
-                    return value ? 1 : 0;
-                }
-                if (typeof value === 'string') {
-                    const decimalRegex = this.decimalRegExp;
-                    if (value.indexOf(' ') > -1) {
-                        value = value.replace(/\s+/g, '');
-                    }
-                    if (decimalRegex) {
-                        if (!decimalRegex.test(value)) {
-                            return NaN;
-                        }
-                        value = value.replace(decimalRegex, '$1.$2');
-                    }
-                    return parseFloat(value);
-                }
-                if (value instanceof Date) {
-                    return value.getDate();
-                }
-                if (value) {
-                    return value.getRowCount();
-                }
-                return NaN;
-            }
-            /**
-             * Converts a value to a string.
-             *
-             * @param {DataConverter.Type} value
-             * Value to convert.
-             *
-             * @return {string}
-             * Converted value as a string.
-             */
-            asString(value) {
-                return '' + value;
-            }
-            /**
-             * Tries to guess the date format
-             *  - Check if either month candidate exceeds 12
-             *  - Check if year is missing (use current year)
-             *  - Check if a shortened year format is used (e.g. 1/1/99)
-             *  - If no guess can be made, the user must be prompted
-             * data is the data to deduce a format based on
-             * @private
-             *
-             * @param {Array<string>} data
-             * Data to check the format.
-             *
-             * @param {number} limit
-             * Max data to check the format.
-             *
-             * @param {boolean} save
-             * Whether to save the date format in the converter options.
-             */
-            deduceDateFormat(data, limit, save) {
-                const parser = this, stable = [], max = [];
-                let format = 'YYYY/mm/dd', thing, guessedFormat = [], i = 0, madeDeduction = false, 
-                /// candidates = {},
-                elem, j;
-                if (!limit || limit > data.length) {
-                    limit = data.length;
-                }
-                for (; i < limit; i++) {
-                    if (typeof data[i] !== 'undefined' &&
-                        data[i] && data[i].length) {
-                        thing = data[i]
-                            .trim()
-                            .replace(/[\-\.\/]/g, ' ')
-                            .split(' ');
-                        guessedFormat = [
-                            '',
-                            '',
-                            ''
-                        ];
-                        for (j = 0; j < thing.length; j++) {
-                            if (j < guessedFormat.length) {
-                                elem = parseInt(thing[j], 10);
-                                if (elem) {
-                                    max[j] = (!max[j] || max[j] < elem) ? elem : max[j];
-                                    if (typeof stable[j] !== 'undefined') {
-                                        if (stable[j] !== elem) {
-                                            stable[j] = false;
-                                        }
-                                    }
-                                    else {
-                                        stable[j] = elem;
-                                    }
-                                    if (elem > 31) {
-                                        if (elem < 100) {
-                                            guessedFormat[j] = 'YY';
-                                        }
-                                        else {
-                                            guessedFormat[j] = 'YYYY';
-                                        }
-                                        /// madeDeduction = true;
-                                    }
-                                    else if (elem > 12 &&
-                                        elem <= 31) {
-                                        guessedFormat[j] = 'dd';
-                                        madeDeduction = true;
-                                    }
-                                    else if (!guessedFormat[j].length) {
-                                        guessedFormat[j] = 'mm';
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (madeDeduction) {
-                    // This handles a few edge cases with hard to guess dates
-                    for (j = 0; j < stable.length; j++) {
-                        if (stable[j] !== false) {
-                            if (max[j] > 12 &&
-                                guessedFormat[j] !== 'YY' &&
-                                guessedFormat[j] !== 'YYYY') {
-                                guessedFormat[j] = 'YY';
-                            }
-                        }
-                        else if (max[j] > 12 && guessedFormat[j] === 'mm') {
-                            guessedFormat[j] = 'dd';
-                        }
-                    }
-                    // If the middle one is dd, and the last one is dd,
-                    // the last should likely be year.
-                    if (guessedFormat.length === 3 &&
-                        guessedFormat[1] === 'dd' &&
-                        guessedFormat[2] === 'dd') {
-                        guessedFormat[2] = 'YY';
-                    }
-                    format = guessedFormat.join('/');
-                    // If the caculated format is not valid, we need to present an
-                    // error.
-                }
-                // Save the deduced format in the converter options.
-                if (save) {
-                    parser.options.dateFormat = format;
-                }
-                return format;
-            }
-            /**
-             * Emits an event on the DataConverter instance.
-             *
-             * @param {DataConverter.Event} [e]
-             * Event object containing additional event data
-             */
-            emit(e) {
-                fireEvent(this, e.type, e);
-            }
-            /**
-             * Initiates the data exporting. Should emit `exportError` on failure.
-             *
-             * @param {DataConnector} connector
-             * Connector to export from.
-             *
-             * @param {DataConverter.Options} [options]
-             * Options for the export.
-             */
-            export(
-            /* eslint-disable @typescript-eslint/no-unused-vars */
-            connector, options
-            /* eslint-enable @typescript-eslint/no-unused-vars */
-            ) {
-                this.emit({
-                    type: 'exportError',
-                    columns: [],
-                    headers: []
-                });
-                throw new Error('Not implemented');
-            }
-            /**
-             * Getter for the data table.
-             *
-             * @return {DataTable}
-             * Table of parsed data.
-             */
-            getTable() {
-                throw new Error('Not implemented');
-            }
-            /**
-             * Guesses the potential type of a string value for parsing CSV etc.
-             *
-             * @param {*} value
-             * The value to examine.
-             *
-             * @return {'number'|'string'|'Date'}
-             * Type string, either `string`, `Date`, or `number`.
-             */
-            guessType(value) {
-                const converter = this;
-                let result = 'string';
-                if (typeof value === 'string') {
-                    const trimedValue = converter.trim(`${value}`), decimalRegExp = converter.decimalRegExp;
-                    let innerTrimedValue = converter.trim(trimedValue, true);
-                    if (decimalRegExp) {
-                        innerTrimedValue = (decimalRegExp.test(innerTrimedValue) ?
-                            innerTrimedValue.replace(decimalRegExp, '$1.$2') :
-                            '');
-                    }
-                    const floatValue = parseFloat(innerTrimedValue);
-                    if (+innerTrimedValue === floatValue) {
-                        // String is numeric
-                        value = floatValue;
-                    }
-                    else {
-                        // Determine if a date string
-                        const dateValue = converter.parseDate(value);
-                        result = isNumber(dateValue) ? 'Date' : 'string';
-                    }
-                }
-                if (typeof value === 'number') {
-                    // Greater than milliseconds in a year assumed timestamp
-                    result = value > 365 * 24 * 3600 * 1000 ? 'Date' : 'number';
-                }
-                return result;
-            }
-            /**
-             * Registers a callback for a specific event.
-             *
-             * @param {string} type
-             * Event type as a string.
-             *
-             * @param {DataEventEmitter.Callback} callback
-             * Function to register for an modifier callback.
-             *
-             * @return {Function}
-             * Function to unregister callback from the modifier event.
-             */
-            on(type, callback) {
-                return addEvent(this, type, callback);
-            }
-            /**
-             * Initiates the data parsing. Should emit `parseError` on failure.
-             *
-             * @param {DataConverter.UserOptions} options
-             * Options of the DataConverter.
-             */
-            parse(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            options) {
-                this.emit({
-                    type: 'parseError',
-                    columns: [],
-                    headers: []
-                });
-                throw new Error('Not implemented');
-            }
-            /**
-             * Parse a date and return it as a number.
-             *
-             * @function Highcharts.Data#parseDate
-             *
-             * @param {string} value
-             * Value to parse.
-             *
-             * @param {string} dateFormatProp
-             * Which of the predefined date formats
-             * to use to parse date values.
-             */
-            parseDate(value, dateFormatProp) {
-                const converter = this, options = converter.options;
-                let dateFormat = dateFormatProp || options.dateFormat, result = NaN, key, format, match;
-                if (options.parseDate) {
-                    result = options.parseDate(value);
-                }
-                else {
-                    // Auto-detect the date format the first time
-                    if (!dateFormat) {
-                        for (key in converter.dateFormats) { // eslint-disable-line guard-for-in
-                            format = converter.dateFormats[key];
-                            match = value.match(format.regex);
-                            if (match) {
-                                // `converter.options.dateFormat` = dateFormat = key;
-                                dateFormat = key;
-                                // `converter.options.alternativeFormat` =
-                                // format.alternative || '';
-                                result = format.parser(match);
-                                break;
-                            }
-                        }
-                        // Next time, use the one previously found
-                    }
-                    else {
-                        format = converter.dateFormats[dateFormat];
-                        if (!format) {
-                            // The selected format is invalid
-                            format = converter.dateFormats['YYYY/mm/dd'];
-                        }
-                        match = value.match(format.regex);
-                        if (match) {
-                            result = format.parser(match);
-                        }
-                    }
-                    // Fall back to Date.parse
-                    if (!match) {
-                        match = Date.parse(value);
-                        // External tools like Date.js and MooTools extend Date object
-                        // and returns a date.
-                        if (typeof match === 'object' &&
-                            match !== null &&
-                            match.getTime) {
-                            result = (match.getTime() -
-                                match.getTimezoneOffset() *
-                                    60000);
-                            // Timestamp
-                        }
-                        else if (isNumber(match)) {
-                            result = match - (new Date(match)).getTimezoneOffset() * 60000;
-                            if ( // Reset dates without year in Chrome
-                            value.indexOf('2001') === -1 &&
-                                (new Date(result)).getFullYear() === 2001) {
-                                result = NaN;
-                            }
-                        }
-                    }
-                }
-                return result;
-            }
-            /**
-             * Trim a string from whitespaces.
-             *
-             * @param {string} str
-             * String to trim.
-             *
-             * @param {boolean} [inside=false]
-             * Remove all spaces between numbers.
-             *
-             * @return {string}
-             * Trimed string
-             */
-            trim(str, inside) {
-                if (typeof str === 'string') {
-                    str = str.replace(/^\s+|\s+$/g, '');
-                    // Clear white space insdie the string, like thousands separators
-                    if (inside && /^[\d\s]+$/.test(str)) {
-                        str = str.replace(/\s/g, '');
-                    }
-                }
-                return str;
-            }
-        }
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        /**
-         * Default options
-         */
-        DataConverter.defaultOptions = {
-            dateFormat: '',
-            alternativeFormat: '',
-            startColumn: 0,
-            endColumn: Number.MAX_VALUE,
-            startRow: 0,
-            endRow: Number.MAX_VALUE,
-            firstRowAsNames: true,
-            switchRowsAndColumns: false
-        };
-        /* *
-         *
-         *  Class Namespace
-         *
-         * */
-        /**
-         * Additionally provided types for events and conversion.
-         */
-        (function (DataConverter) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Converts an array of columns to a table instance. Second dimension of the
-             * array are the row cells.
-             *
-             * @param {Array<DataTable.Column>} [columns]
-             * Array to convert.
-             *
-             * @param {Array<string>} [headers]
-             * Column names to use.
-             *
-             * @return {DataTable}
-             * Table instance from the arrays.
-             */
-            function getTableFromColumns(columns = [], headers = []) {
-                const table = new DataTable();
-                for (let i = 0, iEnd = Math.max(headers.length, columns.length); i < iEnd; ++i) {
-                    table.setColumn(headers[i] || `${i}`, columns[i]);
-                }
-                return table;
-            }
-            DataConverter.getTableFromColumns = getTableFromColumns;
-        })(DataConverter || (DataConverter = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataConverter;
-    });
     _registerModule(_modules, 'Data/Converters/CSVConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
@@ -13012,8 +12920,8 @@
              * @emits GoogleSheetsParser#afterParse
              */
             parse(options, eventDetail) {
-                const converter = this, parseOptions = merge(converter.options, options), columns = ((parseOptions.json &&
-                    parseOptions.json.values) || []).map((column) => column.slice());
+                const converter = this, parseOptions = merge(converter.options, options);
+                let columns = ((parseOptions.json?.values) || []).map((column) => column.slice());
                 if (columns.length === 0) {
                     return false;
                 }
@@ -13025,8 +12933,13 @@
                     detail: eventDetail,
                     headers: converter.header
                 });
-                converter.columns = columns;
+                // If beforeParse is defined, use it to modify the data
+                const { beforeParse, json } = parseOptions;
+                if (beforeParse && json) {
+                    columns = beforeParse(json.values);
+                }
                 let column;
+                converter.columns = columns;
                 for (let i = 0, iEnd = columns.length; i < iEnd; i++) {
                     column = columns[i];
                     converter.header[i] = (parseOptions.firstRowAsNames ?
@@ -13092,6 +13005,7 @@
          *  - Gøran Slettemark
          *  - Wojciech Chmiel
          *  - Sophie Bremer
+         *  - Jomar Hønsi
          *
          * */
         const { merge, pick } = U;
@@ -13160,6 +13074,9 @@
                     table,
                     url
                 });
+                if (!URL.canParse(url)) {
+                    throw new Error('Invalid URL: ' + url);
+                }
                 return fetch(url)
                     .then((response) => (response.json()))
                     .then((json) => {
@@ -13206,7 +13123,6 @@
         GoogleSheetsConnector.defaultOptions = {
             googleAPIKey: '',
             googleSpreadsheetKey: '',
-            worksheet: 1,
             enablePolling: false,
             dataRefreshRate: 2,
             firstRowAsNames: true
@@ -13238,18 +13154,20 @@
              * @private
              */
             function buildFetchURL(apiKey, sheetKey, options = {}) {
-                return (`https://sheets.googleapis.com/v4/spreadsheets/${sheetKey}/values/` +
-                    (options.onlyColumnNames ?
-                        'A1:Z1' :
-                        buildQueryRange(options)) +
-                    '?alt=json' +
-                    (options.onlyColumnNames ?
-                        '' :
-                        '&dateTimeRenderOption=FORMATTED_STRING' +
-                            '&majorDimension=COLUMNS' +
-                            '&valueRenderOption=UNFORMATTED_VALUE') +
-                    '&prettyPrint=false' +
-                    `&key=${apiKey}`);
+                const url = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${sheetKey}/values/`);
+                const range = options.onlyColumnNames ?
+                    'A1:Z1' : buildQueryRange(options);
+                url.pathname += range;
+                const searchParams = url.searchParams;
+                searchParams.set('alt', 'json');
+                if (!options.onlyColumnNames) {
+                    searchParams.set('dateTimeRenderOption', 'FORMATTED_STRING');
+                    searchParams.set('majorDimension', 'COLUMNS');
+                    searchParams.set('valueRenderOption', 'UNFORMATTED_VALUE');
+                }
+                searchParams.set('prettyPrint', 'false');
+                searchParams.set('key', apiKey);
+                return url.href;
             }
             GoogleSheetsConnector.buildFetchURL = buildFetchURL;
             /**
@@ -14011,7 +13929,6 @@
                         table.deleteColumns();
                         converter.parse({ data });
                         table.setColumns(converter.getTable().getColumns());
-                        table.setRowKeysColumn(data.length);
                     }
                     return connector.setModifierOptions(dataModifier).then(() => data);
                 })
@@ -14066,6 +13983,7 @@
          *
          *  Authors:
          *  - Sophie Bremer
+         *  - Dawid Dragula
          *
          * */
         const { merge } = U;
@@ -14077,7 +13995,6 @@
         /**
          * Modifies a table with the help of modifiers in an ordered chain.
          *
-         * @private
          */
         class ChainModifier extends DataModifier {
             /* *
@@ -14168,32 +14085,30 @@
              * @return {Promise<Highcharts.DataTable>}
              * Table with `modified` property as a reference.
              */
-            modify(table, eventDetail) {
+            async modify(table, eventDetail) {
                 const modifiers = (this.options.reverse ?
                     this.chain.slice().reverse() :
                     this.chain.slice());
                 if (table.modified === table) {
                     table.modified = table.clone(false, eventDetail);
                 }
-                let promiseChain = Promise.resolve(table);
+                let modified = table;
                 for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
-                    const modifier = modifiers[i];
-                    promiseChain = promiseChain.then((chainTable) => modifier.modify(chainTable.modified, eventDetail));
+                    try {
+                        await modifiers[i].modify(modified, eventDetail);
+                    }
+                    catch (error) {
+                        this.emit({
+                            type: 'error',
+                            detail: eventDetail,
+                            table
+                        });
+                        throw error;
+                    }
+                    modified = modified.modified;
                 }
-                promiseChain = promiseChain.then((chainTable) => {
-                    table.modified.deleteColumns();
-                    table.modified.setColumns(chainTable.modified.getColumns());
-                    return table;
-                });
-                promiseChain = promiseChain['catch']((error) => {
-                    this.emit({
-                        type: 'error',
-                        detail: eventDetail,
-                        table
-                    });
-                    throw error;
-                });
-                return promiseChain;
+                table.modified = modified;
+                return table;
             }
             /**
              * Applies partial modifications of a cell change to the property `modified`
@@ -14631,6 +14546,7 @@
          *
          *  Authors:
          *  - Sophie Bremer
+         *  - Dawid Dragula
          *
          * */
         const { merge } = U;
@@ -14642,7 +14558,6 @@
         /**
          * Filters out table rows with a specific value range.
          *
-         * @private
          */
         class RangeModifier extends DataModifier {
             /* *
@@ -14680,6 +14595,7 @@
             modifyTable(table, eventDetail) {
                 const modifier = this;
                 modifier.emit({ type: 'modify', detail: eventDetail, table });
+                let indexes = [];
                 const { additive, ranges, strict } = modifier.options;
                 if (ranges.length) {
                     const modified = table.modified;
@@ -14693,11 +14609,13 @@
                         if (i > 0 && !additive) {
                             modified.deleteRows();
                             modified.setRows(rows);
+                            modified.setOriginalRowIndexes(indexes, true);
                             columns = modified.getColumns();
                             rows = [];
+                            indexes = [];
                         }
                         rangeColumn = (columns[range.column] || []);
-                        for (let j = 0, jEnd = rangeColumn.length, cell, row; j < jEnd; ++j) {
+                        for (let j = 0, jEnd = rangeColumn.length, cell, row, originalRowIndex; j < jEnd; ++j) {
                             cell = rangeColumn[j];
                             switch (typeof cell) {
                                 default:
@@ -14713,17 +14631,24 @@
                             }
                             if (cell >= range.minValue &&
                                 cell <= range.maxValue) {
-                                row = (additive ?
-                                    table.getRow(j) :
-                                    modified.getRow(j));
+                                if (additive) {
+                                    row = table.getRow(j);
+                                    originalRowIndex = table.getOriginalRowIndex(j);
+                                }
+                                else {
+                                    row = modified.getRow(j);
+                                    originalRowIndex = modified.getOriginalRowIndex(j);
+                                }
                                 if (row) {
                                     rows.push(row);
+                                    indexes.push(originalRowIndex);
                                 }
                             }
                         }
                     }
                     modified.deleteRows();
                     modified.setRows(rows);
+                    modified.setOriginalRowIndexes(indexes);
                 }
                 modifier.emit({ type: 'afterModify', detail: eventDetail, table });
                 return table;
@@ -14761,6 +14686,7 @@
          *
          *  Authors:
          *  - Sophie Bremer
+         *  - Dawid Dragula
          *
          * */
         const { merge } = U;
@@ -14772,7 +14698,6 @@
         /**
          * Sort table rows according to values of a column.
          *
-         * @private
          */
         class SortModifier extends DataModifier {
             /* *
@@ -14977,11 +14902,16 @@
                     modified.setColumns({ [orderInColumn]: column });
                 }
                 else {
+                    const originalIndexes = [];
                     const rows = [];
+                    let rowReference;
                     for (let i = 0; i < rowCount; ++i) {
-                        rows.push(rowReferences[i].row);
+                        rowReference = rowReferences[i];
+                        originalIndexes.push(modified.getOriginalRowIndex(rowReference.index));
+                        rows.push(rowReference.row);
                     }
                     modified.setRows(rows, 0);
+                    modified.setOriginalRowIndexes(originalIndexes);
                 }
                 modifier.emit({ type: 'afterModify', detail: eventDetail, table });
                 return table;
@@ -15009,7 +14939,7 @@
 
         return SortModifier;
     });
-    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/DataCursor.js'], _modules['DataGrid/DataGrid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['DataGrid/Globals.js']], function (AST, DataConnector, DataCursor, _DataGrid, DataModifier, DataPool, DataTable, Globals) {
+    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataCursor.js'], _modules['DataGrid/DataGrid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['DataGrid/Globals.js']], function (AST, DataConnector, DataConverter, DataCursor, _DataGrid, DataModifier, DataPool, DataTable, Globals) {
 
         /* *
          *
@@ -15026,6 +14956,7 @@
         G.AST = AST;
         G.DataConnector = DataConnector;
         G.DataCursor = DataCursor;
+        G.DataConverter = DataConverter;
         G.DataGrid = _DataGrid;
         G.dataGrid = _DataGrid.dataGrid;
         G.DataModifier = DataModifier;

@@ -374,11 +374,12 @@ class DataGrid {
         }
         this.prevTop = i;
         const columnsInPresentationOrder = this.columnNames;
-        const rowCount = this.dataTable.modified.getRowCount();
+        const presentationTable = this.dataTable.modified;
+        const rowCount = presentationTable.modified.getRowCount();
         for (let j = 0; j < this.rowElements.length && i < rowCount; j++, i++) {
             const rowElement = this.rowElements[j];
             rowElement.dataset.rowIndex =
-                this.dataTable.getRowIndexOriginal(i);
+                presentationTable.getOriginalRowIndex(i)?.toString();
             const cellElements = rowElement.childNodes;
             for (let k = 0, kEnd = columnsInPresentationOrder.length; k < kEnd; k++) {
                 const cell = cellElements[k], column = columnsInPresentationOrder[k], value = this.dataTable.modified
@@ -685,6 +686,7 @@ class DataGrid {
      */
     renderHTMLCellContent(cellContent, parentElement) {
         const formattedNodes = new AST(cellContent);
+        parentElement.innerHTML = '';
         formattedNodes.addToDOM(parentElement);
     }
     /**

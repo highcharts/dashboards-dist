@@ -54,10 +54,11 @@ declare class HTMLComponent extends Component {
     resize(width?: number | string | null, height?: number | string | null): this;
     /**
      * Handles updating via options.
+     *
      * @param options
      * The options to apply.
      */
-    update(options: Partial<Options>): Promise<void>;
+    update(options: Partial<Options>, shouldRerender?: boolean): Promise<void>;
     getOptionsOnDrop(): Partial<Options>;
     /**
      * @internal
@@ -87,6 +88,32 @@ declare class HTMLComponent extends Component {
      *
      */
     getOptions(): Partial<Options>;
+    /**
+     * Retrieves editable options for the HTML component.
+     */
+    getEditableOptions(): Options;
+    /**
+     * Get the value of the editable option by property path. Parse the elements
+     * if the HTML options is not set.
+     *
+     * @param propertyPath
+     * The property path of the option.
+     */
+    getEditableOptionValue(propertyPath?: string[]): number | boolean | undefined | string;
+    /**
+     * Returns the HTML string from the given elements.
+     *
+     * @param elements
+     * The array of elements to serialize.
+     */
+    private getStringFromElements;
+    /**
+     * Serializes the HTML node to string.
+     *
+     * @param node
+     * The HTML node to serialize.
+     */
+    private serializeNode;
     /**
      * @internal
      */

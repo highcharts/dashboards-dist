@@ -326,13 +326,17 @@ class Cell extends GUIElement {
             }
         }
     }
+    /**
+     * Sets the active state of the cell and resets the state of other cells.
+     */
     setActiveState() {
-        // Reset other boxes
         const cell = this;
+        // Reset other boxes
         cell.row.layout.board.mountedComponents.forEach((mountedComponent) => {
             if (mountedComponent.cell.container) {
                 mountedComponent.cell.container.classList.remove(Globals.classNames.cellActive);
             }
+            mountedComponent.component.isActive = false;
         });
         // Apply class
         if (cell.container) {

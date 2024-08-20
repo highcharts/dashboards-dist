@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Layout 2.2.0 (2024-07-02)
+ * @license Highcharts Dashboards Layout 2.3.0-test (2024-08-20)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -638,7 +638,6 @@
         *
         * */
         MenuItem.defaultOptions = {
-            id: '',
             type: 'text'
         };
 
@@ -1012,8 +1011,17 @@
                     const cellOffsets = GUIElement.getOffsets(cell, toolbar.editMode.board.container);
                     const x = cellOffsets.right - toolbarWidth - toolbarMargin;
                     const y = cellOffsets.top + toolbarMargin;
-                    // Temp - activate all items.
                     objectEach(toolbar.menu.items, (item) => {
+                        if (!cell.options?.editMode?.toolbarItems) {
+                            item.activate();
+                            return;
+                        }
+                        const toolbarItems = cell.options.editMode.toolbarItems;
+                        if (toolbarItems[item.options.id]
+                            ?.enabled === false) {
+                            item.deactivate();
+                            return;
+                        }
                         item.activate();
                     });
                     toolbar.setPosition(x, y);
@@ -1224,8 +1232,17 @@
                     !(toolbar.editMode.dragDrop || {}).isActive) {
                     const rowOffsets = GUIElement.getOffsets(row, toolbar.editMode.board.container);
                     const rowWidth = rowOffsets.right - rowOffsets.left;
-                    // Temp - activate all items.
                     objectEach(toolbar.menu.items, (item) => {
+                        if (!row.options?.editMode?.toolbarItems) {
+                            item.activate();
+                            return;
+                        }
+                        const toolbarItems = row.options.editMode.toolbarItems;
+                        if (toolbarItems[item.options.id]
+                            ?.enabled === false) {
+                            item.deactivate();
+                            return;
+                        }
                         item.activate();
                     });
                     offsetX = rowWidth / 2 - toolbar.container.clientWidth / 2;
@@ -1245,15 +1262,6 @@
                 const toolbar = this;
                 if (toolbar.editMode.sidebar) {
                     toolbar.editMode.sidebar.show(toolbar.row);
-                    /// toolbar.editMode.sidebar.updateTitle('ROW OPTIONS');
-                    // @ToDo - mask is buggy - should be refactored or removed.
-                    // if (this.row) {
-                    //     super.maskNotEditedElements(
-                    //         this.row,
-                    //         true
-                    //     );
-                    //     this.editedRow = this.row;
-                    // }
                 }
             }
             onRowDestroy() {
@@ -1825,6 +1833,10 @@
                         chartOptions: this.chartOptionsJSON
                     });
                 }
+                else if (component.type === 'HTML') {
+                    const options = this.changedOptions;
+                    await component.update(options, true);
+                }
                 fireEvent(component.board.editMode, 'componentChanged', {
                     target: component,
                     changedOptions: merge({}, this.changedOptions),
@@ -1943,7 +1955,7 @@
                  * Options used in the sidebar.
                  */
                 this.options = {
-                    components: ['HTML', 'layout', 'Highcharts', 'DataGrid', 'KPI']
+                    components: ['HTML', 'row', 'Highcharts', 'DataGrid', 'KPI']
                 };
                 /**
                  * Whether the sidebar is visible.
@@ -2060,6 +2072,7 @@
                     gridElement = createElement('div', {}, {}, gridWrapper);
                     // Drag drop new component.
                     gridElement.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
                         if (sidebar.editMode.dragDrop) {
                             // Workaround for Firefox, where mouseleave is not triggered
                             // correctly when dragging.
@@ -2208,8 +2221,8 @@
                             }
                         });
                     }
-                    else if (componentName === 'layout') {
-                        componentList.push(SidebarPopup.addLayout);
+                    else if (componentName === 'row') {
+                        componentList.push(SidebarPopup.addRow);
                     }
                 });
                 return componentList;
@@ -2251,8 +2264,8 @@
                 return super.createPopupContainer.call(this, parentDiv, className);
             }
         }
-        SidebarPopup.addLayout = {
-            text: 'layout',
+        SidebarPopup.addRow = {
+            text: EditGlobals.lang.sidebar.row,
             onDrop: function (sidebar, dropContext) {
                 if (!dropContext) {
                     return;
@@ -2281,12 +2294,13 @@
                 void Bindings.addComponent({
                     type: 'HTML',
                     cell: cellId,
-                    elements: [
-                        {
-                            tagName: 'div',
-                            textContent: 'Placeholder text'
-                        }
-                    ]
+                    className: 'highcharts-dashboards-component-placeholder',
+                    html: `
+                            <h2> Placeholder </h2>
+                            <span> This placeholder can be deleted when you add extra
+                                components to this row.
+                            </span>
+                            `
                 }, board);
             }
         };
@@ -3410,7 +3424,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.2.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.3.0-test/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(

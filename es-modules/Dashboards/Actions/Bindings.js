@@ -118,22 +118,30 @@ var Bindings;
                 mountedComponent: component
             })
         });
+        if (cell &&
+            optionsStates?.active?.enabled &&
+            optionsStates?.active?.isActive) {
+            cell.setActiveState();
+            component.isActive = true;
+        }
         fireEvent(component, 'mount');
         // Events
-        if (optionsEvents && optionsEvents.click) {
-            addEvent(componentContainer, 'click', () => {
-                optionsEvents.click();
-                if (cell &&
-                    component &&
-                    componentContainer &&
-                    optionsStates &&
-                    optionsStates.active) {
-                    cell.setActiveState();
-                }
-            });
-        }
+        addEvent(componentContainer, 'click', () => {
+            // Call the component's click callback
+            if (optionsEvents && optionsEvents.click) {
+                optionsEvents.click.call(component);
+            }
+            // Default behavior
+            if (cell &&
+                component &&
+                componentContainer &&
+                optionsStates?.active?.enabled) {
+                cell.setActiveState();
+                component.isActive = true;
+            }
+        });
         // States
-        if (optionsStates?.hover) {
+        if (optionsStates?.hover?.enabled) {
             componentContainer.classList.add(Globals.classNames.cellHover);
         }
         fireEvent(component, 'afterLoad');

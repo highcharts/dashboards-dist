@@ -11,7 +11,7 @@ import Cell from '../Layout/Cell.js';
  * @internal
  */
 declare class SidebarPopup extends BaseForm {
-    static readonly addLayout: {
+    static readonly addRow: {
         text: string;
         onDrop: (sidebar: SidebarPopup, dropContext: Cell | Row) => Cell | void;
     };

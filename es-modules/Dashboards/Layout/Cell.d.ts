@@ -1,4 +1,4 @@
-import type Component from '../Components/Component.js';
+import type Component from '../Components/Component';
 import type CSSJSONObject from '../CSSJSONObject';
 import type JSON from '../JSON';
 import type LayoutType from './Layout';
@@ -112,6 +112,9 @@ declare class Cell extends GUIElement {
      */
     setSize(width?: (string | number), height?: (string | number)): void;
     setHighlight(remove?: boolean): void;
+    /**
+     * Sets the active state of the cell and resets the state of other cells.
+     */
     setActiveState(): void;
     /**
      * Enables or disables the loading indicator in the cell.
@@ -150,6 +153,34 @@ declare namespace Cell {
          * Unique cell id.
          **/
         id: string;
+        /**
+         * Options controlling the edit mode for the cell.
+         **/
+        editMode?: {
+            /**
+             * Individual options for the toolbar items.
+             **/
+            toolbarItems?: {
+                /**
+                 * Options for the `destroy` toolbar item.
+                 */
+                destroy: {
+                    enabled?: boolean;
+                };
+                /**
+                 * Options for the `settings` toolbar item.
+                 */
+                drag: {
+                    enabled?: boolean;
+                };
+                /**
+                 * Options for the `settings` toolbar item.
+                 */
+                settings: {
+                    enabled?: boolean;
+                };
+            };
+        };
         /**
          * Width of the cell. Can be a percentage value, pixels or a fraction.
          *
