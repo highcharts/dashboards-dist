@@ -212,9 +212,9 @@ declare namespace EditGlobals {
          */
         HTML: string;
         /**
-         * @default 'Layout'
+         * @default 'Row'
          */
-        layout: string;
+        row: string;
         /**
          * @default 'Highcharts'
          */

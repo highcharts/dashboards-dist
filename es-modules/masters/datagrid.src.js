@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.2.0 (2024-07-02)
+ * @license Highcharts Dashboards v2.3.0-test (2024-08-20)
  * @module datagrid/datagrid
  *
  * (c) 2009-2024 Highsoft AS
@@ -14,6 +14,7 @@
  * */
 import AST from '../Core/Renderer/HTML/AST.js';
 import DataConnector from '../Data/Connectors/DataConnector.js';
+import DataConverter from '../Data/Converters/DataConverter.js';
 import DataCursor from '../Data/DataCursor.js';
 import _DataGrid from '../DataGrid/DataGrid.js';
 import DataModifier from '../Data/Modifiers/DataModifier.js';
@@ -38,6 +39,7 @@ const G = Globals;
 G.AST = AST;
 G.DataConnector = DataConnector;
 G.DataCursor = DataCursor;
+G.DataConverter = DataConverter;
 G.DataGrid = _DataGrid;
 G.dataGrid = _DataGrid.dataGrid;
 G.DataModifier = DataModifier;

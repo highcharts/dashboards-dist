@@ -25,7 +25,7 @@ export interface Options extends Component.Options {
      * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/html-component/nested-elements/ | HTML component with nested images.}
      *
      */
-    elements?: (AST.Node | string)[];
+    elements?: (AST.Node)[];
     /**
      * The HTML content of the component. If the `elements` option is set, the
      * `html` option will be ignored.

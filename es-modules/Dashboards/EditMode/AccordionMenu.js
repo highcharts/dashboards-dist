@@ -252,6 +252,10 @@ class AccordionMenu {
                 chartOptions: this.chartOptionsJSON
             });
         }
+        else if (component.type === 'HTML') {
+            const options = this.changedOptions;
+            await component.update(options, true);
+        }
         fireEvent(component.board.editMode, 'componentChanged', {
             target: component,
             changedOptions: merge({}, this.changedOptions),

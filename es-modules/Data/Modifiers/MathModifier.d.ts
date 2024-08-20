@@ -6,7 +6,6 @@ import DataModifier from './DataModifier.js';
 /**
  * Replaces formula strings in a table with calculated values.
  *
- * @private
  * @class
  * @name Highcharts.DataModifier.types.MathModifier
  * @augments Highcharts.DataModifier
@@ -28,8 +27,8 @@ declare class MathModifier extends DataModifier {
      * @param {Highcharts.DataTable} table
      * Table to extract column from and use as reference.
      *
-     * @param {string} columnNameOrAlias
-     * Name or alias of column to process.
+     * @param {string} columnName
+     * Name of column to process.
      *
      * @param {number} rowIndex
      * Row index to start the replacing process from.
@@ -37,7 +36,7 @@ declare class MathModifier extends DataModifier {
      * @return {Highcharts.DataTableColumn}
      * Returns the processed table column.
      */
-    protected processColumn(table: DataTable, columnNameOrAlias: string, rowIndex?: number): DataTable.Column;
+    protected processColumn(table: DataTable, columnName: string, rowIndex?: number): DataTable.Column;
     /**
      * Process a column by replacing cell values with calculated values from a
      * given formula.

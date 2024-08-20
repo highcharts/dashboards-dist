@@ -1,4 +1,5 @@
 import type DataEvent from '../DataEvent';
+import type { BeforeParseCallbackFunction } from '../Connectors/GoogleSheetsConnectorOptions';
 import DataConverter from './DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -60,8 +61,14 @@ declare namespace GoogleSheetsConverter {
         values: Array<Array<(boolean | null | number | string | undefined)>>;
     }
     /**
+     * Options that are not compatible with ClassJSON
+     */
+    interface SpecialOptions {
+        beforeParse?: BeforeParseCallbackFunction;
+    }
+    /**
      * Available options of the GoogleSheetsConverter.
      */
-    type UserOptions = Partial<Options>;
+    type UserOptions = Partial<(Options & SpecialOptions)>;
 }
 export default GoogleSheetsConverter;

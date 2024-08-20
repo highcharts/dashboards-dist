@@ -2,7 +2,7 @@
     "name": "@highcharts/dashboards",
     "description": "Highcharts Dashboards framework",
     "homepage": "https://www.highcharts.com/products/dashboards/",
-    "version": "2.2.0",
+    "version": "2.3.0-test",
     "author": "Highsoft AS <support@highcharts.com> (http://www.highcharts.com/about)",
     "bugs": "https://github.com/highcharts/highcharts/issues",
     "license": "https://www.highcharts.com/license",

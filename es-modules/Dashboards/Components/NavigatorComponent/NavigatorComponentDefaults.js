@@ -19,6 +19,10 @@ import Component from '../Component.js';
  * */
 const NavigatorComponentDefaults = {
     type: 'Navigator',
+    className: [
+        Component.defaultOptions.className,
+        `${Component.defaultOptions.className}-navigator`
+    ].join(' '),
     chartOptions: {
         chart: {
             animation: false,

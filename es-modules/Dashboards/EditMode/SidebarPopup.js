@@ -56,7 +56,7 @@ class SidebarPopup extends BaseForm {
          * Options used in the sidebar.
          */
         this.options = {
-            components: ['HTML', 'layout', 'Highcharts', 'DataGrid', 'KPI']
+            components: ['HTML', 'row', 'Highcharts', 'DataGrid', 'KPI']
         };
         /**
          * Whether the sidebar is visible.
@@ -173,6 +173,7 @@ class SidebarPopup extends BaseForm {
             gridElement = createElement('div', {}, {}, gridWrapper);
             // Drag drop new component.
             gridElement.addEventListener('mousedown', (e) => {
+                e.preventDefault();
                 if (sidebar.editMode.dragDrop) {
                     // Workaround for Firefox, where mouseleave is not triggered
                     // correctly when dragging.
@@ -321,8 +322,8 @@ class SidebarPopup extends BaseForm {
                     }
                 });
             }
-            else if (componentName === 'layout') {
-                componentList.push(SidebarPopup.addLayout);
+            else if (componentName === 'row') {
+                componentList.push(SidebarPopup.addRow);
             }
         });
         return componentList;
@@ -364,8 +365,8 @@ class SidebarPopup extends BaseForm {
         return super.createPopupContainer.call(this, parentDiv, className);
     }
 }
-SidebarPopup.addLayout = {
-    text: 'layout',
+SidebarPopup.addRow = {
+    text: EditGlobals.lang.sidebar.row,
     onDrop: function (sidebar, dropContext) {
         if (!dropContext) {
             return;
@@ -394,12 +395,13 @@ SidebarPopup.addLayout = {
         void Bindings.addComponent({
             type: 'HTML',
             cell: cellId,
-            elements: [
-                {
-                    tagName: 'div',
-                    textContent: 'Placeholder text'
-                }
-            ]
+            className: 'highcharts-dashboards-component-placeholder',
+            html: `
+                    <h2> Placeholder </h2>
+                    <span> This placeholder can be deleted when you add extra
+                        components to this row.
+                    </span>
+                    `
         }, board);
     }
 };

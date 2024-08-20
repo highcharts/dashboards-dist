@@ -107,8 +107,17 @@ class RowEditToolbar extends EditToolbar {
             !(toolbar.editMode.dragDrop || {}).isActive) {
             const rowOffsets = GUIElement.getOffsets(row, toolbar.editMode.board.container);
             const rowWidth = rowOffsets.right - rowOffsets.left;
-            // Temp - activate all items.
             objectEach(toolbar.menu.items, (item) => {
+                if (!row.options?.editMode?.toolbarItems) {
+                    item.activate();
+                    return;
+                }
+                const toolbarItems = row.options.editMode.toolbarItems;
+                if (toolbarItems[item.options.id]
+                    ?.enabled === false) {
+                    item.deactivate();
+                    return;
+                }
                 item.activate();
             });
             offsetX = rowWidth / 2 - toolbar.container.clientWidth / 2;
@@ -128,15 +137,6 @@ class RowEditToolbar extends EditToolbar {
         const toolbar = this;
         if (toolbar.editMode.sidebar) {
             toolbar.editMode.sidebar.show(toolbar.row);
-            /// toolbar.editMode.sidebar.updateTitle('ROW OPTIONS');
-            // @ToDo - mask is buggy - should be refactored or removed.
-            // if (this.row) {
-            //     super.maskNotEditedElements(
-            //         this.row,
-            //         true
-            //     );
-            //     this.editedRow = this.row;
-            // }
         }
     }
     onRowDestroy() {

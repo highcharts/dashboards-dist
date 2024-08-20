@@ -14,12 +14,24 @@ declare namespace Globals {
      */
     type AnyRecord = Record<string, any>;
     /**
+     * Abstract class type to wrap expected instance T.
+     */
+    interface Class<T = unknown> extends Function {
+        new (...args: Array<unknown>): T;
+    }
+    /**
      * Utility type to mark recursively all properties and sub-properties
      * optional.
      */
     type DeepPartial<T> = {
         [K in keyof T]?: (T[K] | DeepPartial<T[K]>);
     };
+    /**
+     * Event callback as used by Highcharts.
+     */
+    interface EventCallback<T> {
+        (this: T, eventArguments: (Record<string, unknown> | Event)): (boolean | void);
+    }
     /**
      * Prefix of a GUIElement HTML class name.
      */
@@ -45,5 +57,9 @@ declare namespace Globals {
      * Reference to the window used by Dashboards.
      */
     const win: Window & typeof globalThis;
+    const doc: Document;
+    const noop: () => void;
+    const isMS: boolean;
+    const supportsPassiveEvents: boolean;
 }
 export default Globals;
