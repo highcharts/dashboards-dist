@@ -119,7 +119,6 @@ class MenuItem {
 *
 * */
 MenuItem.defaultOptions = {
-    id: '',
     type: 'text'
 };
 export default MenuItem;

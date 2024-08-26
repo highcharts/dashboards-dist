@@ -5,7 +5,6 @@ import DataTable from '../DataTable.js';
 /**
  * Filters out table rows with a specific value range.
  *
- * @private
  */
 declare class RangeModifier extends DataModifier {
     /**

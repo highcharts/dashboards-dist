@@ -125,8 +125,17 @@ class CellEditToolbar extends EditToolbar {
             const cellOffsets = GUIElement.getOffsets(cell, toolbar.editMode.board.container);
             const x = cellOffsets.right - toolbarWidth - toolbarMargin;
             const y = cellOffsets.top + toolbarMargin;
-            // Temp - activate all items.
             objectEach(toolbar.menu.items, (item) => {
+                if (!cell.options?.editMode?.toolbarItems) {
+                    item.activate();
+                    return;
+                }
+                const toolbarItems = cell.options.editMode.toolbarItems;
+                if (toolbarItems[item.options.id]
+                    ?.enabled === false) {
+                    item.deactivate();
+                    return;
+                }
                 item.activate();
             });
             toolbar.setPosition(x, y);

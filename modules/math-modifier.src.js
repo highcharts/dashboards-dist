@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 2.2.0 (2024-07-02)
+ * @license Highcharts Dashboards Math 2.3.0 (2024-08-26)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -2476,7 +2476,6 @@
         /**
          * Replaces formula strings in a table with calculated values.
          *
-         * @private
          * @class
          * @name Highcharts.DataModifier.types.MathModifier
          * @augments Highcharts.DataModifier
@@ -2527,8 +2526,8 @@
              * @param {Highcharts.DataTable} table
              * Table to extract column from and use as reference.
              *
-             * @param {string} columnNameOrAlias
-             * Name or alias of column to process.
+             * @param {string} columnName
+             * Name of column to process.
              *
              * @param {number} rowIndex
              * Row index to start the replacing process from.
@@ -2536,8 +2535,8 @@
              * @return {Highcharts.DataTableColumn}
              * Returns the processed table column.
              */
-            processColumn(table, columnNameOrAlias, rowIndex = 0) {
-                const alternativeSeparators = this.options.alternativeSeparators, column = (table.getColumn(columnNameOrAlias, true) || [])
+            processColumn(table, columnName, rowIndex = 0) {
+                const alternativeSeparators = this.options.alternativeSeparators, column = (table.getColumn(columnName, true) || [])
                     .slice(rowIndex > 0 ? rowIndex : 0);
                 for (let i = 0, iEnd = column.length, cacheFormula = [], cacheString = '', cell; i < iEnd; ++i) {
                     cell = column[i];

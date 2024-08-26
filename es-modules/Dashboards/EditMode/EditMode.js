@@ -67,7 +67,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.2.0/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.3.0/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(

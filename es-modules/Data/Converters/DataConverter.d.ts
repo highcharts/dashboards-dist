@@ -157,8 +157,6 @@ declare class DataConverter implements DataEvent.Emitter {
     /**
      * Parse a date and return it as a number.
      *
-     * @function Highcharts.Data#parseDate
-     *
      * @param {string} value
      * Value to parse.
      *
@@ -166,7 +164,7 @@ declare class DataConverter implements DataEvent.Emitter {
      * Which of the predefined date formats
      * to use to parse date values.
      */
-    private parseDate;
+    parseDate(value: string, dateFormatProp?: string): number;
     /**
      * Trim a string from whitespaces.
      *

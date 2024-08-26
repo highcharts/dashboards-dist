@@ -16,8 +16,9 @@ declare class MenuItem {
     deactivate(): void;
 }
 declare namespace MenuItem {
+    type ToolbarItemId = 'destroy' | 'settings' | 'drag' | 'viewFullscreen';
     interface ItemOptions {
-        id: string;
+        id: ToolbarItemId;
         name?: string;
         type: 'icon' | 'toggle' | 'text' | 'button';
         className?: string;
