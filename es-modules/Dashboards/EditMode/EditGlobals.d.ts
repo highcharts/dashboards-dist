@@ -46,6 +46,7 @@ declare namespace EditGlobals {
         editOverlayActive: string;
         editSidebar: string;
         editSidebarHide: string;
+        editSidebarHeader: string;
         editSidebarMenuItem: string;
         editSidebarRight: string;
         editSidebarRightShow: string;

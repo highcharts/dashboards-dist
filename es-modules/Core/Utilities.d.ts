@@ -211,7 +211,7 @@ declare function attr(elem: DOMElementType, prop: string, value: (number | strin
  * @return {Array}
  *         The produced or original array.
  */
-declare function splat(obj: any): Array<any>;
+declare function splat<T>(obj: T | Array<T>): Array<T>;
 /**
  * Set a timeout if the delay is given, otherwise perform the function
  * synchronously.

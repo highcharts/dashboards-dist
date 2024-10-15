@@ -49,6 +49,14 @@ declare class SidebarPopup extends BaseForm {
      */
     private componentsList;
     /**
+     * Content wrapper for sticking.
+     */
+    private sidebarWrapper?;
+    /**
+     * Content wrapper for the header.
+     */
+    private headerWrapper?;
+    /**
      * Function to detect on which side of the screen should the sidebar be.
      *
      * @param context

@@ -1,10 +1,9 @@
 import type Board from '../../Board';
 import type Cell from '../../Layout/Cell';
 import type { DataGrid, DataGridNamespace } from '../../Plugins/DataGridTypes';
-import type BaseDataGridOptions from '../../../DataGrid/DataGridOptions';
 import type Options from './DataGridComponentOptions';
-import type SidebarPopup from '../../EditMode/SidebarPopup';
 import Component from '../Component.js';
+import SidebarPopup from '../../EditMode/SidebarPopup';
 /**
  * DataGrid component for Highcharts Dashboards.
  * @private
@@ -14,70 +13,65 @@ declare class DataGridComponent extends Component {
      * Predefined sync config for the DataGrid component.
      */
     static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
-    /** @private */
+    /**
+     * The namespace of the DataGrid component.
+     */
     static DataGridNamespace?: DataGridNamespace;
-    /** @private */
+    /**
+     * The default options for the DataGrid component.
+     */
     static defaultOptions: Partial<Component.Options> & import("../../Globals").default.DeepPartial<Options>;
-    /** @private */
+    /**
+     * Function to create a DataGrid component from JSON.
+     *
+     * @param json
+     * The JSON to create the DataGrid component from.
+     *
+     * @param cell
+     * The cell to create the DataGrid component in.
+     *
+     * @returns
+     * The DataGrid component created from the JSON.
+     */
     static fromJSON(json: DataGridComponent.ClassJSON, cell: Cell): DataGridComponent;
-    /** @private */
+    /**
+     * The DataGrid that is rendered in the DataGrid component.
+     */
     dataGrid?: DataGrid;
-    /** @private */
-    dataGridOptions: Partial<BaseDataGridOptions>;
-    /** @private */
+    /**
+     * The options of the DataGrid component.
+     */
     options: Options;
-    /** @private */
-    private connectorListeners;
     constructor(cell: Cell, options: Partial<Options>, board?: Board);
-    onTableChanged(): void;
-    /**
-     * Disable editing of the columns that are modified by the data modifier.
-     * @internal
-     *
-     * @param connector
-     * Attached connector
-     */
-    private disableEditingModifiedColumns;
-    /**
-     * Get the column options for the data grid.
-     * @internal
-     */
-    private getColumnOptions;
-    /**
-     * Triggered on component initialization.
-     * @private
-     */
-    load(): Promise<this>;
-    /** @private */
-    render(): this;
-    /** @private */
-    resize(width?: number | null, height?: number | null): void;
     update(options: Partial<Options>): Promise<void>;
-    /** @private */
-    private constructDataGrid;
-    private setupConnectorUpdate;
-    /**
-     * Based on the `visibleColumns` option, filter the columns of the table.
-     *
-     * @internal
-     */
-    private filterColumns;
+    render(): this;
+    resize(width?: number | string | null, height?: number | string | null): void;
+    onTableChanged(): void;
+    getEditableOptions(): Options;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
-    /** @private */
-    toJSON(): DataGridComponent.ClassJSON;
     /**
      * Get the DataGrid component's options.
+     *
      * @returns
      * The JSON of DataGrid component's options.
      *
      * @internal
-     *
      */
     getOptions(): Partial<Options>;
     /**
      * Destroys the data grid component.
      */
     destroy(): void;
+    /**
+     * Sets the options for the data grid component content container.
+     */
+    private setOptions;
+    /**
+     * Function to create the DataGrid.
+     *
+     * @returns The DataGrid.
+     */
+    private constructDataGrid;
 }
 declare namespace DataGridComponent {
     /** @private */
@@ -93,7 +87,7 @@ declare namespace DataGridComponent {
         /** @private */
         dataGridOptions?: string;
         /** @private */
-        chartClassName?: string;
+        dataGridClassName?: string;
         /** @private */
         chartID?: string;
     }

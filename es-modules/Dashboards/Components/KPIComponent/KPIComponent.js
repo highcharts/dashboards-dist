@@ -417,7 +417,6 @@ KPIComponent.predefinedSyncConfig = KPISyncs;
  * @default {
     chart: {
         type: 'spline',
-        styledMode: true,
         zooming: {
             mouseWheel: {
                 enabled: false
@@ -457,7 +456,6 @@ KPIComponent.predefinedSyncConfig = KPISyncs;
 KPIComponent.defaultChartOptions = {
     chart: {
         type: 'spline',
-        styledMode: true,
         zooming: {
             mouseWheel: {
                 enabled: false

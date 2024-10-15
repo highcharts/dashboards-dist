@@ -14,40 +14,6 @@
 import U from '../../../Utilities.js';
 const { error } = U;
 /* *
-*
-*  Utility Functions
-*
-* */
-/**
- * Utility function that returns the first row index
- * if the table has been modified by a range modifier
- *
- * @param {DataTable} table
- * The table to get the offset from.
- *
- * @param {RangeModifierOptions} modifierOptions
- * The modifier options to use
- *
- * @return {number}
- * The row offset of the modified table.
- */
-function getModifiedTableOffset(table, modifierOptions) {
-    const { ranges } = modifierOptions;
-    if (ranges) {
-        const minRange = ranges.reduce((minRange, currentRange) => {
-            if (currentRange.minValue > minRange.minValue) {
-                minRange = currentRange;
-            }
-            return minRange;
-        }, ranges[0]);
-        const tableRowIndex = table.getRowIndexBy(minRange.column, minRange.minValue);
-        if (tableRowIndex) {
-            return tableRowIndex;
-        }
-    }
-    return 0;
-}
-/* *
  *
  *  Constants
  *
@@ -81,6 +47,7 @@ const syncPair = {
             if (!table) {
                 continue;
             }
+            const presTable = table?.modified;
             const colAssignment = connectorHandler.columnAssignment?.find((s) => s.seriesId === seriesId);
             // TODO: Better way to recognize the column name.
             if (colAssignment) {
@@ -103,27 +70,17 @@ const syncPair = {
                     events: {
                         // Emit table cursor
                         mouseOver: function () {
-                            let offset = 0;
-                            const modifier = table.getModifier();
-                            if (modifier?.options.type === 'Range') {
-                                offset = getModifiedTableOffset(table, modifier.options);
-                            }
                             cursor.emitCursor(table, {
                                 type: 'position',
-                                row: offset + this.index,
+                                row: presTable.getOriginalRowIndex(this.index),
                                 column: columnName,
                                 state: 'point.mouseOver' + groupKey
                             });
                         },
                         mouseOut: function () {
-                            let offset = 0;
-                            const modifier = table.getModifier();
-                            if (modifier?.options.type === 'Range') {
-                                offset = getModifiedTableOffset(table, modifier.options);
-                            }
                             cursor.emitCursor(table, {
                                 type: 'position',
-                                row: offset + this.index,
+                                row: presTable.getOriginalRowIndex(this.index),
                                 column: columnName,
                                 state: 'point.mouseOut' + groupKey
                             });
@@ -162,11 +119,6 @@ const syncPair = {
             const { table, cursor } = e;
             const highlightOptions = this.sync
                 .syncConfig.highlight;
-            const modifier = table.getModifier();
-            let offset = 0;
-            if (modifier && modifier.options.type === 'Range') {
-                offset = getModifiedTableOffset(table, modifier.options);
-            }
             if (chart && chart.series?.length && cursor.type === 'position') {
                 let series;
                 const seriesId = highlightOptions.affectedSeriesId;
@@ -217,8 +169,13 @@ const syncPair = {
                         }
                     }
                 }
-                if (series?.visible && cursor.row !== void 0) {
-                    const point = series.data[cursor.row - offset];
+                const row = cursor.row;
+                if (series?.visible && row !== void 0) {
+                    const rowIndex = table.modified.getLocalRowIndex(row);
+                    if (rowIndex === void 0) {
+                        return;
+                    }
+                    const point = series.data[rowIndex];
                     if (point?.visible) {
                         return point;
                     }

@@ -37,7 +37,10 @@ declare module './Chart/ChartLike' {
  */
 declare class Pointer {
     static hoverChartIndex: (number | undefined);
-    static unbindDocumentMouseUp: (Array<Function> | undefined);
+    static unbindDocumentMouseUp: Array<{
+        doc: Document;
+        unbind: Function;
+    }>;
     static unbindDocumentTouchEnd: (Function | undefined);
     chart: Chart;
     chartPosition?: Pointer.ChartPositionObject;

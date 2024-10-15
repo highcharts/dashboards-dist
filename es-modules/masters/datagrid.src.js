@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.3.0 (2024-08-26)
+ * @license Highcharts Dashboards v3.0.0 (2024-10-15)
  * @module datagrid/datagrid
  *
  * (c) 2009-2024 Highsoft AS
@@ -42,6 +42,7 @@ G.DataCursor = DataCursor;
 G.DataConverter = DataConverter;
 G.DataGrid = _DataGrid;
 G.dataGrid = _DataGrid.dataGrid;
+G.dataGrids = _DataGrid.dataGrids;
 G.DataModifier = DataModifier;
 G.DataPool = DataPool;
 G.DataTable = DataTable;

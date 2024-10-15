@@ -352,8 +352,6 @@ class Board {
      * */
     /**
      * Global dashboard settings.
-     * @internal
-     *
      */
     Board.defaultOptions = {
         gui: {

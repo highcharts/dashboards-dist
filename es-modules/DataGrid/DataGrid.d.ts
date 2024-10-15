@@ -1,549 +1,252 @@
-import type DataEvent from '../Data/DataEvent';
-import type DataGridOptions from './DataGridOptions';
+import type { Options, GroupedHeaderOptions, IndividualColumnOptions } from './Options';
+import type Column from './Table/Column';
+import Credits from './Credits.js';
+import Table from './Table/Table.js';
 import DataTable from '../Data/DataTable.js';
+import QueryingController from './Querying/QueryingController.js';
 import Globals from './Globals.js';
 /**
- * Creates a scrollable grid structure with editable data cells.
+ * Creates a grid structure (table).
  */
 declare class DataGrid {
     /**
+     * Creates a new data grid.
+     *
+     * @param renderTo
+     * The render target (html element or id) of the data grid.
+     *
+     * @param options
+     * The options of the data grid.
+     *
+     * @param async
+     * Whether to initialize the dashboard asynchronously. When true, the
+     * function returns a promise that resolves with the dashboard instance.
+     *
+     * @return
+     * The new data grid.
+     */
+    static dataGrid(renderTo: string | HTMLElement, options: Options, async?: boolean): DataGrid;
+    /**
+     * Creates a new data grid.
+     *
+     * @param renderTo
+     * The render target (html element or id) of the data grid.
+     *
+     * @param options
+     * The options of the data grid.
+     *
+     * @param async
+     * Whether to initialize the dashboard asynchronously. When true, the
+     * function returns a promise that resolves with the dashboard instance.
+     *
+     * @return
+     * Promise that resolves with the new data grid.
+     */
+    static dataGrid(renderTo: string | HTMLElement, options: Options, async: true): Promise<DataGrid>;
+    /**
      * Default options for all DataGrid instances.
+     * @internal
      */
-    static readonly defaultOptions: Required<DataGridOptions>;
+    static readonly defaultOptions: Globals.DeepPartial<Options>;
     /**
-     * Factory function for data grid instances.
+     * An array containing the current DataGrid objects in the page.
+     */
+    static readonly dataGrids: Array<(DataGrid | undefined)>;
+    /**
+     * The user options declared for the columns as an object of column ID to
+     * column options.
+     */
+    columnOptionsMap: Record<string, Column.Options>;
+    /**
+     * The container of the data grid.
+     */
+    container?: HTMLElement;
+    /**
+     * The content container of the data grid.
+     */
+    contentWrapper?: HTMLElement;
+    /**
+     * The credits of the data grid.
+     */
+    credits?: Credits;
+    /**
+     * The data source of the data grid. It contains the original data table
+     * that was passed to the data grid.
+     */
+    dataTable?: DataTable;
+    /**
+     * The presentation table of the data grid. It contains a modified version
+     * of the data table that is used for rendering the data grid content. If
+     * not modified, just a reference to the original data table.
+     */
+    presentationTable?: DataTable;
+    /**
+     * The HTML element of the table.
+     */
+    tableElement?: HTMLTableElement;
+    /**
+     * The options of the data grid. Contains the options that were declared
+     * by the user and some of the default options.
+     */
+    options?: Options;
+    /**
+     * The options that were declared by the user when creating the data grid
+     * or when updating it.
+     */
+    userOptions: Partial<Options>;
+    /**
+     * The table (viewport) element of the data grid.
+     */
+    viewport?: Table;
+    /**
+     * The list of columns that are displayed in the data grid.
+     * @internal
+     */
+    enabledColumns?: string[];
+    /**
+     * The hovered row index.
+     * @internal
+     */
+    hoveredRowIndex?: number;
+    /**
+     * The hovered column ID.
+     * @internal
+     */
+    hoveredColumnId?: string;
+    /**
+     * The querying controller.
+     */
+    querying: QueryingController;
+    /**
+     * Constructs a new data grid.
      *
-     * @param container
-     * Element or element ID to create the grid structure into.
+     * @param renderTo
+     * The render target (container) of the data grid.
      *
      * @param options
-     * Options to create the grid structure.
-     */
-    static dataGrid(container: (string | HTMLElement), options: Globals.DeepPartial<DataGridOptions>): DataGrid;
-    /**
-     * Container to create the grid structure into.
-     */
-    container: HTMLElement;
-    /**
-     * Options used to create the grid structure.
-     */
-    options: Required<DataGridOptions>;
-    /**
-     * Table used to create the grid structure.
-     */
-    dataTable: DataTable;
-    /**
-     * The last hovered row.
-     * @internal
-     */
-    hoveredRow?: HTMLElement;
-    /**
-     * The rendered grid rows.
-     * @internal
-     */
-    rowElements: Array<HTMLElement>;
-    /**
-     * The observer object that calls the callback when the container is
-     * resized.
-     * @internal
-     */
-    containerResizeObserver: ResizeObserver;
-    /**
-     * The rendered grid.
-     * @internal
-     */
-    private gridContainer;
-    /**
-     * The outer container inside the grid, which defines the visible view.
-     * @internal
-     */
-    private outerContainer;
-    /**
-     * The oversized scroll container to provide a scrollbar.
-     * @internal
-     */
-    private scrollContainer;
-    /**
-     * The inner container with columns, rows, and cells.
-     * @internal
-     */
-    private innerContainer;
-    /**
-     * The container with the optional header above the grid.
-     * @internal
-     */
-    private headerContainer?;
-    /**
-     * The input element of a cell after mouse focus.
-     * @internal
-     */
-    cellInputEl?: HTMLInputElement;
-    /**
-     * The container for the column headers.
-     * @internal
-     */
-    private columnHeadersContainer?;
-    /**
-     * The column names in a sorted array as rendered (or changed).
-     * @internal
-     */
-    private columnNames;
-    /**
-     * The dragging placeholder.
-     * @internal
-     */
-    private columnDragHandlesContainer?;
-    /**
-     * The dragging indicator.
-     * @internal
-     */
-    private columnResizeCrosshair?;
-    /**
-     * The element when dragging.
-     * @internal
-     */
-    private draggedResizeHandle;
-    /**
-     * The index of the dragged column.
-     * @internal
-     */
-    private draggedColumnRightIx;
-    /**
-     * The X position in pixels when starting to drag a column.
-     * @internal
-     */
-    private dragResizeStart?;
-    /**
-     * The amount of rows before align end of scrolling.
-     * @internal
-     */
-    private prevTop;
-    /**
-     * The amount of rows to align for end of scrolling.
-     * @internal
-     */
-    private scrollEndRowCount;
-    /**
-     * Contains the top align offset, when reaching the end of scrolling.
-     * @internal
-     */
-    private scrollEndTop;
-    /**
-     * Flag to indicate the end of scrolling. Used to align the last cell with
-     * the container bottom.
-     * @internal
-     */
-    private bottom;
-    /**
-     * An array of the min column widths for which the text in headers is not
-     * overflown.
-     * @internal
-     */
-    private overflowHeaderWidths;
-    /**
-     * Creates an instance of DataGrid.
+     * The options of the data grid.
      *
-     * @param container
-     * Element or element ID to create the grid structure into.
-     *
-     * @param options
-     * Options to create the grid structure.
+     * @param afterLoadCallback
+     * The callback that is called after the data grid is loaded.
      */
-    constructor(container: (string | HTMLElement), options: Globals.DeepPartial<DataGridOptions>);
+    constructor(renderTo: string | HTMLElement, options: Options, afterLoadCallback?: DataGrid.AfterLoadCallback);
     /**
-     * Update the data grid with new options.
+     * Initializes the container of the data grid.
      *
-     * @param options
-     * An object with new options.
+     * @param renderTo
+     * The render target (html element or id) of the data grid.
+     *
      */
-    update(options: Globals.DeepPartial<DataGridOptions>): void;
+    private initContainers;
     /**
-     * Resize a column.
+     * Loads the new user options to all the important fields (`userOptions`,
+     * `options` and `columnOptionsMap`).
      *
+     * @param newOptions
+     * The options that were declared by the user.
+     *
+     * @param oneToOne
+     * When `false` (default), the existing column options will be merged with
+     * the ones that are currently defined in the user options. When `true`,
+     * the columns not defined in the new options will be removed.
+     */
+    private loadUserOptions;
+    /**
+     * Loads the new column options to the userOptions field.
+     *
+     * @param newColumnOptions
+     * The new column options that should be loaded.
+     *
+     * @param overwrite
+     * Whether to overwrite the existing column options with the new ones.
+     * Default is `false`.
+     */
+    private loadColumnOptions;
+    /**
+     * Loads the new column options to the userOptions field in a one-to-one
+     * manner. It means that all the columns that are not defined in the new
+     * options will be removed.
+     *
+     * @param newColumnOptions
+     * The new column options that should be loaded.
+     */
+    private loadColumnOptionsOneToOne;
+    update(options?: Options, render?: boolean, oneToOne?: boolean): Promise<void>;
+    update(options: Options, render: false, oneToOne?: boolean): void;
+    updateColumn(columnId: string, options: Omit<IndividualColumnOptions, 'id'>, render?: boolean, overwrite?: boolean): void;
+    updateColumn(columnId: string, options: Omit<IndividualColumnOptions, 'id'>, render: true, overwrite?: boolean): Promise<void>;
+    /**
+     * Hovers the row with the provided index. It removes the hover effect from
+     * the previously hovered row.
+     *
+     * @param rowIndex
+     * The index of the row.
+     */
+    hoverRow(rowIndex?: number): void;
+    /**
+     * Hovers the column with the provided ID. It removes the hover effect from
+     * the previously hovered column.
+     *
+     * @param columnId
+     * The ID of the column.
+     */
+    hoverColumn(columnId?: string): void;
+    /**
+     * Renders the viewport of the data grid. If the data grid is already
+     * rendered, it will be destroyed and re-rendered with the new data.
      * @internal
-     *
-     * @param width
-     *        New column width.
-     *
-     * @param columnNameOrIndex
-     *        Name or index of the column to resize, omit to resize all
-     *        columns.
-     *
-     * @emits #afterResizeColumn
      */
-    resizeColumn(width: number, columnNameOrIndex?: (string | number)): void;
+    renderViewport(): void;
     /**
-     * Emits an event on this data grid to all registered callbacks of the
-     * given event.
-     *
-     * @internal
-     *
-     * @param e
-     * Event object with event information.
+     * Renders the table (viewport) of the data grid.
      */
-    emit<E extends DataEvent>(e: E): void;
+    private renderTable;
     /**
-     * Add class to given element to toggle highlight.
-     *
-     * @internal
-     *
-     * @param row
-     * Row to highlight.
+     * Renders a message that there is no data to display.
      */
-    toggleRowHighlight(row?: HTMLElement): void;
+    private renderNoData;
     /**
-     * Registers a callback for a specific event.
+     * Returns the array of IDs of columns that should be displayed in the data
+     * grid, in the correct order.
+     */
+    private getEnabledColumnIDs;
+    private loadDataTable;
+    /**
+     * Extracts all references to columnIds on all levels below defined level
+     * in the settings.header structure.
      *
-     * @internal
+     * @param columns
+     * Structure that we start calculation
      *
-     * @param type
-     * Event type as a string.
-     *
-     * @param callback
-     * Function to register for an event callback.
+     * @param [onlyEnabledColumns=true]
+     * Extract all columns from header or columns filtered by enabled param
+     * @returns
+     */
+    getColumnIds(columns: Array<GroupedHeaderOptions | string>, onlyEnabledColumns?: boolean): string[];
+    /**
+     * Destroys the data grid.
+     */
+    destroy(): void;
+    /**
+     * Returns the current dataGrid data as a JSON string.
      *
      * @return
-     * Function to unregister callback from the event.
+     * JSON representation of the data
      */
-    on<E extends DataEvent>(type: E['type'], callback: DataEvent.Callback<this, E>): Function;
+    getJSON(): string;
     /**
-     * Scroll to a given row.
+     * Returns the current DataGrid options as a JSON string.
      *
-     * @internal
+     * @param onlyUserOptions
+     * Whether to return only the user options or all options (user options
+     * merged with the default ones). Default is `true`.
      *
-     * @param row
-     * Row number
+     * @returns
+     * Options as a JSON string.
      */
-    scrollToRow(row: number): void;
-    /**
-     * Check which columns should be displayed based on the individual
-     * column `show` option.
-     * @internal
-     */
-    private getColumnsToDisplay;
-    /**
-     * Determine whether a column is editable or not.
-     *
-     * @internal
-     *
-     * @param columnName
-     * Name of the column to test.
-     *
-     * @return
-     * Returns true when the column is editable, or false.
-     */
-    private isColumnEditable;
-    /**
-     * Get a reference to the underlying DataTable from options, or create one
-     * if needed.
-     *
-     * @internal
-     *
-     * @return
-     * DataTable for the DataGrid instance.
-     */
-    private initDataTable;
-    /**
-     * Render the data grid. To be called on first render, as well as when
-     * options change, or the underlying data changes.
-     * @internal
-     */
-    private render;
-    /**
-     * Add internal event listeners to the grid.
-     * @internal
-     */
-    private addEvents;
-    /**
-     * Changes the content of the rendered cells. This is used to simulate
-     * scrolling.
-     *
-     * @internal
-     *
-     * @param force
-     * Whether to force the update regardless of whether the position of the
-     * first row has not been changed.
-     */
-    private updateVisibleCells;
-    /**
-     * Handle user scrolling the grid
-     *
-     * @internal
-     *
-     * @param e
-     * Related scroll event.
-     */
-    private onScroll;
-    /**
-     * Handle the user starting interaction with a cell.
-     *
-     * @internal
-     *
-     * @param cellEl
-     * The clicked cell.
-     *
-     * @param columnName
-     * The column the clicked cell belongs to.
-     */
-    private onCellClick;
-    /**
-     * Handle the user clicking somewhere outside the grid.
-     *
-     * @internal
-     *
-     * @param e
-     * Related mouse event.
-     */
-    private onDocumentClick;
-    /**
-     * Handle hovering over rows- highlight proper row if needed.
-     *
-     * @internal
-     *
-     * @param e
-     * Related mouse event.
-     */
-    private handleMouseOver;
-    /**
-     * Handle click over rows.
-     *
-     * @internal
-     *
-     * @param e
-     * Related mouse event.
-     */
-    private handleRowClick;
-    /**
-     * Remove the <input> overlay and update the cell value
-     * @internal
-     */
-    private removeCellInputElement;
-    /**
-     * Updates the scroll container to reflect the data size.
-     * @internal
-     */
-    private updateScrollingLength;
-    /**
-     * Calculates the number of rows to render pending of cell sizes.
-     *
-     * @internal
-     *
-     * @return
-     * The number rows to render.
-     */
-    private getNumRowsToDraw;
-    /**
-     * Internal method that calculates the data grid height. If the container
-     * has a height declared in CSS it uses that, otherwise it uses a default.
-     * @internal
-     */
-    getDataGridSize(): number;
-    /**
-     * Renders a data cell.
-     *
-     * @internal
-     *
-     * @param parentRow
-     * The parent row to add the cell to.
-     *
-     * @param columnName
-     * The column the cell belongs to.
-     */
-    private renderCell;
-    /**
-     * Renders a row of data.
-     * @internal
-     */
-    private renderRow;
-    /**
-     * Allows formatting of the header cell text based on provided format
-     * option. If that is not provided, the column name is returned.
-     * @internal
-     *
-     * @param columnName
-     * Column name to format.
-     */
-    private formatHeaderCell;
-    /**
-     * Allows formatting of the cell text based on provided format option.
-     * If that is not provided, the cell value is returned.
-     * @internal
-     *
-     * @param  cellValue
-     * The value of the cell to format.
-     *
-     * @param  column
-     * The column name the cell belongs to.
-     */
-    private formatCell;
-    /**
-     * When useHTML enabled, parse the syntax and render HTML.
-     *
-     * @param cellContent
-     * Content to render.
-     *
-     * @param parentElement
-     * Parent element where the content should be.
-     *
-     */
-    private renderHTMLCellContent;
-    /**
-     * Render a column header for a column.
-     *
-     * @internal
-     *
-     * @param parentEl
-     * The parent element of the column header.
-     *
-     * @param columnName
-     * The name of the column.
-     */
-    private renderColumnHeader;
-    /**
-     * Render the column headers of the table.
-     * @internal
-     */
-    private renderColumnHeaders;
-    /**
-     * Refresh container elements to adapt them to new container dimensions.
-     * @internal
-     */
-    private updateGridElements;
-    /**
-     * Update the column headers of the table.
-     * @internal
-     */
-    private updateColumnHeaders;
-    /**
-     * Redraw existing row elements.
-     * @internal
-     */
-    private redrawRowElements;
-    /**
-     * Update the column drag handles position.
-     * @internal
-     */
-    private updateDragHandlesPosition;
-    /**
-     * Render initial rows before the user starts scrolling.
-     * @internal
-     */
-    private renderInitialRows;
-    /**
-     * Render the drag handles for resizing columns.
-     * @internal
-     */
-    private renderColumnDragHandles;
-    /**
-     * Renders the crosshair shown when resizing columns.
-     *
-     * @internal
-     *
-     * @param container
-     * The container to place the crosshair in.
-     */
-    private renderColumnResizeCrosshair;
-    /**
-     * On column resize handle click.
-     *
-     * @internal
-     *
-     * @param handle
-     * The drag handle being clicked.
-     *
-     * @param colRightIx
-     * The column ix to the right of the resize handle.
-     *
-     * @param e
-     * The mousedown event.
-     */
-    private onHandleMouseDown;
-    /**
-     * Update as we drag column resizer
-     * @internal
-     */
-    private updateColumnResizeDrag;
-    /**
-     * Stop resizing a column.
-     *
-     * @internal
-     *
-     * @param handle
-     * The related resize handle.
-     *
-     * @param e
-     * The related mouse event.
-     */
-    private stopColumnResize;
-    /**
-     * Update the size of grid container.
-     *
-     * @internal
-     *
-     * @param width
-     * The new width in pixel, or `null` for no change.
-     *
-     * @param height
-     * The new height in pixel, or `null` for no change.
-     */
-    setSize(width?: number | null, height?: number | null): void;
-    /**
-     * If the grid is in the parent container that has margins, calculate the
-     * height of the margins.
-     * @internal
-     *
-     * @param  height
-     * The height of the parent container.
-     */
-    private getMarginHeight;
+    getOptionsJSON(onlyUserOptions?: boolean): string;
 }
-/** @internal */
 declare namespace DataGrid {
-    /**
-     * Possible events fired by DataGrid.
-     * @internal
-     */
-    type Event = (ColumnResizeEvent | CellClickEvent);
-    /**
-     * Event when a column has been resized.
-     * @internal
-     */
-    interface ColumnResizeEvent extends DataEvent {
-        /**
-         * Type of the event.
-         * @internal
-         */
-        readonly type: 'afterResizeColumn';
-        /**
-         * New (or old) width of the column.
-         * @internal
-         */
-        readonly width: number;
-        /**
-         * New (or old) index of the column.
-         * @internal */
-        readonly index?: number;
-        /**
-         * Name of the column.
-         * @internal
-         */
-        readonly name?: string;
-    }
-    /**
-     * Event when a cell has mouse focus.
-     * @internal
-     */
-    interface CellClickEvent {
-        /**
-         * Type of the event.
-         * @internal
-         */
-        readonly type: 'cellClick';
-        /**
-         * HTML element with focus.
-         * @internal
-         */
-        readonly input: HTMLElement;
-    }
+    type AfterLoadCallback = (dataGrid: DataGrid) => void;
 }
 export default DataGrid;

@@ -324,14 +324,6 @@ declare namespace Board {
          * @internal
          **/
         layoutsJSON?: Array<Layout.JSON>;
-        /**
-         * Before changing the styling of the Dashboards layout to fully CSS, it
-         * was responsible for responsive breakpoints for the board - small,
-         * medium and large.
-         *
-         * @deprecated
-         **/
-        responsiveBreakpoints?: ResponsiveBreakpoints;
     }
     /**
      * Serialized options to configure the board.
@@ -363,39 +355,6 @@ declare namespace Board {
          * Whether the GUI is enabled or not.
          **/
         guiEnabled?: boolean;
-        /**
-         * Before changing the styling of the Dashboards layout to fully CSS, it
-         * was responsible for responsive breakpoints for the board - small,
-         * medium and large.
-         *
-         * @deprecated
-         **/
-        responsiveBreakpoints?: ResponsiveBreakpoints;
-    }
-    /**
-     * Responsive breakpoints for the board - small, medium and large.
-     *
-     * @deprecated
-     **/
-    interface ResponsiveBreakpoints extends JSON.Object {
-        /**
-         * Value in px to test the dashboard is in small mode.
-         *
-         * @deprecated
-         **/
-        small: number;
-        /**
-         * Value in px to test the dashboard is in medium mode.
-         *
-         * @deprecated
-         **/
-        medium: number;
-        /**
-         * Value in px to test the dashboard is in large mode.
-         *
-         * @deprecated
-         **/
-        large: number;
     }
     interface GUIOptions {
         /**
@@ -429,8 +388,6 @@ declare namespace Board {
     }
     /**
      * Global dashboard settings.
-     * @internal
-     *
      */
     const defaultOptions: Board.Options;
     /**

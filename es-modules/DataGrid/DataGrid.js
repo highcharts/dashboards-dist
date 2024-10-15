@@ -9,1017 +9,488 @@
  *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
- *  - Øystein Moseng
- *  - Ken-Håvard Lieng
+ *  - Dawid Dragula
  *  - Sebastian Bochan
  *
  * */
 'use strict';
 import AST from '../Core/Renderer/HTML/AST.js';
+import Credits from './Credits.js';
+import DataGridDefaultOptions from './DefaultOptions.js';
+import Table from './Table/Table.js';
+import DataGridUtils from './Utils.js';
 import DataTable from '../Data/DataTable.js';
-import DataGridUtils from './DataGridUtils.js';
-const { emptyHTMLElement, makeDiv } = DataGridUtils;
+import QueryingController from './Querying/QueryingController.js';
 import Globals from './Globals.js';
-const { isSafari, win } = Globals;
-import Templating from '../Core/Templating.js';
-import DataGridDefaults from './DataGridDefaults.js';
 import U from '../Core/Utilities.js';
-const { addEvent, clamp, defined, fireEvent, isNumber, merge, pick } = U;
+const { makeHTMLElement } = DataGridUtils;
+const { win } = Globals;
+const { merge } = U;
 /* *
  *
  *  Class
  *
  * */
 /**
- * Creates a scrollable grid structure with editable data cells.
+ * Creates a grid structure (table).
  */
 class DataGrid {
+    // Implementation
+    static dataGrid(renderTo, options, async) {
+        if (async) {
+            return new Promise((resolve) => {
+                void new DataGrid(renderTo, options, (dataGrid) => {
+                    resolve(dataGrid);
+                });
+            });
+        }
+        return new DataGrid(renderTo, options);
+    }
+    /* *
+    *
+    *  Constructor
+    *
+    * */
     /**
-     * Factory function for data grid instances.
+     * Constructs a new data grid.
      *
-     * @param container
-     * Element or element ID to create the grid structure into.
+     * @param renderTo
+     * The render target (container) of the data grid.
      *
      * @param options
-     * Options to create the grid structure.
+     * The options of the data grid.
+     *
+     * @param afterLoadCallback
+     * The callback that is called after the data grid is loaded.
      */
-    static dataGrid(container, options) {
-        return new DataGrid(container, options);
+    constructor(renderTo, options, afterLoadCallback) {
+        /**
+         * The user options declared for the columns as an object of column ID to
+         * column options.
+         */
+        this.columnOptionsMap = {};
+        /**
+         * The options that were declared by the user when creating the data grid
+         * or when updating it.
+         */
+        this.userOptions = {};
+        this.loadUserOptions(options);
+        this.querying = new QueryingController(this);
+        this.initContainers(renderTo);
+        this.loadDataTable(this.options?.dataTable);
+        this.querying.loadOptions();
+        void this.querying.proceed().then(() => {
+            this.renderViewport();
+            afterLoadCallback?.(this);
+        });
+        DataGrid.dataGrids.push(this);
     }
     /* *
      *
-     *  Functions
+     *  Methods
      *
      * */
     /**
-     * Creates an instance of DataGrid.
+     * Initializes the container of the data grid.
      *
-     * @param container
-     * Element or element ID to create the grid structure into.
+     * @param renderTo
+     * The render target (html element or id) of the data grid.
      *
-     * @param options
-     * Options to create the grid structure.
      */
-    constructor(container, options) {
-        /**
-         * The column names in a sorted array as rendered (or changed).
-         * @internal
-         */
-        this.columnNames = [];
-        /**
-         * The amount of rows before align end of scrolling.
-         * @internal
-         */
-        this.prevTop = -1;
-        /**
-         * The amount of rows to align for end of scrolling.
-         * @internal
-         */
-        this.scrollEndRowCount = 0;
-        /**
-         * Contains the top align offset, when reaching the end of scrolling.
-         * @internal
-         */
-        this.scrollEndTop = 0;
-        /**
-         * Flag to indicate the end of scrolling. Used to align the last cell with
-         * the container bottom.
-         * @internal
-         */
-        this.bottom = false;
-        /**
-         * An array of the min column widths for which the text in headers is not
-         * overflown.
-         * @internal
-         */
-        this.overflowHeaderWidths = [];
-        // Initialize containers
-        if (typeof container === 'string') {
-            const existingContainer = win.document.getElementById(container);
-            if (existingContainer) {
-                this.container = existingContainer;
+    initContainers(renderTo) {
+        const container = (typeof renderTo === 'string') ?
+            win.document.getElementById(renderTo) : renderTo;
+        // Display an error if the renderTo is wrong
+        if (!container) {
+            // eslint-disable-next-line no-console
+            console.error(`
+                Rendering div not found. It is unable to find the HTML element
+                to render the DataGrid in.
+            `);
+            return;
+        }
+        this.container = container;
+        this.container.innerHTML = AST.emptyHTML;
+        this.contentWrapper = makeHTMLElement('div', {
+            className: Globals.classNames.container
+        }, this.container);
+    }
+    /**
+     * Loads the new user options to all the important fields (`userOptions`,
+     * `options` and `columnOptionsMap`).
+     *
+     * @param newOptions
+     * The options that were declared by the user.
+     *
+     * @param oneToOne
+     * When `false` (default), the existing column options will be merged with
+     * the ones that are currently defined in the user options. When `true`,
+     * the columns not defined in the new options will be removed.
+     */
+    loadUserOptions(newOptions, oneToOne = false) {
+        // Operate on a copy of the options argument
+        newOptions = merge(newOptions);
+        if (newOptions.columns) {
+            if (oneToOne) {
+                this.loadColumnOptionsOneToOne(newOptions.columns);
             }
             else {
-                this.container =
-                    makeDiv(Globals.classNames.gridContainer, container);
+                this.loadColumnOptions(newOptions.columns);
             }
+            delete newOptions.columns;
         }
-        else {
-            this.container = container;
+        this.userOptions = merge(this.userOptions, newOptions);
+        this.options = merge(this.options ?? DataGrid.defaultOptions, this.userOptions);
+        const columnOptionsArray = this.options?.columns;
+        if (!columnOptionsArray) {
+            return;
         }
-        this.gridContainer = makeDiv(Globals.classNames.gridContainer);
-        this.outerContainer = makeDiv(Globals.classNames.outerContainer);
-        this.scrollContainer = makeDiv(Globals.classNames.scrollContainer);
-        this.innerContainer = makeDiv(Globals.classNames.innerContainer);
-        this.outerContainer.appendChild(this.scrollContainer);
-        this.gridContainer.appendChild(this.outerContainer);
-        this.container.appendChild(this.gridContainer);
-        // Init options
-        this.options = merge(DataGrid.defaultOptions, options);
-        this.gridContainer.style.height = this.getDataGridSize() + 'px';
-        this.gridContainer.role = 'figure';
-        // Init data table
-        this.dataTable = this.initDataTable();
-        this.rowElements = [];
-        this.draggedResizeHandle = null;
-        this.draggedColumnRightIx = null;
-        this.columnNames = this.getColumnsToDisplay();
-        this.render();
-        (this.containerResizeObserver = new ResizeObserver(() => {
-            this.updateGridElements();
-        })).observe(this.container);
+        const columnOptionsObj = {};
+        for (let i = 0, iEnd = columnOptionsArray?.length ?? 0; i < iEnd; ++i) {
+            columnOptionsObj[columnOptionsArray[i].id] = columnOptionsArray[i];
+        }
+        this.columnOptionsMap = columnOptionsObj;
     }
     /**
-     * Update the data grid with new options.
+     * Loads the new column options to the userOptions field.
      *
-     * @param options
-     * An object with new options.
+     * @param newColumnOptions
+     * The new column options that should be loaded.
+     *
+     * @param overwrite
+     * Whether to overwrite the existing column options with the new ones.
+     * Default is `false`.
      */
-    update(options) {
-        this.options = merge(this.options, options);
-        if (this.options.dataTable !== this.dataTable) {
-            this.dataTable = this.initDataTable();
+    loadColumnOptions(newColumnOptions, overwrite = false) {
+        if (!this.userOptions.columns) {
+            this.userOptions.columns = [];
         }
-        this.columnNames = this.getColumnsToDisplay();
-        this.scrollContainer.removeChild(this.innerContainer);
-        this.render();
-    }
-    /**
-     * Resize a column.
-     *
-     * @internal
-     *
-     * @param width
-     *        New column width.
-     *
-     * @param columnNameOrIndex
-     *        Name or index of the column to resize, omit to resize all
-     *        columns.
-     *
-     * @emits #afterResizeColumn
-     */
-    resizeColumn(width, columnNameOrIndex) {
-        const headers = this.columnHeadersContainer;
-        const index = typeof columnNameOrIndex === 'string' ?
-            this.columnNames.indexOf(columnNameOrIndex) :
-            columnNameOrIndex;
-        const flex = `${width}`;
-        if (isNumber(index)) {
-            if (index !== -1) {
-                if (headers) {
-                    const header = headers.children[index];
-                    if (header) {
-                        header.style.flex = flex;
-                    }
+        const columnOptions = this.userOptions.columns;
+        for (let i = 0, iEnd = newColumnOptions.length; i < iEnd; ++i) {
+            const newOptions = newColumnOptions[i];
+            const indexInPrevOptions = columnOptions.findIndex((prev) => prev.id === newOptions.id);
+            // If the new column options contain only the id.
+            if (Object.keys(newOptions).length < 2) {
+                if (overwrite && indexInPrevOptions !== -1) {
+                    columnOptions.splice(indexInPrevOptions, 1);
                 }
-                for (let i = 0; i < this.rowElements.length; i++) {
-                    const cellElement = this.rowElements[i].children[index];
-                    if (cellElement) {
-                        cellElement.style.flex = flex;
-                    }
-                }
+                continue;
             }
-        }
-        else {
-            if (headers) {
-                for (let i = 0; i < headers.children.length; i++) {
-                    headers.children[i].style.flex = flex;
-                }
+            if (indexInPrevOptions === -1) {
+                columnOptions.push(newOptions);
             }
-            for (let i = 0; i < this.rowElements.length; i++) {
-                const row = this.rowElements[i];
-                for (let i = 0; i < row.children.length; i++) {
-                    row.children[i].style.flex = flex;
-                }
-            }
-        }
-        this.renderColumnDragHandles();
-        this.emit({
-            type: 'afterResizeColumn',
-            width,
-            index,
-            name: isNumber(index) ? this.columnNames[index] : void 0
-        });
-    }
-    /**
-     * Emits an event on this data grid to all registered callbacks of the
-     * given event.
-     *
-     * @internal
-     *
-     * @param e
-     * Event object with event information.
-     */
-    emit(e) {
-        fireEvent(this, e.type, e);
-    }
-    /**
-     * Add class to given element to toggle highlight.
-     *
-     * @internal
-     *
-     * @param row
-     * Row to highlight.
-     */
-    toggleRowHighlight(row) {
-        if (this.hoveredRow && this.hoveredRow.classList.contains('hovered')) {
-            this.hoveredRow.classList.remove('hovered');
-        }
-        row && (row.classList.contains('hovered') ?
-            row.classList.remove('hovered') : row.classList.add('hovered'));
-    }
-    /**
-     * Registers a callback for a specific event.
-     *
-     * @internal
-     *
-     * @param type
-     * Event type as a string.
-     *
-     * @param callback
-     * Function to register for an event callback.
-     *
-     * @return
-     * Function to unregister callback from the event.
-     */
-    on(type, callback) {
-        return addEvent(this, type, callback);
-    }
-    /**
-     * Scroll to a given row.
-     *
-     * @internal
-     *
-     * @param row
-     * Row number
-     */
-    scrollToRow(row) {
-        this.outerContainer.scrollTop = row * this.options.cellHeight;
-    }
-    // ---------------- Private methods
-    /**
-     * Check which columns should be displayed based on the individual
-     * column `show` option.
-     * @internal
-     */
-    getColumnsToDisplay() {
-        const columnsOptions = this.options.columns, tableColumns = this.dataTable.modified.getColumnNames(), filteredColumns = [];
-        for (let i = 0; i < tableColumns.length; i++) {
-            const columnName = tableColumns[i];
-            const column = columnsOptions[columnName];
-            if (column && defined(column.show)) {
-                if (columnsOptions[columnName].show) {
-                    filteredColumns.push(columnName);
-                }
+            else if (overwrite) {
+                columnOptions[indexInPrevOptions] = newOptions;
             }
             else {
-                filteredColumns.push(columnName);
+                columnOptions[indexInPrevOptions] = merge(columnOptions[indexInPrevOptions], newOptions);
             }
         }
-        return filteredColumns;
-    }
-    /**
-     * Determine whether a column is editable or not.
-     *
-     * @internal
-     *
-     * @param columnName
-     * Name of the column to test.
-     *
-     * @return
-     * Returns true when the column is editable, or false.
-     */
-    isColumnEditable(columnName) {
-        const columnOptions = this.options.columns[columnName] || {};
-        return pick(columnOptions.editable, this.options.editable);
-    }
-    /**
-     * Get a reference to the underlying DataTable from options, or create one
-     * if needed.
-     *
-     * @internal
-     *
-     * @return
-     * DataTable for the DataGrid instance.
-     */
-    initDataTable() {
-        if (this.options.dataTable) {
-            return this.options.dataTable;
+        if (columnOptions.length < 1) {
+            delete this.userOptions.columns;
         }
-        return new DataTable();
     }
     /**
-     * Render the data grid. To be called on first render, as well as when
-     * options change, or the underlying data changes.
+     * Loads the new column options to the userOptions field in a one-to-one
+     * manner. It means that all the columns that are not defined in the new
+     * options will be removed.
+     *
+     * @param newColumnOptions
+     * The new column options that should be loaded.
+     */
+    loadColumnOptionsOneToOne(newColumnOptions) {
+        const prevColumnOptions = this.userOptions.columns;
+        const columnOptions = [];
+        let prevOptions;
+        for (let i = 0, iEnd = newColumnOptions.length; i < iEnd; ++i) {
+            const newOptions = newColumnOptions[i];
+            const indexInPrevOptions = prevColumnOptions?.findIndex((prev) => prev.id === newOptions.id);
+            if (indexInPrevOptions !== void 0 && indexInPrevOptions !== -1) {
+                prevOptions = prevColumnOptions?.[indexInPrevOptions];
+            }
+            const resultOptions = merge(prevOptions ?? {}, newOptions);
+            if (Object.keys(resultOptions).length > 1) {
+                columnOptions.push(resultOptions);
+            }
+        }
+        this.userOptions.columns = columnOptions;
+    }
+    /**
+     * Updates the data grid with new options.
+     *
+     * @param options
+     * The options of the data grid that should be updated. If not provided,
+     * the update will be proceeded based on the `this.userOptions` property.
+     * The `column` options are merged using the `id` property as a key.
+     *
+     * @param render
+     * Whether to re-render the data grid after updating the options.
+     *
+     * @param oneToOne
+     * When `false` (default), the existing column options will be merged with
+     * the ones that are currently defined in the user options. When `true`,
+     * the columns not defined in the new options will be removed.
+     */
+    async update(options = {}, render = true, oneToOne = false) {
+        this.loadUserOptions(options, oneToOne);
+        let newDataTable = false;
+        if (!this.dataTable || options.dataTable) {
+            this.userOptions.dataTable = options.dataTable;
+            (this.options ?? {}).dataTable = options.dataTable;
+            this.loadDataTable(this.options?.dataTable);
+            newDataTable = true;
+        }
+        this.querying.loadOptions();
+        if (render) {
+            await this.querying.proceed(newDataTable);
+            this.renderViewport();
+        }
+    }
+    /**
+     * Updates the column of the data grid with new options.
+     *
+     * @param columnId
+     * The ID of the column that should be updated.
+     *
+     * @param options
+     * The options of the columns that should be updated. If null,
+     * column options for this column ID will be removed.
+     *
+     * @param render
+     * Whether to re-render the data grid after updating the columns.
+     *
+     * @param overwrite
+     * If true, the column options will be updated by replacing the existing
+     * options with the new ones instead of merging them.
+     */
+    async updateColumn(columnId, options, render = true, overwrite = false) {
+        this.loadColumnOptions([{
+                id: columnId,
+                ...options
+            }], overwrite);
+        await this.update(void 0, render);
+    }
+    /**
+     * Hovers the row with the provided index. It removes the hover effect from
+     * the previously hovered row.
+     *
+     * @param rowIndex
+     * The index of the row.
+     */
+    hoverRow(rowIndex) {
+        const rows = this.viewport?.rows;
+        if (!rows) {
+            return;
+        }
+        const firstRowIndex = this.viewport?.rows[0]?.index ?? 0;
+        if (this.hoveredRowIndex !== void 0) {
+            rows[this.hoveredRowIndex - firstRowIndex]?.setHoveredState(false);
+        }
+        if (rowIndex !== void 0) {
+            rows[rowIndex - firstRowIndex]?.setHoveredState(true);
+        }
+        this.hoveredRowIndex = rowIndex;
+    }
+    /**
+     * Hovers the column with the provided ID. It removes the hover effect from
+     * the previously hovered column.
+     *
+     * @param columnId
+     * The ID of the column.
+     */
+    hoverColumn(columnId) {
+        const vp = this.viewport;
+        if (!vp) {
+            return;
+        }
+        if (this.hoveredColumnId) {
+            vp.getColumn(this.hoveredColumnId)?.setHoveredState(false);
+        }
+        if (columnId) {
+            vp.getColumn(columnId)?.setHoveredState(true);
+        }
+        this.hoveredColumnId = columnId;
+    }
+    /**
+     * Renders the viewport of the data grid. If the data grid is already
+     * rendered, it will be destroyed and re-rendered with the new data.
      * @internal
      */
-    render() {
-        const { options } = this;
-        this.prevTop = -1;
-        this.bottom = false;
-        emptyHTMLElement(this.innerContainer);
-        if (options.columnHeaders.enabled) {
-            this.renderColumnHeaders();
+    renderViewport() {
+        let vp = this.viewport;
+        const viewportMeta = vp?.getStateMeta();
+        this.enabledColumns = this.getEnabledColumnIDs();
+        this.credits?.destroy();
+        vp?.destroy();
+        if (this.contentWrapper) {
+            this.contentWrapper.innerHTML = AST.emptyHTML;
+        }
+        if (this.enabledColumns.length > 0) {
+            this.renderTable();
+            vp = this.viewport;
+            if (viewportMeta && vp) {
+                vp.applyStateMeta(viewportMeta);
+            }
         }
         else {
-            this.outerContainer.style.top = '0';
+            this.renderNoData();
         }
-        this.renderInitialRows();
-        this.addEvents();
-        this.updateScrollingLength();
-        this.updateVisibleCells();
-        if (options.columnHeaders.enabled && options.resizableColumns) {
-            this.renderColumnDragHandles();
+        if (this.options?.credits?.enabled) {
+            this.credits = new Credits(this);
         }
-        this.updateGridElements();
-        this.gridContainer.ariaLabel = `Grid with ${this.dataTable.getColumnNames().length} columns and ${this.dataTable.getRowCount()} rows.`;
+        this.viewport?.reflow();
     }
     /**
-     * Add internal event listeners to the grid.
-     * @internal
+     * Renders the table (viewport) of the data grid.
      */
-    addEvents() {
-        this.outerContainer.addEventListener('scroll', (e) => {
-            this.onScroll(e);
-        });
-        document.addEventListener('click', (e) => {
-            this.onDocumentClick(e);
-        });
-        this.container.addEventListener('mouseover', (e) => {
-            this.handleMouseOver(e);
-        });
-        this.container.addEventListener('click', (e) => {
-            this.handleRowClick(e);
-        });
+    renderTable() {
+        this.tableElement = makeHTMLElement('table', {
+            className: Globals.classNames.tableElement
+        }, this.contentWrapper);
+        this.viewport = new Table(this, this.tableElement);
+        // Accessibility
+        this.tableElement.setAttribute('aria-rowcount', this.dataTable?.getRowCount() ?? 0);
     }
     /**
-     * Changes the content of the rendered cells. This is used to simulate
-     * scrolling.
-     *
-     * @internal
-     *
-     * @param force
-     * Whether to force the update regardless of whether the position of the
-     * first row has not been changed.
+     * Renders a message that there is no data to display.
      */
-    updateVisibleCells(force = false) {
-        let scrollTop = this.outerContainer.scrollTop;
-        if (isSafari) {
-            scrollTop = clamp(scrollTop, 0, (this.outerContainer.scrollHeight -
-                this.outerContainer.clientHeight));
+    renderNoData() {
+        makeHTMLElement('div', {
+            className: Globals.classNames.noData,
+            innerText: 'No data to display'
+        }, this.contentWrapper);
+    }
+    /**
+     * Returns the array of IDs of columns that should be displayed in the data
+     * grid, in the correct order.
+     */
+    getEnabledColumnIDs() {
+        const { columnOptionsMap } = this;
+        const header = this.options?.header;
+        const headerColumns = this.getColumnIds(header || [], false);
+        const columnsIncluded = this.options?.rendering?.columns?.included || (headerColumns && headerColumns.length > 0 ?
+            headerColumns : this.dataTable?.getColumnNames());
+        if (!columnsIncluded?.length) {
+            return [];
         }
-        let i = Math.floor(scrollTop / this.options.cellHeight);
-        if (i === this.prevTop && !force) {
+        if (!columnOptionsMap) {
+            return columnsIncluded;
+        }
+        let columnName;
+        const result = [];
+        for (let i = 0, iEnd = columnsIncluded.length; i < iEnd; ++i) {
+            columnName = columnsIncluded[i];
+            if (columnOptionsMap?.[columnName]?.enabled !== false) {
+                result.push(columnName);
+            }
+        }
+        return result;
+    }
+    loadDataTable(tableOptions) {
+        // If the table is passed as a reference, it should be used instead of
+        // creating a new one.
+        if (tableOptions?.id) {
+            this.dataTable = tableOptions;
+            this.presentationTable = this.dataTable.modified;
             return;
         }
-        this.prevTop = i;
-        const columnsInPresentationOrder = this.columnNames;
-        const presentationTable = this.dataTable.modified;
-        const rowCount = presentationTable.modified.getRowCount();
-        for (let j = 0; j < this.rowElements.length && i < rowCount; j++, i++) {
-            const rowElement = this.rowElements[j];
-            rowElement.dataset.rowIndex =
-                presentationTable.getOriginalRowIndex(i)?.toString();
-            const cellElements = rowElement.childNodes;
-            for (let k = 0, kEnd = columnsInPresentationOrder.length; k < kEnd; k++) {
-                const cell = cellElements[k], column = columnsInPresentationOrder[k], value = this.dataTable.modified
-                    .getCell(columnsInPresentationOrder[k], i), formattedContent = this.formatCell(value, column);
-                if (this.options.useHTML) {
-                    this.renderHTMLCellContent(formattedContent, cell);
-                }
-                else {
-                    cell.textContent = formattedContent;
-                }
-                // TODO: consider adding these dynamically to the input element
-                cell.dataset.originalData = '' + value;
-                cell.dataset.columnName = columnsInPresentationOrder[k];
-                // TODO: get this from the store if set?
-                cell.dataset.dataType = typeof value;
-                if (k === 0) { // First column, that is x
-                    rowElement.dataset.rowXIndex =
-                        String(isNumber(value) ? value : i);
-                }
+        this.dataTable = this.presentationTable =
+            new DataTable(tableOptions);
+    }
+    /**
+     * Extracts all references to columnIds on all levels below defined level
+     * in the settings.header structure.
+     *
+     * @param columns
+     * Structure that we start calculation
+     *
+     * @param [onlyEnabledColumns=true]
+     * Extract all columns from header or columns filtered by enabled param
+     * @returns
+     */
+    getColumnIds(columns, onlyEnabledColumns = true) {
+        let columnIds = [];
+        const { enabledColumns } = this;
+        for (const column of columns) {
+            const columnId = typeof column === 'string' ? column : column.columnId;
+            if (columnId &&
+                (!onlyEnabledColumns || (enabledColumns?.includes(columnId)))) {
+                columnIds.push(columnId);
+            }
+            if (typeof column !== 'string' && column.columns) {
+                columnIds = columnIds.concat(this.getColumnIds(column.columns, onlyEnabledColumns));
             }
         }
-        // Scroll innerContainer to align the bottom of the last row with the
-        // bottom of the grid when scrolled to the end
-        if (this.prevTop + this.scrollEndRowCount === rowCount) {
-            if (!this.bottom && this.scrollEndTop) {
-                this.bottom = true;
-                this.innerContainer.scrollTop = this.scrollEndTop;
-            }
-        }
-        else if (this.bottom) {
-            this.bottom = false;
-            this.innerContainer.scrollTop = 0;
-        }
+        return columnIds;
     }
     /**
-     * Handle user scrolling the grid
-     *
-     * @internal
-     *
-     * @param e
-     * Related scroll event.
+     * Destroys the data grid.
      */
-    onScroll(e) {
-        e.preventDefault();
-        window.requestAnimationFrame(this.updateVisibleCells.bind(this, false));
+    destroy() {
+        const dgIndex = DataGrid.dataGrids.findIndex((dg) => dg === this);
+        this.viewport?.destroy();
+        if (this.container) {
+            this.container.innerHTML = AST.emptyHTML;
+            this.container.classList.remove(Globals.classNames.container);
+        }
+        // Clear all properties
+        Object.keys(this).forEach((key) => {
+            delete this[key];
+        });
+        DataGrid.dataGrids.splice(dgIndex, 1);
     }
     /**
-     * Handle the user starting interaction with a cell.
-     *
-     * @internal
-     *
-     * @param cellEl
-     * The clicked cell.
-     *
-     * @param columnName
-     * The column the clicked cell belongs to.
-     */
-    onCellClick(cellEl, columnName) {
-        if (this.isColumnEditable(columnName)) {
-            let input = cellEl.querySelector('input');
-            const cellValue = cellEl.getAttribute('data-original-data');
-            if (!input) {
-                this.removeCellInputElement();
-                // Replace cell contents with an input element
-                const inputHeight = cellEl.clientHeight;
-                cellEl.textContent = '';
-                input = this.cellInputEl = document.createElement('input');
-                input.style.height = inputHeight + 'px';
-                input.className = Globals.classNames.cellInput;
-                cellEl.appendChild(input);
-                input.focus();
-                input.value = cellValue || '';
-            }
-            // Emit for use in extensions
-            this.emit({ type: 'cellClick', input });
-        }
-    }
-    /**
-     * Handle the user clicking somewhere outside the grid.
-     *
-     * @internal
-     *
-     * @param e
-     * Related mouse event.
-     */
-    onDocumentClick(e) {
-        if (this.cellInputEl && e.target) {
-            const cellEl = this.cellInputEl.parentNode;
-            const isClickInInput = cellEl && cellEl.contains(e.target);
-            if (!isClickInInput) {
-                this.removeCellInputElement();
-            }
-        }
-    }
-    /**
-     * Handle hovering over rows- highlight proper row if needed.
-     *
-     * @internal
-     *
-     * @param e
-     * Related mouse event.
-     */
-    handleMouseOver(e) {
-        const target = e.target;
-        if (target && target.classList.contains(Globals.classNames.cell)) {
-            const row = target.parentElement;
-            this.toggleRowHighlight(row);
-            this.hoveredRow = row;
-            fireEvent(this.container, 'dataGridHover', {
-                row,
-                columnName: target.dataset?.columnName
-            });
-        }
-        else if (this.hoveredRow) {
-            this.toggleRowHighlight();
-            this.hoveredRow = void 0;
-        }
-    }
-    /**
-     * Handle click over rows.
-     *
-     * @internal
-     *
-     * @param e
-     * Related mouse event.
-     */
-    handleRowClick(e) {
-        const target = e.target;
-        const clickEvent = this.options.events?.row?.click;
-        if (clickEvent &&
-            target?.classList.contains(Globals.classNames.cell)) {
-            clickEvent.call(target.parentElement, e);
-        }
-    }
-    /**
-     * Remove the <input> overlay and update the cell value
-     * @internal
-     */
-    removeCellInputElement() {
-        const cellInputEl = this.cellInputEl;
-        if (cellInputEl) {
-            const parentNode = cellInputEl.parentNode;
-            // TODO: This needs to modify DataTable. The change in DataTable
-            // should cause a re-render?
-            if (parentNode) {
-                const cellValueType = parentNode.getAttribute('data-data-type'), columnName = parentNode.getAttribute('data-column-name');
-                let cellValue = cellInputEl.value;
-                if (cellValueType === 'number') {
-                    cellValue = parseFloat(cellValue);
-                }
-                parentNode.textContent =
-                    this.formatCell(cellValue, columnName || '');
-            }
-            cellInputEl.remove();
-            delete this.cellInputEl;
-        }
-    }
-    /**
-     * Updates the scroll container to reflect the data size.
-     * @internal
-     */
-    updateScrollingLength() {
-        let i = this.dataTable.modified.getRowCount() - 1;
-        let height = 0;
-        const top = i - this.getNumRowsToDraw();
-        const outerHeight = this.outerContainer.clientHeight;
-        // Explicit height is needed for overflow: hidden to work, to make sure
-        // innerContainer is not scrollable by user input
-        this.innerContainer.style.height = outerHeight + 'px';
-        this.scrollContainer.appendChild(this.innerContainer);
-        for (let j = 0; i > top; i--, j++) {
-            height += this.rowElements[j].offsetHeight;
-            if (height > outerHeight) {
-                i--;
-                break;
-            }
-        }
-        const extraRows = i - top;
-        this.scrollEndRowCount = this.rowElements.length - extraRows;
-        // How much innerContainer needs to be scrolled to fully show the last
-        // row when scrolled to the end
-        this.scrollEndTop = height - outerHeight;
-        const scrollHeight = (this.dataTable.modified.getRowCount() + extraRows) *
-            this.options.cellHeight;
-        this.scrollContainer.style.height = scrollHeight + 'px';
-    }
-    /**
-     * Calculates the number of rows to render pending of cell sizes.
-     *
-     * @internal
+     * Returns the current dataGrid data as a JSON string.
      *
      * @return
-     * The number rows to render.
+     * JSON representation of the data
      */
-    getNumRowsToDraw() {
-        return Math.min(this.dataTable.modified.getRowCount(), Math.ceil((this.outerContainer.offsetHeight ||
-            this.options.defaultHeight // When datagrid is hidden,
-        // offsetHeight is 0, so we need to get defaultValue to
-        // avoid empty rows
-        ) / this.options.cellHeight));
-    }
-    /**
-     * Internal method that calculates the data grid height. If the container
-     * has a height declared in CSS it uses that, otherwise it uses a default.
-     * @internal
-     */
-    getDataGridSize() {
-        const grid = this, options = grid.options, { height } = grid.container.getBoundingClientRect();
-        // If the container has a height declared in CSS, use that.
-        if (height > 2) {
-            return height;
+    getJSON() {
+        const json = this.viewport?.dataTable.modified.columns;
+        if (!this.enabledColumns || !json) {
+            return '{}';
         }
-        // Use the default height if the container has no height declared in CSS
-        return options.defaultHeight;
-    }
-    /**
-     * Renders a data cell.
-     *
-     * @internal
-     *
-     * @param parentRow
-     * The parent row to add the cell to.
-     *
-     * @param columnName
-     * The column the cell belongs to.
-     */
-    renderCell(parentRow, columnName) {
-        let className = Globals.classNames.cell;
-        if (!this.isColumnEditable(columnName)) {
-            className += ` ${className}-readonly`;
-        }
-        const cellEl = makeDiv(className);
-        cellEl.style.minHeight = this.options.cellHeight + 'px';
-        cellEl.addEventListener('click', () => this.onCellClick(cellEl, columnName));
-        parentRow.appendChild(cellEl);
-    }
-    /**
-     * Renders a row of data.
-     * @internal
-     */
-    renderRow() {
-        const rowEl = makeDiv(Globals.classNames.row);
-        for (let i = 0; i < this.columnNames.length; i++) {
-            this.renderCell(rowEl, this.columnNames[i]);
-        }
-        this.innerContainer.appendChild(rowEl);
-        this.rowElements.push(rowEl);
-    }
-    /**
-     * Allows formatting of the header cell text based on provided format
-     * option. If that is not provided, the column name is returned.
-     * @internal
-     *
-     * @param columnName
-     * Column name to format.
-     */
-    formatHeaderCell(columnName) {
-        const options = this.options, columnOptions = options.columns[columnName], headerFormat = columnOptions && columnOptions.headerFormat;
-        if (headerFormat) {
-            return Templating.format(headerFormat, { text: columnName });
-        }
-        return columnName;
-    }
-    /**
-     * Allows formatting of the cell text based on provided format option.
-     * If that is not provided, the cell value is returned.
-     * @internal
-     *
-     * @param  cellValue
-     * The value of the cell to format.
-     *
-     * @param  column
-     * The column name the cell belongs to.
-     */
-    formatCell(cellValue, column) {
-        const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat, cellFormatter = columnOptions && columnOptions.cellFormatter;
-        let formattedCell = defined(cellValue) ? cellValue : '';
-        if (cellFormat) {
-            if (typeof cellValue === 'number' &&
-                cellFormat.indexOf('value') > -1) {
-                formattedCell =
-                    Templating.format(cellFormat, { value: cellValue });
-            }
-            else if (typeof cellValue === 'string' &&
-                cellFormat.indexOf('text') > -1) {
-                formattedCell =
-                    Templating.format(cellFormat, { text: cellValue });
+        for (const key of Object.keys(json)) {
+            if (this.enabledColumns.indexOf(key) === -1) {
+                delete json[key];
             }
         }
-        if (cellFormatter) {
-            return cellFormatter.call({ value: cellValue });
-        }
-        return formattedCell.toString();
+        return JSON.stringify(json);
     }
     /**
-     * When useHTML enabled, parse the syntax and render HTML.
+     * Returns the current DataGrid options as a JSON string.
      *
-     * @param cellContent
-     * Content to render.
+     * @param onlyUserOptions
+     * Whether to return only the user options or all options (user options
+     * merged with the default ones). Default is `true`.
      *
-     * @param parentElement
-     * Parent element where the content should be.
-     *
+     * @returns
+     * Options as a JSON string.
      */
-    renderHTMLCellContent(cellContent, parentElement) {
-        const formattedNodes = new AST(cellContent);
-        parentElement.innerHTML = '';
-        formattedNodes.addToDOM(parentElement);
-    }
-    /**
-     * Render a column header for a column.
-     *
-     * @internal
-     *
-     * @param parentEl
-     * The parent element of the column header.
-     *
-     * @param columnName
-     * The name of the column.
-     */
-    renderColumnHeader(parentEl, columnName) {
-        let className = Globals.classNames.columnHeader;
-        if (!this.isColumnEditable(columnName)) {
-            className += ` ${className}-readonly`;
+    getOptionsJSON(onlyUserOptions = true) {
+        const optionsCopy = onlyUserOptions ? merge(this.userOptions) : merge(this.options);
+        if (optionsCopy.dataTable?.id) {
+            optionsCopy.dataTable = {
+                columns: optionsCopy.dataTable.columns
+            };
         }
-        const headerEl = makeDiv(className);
-        headerEl.style.minHeight = this.options.cellHeight + 'px';
-        headerEl.style.maxHeight = this.options.cellHeight * 2 + 'px';
-        headerEl.textContent = this.formatHeaderCell(columnName);
-        parentEl.appendChild(headerEl);
-    }
-    /**
-     * Render the column headers of the table.
-     * @internal
-     */
-    renderColumnHeaders() {
-        const columnNames = this.columnNames, columnHeadersContainer = this.columnHeadersContainer =
-            this.columnHeadersContainer ||
-                makeDiv(`${Globals.classNamePrefix}column-headers`);
-        emptyHTMLElement(columnHeadersContainer);
-        columnNames.forEach(this.renderColumnHeader.bind(this, columnHeadersContainer));
-        if (!this.headerContainer) {
-            this.headerContainer =
-                makeDiv(`${Globals.classNamePrefix}header-container`);
-            this.headerContainer.appendChild(columnHeadersContainer);
-        }
-        this.gridContainer.insertBefore(this.headerContainer, this.outerContainer);
-        this.updateColumnHeaders();
-    }
-    /**
-     * Refresh container elements to adapt them to new container dimensions.
-     * @internal
-     */
-    updateGridElements() {
-        this.updateColumnHeaders();
-        this.redrawRowElements();
-        this.updateDragHandlesPosition();
-    }
-    /**
-     * Update the column headers of the table.
-     * @internal
-     */
-    updateColumnHeaders() {
-        const headersContainer = this.columnHeadersContainer;
-        if (!headersContainer) {
-            return;
-        }
-        // Handle overflowing text in headers.
-        for (let i = 0; i < this.columnNames.length; i++) {
-            const columnName = this.columnNames[i], header = headersContainer.children[i], overflowWidth = this.overflowHeaderWidths[i];
-            if (header.scrollWidth > header.clientWidth) {
-                // Headers overlap
-                this.overflowHeaderWidths[i] = header.scrollWidth;
-                header.textContent = this.formatHeaderCell(columnName)
-                    .split(' ').map((word) => (word.length < 4 ? word : word.slice(0, 2) + '...')).join(' ');
-            }
-            else if (isNumber(overflowWidth) &&
-                overflowWidth <= header.clientWidth) {
-                // Headers not overlap
-                this.overflowHeaderWidths[i] = null;
-                header.textContent = this.formatHeaderCell(columnName);
-            }
-        }
-        // Offset the outer container by the header row height.
-        this.outerContainer.style.top = headersContainer.clientHeight + 'px';
-        // Header columns alignment when scrollbar is shown.
-        if (headersContainer.lastChild) {
-            headersContainer.lastChild
-                .style.marginRight = (this.outerContainer.offsetWidth -
-                this.outerContainer.clientWidth) + 'px';
-        }
-    }
-    /**
-     * Redraw existing row elements.
-     * @internal
-     */
-    redrawRowElements() {
-        if (!this.rowElements.length) {
-            return;
-        }
-        const prevColumnFlexes = [], firstRowChildren = this.rowElements[0].children;
-        for (let i = 0; i < firstRowChildren.length; i++) {
-            prevColumnFlexes.push(firstRowChildren[i].style.flex);
-        }
-        emptyHTMLElement(this.innerContainer);
-        this.renderInitialRows();
-        this.updateScrollingLength();
-        this.updateVisibleCells(true);
-        for (let i = 0; i < this.rowElements.length; i++) {
-            const row = this.rowElements[i];
-            for (let j = 0; j < row.childElementCount; j++) {
-                row.children[j].style.flex =
-                    prevColumnFlexes[j];
-            }
-        }
-    }
-    /**
-     * Update the column drag handles position.
-     * @internal
-     */
-    updateDragHandlesPosition() {
-        const headersContainer = this.columnHeadersContainer, handlesContainer = this.columnDragHandlesContainer;
-        if (!handlesContainer || !headersContainer) {
-            return;
-        }
-        for (let i = 0; i < handlesContainer.childElementCount - 1; i++) {
-            const handle = handlesContainer.children[i], header = headersContainer.children[i + 1];
-            handle.style.height = headersContainer.clientHeight + 'px';
-            handle.style.left = header.offsetLeft - 2 + 'px';
-        }
-    }
-    /**
-     * Render initial rows before the user starts scrolling.
-     * @internal
-     */
-    renderInitialRows() {
-        this.rowElements = [];
-        const rowsToDraw = this.getNumRowsToDraw();
-        for (let i = 0; i < rowsToDraw; i++) {
-            this.renderRow();
-        }
-    }
-    /**
-     * Render the drag handles for resizing columns.
-     * @internal
-     */
-    renderColumnDragHandles() {
-        if (!this.columnHeadersContainer) {
-            return;
-        }
-        const container = this.columnDragHandlesContainer = (this.columnDragHandlesContainer ||
-            makeDiv(`${Globals.classNamePrefix}col-resize-container`));
-        const columnEls = this.columnHeadersContainer.children;
-        const handleHeight = this.options.cellHeight;
-        emptyHTMLElement(container);
-        for (let i = 1; i < columnEls.length; ++i) {
-            const col = columnEls[i];
-            const handle = makeDiv(`${Globals.classNamePrefix}col-resize-handle`);
-            handle.style.height = handleHeight + 'px';
-            handle.style.left = col.offsetLeft - 2 + 'px';
-            handle.addEventListener('mouseover', () => {
-                if (!this.draggedResizeHandle) {
-                    handle.style.opacity = '1';
-                }
-            });
-            handle.addEventListener('mouseleave', () => {
-                if (!this.draggedResizeHandle) {
-                    handle.style.opacity = '0';
-                }
-            });
-            handle.addEventListener('mousedown', this.onHandleMouseDown.bind(this, handle, i));
-            container.appendChild(handle);
-        }
-        this.renderColumnResizeCrosshair(container);
-        document.addEventListener('mouseup', (e) => {
-            if (this.draggedResizeHandle) {
-                this.stopColumnResize(this.draggedResizeHandle, e);
-            }
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (this.draggedResizeHandle) {
-                this.updateColumnResizeDrag(e);
-            }
-        });
-        if (this.headerContainer) {
-            this.headerContainer.appendChild(container);
-        }
-    }
-    /**
-     * Renders the crosshair shown when resizing columns.
-     *
-     * @internal
-     *
-     * @param container
-     * The container to place the crosshair in.
-     */
-    renderColumnResizeCrosshair(container) {
-        const el = this.columnResizeCrosshair = (this.columnResizeCrosshair ||
-            makeDiv(`${Globals.classNamePrefix}col-resize-crosshair`));
-        const handleHeight = this.options.cellHeight;
-        el.style.top = handleHeight + 'px';
-        el.style.height = this.innerContainer.offsetHeight + 'px';
-        container.appendChild(el);
-    }
-    /**
-     * On column resize handle click.
-     *
-     * @internal
-     *
-     * @param handle
-     * The drag handle being clicked.
-     *
-     * @param colRightIx
-     * The column ix to the right of the resize handle.
-     *
-     * @param e
-     * The mousedown event.
-     */
-    onHandleMouseDown(handle, colRightIx, e) {
-        if (this.draggedResizeHandle) {
-            return;
-        }
-        e.preventDefault();
-        this.draggedResizeHandle = handle;
-        this.draggedColumnRightIx = colRightIx;
-        this.dragResizeStart = e.pageX;
-        const crosshair = this.columnResizeCrosshair;
-        if (crosshair) {
-            crosshair.style.left = (handle.offsetLeft + handle.offsetWidth / 2 -
-                crosshair.offsetWidth / 2 + 'px');
-            crosshair.style.opacity = '1';
-        }
-    }
-    /**
-     * Update as we drag column resizer
-     * @internal
-     */
-    updateColumnResizeDrag(e) {
-        const handle = this.draggedResizeHandle;
-        const crosshair = this.columnResizeCrosshair;
-        const colRightIx = this.draggedColumnRightIx;
-        const colHeaders = this.columnHeadersContainer;
-        if (!handle ||
-            !crosshair ||
-            colRightIx === null ||
-            !colHeaders ||
-            !this.dragResizeStart) {
-            return;
-        }
-        const col = colHeaders.children[colRightIx];
-        const diff = e.pageX - this.dragResizeStart;
-        const newPos = col.offsetLeft + diff;
-        handle.style.left = newPos - handle.offsetWidth / 2 + 'px';
-        crosshair.style.left = newPos - crosshair.offsetWidth / 2 + 'px';
-    }
-    /**
-     * Stop resizing a column.
-     *
-     * @internal
-     *
-     * @param handle
-     * The related resize handle.
-     *
-     * @param e
-     * The related mouse event.
-     */
-    stopColumnResize(handle, e) {
-        const crosshair = this.columnResizeCrosshair;
-        const colRightIx = this.draggedColumnRightIx;
-        const colContainer = this.columnHeadersContainer;
-        if (!crosshair ||
-            !colContainer ||
-            !this.dragResizeStart ||
-            colRightIx === null) {
-            return;
-        }
-        handle.style.opacity = '0';
-        crosshair.style.opacity = '0';
-        const colLeft = colContainer.children[colRightIx - 1];
-        const colRight = colContainer.children[colRightIx];
-        const diff = e.pageX - this.dragResizeStart;
-        const newWidthLeft = colLeft.offsetWidth + diff;
-        const newWidthRight = colRight.offsetWidth - diff;
-        const diffRatioLeft = newWidthLeft / colLeft.offsetWidth;
-        const diffRatioRight = newWidthRight / colRight.offsetWidth;
-        const leftFlexRatio = ((colLeft.style.flex ? parseFloat(colLeft.style.flex) : 1) *
-            diffRatioLeft);
-        const rightFlexRatio = ((colRight.style.flex ? parseFloat(colRight.style.flex) : 1) *
-            diffRatioRight);
-        this.resizeColumn(leftFlexRatio, colRightIx - 1);
-        this.resizeColumn(rightFlexRatio, colRightIx);
-        this.draggedResizeHandle = null;
-        this.draggedColumnRightIx = null;
-        this.updateGridElements();
-    }
-    /**
-     * Update the size of grid container.
-     *
-     * @internal
-     *
-     * @param width
-     * The new width in pixel, or `null` for no change.
-     *
-     * @param height
-     * The new height in pixel, or `null` for no change.
-     */
-    setSize(width, height) {
-        if (width) {
-            this.innerContainer.style.width = width + 'px';
-        }
-        if (height) {
-            this.gridContainer.style.height = this.getDataGridSize() + 'px';
-            this.outerContainer.style.height =
-                height -
-                    (this.options.cellHeight + // Header height
-                        this.getMarginHeight(height)) + 'px';
-        }
-        this.render();
-    }
-    /**
-     * If the grid is in the parent container that has margins, calculate the
-     * height of the margins.
-     * @internal
-     *
-     * @param  height
-     * The height of the parent container.
-     */
-    getMarginHeight(height) {
-        return height - this.gridContainer.getBoundingClientRect().height;
+        return JSON.stringify(optionsCopy);
     }
 }
 /* *
- *
- *  Static Properties
- *
- * */
+*
+*  Properties
+*
+* */
 /**
  * Default options for all DataGrid instances.
+ * @internal
  */
-DataGrid.defaultOptions = DataGridDefaults;
+DataGrid.defaultOptions = DataGridDefaultOptions;
+/**
+ * An array containing the current DataGrid objects in the page.
+ */
+DataGrid.dataGrids = [];
 /* *
  *
  *  Default Export

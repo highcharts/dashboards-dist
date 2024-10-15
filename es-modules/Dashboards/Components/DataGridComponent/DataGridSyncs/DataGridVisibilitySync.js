@@ -33,13 +33,8 @@ const syncPair = {
             if (!(dataGrid && cursor.type === 'position' && cursor.column)) {
                 return;
             }
-            const columnName = cursor.column;
-            dataGrid.update({
-                columns: {
-                    [columnName]: {
-                        show: cursor.state !== 'series.hide' + groupKey
-                    }
-                }
+            void dataGrid.updateColumn(cursor.column, {
+                enabled: cursor.state !== 'series.hide' + groupKey
             });
         };
         const registerCursorListeners = () => {

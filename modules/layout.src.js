@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Layout 2.3.0 (2024-08-26)
+ * @license Highcharts Dashboards Layout 3.0.0 (2024-10-15)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -1633,8 +1633,11 @@
              *
              * @param component
              * The component to render the menu for.
+
+             * @param sidebarMainContainer
+             * The main container of the sidebar.
              */
-            renderContent(container, component) {
+            renderContent(container, component, sidebarMainContainer) {
                 const { editMode } = component.board;
                 const menu = this;
                 const editableOptions = component.editableOptions.getOptions();
@@ -1658,7 +1661,7 @@
                 }
                 const buttonContainer = createElement('div', {
                     className: EditGlobals.classNames.accordionMenuButtonsContainer
-                }, {}, accordionContainer);
+                }, {}, sidebarMainContainer);
                 EditRenderer.renderButton(buttonContainer, {
                     text: (component.board?.editMode || EditGlobals)
                         .lang.confirmButton,
@@ -1675,6 +1678,7 @@
                         this.cancelChanges();
                     }
                 });
+                sidebarMainContainer.appendChild(buttonContainer);
             }
             /**
              * Update the options object with new nested value, based on the property
@@ -1693,6 +1697,8 @@
                 let currentLevel = this.changedOptions;
                 let currentChartOptionsLevel;
                 let currentOldChartOptionsBufferLevel;
+                let currentDataGridOptionsLevel;
+                let currentOldDataGridOptionsBufferLevel;
                 if (pathLength === 0 && propertyPath[0] === 'chartOptions') {
                     try {
                         const parsedValue = JSON.parse(value);
@@ -1709,6 +1715,27 @@
                         currentLevel[key] = {};
                     }
                     currentLevel = currentLevel[key];
+                    if (key === 'dataGridOptions') {
+                        const realDataGridOptions = this.component.dataGrid?.options;
+                        if (realDataGridOptions) {
+                            const oldOptionsBuffer = this.oldOptionsBuffer;
+                            if (!oldOptionsBuffer.dataGridOptions) {
+                                oldOptionsBuffer.dataGridOptions = {};
+                            }
+                            currentOldDataGridOptionsBufferLevel =
+                                oldOptionsBuffer.dataGridOptions;
+                            currentDataGridOptionsLevel = realDataGridOptions;
+                        }
+                    }
+                    else if (currentDataGridOptionsLevel &&
+                        currentOldDataGridOptionsBufferLevel) {
+                        currentDataGridOptionsLevel = currentDataGridOptionsLevel[key];
+                        if (currentOldDataGridOptionsBufferLevel[key] === void 0) {
+                            currentOldDataGridOptionsBufferLevel[key] = {};
+                        }
+                        currentOldDataGridOptionsBufferLevel =
+                            currentOldDataGridOptionsBufferLevel[key];
+                    }
                     if (key === 'chartOptions') {
                         const realChartOptions = this.component.chart?.options;
                         if (realChartOptions) {
@@ -1907,7 +1934,7 @@
 
         return AccordionMenu;
     });
-    _registerModule(_modules, 'Dashboards/EditMode/SidebarPopup.js', [_modules['Dashboards/Layout/CellHTML.js'], _modules['Dashboards/EditMode/AccordionMenu.js'], _modules['Shared/BaseForm.js'], _modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Layout/Layout.js'], _modules['Core/Utilities.js']], function (CellHTML, AccordionMenu, BaseForm, Bindings, Cell, EditGlobals, EditRenderer, GUIElement, Layout, U) {
+    _registerModule(_modules, 'Dashboards/EditMode/SidebarPopup.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Layout/CellHTML.js'], _modules['Dashboards/EditMode/AccordionMenu.js'], _modules['Shared/BaseForm.js'], _modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Layout/Layout.js'], _modules['Core/Utilities.js']], function (AST, CellHTML, AccordionMenu, BaseForm, Bindings, Cell, EditGlobals, EditRenderer, GUIElement, Layout, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -2044,10 +2071,16 @@
                 this.generateContent(context);
             }
             generateContent(context) {
+                // Reset
+                this.container.innerHTML = AST.emptyHTML;
                 // Title
                 this.renderHeader(context ?
                     this.editMode.lang.settings :
                     this.editMode.lang.addComponent, '');
+                // Render content wrapper
+                this.sidebarWrapper = createElement('div', {
+                    className: EditGlobals.classNames.editSidebarWrapper
+                }, void 0, this.container);
                 if (!context) {
                     this.renderAddComponentsList();
                     return;
@@ -2058,7 +2091,7 @@
                     if (!component) {
                         return;
                     }
-                    this.accordionMenu.renderContent(this.container, component);
+                    this.accordionMenu.renderContent(this.sidebarWrapper, component, this.container);
                 }
             }
             renderAddComponentsList() {
@@ -2067,7 +2100,7 @@
                 let gridElement;
                 const gridWrapper = createElement('div', {
                     className: EditGlobals.classNames.editGridItems
-                }, {}, sidebar.container);
+                }, {}, sidebar.sidebarWrapper);
                 for (let i = 0, iEnd = components.length; i < iEnd; ++i) {
                     gridElement = createElement('div', {}, {}, gridWrapper);
                     // Drag drop new component.
@@ -2189,13 +2222,22 @@
                 }
             }
             renderHeader(title, iconURL) {
-                const icon = EditRenderer.renderIcon(this.container, {
+                if (!this.container) {
+                    return;
+                }
+                const headerWrapper = createElement('div', {
+                    className: EditGlobals.classNames.editSidebarHeader
+                }, {}, this.container);
+                this.container.appendChild(headerWrapper);
+                this.headerWrapper = headerWrapper;
+                const icon = EditRenderer.renderIcon(this.headerWrapper, {
                     icon: iconURL,
                     className: EditGlobals.classNames.editSidebarTitle
                 });
                 if (icon) {
                     icon.textContent = title;
                 }
+                this.headerWrapper?.appendChild(this.closeButton);
             }
             /**
              * Based on the provided components list, it returns the list of components
@@ -3424,7 +3466,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/2.3.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.0.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(

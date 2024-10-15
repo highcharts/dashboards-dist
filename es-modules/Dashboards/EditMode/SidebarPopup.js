@@ -11,6 +11,7 @@
  *
  * */
 'use strict';
+import AST from '../../Core/Renderer/HTML/AST.js';
 import CellHTML from '../Layout/CellHTML.js';
 import AccordionMenu from './AccordionMenu.js';
 import BaseForm from '../../Shared/BaseForm.js';
@@ -145,10 +146,16 @@ class SidebarPopup extends BaseForm {
         this.generateContent(context);
     }
     generateContent(context) {
+        // Reset
+        this.container.innerHTML = AST.emptyHTML;
         // Title
         this.renderHeader(context ?
             this.editMode.lang.settings :
             this.editMode.lang.addComponent, '');
+        // Render content wrapper
+        this.sidebarWrapper = createElement('div', {
+            className: EditGlobals.classNames.editSidebarWrapper
+        }, void 0, this.container);
         if (!context) {
             this.renderAddComponentsList();
             return;
@@ -159,7 +166,7 @@ class SidebarPopup extends BaseForm {
             if (!component) {
                 return;
             }
-            this.accordionMenu.renderContent(this.container, component);
+            this.accordionMenu.renderContent(this.sidebarWrapper, component, this.container);
         }
     }
     renderAddComponentsList() {
@@ -168,7 +175,7 @@ class SidebarPopup extends BaseForm {
         let gridElement;
         const gridWrapper = createElement('div', {
             className: EditGlobals.classNames.editGridItems
-        }, {}, sidebar.container);
+        }, {}, sidebar.sidebarWrapper);
         for (let i = 0, iEnd = components.length; i < iEnd; ++i) {
             gridElement = createElement('div', {}, {}, gridWrapper);
             // Drag drop new component.
@@ -290,13 +297,22 @@ class SidebarPopup extends BaseForm {
         }
     }
     renderHeader(title, iconURL) {
-        const icon = EditRenderer.renderIcon(this.container, {
+        if (!this.container) {
+            return;
+        }
+        const headerWrapper = createElement('div', {
+            className: EditGlobals.classNames.editSidebarHeader
+        }, {}, this.container);
+        this.container.appendChild(headerWrapper);
+        this.headerWrapper = headerWrapper;
+        const icon = EditRenderer.renderIcon(this.headerWrapper, {
             icon: iconURL,
             className: EditGlobals.classNames.editSidebarTitle
         });
         if (icon) {
             icon.textContent = title;
         }
+        this.headerWrapper?.appendChild(this.closeButton);
     }
     /**
      * Based on the provided components list, it returns the list of components

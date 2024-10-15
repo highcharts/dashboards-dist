@@ -312,6 +312,36 @@ class Component {
         });
     }
     /**
+     * It's a temporary alternative for the `resize` method. It sets the strict
+     * pixel height for the component so that the content can be distributed in
+     * the right way, without looping the resizers in the content and container.
+     * @param width
+     * The width to set the component to.
+     * @param height
+     * The height to set the component to.
+     */
+    resizeDynamicContent(width, height) {
+        const { element } = this;
+        if (height) {
+            const margins = getMargins(element).y;
+            const paddings = getPaddings(element).y;
+            if (typeof height === 'string') {
+                height = parseFloat(height);
+            }
+            height = Math.round(height);
+            element.style.height = `${height - margins - paddings}px`;
+            this.contentElement.style.height = `${element.clientHeight - this.getContentHeight() - paddings}px`;
+        }
+        else if (height === null) {
+            this.dimensions.height = null;
+            element.style.removeProperty('height');
+        }
+        fireEvent(this, 'resize', {
+            width,
+            height
+        });
+    }
+    /**
      * Adjusts size of component to parent's cell size when animation is done.
      * @param element
      * HTML element that is resized.
@@ -506,7 +536,9 @@ class Component {
         /**
          * TODO: Should perhaps set an `isActive` flag to false.
          */
-        this.sync.stop();
+        if (this.sync.isSyncing) {
+            this.sync.stop();
+        }
         while (this.element.firstChild) {
             this.element.firstChild.remove();
         }

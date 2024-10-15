@@ -52,8 +52,11 @@ class AccordionMenu {
      *
      * @param component
      * The component to render the menu for.
+
+     * @param sidebarMainContainer
+     * The main container of the sidebar.
      */
-    renderContent(container, component) {
+    renderContent(container, component, sidebarMainContainer) {
         const { editMode } = component.board;
         const menu = this;
         const editableOptions = component.editableOptions.getOptions();
@@ -77,7 +80,7 @@ class AccordionMenu {
         }
         const buttonContainer = createElement('div', {
             className: EditGlobals.classNames.accordionMenuButtonsContainer
-        }, {}, accordionContainer);
+        }, {}, sidebarMainContainer);
         EditRenderer.renderButton(buttonContainer, {
             text: (component.board?.editMode || EditGlobals)
                 .lang.confirmButton,
@@ -94,6 +97,7 @@ class AccordionMenu {
                 this.cancelChanges();
             }
         });
+        sidebarMainContainer.appendChild(buttonContainer);
     }
     /**
      * Update the options object with new nested value, based on the property
@@ -112,6 +116,8 @@ class AccordionMenu {
         let currentLevel = this.changedOptions;
         let currentChartOptionsLevel;
         let currentOldChartOptionsBufferLevel;
+        let currentDataGridOptionsLevel;
+        let currentOldDataGridOptionsBufferLevel;
         if (pathLength === 0 && propertyPath[0] === 'chartOptions') {
             try {
                 const parsedValue = JSON.parse(value);
@@ -128,6 +134,27 @@ class AccordionMenu {
                 currentLevel[key] = {};
             }
             currentLevel = currentLevel[key];
+            if (key === 'dataGridOptions') {
+                const realDataGridOptions = this.component.dataGrid?.options;
+                if (realDataGridOptions) {
+                    const oldOptionsBuffer = this.oldOptionsBuffer;
+                    if (!oldOptionsBuffer.dataGridOptions) {
+                        oldOptionsBuffer.dataGridOptions = {};
+                    }
+                    currentOldDataGridOptionsBufferLevel =
+                        oldOptionsBuffer.dataGridOptions;
+                    currentDataGridOptionsLevel = realDataGridOptions;
+                }
+            }
+            else if (currentDataGridOptionsLevel &&
+                currentOldDataGridOptionsBufferLevel) {
+                currentDataGridOptionsLevel = currentDataGridOptionsLevel[key];
+                if (currentOldDataGridOptionsBufferLevel[key] === void 0) {
+                    currentOldDataGridOptionsBufferLevel[key] = {};
+                }
+                currentOldDataGridOptionsBufferLevel =
+                    currentOldDataGridOptionsBufferLevel[key];
+            }
             if (key === 'chartOptions') {
                 const realChartOptions = this.component.chart?.options;
                 if (realChartOptions) {
