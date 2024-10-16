@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.3.0 (2024-08-26)
+ * @license Highcharts Dashboards v3.0.0 (2024-10-16)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.3.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.0.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -247,7 +247,6 @@
         (function (error) {
             error.messages = [];
         })(error || (error = {}));
-        /* eslint-disable valid-jsdoc */
         /**
          * Utility function to deep merge two or more objects and return a third object.
          * If the first argument is true, the contents of the second object is copied
@@ -256,41 +255,19 @@
          *
          * @function Highcharts.merge<T>
          *
-         * @param {boolean} extend
-         *        Whether to extend the left-side object (a) or return a whole new
-         *        object.
+         * @param {true | T} extendOrSource
+         *        Whether to extend the left-side object,
+         *        or the first object to merge as a deep copy.
          *
-         * @param {T|undefined} a
-         *        The first object to extend. When only this is given, the function
-         *        returns a deep copy.
-         *
-         * @param {...Array<object|undefined>} [n]
-         *        An object to merge into the previous one.
+         * @param {...Array<object|undefined>} [sources]
+         *        Object(s) to merge into the previous one.
          *
          * @return {T}
          *         The merged object. If the first argument is true, the return is the
          *         same as the second argument.
-         */ /**
-        * Utility function to deep merge two or more objects and return a third object.
-        * The merge function can also be used with a single object argument to create a
-        * deep copy of an object.
-        *
-        * @function Highcharts.merge<T>
-        *
-        * @param {T|undefined} a
-        *        The first object to extend. When only this is given, the function
-        *        returns a deep copy.
-        *
-        * @param {...Array<object|undefined>} [n]
-        *        An object to merge into the previous one.
-        *
-        * @return {T}
-        *         The merged object. If the first argument is true, the return is the
-        *         same as the second argument.
-        */
-        function merge() {
-            /* eslint-enable valid-jsdoc */
-            let i, args = arguments, ret = {};
+         */
+        function merge(extendOrSource, ...sources) {
+            let i, args = [extendOrSource, ...sources], ret = {};
             const doCopy = function (copy, original) {
                 // An object is replacing a primitive
                 if (typeof copy !== 'object') {
@@ -316,7 +293,7 @@
             };
             // If first argument is true, copy into the existing object. Used in
             // setOptions.
-            if (args[0] === true) {
+            if (extendOrSource === true) {
                 ret = args[1];
                 args = Array.prototype.slice.call(args, 2);
             }
@@ -2320,15 +2297,6 @@
         const emptyHTML = trustedTypesPolicy ?
             trustedTypesPolicy.createHTML('') :
             '';
-        // IE9 and PhantomJS are only able to parse XML.
-        const hasValidDOMParser = (function () {
-            try {
-                return Boolean(new DOMParser().parseFromString(emptyHTML, 'text/html'));
-            }
-            catch (e) {
-                return false;
-            }
-        }());
         /* *
          *
          *  Class
@@ -2539,12 +2507,20 @@
                     // Make all quotation marks parse correctly to DOM (#17627)
                     .replace(/ style=(["'])/g, ' data-style=$1');
                 let doc;
-                if (hasValidDOMParser) {
+                try {
                     doc = new DOMParser().parseFromString(trustedTypesPolicy ?
                         trustedTypesPolicy.createHTML(markup) :
                         markup, 'text/html');
                 }
-                else {
+                catch (e) {
+                    // There are two cases where this fails:
+                    // 1. IE9 and PhantomJS, where the DOMParser only supports parsing
+                    //    XML
+                    // 2. Due to a Chromium issue where chart redraws are triggered by
+                    //    a `beforeprint` event (#16931),
+                    //    https://issues.chromium.org/issues/40222135
+                }
+                if (!doc) {
                     const body = createElement('div');
                     body.innerHTML = markup;
                     doc = { body };
@@ -3054,6 +3030,7 @@
                 editSidebar: PREFIX + 'sidebar',
                 editSidebarShow: PREFIX + 'sidebar-show',
                 editSidebarHide: PREFIX + 'sidebar-hide',
+                editSidebarHeader: PREFIX + 'sidebar-header',
                 editSidebarTitle: PREFIX + 'sidebar-title',
                 editSidebarMenuItem: PREFIX + 'sidebar-item',
                 rowContextHighlight: PREFIX + 'row-context-highlight',
@@ -5460,6 +5437,36 @@
                 });
             }
             /**
+             * It's a temporary alternative for the `resize` method. It sets the strict
+             * pixel height for the component so that the content can be distributed in
+             * the right way, without looping the resizers in the content and container.
+             * @param width
+             * The width to set the component to.
+             * @param height
+             * The height to set the component to.
+             */
+            resizeDynamicContent(width, height) {
+                const { element } = this;
+                if (height) {
+                    const margins = getMargins(element).y;
+                    const paddings = getPaddings(element).y;
+                    if (typeof height === 'string') {
+                        height = parseFloat(height);
+                    }
+                    height = Math.round(height);
+                    element.style.height = `${height - margins - paddings}px`;
+                    this.contentElement.style.height = `${element.clientHeight - this.getContentHeight() - paddings}px`;
+                }
+                else if (height === null) {
+                    this.dimensions.height = null;
+                    element.style.removeProperty('height');
+                }
+                fireEvent(this, 'resize', {
+                    width,
+                    height
+                });
+            }
+            /**
              * Adjusts size of component to parent's cell size when animation is done.
              * @param element
              * HTML element that is resized.
@@ -5654,7 +5661,9 @@
                 /**
                  * TODO: Should perhaps set an `isActive` flag to false.
                  */
-                this.sync.stop();
+                if (this.sync.isSyncing) {
+                    this.sync.stop();
+                }
                 while (this.element.firstChild) {
                     this.element.firstChild.remove();
                 }
@@ -13109,8 +13118,6 @@
              * */
             /**
              * Global dashboard settings.
-             * @internal
-             *
              */
             Board.defaultOptions = {
                 gui: {
@@ -13201,7 +13208,11 @@
                         component.dataGrid &&
                         typeof cursor?.row === 'number') {
                         const { row } = cursor;
-                        component.dataGrid.scrollToRow(row);
+                        const { viewport } = component.dataGrid;
+                        const rowIndex = viewport?.dataTable?.getLocalRowIndex(row);
+                        if (rowIndex !== void 0) {
+                            component.dataGrid.viewport?.scrollToRow(rowIndex);
+                        }
                     }
                 };
                 const registerCursorListeners = () => {
@@ -13273,19 +13284,19 @@
                     return;
                 }
                 const { dataCursor: cursor } = board;
-                const onDataGridHover = (e) => {
+                const onCellHover = (e) => {
                     const table = this.getFirstConnector()?.table;
                     if (table) {
-                        const row = e.row;
+                        const cell = e.target;
                         cursor.emitCursor(table, {
                             type: 'position',
-                            row: parseInt(row.dataset.rowIndex, 10),
-                            column: e.columnName,
+                            row: cell.row.id,
+                            column: cell.column.id,
                             state: 'dataGrid.hoverRow' + groupKey
                         });
                     }
                 };
-                const onDataGridMouseOut = () => {
+                const onCellMouseOut = () => {
                     const table = this.getFirstConnector()?.table;
                     if (table) {
                         cursor.emitCursor(table, {
@@ -13294,12 +13305,12 @@
                         });
                     }
                 };
-                addEvent(dataGrid.container, 'dataGridHover', onDataGridHover);
-                addEvent(dataGrid.container, 'mouseout', onDataGridMouseOut);
+                addEvent(dataGrid, 'cellMouseOver', onCellHover);
+                addEvent(dataGrid, 'cellMouseOut', onCellMouseOut);
                 // Return a function that calls the callbacks
                 return function () {
-                    removeEvent(dataGrid.container, 'dataGridHover', onDataGridHover);
-                    removeEvent(dataGrid.container, 'mouseout', onDataGridMouseOut);
+                    removeEvent(dataGrid.container, 'cellMouseOver', onCellHover);
+                    removeEvent(dataGrid.container, 'cellMouseOut', onCellMouseOut);
                 };
             },
             handler: function () {
@@ -13314,36 +13325,32 @@
                 if (!highlightOptions?.enabled) {
                     return;
                 }
-                let highlightTimeout;
                 const handleCursor = (e) => {
                     const cursor = e.cursor;
                     if (cursor.type !== 'position') {
                         return;
                     }
-                    const { row } = cursor;
+                    const { row, column } = cursor;
                     const { dataGrid } = component;
-                    if (row === void 0 || !dataGrid) {
+                    const viewport = dataGrid?.viewport;
+                    if (row === void 0 || !viewport) {
+                        return;
+                    }
+                    const rowIndex = viewport.dataTable.getLocalRowIndex(row);
+                    if (rowIndex === void 0) {
                         return;
                     }
                     if (highlightOptions.autoScroll) {
-                        dataGrid.scrollToRow(row - Math.round(dataGrid.rowElements.length / 2) + 1);
+                        viewport.scrollToRow(rowIndex);
                     }
-                    if (highlightTimeout) {
-                        clearTimeout(highlightTimeout);
-                    }
-                    highlightTimeout = setTimeout(() => {
-                        const highlightedDataRow = dataGrid.container
-                            .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
-                        if (highlightedDataRow) {
-                            dataGrid.toggleRowHighlight(highlightedDataRow);
-                            dataGrid.hoveredRow = highlightedDataRow;
-                        }
-                    }, highlightOptions.autoScroll ? 10 : 0);
+                    dataGrid.hoverRow(rowIndex);
+                    dataGrid.hoverColumn(column);
                 };
                 const handleCursorOut = () => {
                     const { dataGrid } = component;
                     if (dataGrid) {
-                        dataGrid.toggleRowHighlight(void 0);
+                        dataGrid.hoverColumn();
+                        dataGrid.hoverRow();
                     }
                 };
                 const registerCursorListeners = () => {
@@ -13416,13 +13423,8 @@
                     if (!(dataGrid && cursor.type === 'position' && cursor.column)) {
                         return;
                     }
-                    const columnName = cursor.column;
-                    dataGrid.update({
-                        columns: {
-                            [columnName]: {
-                                show: cursor.state !== 'series.hide' + groupKey
-                            }
-                        }
+                    void dataGrid.updateColumn(cursor.column, {
+                        enabled: cursor.state !== 'series.hide' + groupKey
                     });
                 };
                 const registerCursorListeners = () => {
@@ -13521,11 +13523,91 @@
             dataGridClassName: 'dataGrid-container',
             dataGridID: 'dataGrid-' + uniqueKey(),
             dataGridOptions: {},
-            editableOptions: [{
+            editableOptions: [
+                {
                     name: 'connectorName',
                     propertyPath: ['connector', 'id'],
                     type: 'select'
-                }],
+                }, {
+                    name: 'title',
+                    propertyPath: ['title'],
+                    type: 'input'
+                }, {
+                    name: 'caption',
+                    propertyPath: ['caption'],
+                    type: 'input'
+                }, {
+                    name: 'DataGrid options',
+                    type: 'nested',
+                    nestedOptions: [{
+                            name: 'General',
+                            options: [
+                                {
+                                    name: 'Caption/title',
+                                    propertyPath: ['dataGridOptions', 'caption', 'text'],
+                                    type: 'input'
+                                }, {
+                                    name: 'Columns distribution',
+                                    propertyPath: [
+                                        'dataGridOptions',
+                                        'rendering',
+                                        'columns',
+                                        'distribution'
+                                    ],
+                                    type: 'select',
+                                    selectOptions: [{
+                                            name: 'full'
+                                        }, {
+                                            name: 'fixed'
+                                        }]
+                                }, {
+                                    name: 'Editable DataGrid',
+                                    propertyPath: [
+                                        'dataGridOptions',
+                                        'columnDefaults',
+                                        'cells',
+                                        'editable'
+                                    ],
+                                    type: 'toggle'
+                                }, {
+                                    name: 'Resizable columns',
+                                    propertyPath: [
+                                        'dataGridOptions',
+                                        'columnDefaults',
+                                        'resizing'
+                                    ],
+                                    type: 'toggle'
+                                }, {
+                                    name: 'Sortable columns',
+                                    propertyPath: [
+                                        'dataGridOptions',
+                                        'columnDefaults',
+                                        'sorting',
+                                        'sortable'
+                                    ],
+                                    type: 'toggle'
+                                }, {
+                                    name: 'Cell text truncation',
+                                    propertyPath: [
+                                        'dataGridOptions',
+                                        'rendering',
+                                        'rows',
+                                        'strictHeights'
+                                    ],
+                                    type: 'toggle'
+                                }
+                            ]
+                        }]
+                }, {
+                    name: 'DataGrid class name',
+                    propertyPath: ['dataGridClassName'],
+                    type: 'input'
+                }, {
+                    name: 'DataGrid ID',
+                    propertyPath: ['dataGridID'],
+                    type: 'input'
+                }
+            ],
             onUpdate: (e, connector) => {
                 const inputElement = e.target;
                 if (inputElement) {
@@ -13574,9 +13656,10 @@
          *
          *  Authors:
          *  - Karol Kolodziej
+         *  - Dawid Dragula
          *
          * */
-        const { diffObjects, merge } = U;
+        const { merge, diffObjects } = U;
         /* *
          *
          *  Class
@@ -13592,7 +13675,18 @@
              *  Static Functions
              *
              * */
-            /** @private */
+            /**
+             * Function to create a DataGrid component from JSON.
+             *
+             * @param json
+             * The JSON to create the DataGrid component from.
+             *
+             * @param cell
+             * The cell to create the DataGrid component in.
+             *
+             * @returns
+             * The DataGrid component created from the JSON.
+             */
             static fromJSON(json, cell) {
                 const options = json.options;
                 const dataGridOptions = JSON.parse(json.options.dataGridOptions || '');
@@ -13611,207 +13705,63 @@
             constructor(cell, options, board) {
                 options = merge(DataGridComponent.defaultOptions, options);
                 super(cell, options, board);
-                this.connectorListeners = [];
                 this.options = options;
                 this.type = 'DataGrid';
-                if (this.options.dataGridClassName) {
-                    this.contentElement.classList.add(this.options.dataGridClassName);
-                }
-                if (this.options.dataGridID) {
-                    this.contentElement.id = this.options.dataGridID;
-                }
-                this.dataGridOptions = (this.options.dataGridOptions ||
-                    {});
-                this.innerResizeTimeouts = [];
-                this.on('afterSetConnectors', (e) => {
-                    const connector = e.connectorHandlers?.[0]?.connector;
-                    if (connector) {
-                        this.disableEditingModifiedColumns(connector);
-                    }
-                });
-            }
-            onTableChanged() {
-                if (this.dataGrid && !this.dataGrid?.cellInputEl) {
-                    this.dataGrid.update({ dataTable: this.filterColumns() });
-                }
-            }
-            /**
-             * Disable editing of the columns that are modified by the data modifier.
-             * @internal
-             *
-             * @param connector
-             * Attached connector
-             */
-            disableEditingModifiedColumns(connector) {
-                const options = this.getColumnOptions(connector);
-                this.dataGrid?.update({ columns: options });
-            }
-            /**
-             * Get the column options for the data grid.
-             * @internal
-             */
-            getColumnOptions(connector) {
-                const modifierOptions = connector.options.dataModifier;
-                if (!modifierOptions || modifierOptions.type !== 'Math') {
-                    return {};
-                }
-                const modifierColumns = modifierOptions.columnFormulas;
-                if (!modifierColumns) {
-                    return {};
-                }
-                const options = {};
-                for (let i = 0, iEnd = modifierColumns.length; i < iEnd; ++i) {
-                    const columnName = modifierColumns[i].column;
-                    options[columnName] = {
-                        editable: false
-                    };
-                }
-                return options;
+                this.setOptions();
             }
             /* *
              *
-             *  Class methods
+             *  Functions
              *
              * */
-            /**
-             * Triggered on component initialization.
-             * @private
-             */
-            async load() {
-                this.emit({ type: 'load' });
-                await super.load();
-                const connector = this.getFirstConnector();
-                if (connector &&
-                    !this.connectorListeners.length) {
-                    const connectorListeners = this.connectorListeners;
-                    // Reload the store when polling.
-                    connectorListeners.push(connector.on('afterLoad', (e) => {
-                        if (e.table && connector) {
-                            connector.table.setColumns(e.table.getColumns());
-                        }
-                    }));
-                    // Update the DataGrid when connector changed.
-                    connectorListeners.push(connector.table.on('afterSetCell', (e) => {
-                        const dataGrid = this.dataGrid;
-                        let shouldUpdateTheGrid = true;
-                        if (dataGrid) {
-                            const row = dataGrid.rowElements[e.rowIndex];
-                            let cells = [];
-                            if (row) {
-                                cells = Array.prototype.slice.call(row.childNodes);
-                            }
-                            cells.forEach((cell) => {
-                                if (cell.childElementCount > 0) {
-                                    const input = cell.childNodes[0], convertedInputValue = typeof e.cellValue === 'string' ?
-                                        input.value :
-                                        +input.value;
-                                    if (cell.dataset.columnName ===
-                                        e.columnName &&
-                                        convertedInputValue === e.cellValue) {
-                                        shouldUpdateTheGrid = false;
-                                    }
-                                }
-                            });
-                        }
-                        shouldUpdateTheGrid ? this.update({}) : void 0;
-                    }));
+            async update(options) {
+                await super.update(options);
+                this.setOptions();
+                if (this.dataGrid) {
+                    this.dataGrid.update(this.options.dataGridOptions ?? {}, false);
+                    if (this.dataGrid?.viewport?.dataTable?.id !==
+                        this.getFirstConnector()?.table?.id) {
+                        this.dataGrid.update({
+                            dataTable: this.getFirstConnector()?.table?.modified
+                        }, false);
+                    }
+                    this.dataGrid.renderViewport();
                 }
-                this.emit({ type: 'afterLoad' });
-                return this;
+                this.emit({ type: 'afterUpdate' });
             }
-            /** @private */
             render() {
                 super.render();
                 if (!this.dataGrid) {
                     this.dataGrid = this.constructDataGrid();
                 }
-                const connector = this.getFirstConnector();
-                if (connector &&
-                    this.dataGrid &&
-                    this.dataGrid.dataTable.modified !== connector.table.modified) {
-                    this.dataGrid.update({ dataTable: this.filterColumns() });
+                else {
+                    this.dataGrid.renderViewport();
                 }
                 this.sync.start();
                 this.emit({ type: 'afterRender' });
-                this.setupConnectorUpdate();
                 return this;
             }
-            /** @private */
             resize(width, height) {
-                if (this.dataGrid) {
-                    super.resize(width, height);
+                if (height) {
+                    this.contentElement.style.minHeight = '0';
                 }
+                else if (height === null) {
+                    this.contentElement.style.removeProperty('min-height');
+                }
+                this.resizeDynamicContent(width, height);
+                this.dataGrid?.viewport?.reflow();
             }
-            async update(options) {
-                const connectorOptions = Array.isArray(options.connector) ?
-                    options.connector[0] : options.connector;
-                if (this.connectorHandlers[0] &&
-                    connectorOptions?.id !== this.connectorHandlers[0]?.connectorId) {
-                    const connectorListeners = this.connectorListeners;
-                    for (let i = 0, iEnd = connectorListeners.length; i < iEnd; ++i) {
-                        connectorListeners[i]();
-                    }
-                    connectorListeners.length = 0;
-                }
-                await super.update(options);
-                if (this.dataGrid) {
-                    this.dataGrid.update(this.options.dataGridOptions || {});
-                }
-                this.emit({ type: 'afterUpdate' });
+            onTableChanged() {
+                this.dataGrid?.update({
+                    dataTable: this.getFirstConnector()?.table?.modified
+                });
             }
-            /** @private */
-            constructDataGrid() {
-                if (DataGridComponent.DataGridNamespace) {
-                    const DataGrid = DataGridComponent.DataGridNamespace.DataGrid;
-                    const connector = this.getFirstConnector();
-                    const columnOptions = connector ?
-                        this.getColumnOptions(connector) :
-                        {};
-                    this.dataGrid = new DataGrid(this.contentElement, {
-                        ...this.options.dataGridOptions,
-                        dataTable: this.options.dataGridOptions?.dataTable ||
-                            this.filterColumns(),
-                        columns: merge(columnOptions, this.options.dataGridOptions?.columns)
-                    });
-                    return this.dataGrid;
-                }
-                throw new Error('DataGrid not connected.');
-            }
-            setupConnectorUpdate() {
-                const { dataGrid } = this;
-                const connector = this.getFirstConnector();
-                if (connector && dataGrid) {
-                    dataGrid.on('cellClick', (e) => {
-                        if ('input' in e) {
-                            e.input.addEventListener('keyup', (keyEvent) => this.options.onUpdate(keyEvent, connector));
-                        }
-                    });
-                }
-            }
-            /**
-             * Based on the `visibleColumns` option, filter the columns of the table.
-             *
-             * @internal
-             */
-            filterColumns() {
-                const table = this.getFirstConnector()?.table.modified, visibleColumns = this.options.visibleColumns;
-                if (table) {
-                    // Show all columns if no visibleColumns is provided.
-                    if (!visibleColumns?.length) {
-                        return table;
-                    }
-                    const columnsToDelete = table
-                        .getColumnNames()
-                        .filter((columnName) => (visibleColumns?.length > 0 &&
-                        // Don't add columns that are not listed.
-                        !visibleColumns.includes(columnName)
-                    // Else show the other columns.
-                    ));
-                    // On a fresh table clone remove the columns that are not mapped.
-                    const filteredTable = table.clone();
-                    filteredTable.deleteColumns(columnsToDelete);
-                    return filteredTable;
-                }
+            getEditableOptions() {
+                const componentOptions = this.options;
+                const dataGridOptions = this.dataGrid?.options;
+                return merge({
+                    dataGridOptions: dataGridOptions
+                }, componentOptions);
             }
             getOptionsOnDrop(sidebar) {
                 const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
@@ -13829,31 +13779,27 @@
                 }
                 return options;
             }
-            /** @private */
-            toJSON() {
-                const dataGridOptions = JSON.stringify(this.options.dataGridOptions);
-                const base = super.toJSON();
-                const json = {
-                    ...base,
-                    options: {
-                        ...base.options,
-                        dataGridOptions
-                    }
-                };
-                this.emit({ type: 'toJSON', json });
-                return json;
-            }
             /**
              * Get the DataGrid component's options.
+             *
              * @returns
              * The JSON of DataGrid component's options.
              *
              * @internal
-             *
              */
             getOptions() {
+                // Remove the table from the options copy if the connector is set.
+                const optionsCopy = merge(this.options);
+                if (optionsCopy.connector?.id) {
+                    delete optionsCopy.dataGridOptions?.dataTable;
+                }
+                else if (optionsCopy.dataGridOptions?.dataTable?.id) {
+                    optionsCopy.dataGridOptions.dataTable = {
+                        columns: optionsCopy.dataGridOptions.dataTable.columns
+                    };
+                }
                 return {
-                    ...diffObjects(this.options, DataGridComponent.defaultOptions),
+                    ...diffObjects(optionsCopy, DataGridComponent.defaultOptions),
                     type: 'DataGrid'
                 };
             }
@@ -13861,8 +13807,41 @@
              * Destroys the data grid component.
              */
             destroy() {
-                this.dataGrid?.containerResizeObserver.disconnect();
+                this.sync.stop();
+                this.dataGrid?.destroy();
                 super.destroy();
+            }
+            /**
+             * Sets the options for the data grid component content container.
+             */
+            setOptions() {
+                if (this.options.dataGridClassName) {
+                    this.contentElement.classList.value =
+                        DataGridComponentDefaults.className + ' ' +
+                            this.options.dataGridClassName;
+                }
+                if (this.options.dataGridID) {
+                    this.contentElement.id = this.options.dataGridID;
+                }
+            }
+            /**
+             * Function to create the DataGrid.
+             *
+             * @returns The DataGrid.
+             */
+            constructDataGrid() {
+                const DGN = DataGridComponent.DataGridNamespace;
+                if (!DGN) {
+                    throw new Error('DataGrid not connected.');
+                }
+                const dataTable = this.getFirstConnector()?.table;
+                const dataGridOptions = this.options.dataGridOptions ?? {};
+                if (dataTable) {
+                    dataGridOptions.dataTable = dataTable.modified;
+                }
+                const dataGridInstance = new DGN.DataGrid(this.contentElement, dataGridOptions);
+                this.options.dataGridOptions = dataGridInstance.options;
+                return dataGridInstance;
             }
         }
         /* *
@@ -13874,7 +13853,9 @@
          * Predefined sync config for the DataGrid component.
          */
         DataGridComponent.predefinedSyncConfig = DataGridSyncs;
-        /** @private */
+        /**
+         * The default options for the DataGrid component.
+         */
         DataGridComponent.defaultOptions = merge(Component.defaultOptions, DataGridComponentDefaults);
         /* *
          *
@@ -14179,40 +14160,6 @@
          * */
         const { error } = U;
         /* *
-        *
-        *  Utility Functions
-        *
-        * */
-        /**
-         * Utility function that returns the first row index
-         * if the table has been modified by a range modifier
-         *
-         * @param {DataTable} table
-         * The table to get the offset from.
-         *
-         * @param {RangeModifierOptions} modifierOptions
-         * The modifier options to use
-         *
-         * @return {number}
-         * The row offset of the modified table.
-         */
-        function getModifiedTableOffset(table, modifierOptions) {
-            const { ranges } = modifierOptions;
-            if (ranges) {
-                const minRange = ranges.reduce((minRange, currentRange) => {
-                    if (currentRange.minValue > minRange.minValue) {
-                        minRange = currentRange;
-                    }
-                    return minRange;
-                }, ranges[0]);
-                const tableRowIndex = table.getRowIndexBy(minRange.column, minRange.minValue);
-                if (tableRowIndex) {
-                    return tableRowIndex;
-                }
-            }
-            return 0;
-        }
-        /* *
          *
          *  Constants
          *
@@ -14246,6 +14193,7 @@
                     if (!table) {
                         continue;
                     }
+                    const presTable = table?.modified;
                     const colAssignment = connectorHandler.columnAssignment?.find((s) => s.seriesId === seriesId);
                     // TODO: Better way to recognize the column name.
                     if (colAssignment) {
@@ -14268,27 +14216,17 @@
                             events: {
                                 // Emit table cursor
                                 mouseOver: function () {
-                                    let offset = 0;
-                                    const modifier = table.getModifier();
-                                    if (modifier?.options.type === 'Range') {
-                                        offset = getModifiedTableOffset(table, modifier.options);
-                                    }
                                     cursor.emitCursor(table, {
                                         type: 'position',
-                                        row: offset + this.index,
+                                        row: presTable.getOriginalRowIndex(this.index),
                                         column: columnName,
                                         state: 'point.mouseOver' + groupKey
                                     });
                                 },
                                 mouseOut: function () {
-                                    let offset = 0;
-                                    const modifier = table.getModifier();
-                                    if (modifier?.options.type === 'Range') {
-                                        offset = getModifiedTableOffset(table, modifier.options);
-                                    }
                                     cursor.emitCursor(table, {
                                         type: 'position',
-                                        row: offset + this.index,
+                                        row: presTable.getOriginalRowIndex(this.index),
                                         column: columnName,
                                         state: 'point.mouseOut' + groupKey
                                     });
@@ -14327,11 +14265,6 @@
                     const { table, cursor } = e;
                     const highlightOptions = this.sync
                         .syncConfig.highlight;
-                    const modifier = table.getModifier();
-                    let offset = 0;
-                    if (modifier && modifier.options.type === 'Range') {
-                        offset = getModifiedTableOffset(table, modifier.options);
-                    }
                     if (chart && chart.series?.length && cursor.type === 'position') {
                         let series;
                         const seriesId = highlightOptions.affectedSeriesId;
@@ -14382,8 +14315,13 @@
                                 }
                             }
                         }
-                        if (series?.visible && cursor.row !== void 0) {
-                            const point = series.data[cursor.row - offset];
+                        const row = cursor.row;
+                        if (series?.visible && row !== void 0) {
+                            const rowIndex = table.modified.getLocalRowIndex(row);
+                            if (rowIndex === void 0) {
+                                return;
+                            }
+                            const point = series.data[rowIndex];
                             if (point?.visible) {
                                 return point;
                             }
@@ -14752,9 +14690,6 @@
             chartClassName: 'chart-container',
             chartID: 'chart-' + uniqueKey(),
             chartOptions: {
-                chart: {
-                    styledMode: true
-                },
                 series: []
             },
             chartConstructor: 'chart',
@@ -15060,7 +14995,7 @@
                 return this;
             }
             resize(width, height) {
-                super.resize(width, height);
+                this.resizeDynamicContent(width, height);
                 while (this.innerResizeTimeouts.length) {
                     const timeoutID = this.innerResizeTimeouts.pop();
                     if (timeoutID) {
@@ -15143,7 +15078,9 @@
              */
             setOptions() {
                 if (this.options.chartClassName) {
-                    this.chartContainer.classList.add(this.options.chartClassName);
+                    this.chartContainer.classList.value =
+                        HighchartsComponentDefaults.className + ' ' +
+                            this.options.chartClassName;
                 }
                 if (this.options.chartID) {
                     this.chartContainer.id = this.options.chartID;
@@ -16154,8 +16091,11 @@
                  * Decides in what dimensions the user can pan the chart. Can be
                  * one of `x`, `y`, or `xy`.
                  *
-                 * When this option is set to `y` or `xy`, [yAxis.startOnTick](#yAxis.startOnTick)
-                 * and [yAxis.endOnTick](#yAxis.endOnTick) are overwritten to `false`.
+                 * During panning, all axes will behave as if
+                 * [`startOnTick`](#yAxis.startOnTick) and
+                 * [`endOnTick`](#yAxis.endOnTick) were set to `false`. After the
+                 * panning action is finished, the axes will adjust to their actual
+                 * settings.
                  *
                  * @sample {highcharts} highcharts/chart/panning-type
                  *         Zooming and xy panning
@@ -16163,7 +16103,6 @@
                  * @declare    Highcharts.OptionsChartPanningTypeValue
                  * @type       {string}
                  * @validvalue ["x", "y", "xy"]
-                 * @default    {highcharts|highstock} x
                  * @product    highcharts highstock gantt
                  */
                 type: 'x'
@@ -20773,7 +20712,7 @@
             while ((match = regex.exec(str)) !== null) {
                 // When a sub expression is found, it is evaluated first, and the
                 // results recursively evaluated until no subexpression exists.
-                const subMatch = subRegex.exec(match[1]);
+                const mainMatch = match, subMatch = subRegex.exec(match[1]);
                 if (subMatch) {
                     match = subMatch;
                     hasSub = true;
@@ -20790,7 +20729,7 @@
                     };
                 }
                 // Identify helpers
-                const fn = match[1].split(' ')[0].replace('#', '');
+                const fn = (currentMatch.isBlock ? mainMatch : match)[1].split(' ')[0].replace('#', '');
                 if (helpers[fn]) {
                     // Block helper, only 0 level is handled
                     if (currentMatch.isBlock && fn === currentMatch.fn) {
@@ -21405,7 +21344,6 @@
          * @default {
             chart: {
                 type: 'spline',
-                styledMode: true,
                 zooming: {
                     mouseWheel: {
                         enabled: false
@@ -21445,7 +21383,6 @@
         KPIComponent.defaultChartOptions = {
             chart: {
                 type: 'spline',
-                styledMode: true,
                 zooming: {
                     mouseWheel: {
                         enabled: false
@@ -21517,7 +21454,6 @@
                 chart: {
                     animation: false,
                     height: 200,
-                    styledMode: true,
                     type: 'column',
                     zooming: {
                         mouseWheel: {

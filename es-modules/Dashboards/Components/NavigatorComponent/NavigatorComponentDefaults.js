@@ -27,7 +27,6 @@ const NavigatorComponentDefaults = {
         chart: {
             animation: false,
             height: 200,
-            styledMode: true,
             type: 'column',
             zooming: {
                 mouseWheel: {

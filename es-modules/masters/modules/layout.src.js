@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Layout 2.3.0 (2024-08-26)
+ * @license Highcharts Dashboards Layout 3.0.0 (2024-10-16)
  * @module dashboards/modules/layout
  * @requires dashboards
  *

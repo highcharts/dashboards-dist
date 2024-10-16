@@ -129,7 +129,7 @@ class HighchartsComponent extends Component {
         return this;
     }
     resize(width, height) {
-        super.resize(width, height);
+        this.resizeDynamicContent(width, height);
         while (this.innerResizeTimeouts.length) {
             const timeoutID = this.innerResizeTimeouts.pop();
             if (timeoutID) {
@@ -212,7 +212,9 @@ class HighchartsComponent extends Component {
      */
     setOptions() {
         if (this.options.chartClassName) {
-            this.chartContainer.classList.add(this.options.chartClassName);
+            this.chartContainer.classList.value =
+                HighchartsComponentDefaults.className + ' ' +
+                    this.options.chartClassName;
         }
         if (this.options.chartID) {
             this.chartContainer.id = this.options.chartID;

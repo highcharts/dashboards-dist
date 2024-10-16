@@ -21,8 +21,11 @@ declare class AccordionMenu {
      *
      * @param component
      * The component to render the menu for.
+
+     * @param sidebarMainContainer
+     * The main container of the sidebar.
      */
-    renderContent(container: HTMLElement, component: Component): void;
+    renderContent(container: HTMLElement, component: Component, sidebarMainContainer: HTMLElement): void;
     /**
      * Update the options object with new nested value, based on the property
      * path. If the objects in the path are not defined, the function will

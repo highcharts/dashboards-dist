@@ -166,8 +166,7 @@ declare abstract class Component {
      */
     constructor(cell: Cell, options: Partial<Component.Options>, board?: Board);
     /**
-     * Function fired when component's `tableChanged` event is fired.
-     * @internal
+     * Function fired when component's data source's data is changed.
      */
     abstract onTableChanged(e?: Component.EventTypes): void;
     /**
@@ -223,6 +222,16 @@ declare abstract class Component {
      * Null will unset the style.
      */
     resize(width?: number | string | null, height?: number | string | null): void;
+    /**
+     * It's a temporary alternative for the `resize` method. It sets the strict
+     * pixel height for the component so that the content can be distributed in
+     * the right way, without looping the resizers in the content and container.
+     * @param width
+     * The width to set the component to.
+     * @param height
+     * The height to set the component to.
+     */
+    protected resizeDynamicContent(width?: number | string | null, height?: number | string | null): void;
     /**
      * Adjusts size of component to parent's cell size when animation is done.
      * @param element
@@ -396,7 +405,7 @@ declare namespace Component {
         /**
          * Connector options
          */
-        connector?: ConnectorOptions | ConnectorOptions[];
+        connector?: (ConnectorOptions | Array<ConnectorOptions>);
         /**
          * Sets an ID for the component's container.
          */

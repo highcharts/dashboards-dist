@@ -42,7 +42,6 @@ declare class KPIComponent extends Component {
      * @default {
         chart: {
             type: 'spline',
-            styledMode: true,
             zooming: {
                 mouseWheel: {
                     enabled: false

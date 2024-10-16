@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v2.3.0 (2024-08-26)
+ * @license Highcharts Dashboards v3.0.0 (2024-10-16)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '2.3.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.0.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
@@ -247,7 +247,6 @@
         (function (error) {
             error.messages = [];
         })(error || (error = {}));
-        /* eslint-disable valid-jsdoc */
         /**
          * Utility function to deep merge two or more objects and return a third object.
          * If the first argument is true, the contents of the second object is copied
@@ -256,41 +255,19 @@
          *
          * @function Highcharts.merge<T>
          *
-         * @param {boolean} extend
-         *        Whether to extend the left-side object (a) or return a whole new
-         *        object.
+         * @param {true | T} extendOrSource
+         *        Whether to extend the left-side object,
+         *        or the first object to merge as a deep copy.
          *
-         * @param {T|undefined} a
-         *        The first object to extend. When only this is given, the function
-         *        returns a deep copy.
-         *
-         * @param {...Array<object|undefined>} [n]
-         *        An object to merge into the previous one.
+         * @param {...Array<object|undefined>} [sources]
+         *        Object(s) to merge into the previous one.
          *
          * @return {T}
          *         The merged object. If the first argument is true, the return is the
          *         same as the second argument.
-         */ /**
-        * Utility function to deep merge two or more objects and return a third object.
-        * The merge function can also be used with a single object argument to create a
-        * deep copy of an object.
-        *
-        * @function Highcharts.merge<T>
-        *
-        * @param {T|undefined} a
-        *        The first object to extend. When only this is given, the function
-        *        returns a deep copy.
-        *
-        * @param {...Array<object|undefined>} [n]
-        *        An object to merge into the previous one.
-        *
-        * @return {T}
-        *         The merged object. If the first argument is true, the return is the
-        *         same as the second argument.
-        */
-        function merge() {
-            /* eslint-enable valid-jsdoc */
-            let i, args = arguments, ret = {};
+         */
+        function merge(extendOrSource, ...sources) {
+            let i, args = [extendOrSource, ...sources], ret = {};
             const doCopy = function (copy, original) {
                 // An object is replacing a primitive
                 if (typeof copy !== 'object') {
@@ -316,7 +293,7 @@
             };
             // If first argument is true, copy into the existing object. Used in
             // setOptions.
-            if (args[0] === true) {
+            if (extendOrSource === true) {
                 ret = args[1];
                 args = Array.prototype.slice.call(args, 2);
             }
@@ -2320,15 +2297,6 @@
         const emptyHTML = trustedTypesPolicy ?
             trustedTypesPolicy.createHTML('') :
             '';
-        // IE9 and PhantomJS are only able to parse XML.
-        const hasValidDOMParser = (function () {
-            try {
-                return Boolean(new DOMParser().parseFromString(emptyHTML, 'text/html'));
-            }
-            catch (e) {
-                return false;
-            }
-        }());
         /* *
          *
          *  Class
@@ -2539,12 +2507,20 @@
                     // Make all quotation marks parse correctly to DOM (#17627)
                     .replace(/ style=(["'])/g, ' data-style=$1');
                 let doc;
-                if (hasValidDOMParser) {
+                try {
                     doc = new DOMParser().parseFromString(trustedTypesPolicy ?
                         trustedTypesPolicy.createHTML(markup) :
                         markup, 'text/html');
                 }
-                else {
+                catch (e) {
+                    // There are two cases where this fails:
+                    // 1. IE9 and PhantomJS, where the DOMParser only supports parsing
+                    //    XML
+                    // 2. Due to a Chromium issue where chart redraws are triggered by
+                    //    a `beforeprint` event (#16931),
+                    //    https://issues.chromium.org/issues/40222135
+                }
+                if (!doc) {
                     const body = createElement('div');
                     body.innerHTML = markup;
                     doc = { body };
@@ -5520,56 +5496,6 @@
 
         return DataCursor;
     });
-    _registerModule(_modules, 'DataGrid/DataGridUtils.js', [], function () {
-        /* *
-         *
-         *  Data Grid utilities
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Øystein Moseng
-         *
-         * */
-        /* *
-         *
-         *  Functions
-         *
-         * */
-        const DataGridUtils = {
-            dataTableCellToString(cell) {
-                return typeof cell === 'string' ||
-                    typeof cell === 'number' ||
-                    typeof cell === 'boolean' ?
-                    '' + cell :
-                    '';
-            },
-            emptyHTMLElement(element) {
-                while (element.firstChild) {
-                    element.removeChild(element.firstChild);
-                }
-            },
-            makeDiv: (className, id) => {
-                const div = document.createElement('div');
-                div.className = className;
-                if (id) {
-                    div.id = id;
-                }
-                return div;
-            }
-        };
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataGridUtils;
-    });
     _registerModule(_modules, 'DataGrid/Globals.js', [], function () {
         /* *
          *
@@ -5580,12 +5506,8 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
+         *  - Dawid Dragula
          *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *  - Pawel Lysy
-         *  - Karol Kolodziej
          *
          * */
         /* *
@@ -5617,18 +5539,36 @@
              * */
             Globals.classNamePrefix = 'highcharts-datagrid-';
             Globals.classNames = {
-                gridContainer: Globals.classNamePrefix + 'container',
-                outerContainer: Globals.classNamePrefix + 'outer-container',
-                scrollContainer: Globals.classNamePrefix + 'scroll-container',
-                innerContainer: Globals.classNamePrefix + 'inner-container',
-                cell: Globals.classNamePrefix + 'cell',
-                cellInput: Globals.classNamePrefix + 'cell-input',
-                row: Globals.classNamePrefix + 'row',
-                columnHeader: Globals.classNamePrefix + 'column-header'
+                container: Globals.classNamePrefix + 'container',
+                tableElement: Globals.classNamePrefix + 'table',
+                captionElement: Globals.classNamePrefix + 'caption',
+                theadElement: Globals.classNamePrefix + 'thead',
+                tbodyElement: Globals.classNamePrefix + 'tbody',
+                rowElement: Globals.classNamePrefix + 'row',
+                rowOdd: Globals.classNamePrefix + 'row-odd',
+                hoveredRow: Globals.classNamePrefix + 'hovered-row',
+                columnElement: Globals.classNamePrefix + 'column',
+                hoveredCell: Globals.classNamePrefix + 'hovered-cell',
+                hoveredColumn: Globals.classNamePrefix + 'hovered-column',
+                editedCell: Globals.classNamePrefix + 'edited-cell',
+                rowsContentNowrap: Globals.classNamePrefix + 'rows-content-nowrap',
+                headerCell: Globals.classNamePrefix + 'header-cell',
+                headerCellContent: Globals.classNamePrefix + 'header-cell-content',
+                headerCellResized: Globals.classNamePrefix + 'header-cell-resized',
+                headerRow: Globals.classNamePrefix + 'head-row-content',
+                noData: Globals.classNamePrefix + 'no-data',
+                columnFirst: Globals.classNamePrefix + 'column-first',
+                columnSortable: Globals.classNamePrefix + 'column-sortable',
+                columnSortedAsc: Globals.classNamePrefix + 'column-sorted-asc',
+                columnSortedDesc: Globals.classNamePrefix + 'column-sorted-desc',
+                resizerHandles: Globals.classNamePrefix + 'column-resizer',
+                resizedColumn: Globals.classNamePrefix + 'column-resized',
+                creditsContainer: Globals.classNamePrefix + 'credits-container',
+                creditsText: Globals.classNamePrefix + 'credits'
             };
             Globals.win = window;
             Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '';
-            Globals.isChrome = Globals.win.chrome;
+            Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1;
             Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1;
         })(Globals || (Globals = {}));
         /* *
@@ -5638,6 +5578,334 @@
          * */
 
         return Globals;
+    });
+    _registerModule(_modules, 'DataGrid/Utils.js', [], function () {
+        /* *
+         *
+         *  Data Grid utilities
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        var DataGridUtils;
+        (function (DataGridUtils) {
+            /* *
+            *
+            *  Functions
+            *
+            * */
+            /* *
+            *
+            *  Functions
+            *
+            * */
+            /**
+             * Creates a HTML element with the provided options.
+             *
+             * @param tagName
+             * The tag name of the element.
+             *
+             * @param params
+             * The parameters of the element.
+             *
+             * @param parent
+             * The parent element.
+             */
+            function makeHTMLElement(tagName, params, parent) {
+                const element = document.createElement(tagName);
+                if (params) {
+                    const paramsKeys = Object.keys(params);
+                    for (let i = 0; i < paramsKeys.length; i++) {
+                        const key = paramsKeys[i];
+                        const value = params[key];
+                        if (value !== void 0) {
+                            if (key === 'style') {
+                                Object.assign(element.style, value);
+                            }
+                            else {
+                                element[key] = value;
+                            }
+                        }
+                    }
+                }
+                if (parent) {
+                    parent.appendChild(element);
+                }
+                return element;
+            }
+            DataGridUtils.makeHTMLElement = makeHTMLElement;
+            /**
+             * Creates a div element with the provided class name and id.
+             *
+             * @param className
+             * The class name of the div.
+             *
+             * @param id
+             * The id of the element.
+             */
+            function makeDiv(className, id) {
+                return makeHTMLElement('div', { className, id });
+            }
+            DataGridUtils.makeDiv = makeDiv;
+            /**
+             * Gets the translateY value of an element.
+             *
+             * @param element
+             * The element to get the translateY value from.
+             *
+             * @returns The translateY value of the element.
+             */
+            function getTranslateY(element) {
+                const transform = element.style.transform;
+                if (transform) {
+                    const match = transform.match(/translateY\(([^)]+)\)/);
+                    if (match) {
+                        return parseFloat(match[1]);
+                    }
+                }
+                return 0;
+            }
+            DataGridUtils.getTranslateY = getTranslateY;
+            /**
+             * Check if there's a possibility that the given string is an HTML
+             * (contains '<').
+             *
+             * @param str
+             * Text to verify.
+             */
+            function isHTML(str) {
+                return str.indexOf('<') !== -1;
+            }
+            DataGridUtils.isHTML = isHTML;
+            /**
+             * Returns a string containing plain text format by removing HTML tags
+             *
+             * @param text
+             * String to be sanitized
+             *
+             * @returns
+             * Sanitized plain text string
+            */
+            function sanitizeText(text) {
+                try {
+                    return new DOMParser().parseFromString(text, 'text/html')
+                        .body.textContent || '';
+                }
+                catch (error) {
+                    return '';
+                }
+            }
+            DataGridUtils.sanitizeText = sanitizeText;
+        })(DataGridUtils || (DataGridUtils = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataGridUtils;
+    });
+    _registerModule(_modules, 'DataGrid/Credits.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/Utils.js']], function (Globals, DGUtils) {
+        /* *
+         *
+         *  Data Grid Credits class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { makeHTMLElement } = DGUtils;
+        /* *
+         *
+         *  Abstract Class of Row
+         *
+         * */
+        /**
+         * Represents a credits in the data grid.
+         */
+        class Credits {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Construct the credits.
+             *
+             * @param dataGrid
+             * The Data Grid Table instance which the credits belong to.
+             */
+            constructor(dataGrid) {
+                this.dataGrid = dataGrid;
+                this.options = dataGrid.options?.credits ?? {};
+                this.containerElement = makeHTMLElement('div', {
+                    className: Globals.classNames.creditsContainer
+                });
+                this.textElement = makeHTMLElement('a', {
+                    className: Globals.classNames.creditsText
+                }, this.containerElement);
+                this.textElement.setAttribute('target', '_top');
+                this.render();
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Set the content of the credits.
+             */
+            setContent() {
+                const { text, href } = this.options;
+                this.textElement.innerText = text || '';
+                this.textElement.setAttribute('href', href || '');
+            }
+            /**
+             * Append the credits to the container. The position of the credits is
+             * determined by the `position` option.
+             */
+            appendToContainer() {
+                const { position } = this.options;
+                if (position === 'top') {
+                    // Append the credits to the top of the table.
+                    this.dataGrid.contentWrapper?.prepend(this.containerElement);
+                    return;
+                }
+                // Append the credits to the bottom of the table.
+                this.dataGrid.contentWrapper?.appendChild(this.containerElement);
+            }
+            /**
+             * Update the credits with new options.
+             *
+             * @param options
+             * The new options for the credits.
+             *
+             * @param render
+             * Whether to render the credits after the update.
+             */
+            update(options, render = true) {
+                if (options) {
+                    this.dataGrid.update({
+                        credits: options
+                    }, false);
+                    this.options = this.dataGrid.options?.credits ?? {};
+                }
+                if (render) {
+                    this.render();
+                }
+            }
+            /**
+             * Render the credits. If the credits are disabled, they will be removed
+             * from the container. If also reflows the viewport dimensions.
+             */
+            render() {
+                const enabled = this.options.enabled ?? false;
+                this.containerElement.remove();
+                if (enabled) {
+                    this.setContent();
+                    this.appendToContainer();
+                }
+                else {
+                    this.destroy();
+                }
+                this.dataGrid.viewport?.reflow();
+            }
+            /**
+             * Get the height of the credits container.
+             */
+            getHeight() {
+                return this.containerElement.offsetHeight;
+            }
+            /**
+             * Destroy the credits. The credits will be removed from the container and
+             * the reference to the credits will be deleted from the DataGrid instance
+             * it belongs to.
+             */
+            destroy() {
+                this.containerElement.remove();
+                delete this.dataGrid.credits;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Credits;
+    });
+    _registerModule(_modules, 'DataGrid/DefaultOptions.js', [], function () {
+        /* *
+         *
+         *  Data Grid default options
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        /* *
+         *
+         *  API Options
+         *
+         * */
+        const DefaultOptions = {
+            rendering: {
+                columns: {
+                    distribution: 'full'
+                },
+                rows: {
+                    bufferSize: 10,
+                    strictHeights: false
+                },
+                header: {
+                    enabled: true
+                }
+            },
+            credits: {
+                enabled: true,
+                text: 'Highcharts.com',
+                href: 'https://www.highcharts.com?credits',
+                position: 'bottom'
+            },
+            columnDefaults: {
+                sorting: {
+                    sortable: true
+                },
+                resizing: true
+            }
+        };
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DefaultOptions;
     });
     _registerModule(_modules, 'Core/Chart/ChartDefaults.js', [], function () {
         /* *
@@ -6095,8 +6363,11 @@
                  * Decides in what dimensions the user can pan the chart. Can be
                  * one of `x`, `y`, or `xy`.
                  *
-                 * When this option is set to `y` or `xy`, [yAxis.startOnTick](#yAxis.startOnTick)
-                 * and [yAxis.endOnTick](#yAxis.endOnTick) are overwritten to `false`.
+                 * During panning, all axes will behave as if
+                 * [`startOnTick`](#yAxis.startOnTick) and
+                 * [`endOnTick`](#yAxis.endOnTick) were set to `false`. After the
+                 * panning action is finished, the axes will adjust to their actual
+                 * settings.
                  *
                  * @sample {highcharts} highcharts/chart/panning-type
                  *         Zooming and xy panning
@@ -6104,7 +6375,6 @@
                  * @declare    Highcharts.OptionsChartPanningTypeValue
                  * @type       {string}
                  * @validvalue ["x", "y", "xy"]
-                 * @default    {highcharts|highstock} x
                  * @product    highcharts highstock gantt
                  */
                 type: 'x'
@@ -10714,7 +10984,7 @@
             while ((match = regex.exec(str)) !== null) {
                 // When a sub expression is found, it is evaluated first, and the
                 // results recursively evaluated until no subexpression exists.
-                const subMatch = subRegex.exec(match[1]);
+                const mainMatch = match, subMatch = subRegex.exec(match[1]);
                 if (subMatch) {
                     match = subMatch;
                     hasSub = true;
@@ -10731,7 +11001,7 @@
                     };
                 }
                 // Identify helpers
-                const fn = match[1].split(' ')[0].replace('#', '');
+                const fn = (currentMatch.isBlock ? mainMatch : match)[1].split(' ')[0].replace('#', '');
                 if (helpers[fn]) {
                     // Block helper, only 0 level is handled
                     if (currentMatch.isBlock && fn === currentMatch.fn) {
@@ -10933,53 +11203,7 @@
 
         return Templating;
     });
-    _registerModule(_modules, 'DataGrid/DataGridDefaults.js', [], function () {
-        /* *
-         *
-         *  Data Grid class
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Øystein Moseng
-         *
-         * */
-        /* *
-         *
-         *  API Options
-         *
-         * */
-        /** @internal */
-        const DataGridDefaults = {
-            /** @internal */
-            cellHeight: 49,
-            /** @internal */
-            columnHeaders: {
-                /** @internal */
-                enabled: true
-            },
-            /** @internal */
-            columns: {},
-            /** @internal */
-            defaultHeight: 400,
-            /** @internal */
-            editable: true,
-            /** @internal */
-            resizableColumns: true
-        };
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataGridDefaults;
-    });
-    _registerModule(_modules, 'DataGrid/DataGrid.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/DataTable.js'], _modules['DataGrid/DataGridUtils.js'], _modules['DataGrid/Globals.js'], _modules['Core/Templating.js'], _modules['DataGrid/DataGridDefaults.js'], _modules['Core/Utilities.js']], function (AST, DataTable, DataGridUtils, Globals, Templating, DataGridDefaults, U) {
+    _registerModule(_modules, 'DataGrid/Table/Column.js', [_modules['DataGrid/Globals.js'], _modules['Core/Utilities.js'], _modules['DataGrid/Utils.js'], _modules['Core/Templating.js']], function (Globals, Utils, DGUtils, Templating) {
         /* *
          *
          *  Data Grid class
@@ -10991,665 +11215,504 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          *  Authors:
-         *  - Øystein Moseng
-         *  - Ken-Håvard Lieng
+         *  - Dawid Dragula
          *  - Sebastian Bochan
          *
          * */
-        const { emptyHTMLElement, makeDiv } = DataGridUtils;
-        const { isSafari, win } = Globals;
-        const { addEvent, clamp, defined, fireEvent, isNumber, merge, pick } = U;
+        const { merge } = Utils;
+        const { makeHTMLElement } = DGUtils;
         /* *
          *
          *  Class
          *
          * */
         /**
-         * Creates a scrollable grid structure with editable data cells.
+         * Represents a column in the data grid.
          */
-        class DataGrid {
+        class Column {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
             /**
-             * Factory function for data grid instances.
+             * Constructs a column in the data grid.
              *
-             * @param container
-             * Element or element ID to create the grid structure into.
+             * @param viewport
+             * The viewport (table) the column belongs to.
              *
-             * @param options
-             * Options to create the grid structure.
+             * @param id
+             * The id of the column (`name` in the Data Table).
+             *
+             * @param index
+             * The index of the column.
              */
-            static dataGrid(container, options) {
-                return new DataGrid(container, options);
+            constructor(viewport, id, index) {
+                /**
+                 * The cells of the column.
+                 */
+                this.cells = [];
+                this.options = merge(viewport.dataGrid.options?.columnDefaults ?? {}, viewport.dataGrid.columnOptionsMap?.[id] ?? {});
+                this.id = id;
+                this.index = index;
+                this.viewport = viewport;
+                this.width = this.getInitialWidth();
+                this.loadData();
             }
             /* *
-             *
-             *  Functions
-             *
-             * */
+            *
+            *  Methods
+            *
+            * */
             /**
-             * Creates an instance of DataGrid.
-             *
-             * @param container
-             * Element or element ID to create the grid structure into.
-             *
-             * @param options
-             * Options to create the grid structure.
+             * Loads the data of the column from the viewport's data table.
              */
-            constructor(container, options) {
-                /**
-                 * The column names in a sorted array as rendered (or changed).
-                 * @internal
-                 */
-                this.columnNames = [];
-                /**
-                 * The amount of rows before align end of scrolling.
-                 * @internal
-                 */
-                this.prevTop = -1;
-                /**
-                 * The amount of rows to align for end of scrolling.
-                 * @internal
-                 */
-                this.scrollEndRowCount = 0;
-                /**
-                 * Contains the top align offset, when reaching the end of scrolling.
-                 * @internal
-                 */
-                this.scrollEndTop = 0;
-                /**
-                 * Flag to indicate the end of scrolling. Used to align the last cell with
-                 * the container bottom.
-                 * @internal
-                 */
-                this.bottom = false;
-                /**
-                 * An array of the min column widths for which the text in headers is not
-                 * overflown.
-                 * @internal
-                 */
-                this.overflowHeaderWidths = [];
-                // Initialize containers
-                if (typeof container === 'string') {
-                    const existingContainer = win.document.getElementById(container);
-                    if (existingContainer) {
-                        this.container = existingContainer;
-                    }
-                    else {
-                        this.container =
-                            makeDiv(Globals.classNames.gridContainer, container);
-                    }
+            loadData() {
+                this.data = this.viewport.dataTable.getColumn(this.id, true);
+            }
+            /**
+             * Registers a cell in the column.
+             *
+             * @param cell
+             * The cell to register.
+             */
+            registerCell(cell) {
+                cell.htmlElement.setAttribute('data-column-id', this.id);
+                if (this.options.className) {
+                    cell.htmlElement.classList.add(...this.options.className.split(/\s+/g));
+                }
+                if (this.viewport.dataGrid.hoveredColumnId === this.id) {
+                    cell.htmlElement.classList.add(Globals.classNames.hoveredColumn);
+                }
+                this.cells.push(cell);
+            }
+            /**
+             * Unregister a cell from the column.
+             *
+             * @param cell
+             * The cell to unregister.
+             */
+            unregisterCell(cell) {
+                const index = this.cells.indexOf(cell);
+                if (index > -1) {
+                    this.cells.splice(index, 1);
+                }
+            }
+            /**
+             * Returns the width of the column in pixels.
+             */
+            getWidth() {
+                const vp = this.viewport;
+                return vp.columnDistribution === 'full' ?
+                    vp.getWidthFromRatio(this.width) :
+                    this.width;
+            }
+            /**
+             * Adds or removes the hovered CSS class to the column element
+             * and its cells.
+             *
+             * @param hovered
+             * Whether the column should be hovered.
+             */
+            setHoveredState(hovered) {
+                this.header?.htmlElement?.classList[hovered ? 'add' : 'remove'](Globals.classNames.hoveredColumn);
+                for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
+                    this.cells[i].htmlElement.classList[hovered ? 'add' : 'remove'](Globals.classNames.hoveredColumn);
+                }
+            }
+            /**
+             * Creates a mock element to measure the width of the column from the CSS.
+             * The element is appended to the viewport container and then removed.
+             * It should be called only once for each column.
+             *
+             * @returns The initial width of the column.
+             */
+            getInitialWidth() {
+                let result;
+                const { viewport } = this;
+                // Set the initial width of the column.
+                const mock = makeHTMLElement('div', {
+                    className: Globals.classNames.columnElement
+                }, viewport.dataGrid.container);
+                mock.setAttribute('data-column-id', this.id);
+                if (this.options.className) {
+                    mock.classList.add(...this.options.className.split(/\s+/g));
+                }
+                if (viewport.columnDistribution === 'full') {
+                    result = this.getInitialFullDistWidth(mock);
                 }
                 else {
-                    this.container = container;
+                    result = mock.offsetWidth || 100;
                 }
-                this.gridContainer = makeDiv(Globals.classNames.gridContainer);
-                this.outerContainer = makeDiv(Globals.classNames.outerContainer);
-                this.scrollContainer = makeDiv(Globals.classNames.scrollContainer);
-                this.innerContainer = makeDiv(Globals.classNames.innerContainer);
-                this.outerContainer.appendChild(this.scrollContainer);
-                this.gridContainer.appendChild(this.outerContainer);
-                this.container.appendChild(this.gridContainer);
-                // Init options
-                this.options = merge(DataGrid.defaultOptions, options);
-                this.gridContainer.style.height = this.getDataGridSize() + 'px';
-                this.gridContainer.role = 'figure';
-                // Init data table
-                this.dataTable = this.initDataTable();
-                this.rowElements = [];
-                this.draggedResizeHandle = null;
-                this.draggedColumnRightIx = null;
-                this.columnNames = this.getColumnsToDisplay();
-                this.render();
-                (this.containerResizeObserver = new ResizeObserver(() => {
-                    this.updateGridElements();
-                })).observe(this.container);
+                mock.remove();
+                return result;
             }
             /**
-             * Update the data grid with new options.
+             * The initial width of the column in the full distribution mode. The last
+             * column in the viewport will have to fill the remaining space.
              *
-             * @param options
-             * An object with new options.
+             * @param mock
+             * The mock element to measure the width.
              */
-            update(options) {
-                this.options = merge(this.options, options);
-                if (this.options.dataTable !== this.dataTable) {
-                    this.dataTable = this.initDataTable();
+            getInitialFullDistWidth(mock) {
+                const vp = this.viewport;
+                const columnsCount = vp.dataGrid.enabledColumns?.length ?? 0;
+                if (this.index < columnsCount - 1) {
+                    return vp.getRatioFromWidth(mock.offsetWidth) || 1 / columnsCount;
                 }
-                this.columnNames = this.getColumnsToDisplay();
-                this.scrollContainer.removeChild(this.innerContainer);
-                this.render();
+                let allPreviousWidths = 0;
+                for (let i = 0, iEnd = columnsCount - 1; i < iEnd; i++) {
+                    allPreviousWidths += vp.columns[i].width;
+                }
+                const result = 1 - allPreviousWidths;
+                if (result < 0) {
+                    // eslint-disable-next-line no-console
+                    console.warn('The sum of the columns\' widths exceeds the ' +
+                        'viewport width. It may cause unexpected behavior in the ' +
+                        'full distribution mode. Check the CSS styles of the ' +
+                        'columns. Corrections may be needed.');
+                }
+                return result;
             }
             /**
-             * Resize a column.
+             * Returns the formatted string where the templating context is the column.
              *
-             * @internal
-             *
-             * @param width
-             *        New column width.
-             *
-             * @param columnNameOrIndex
-             *        Name or index of the column to resize, omit to resize all
-             *        columns.
-             *
-             * @emits #afterResizeColumn
-             */
-            resizeColumn(width, columnNameOrIndex) {
-                const headers = this.columnHeadersContainer;
-                const index = typeof columnNameOrIndex === 'string' ?
-                    this.columnNames.indexOf(columnNameOrIndex) :
-                    columnNameOrIndex;
-                const flex = `${width}`;
-                if (isNumber(index)) {
-                    if (index !== -1) {
-                        if (headers) {
-                            const header = headers.children[index];
-                            if (header) {
-                                header.style.flex = flex;
-                            }
-                        }
-                        for (let i = 0; i < this.rowElements.length; i++) {
-                            const cellElement = this.rowElements[i].children[index];
-                            if (cellElement) {
-                                cellElement.style.flex = flex;
-                            }
-                        }
-                    }
-                }
-                else {
-                    if (headers) {
-                        for (let i = 0; i < headers.children.length; i++) {
-                            headers.children[i].style.flex = flex;
-                        }
-                    }
-                    for (let i = 0; i < this.rowElements.length; i++) {
-                        const row = this.rowElements[i];
-                        for (let i = 0; i < row.children.length; i++) {
-                            row.children[i].style.flex = flex;
-                        }
-                    }
-                }
-                this.renderColumnDragHandles();
-                this.emit({
-                    type: 'afterResizeColumn',
-                    width,
-                    index,
-                    name: isNumber(index) ? this.columnNames[index] : void 0
-                });
-            }
-            /**
-             * Emits an event on this data grid to all registered callbacks of the
-             * given event.
-             *
-             * @internal
-             *
-             * @param e
-             * Event object with event information.
-             */
-            emit(e) {
-                fireEvent(this, e.type, e);
-            }
-            /**
-             * Add class to given element to toggle highlight.
-             *
-             * @internal
-             *
-             * @param row
-             * Row to highlight.
-             */
-            toggleRowHighlight(row) {
-                if (this.hoveredRow && this.hoveredRow.classList.contains('hovered')) {
-                    this.hoveredRow.classList.remove('hovered');
-                }
-                row && (row.classList.contains('hovered') ?
-                    row.classList.remove('hovered') : row.classList.add('hovered'));
-            }
-            /**
-             * Registers a callback for a specific event.
-             *
-             * @internal
-             *
-             * @param type
-             * Event type as a string.
-             *
-             * @param callback
-             * Function to register for an event callback.
+             * @param template
+             * The template string.
              *
              * @return
-             * Function to unregister callback from the event.
+             * The formatted string.
              */
-            on(type, callback) {
-                return addEvent(this, type, callback);
+            format(template) {
+                return Templating.format(template, this);
+            }
+        }
+        /* *
+        *
+        *  Static Properties
+        *
+        * */
+        /**
+         * The minimum width of a column.
+         * @internal
+         */
+        Column.MIN_COLUMN_WIDTH = 20;
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Column;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Row.js', [_modules['DataGrid/Utils.js']], function (DGUtils) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = DGUtils;
+        /* *
+         *
+         *  Abstract Class of Row
+         *
+         * */
+        /**
+         * Represents a row in the data grid.
+         */
+        class Row {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a row in the data grid.
+             *
+             * @param viewport
+             * The Data Grid Table instance which the row belongs to.
+             */
+            constructor(viewport) {
+                /* *
+                *
+                *  Properties
+                *
+                * */
+                /**
+                 * The cells of the row.
+                 */
+                this.cells = [];
+                this.viewport = viewport;
+                this.htmlElement = makeHTMLElement('tr', {});
             }
             /**
-             * Scroll to a given row.
-             *
-             * @internal
-             *
-             * @param row
-             * Row number
-             */
-            scrollToRow(row) {
-                this.outerContainer.scrollTop = row * this.options.cellHeight;
-            }
-            // ---------------- Private methods
-            /**
-             * Check which columns should be displayed based on the individual
-             * column `show` option.
-             * @internal
-             */
-            getColumnsToDisplay() {
-                const columnsOptions = this.options.columns, tableColumns = this.dataTable.modified.getColumnNames(), filteredColumns = [];
-                for (let i = 0; i < tableColumns.length; i++) {
-                    const columnName = tableColumns[i];
-                    const column = columnsOptions[columnName];
-                    if (column && defined(column.show)) {
-                        if (columnsOptions[columnName].show) {
-                            filteredColumns.push(columnName);
-                        }
-                    }
-                    else {
-                        filteredColumns.push(columnName);
-                    }
-                }
-                return filteredColumns;
-            }
-            /**
-             * Determine whether a column is editable or not.
-             *
-             * @internal
-             *
-             * @param columnName
-             * Name of the column to test.
-             *
-             * @return
-             * Returns true when the column is editable, or false.
-             */
-            isColumnEditable(columnName) {
-                const columnOptions = this.options.columns[columnName] || {};
-                return pick(columnOptions.editable, this.options.editable);
-            }
-            /**
-             * Get a reference to the underlying DataTable from options, or create one
-             * if needed.
-             *
-             * @internal
-             *
-             * @return
-             * DataTable for the DataGrid instance.
-             */
-            initDataTable() {
-                if (this.options.dataTable) {
-                    return this.options.dataTable;
-                }
-                return new DataTable();
-            }
-            /**
-             * Render the data grid. To be called on first render, as well as when
-             * options change, or the underlying data changes.
-             * @internal
+             * Renders the row's content. It does not attach the row element to the
+             * viewport nor pushes the rows to the viewport.rows array.
              */
             render() {
-                const { options } = this;
-                this.prevTop = -1;
-                this.bottom = false;
-                emptyHTMLElement(this.innerContainer);
-                if (options.columnHeaders.enabled) {
-                    this.renderColumnHeaders();
+                const columns = this.viewport.columns;
+                for (let i = 0, iEnd = columns.length; i < iEnd; i++) {
+                    const cell = this.createCell(columns[i]);
+                    cell.render();
                 }
-                else {
-                    this.outerContainer.style.top = '0';
-                }
-                this.renderInitialRows();
-                this.addEvents();
-                this.updateScrollingLength();
-                this.updateVisibleCells();
-                if (options.columnHeaders.enabled && options.resizableColumns) {
-                    this.renderColumnDragHandles();
-                }
-                this.updateGridElements();
-                this.gridContainer.ariaLabel = `Grid with ${this.dataTable.getColumnNames().length} columns and ${this.dataTable.getRowCount()} rows.`;
+                this.reflow();
             }
             /**
-             * Add internal event listeners to the grid.
-             * @internal
+             * Reflows the row's content dimensions.
              */
-            addEvents() {
-                this.outerContainer.addEventListener('scroll', (e) => {
-                    this.onScroll(e);
-                });
-                document.addEventListener('click', (e) => {
-                    this.onDocumentClick(e);
-                });
-                this.container.addEventListener('mouseover', (e) => {
-                    this.handleMouseOver(e);
-                });
-                this.container.addEventListener('click', (e) => {
-                    this.handleRowClick(e);
-                });
+            reflow() {
+                for (let j = 0, jEnd = this.cells.length; j < jEnd; ++j) {
+                    this.cells[j].reflow();
+                }
+                const vp = this.viewport;
+                if (vp.rowsWidth) {
+                    this.htmlElement.style.width = vp.rowsWidth + 'px';
+                }
             }
             /**
-             * Changes the content of the rendered cells. This is used to simulate
-             * scrolling.
-             *
-             * @internal
-             *
-             * @param force
-             * Whether to force the update regardless of whether the position of the
-             * first row has not been changed.
+             * Destroys the row.
              */
-            updateVisibleCells(force = false) {
-                let scrollTop = this.outerContainer.scrollTop;
-                if (isSafari) {
-                    scrollTop = clamp(scrollTop, 0, (this.outerContainer.scrollHeight -
-                        this.outerContainer.clientHeight));
-                }
-                let i = Math.floor(scrollTop / this.options.cellHeight);
-                if (i === this.prevTop && !force) {
+            destroy() {
+                this.destroyed = true;
+                if (!this.htmlElement) {
                     return;
                 }
-                this.prevTop = i;
-                const columnsInPresentationOrder = this.columnNames;
-                const presentationTable = this.dataTable.modified;
-                const rowCount = presentationTable.modified.getRowCount();
-                for (let j = 0; j < this.rowElements.length && i < rowCount; j++, i++) {
-                    const rowElement = this.rowElements[j];
-                    rowElement.dataset.rowIndex =
-                        presentationTable.getOriginalRowIndex(i)?.toString();
-                    const cellElements = rowElement.childNodes;
-                    for (let k = 0, kEnd = columnsInPresentationOrder.length; k < kEnd; k++) {
-                        const cell = cellElements[k], column = columnsInPresentationOrder[k], value = this.dataTable.modified
-                            .getCell(columnsInPresentationOrder[k], i), formattedContent = this.formatCell(value, column);
-                        if (this.options.useHTML) {
-                            this.renderHTMLCellContent(formattedContent, cell);
-                        }
-                        else {
-                            cell.textContent = formattedContent;
-                        }
-                        // TODO: consider adding these dynamically to the input element
-                        cell.dataset.originalData = '' + value;
-                        cell.dataset.columnName = columnsInPresentationOrder[k];
-                        // TODO: get this from the store if set?
-                        cell.dataset.dataType = typeof value;
-                        if (k === 0) { // First column, that is x
-                            rowElement.dataset.rowXIndex =
-                                String(isNumber(value) ? value : i);
-                        }
-                    }
+                for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
+                    this.cells[i].destroy();
                 }
-                // Scroll innerContainer to align the bottom of the last row with the
-                // bottom of the grid when scrolled to the end
-                if (this.prevTop + this.scrollEndRowCount === rowCount) {
-                    if (!this.bottom && this.scrollEndTop) {
-                        this.bottom = true;
-                        this.innerContainer.scrollTop = this.scrollEndTop;
-                    }
-                }
-                else if (this.bottom) {
-                    this.bottom = false;
-                    this.innerContainer.scrollTop = 0;
-                }
+                this.htmlElement.remove();
             }
             /**
-             * Handle user scrolling the grid
+             * Returns the cell with the given column ID.
              *
+             * @param columnId
+             * The column ID that the cell belongs to.
+             *
+             * @returns
+             * The cell with the given column ID or undefined if not found.
+             */
+            getCell(columnId) {
+                return this.cells.find((cell) => cell.column.id === columnId);
+            }
+            /**
+             * Registers a cell in the row.
+             *
+             * @param cell
+             * The cell to register.
+             */
+            registerCell(cell) {
+                this.cells.push(cell);
+            }
+            /**
+             * Unregister a cell from the row.
+             *
+             * @param cell
+             * The cell to unregister.
+             */
+            unregisterCell(cell) {
+                if (this.destroyed) {
+                    return;
+                }
+                const index = this.cells.indexOf(cell);
+                if (index > -1) {
+                    this.cells.splice(index, 1);
+                }
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Row;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Cell.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Templating.js']], function (AST, Templating) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        /* *
+         *
+         *  Abstract Class of Cell
+         *
+         * */
+        class Cell {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a cell in the data grid.
+             *
+             * @param column
+             * The column of the cell.
+             *
+             * @param row
+             * The row of the cell.
+             */
+            constructor(column, row) {
+                /**
+                 * Array of cell events to be removed when the cell is destroyed.
+                 */
+                this.cellEvents = [];
+                this.column = column;
+                this.row = row;
+                this.row.registerCell(this);
+                this.htmlElement = this.init();
+                this.htmlElement.setAttribute('tabindex', '-1');
+                this.initEvents();
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Init element.
              * @internal
+             */
+            init() {
+                return document.createElement('td', {});
+            }
+            /**
+             * Initialize event listeners. Events added to the `cellEvents` array will
+             * be registered now and unregistered when the cell is destroyed.
+             */
+            initEvents() {
+                this.cellEvents.push(['blur', () => this.onBlur()]);
+                this.cellEvents.push(['focus', () => this.onFocus()]);
+                this.cellEvents.push(['click', (e) => {
+                        this.onClick(e);
+                    }]);
+                this.cellEvents.push(['keydown', (e) => {
+                        this.onKeyDown(e);
+                    }]);
+                this.cellEvents.forEach((pair) => {
+                    this.htmlElement.addEventListener(pair[0], pair[1]);
+                });
+            }
+            /**
+             * Handles the focus event on the cell.
+             */
+            onFocus() {
+                const vp = this.row.viewport;
+                const focusAnchor = vp.rowsVirtualizer.focusAnchorCell?.htmlElement;
+                focusAnchor?.setAttribute('tabindex', '-1');
+            }
+            /**
+             * Handles the blur event on the cell.
+             */
+            onBlur() {
+                const vp = this.row.viewport;
+                const focusAnchor = vp.rowsVirtualizer.focusAnchorCell?.htmlElement;
+                focusAnchor?.setAttribute('tabindex', '0');
+                delete vp.focusCursor;
+            }
+            /**
+             * Handles user keydown on the cell.
              *
              * @param e
-             * Related scroll event.
+             * Keyboard event object.
              */
-            onScroll(e) {
-                e.preventDefault();
-                window.requestAnimationFrame(this.updateVisibleCells.bind(this, false));
-            }
-            /**
-             * Handle the user starting interaction with a cell.
-             *
-             * @internal
-             *
-             * @param cellEl
-             * The clicked cell.
-             *
-             * @param columnName
-             * The column the clicked cell belongs to.
-             */
-            onCellClick(cellEl, columnName) {
-                if (this.isColumnEditable(columnName)) {
-                    let input = cellEl.querySelector('input');
-                    const cellValue = cellEl.getAttribute('data-original-data');
-                    if (!input) {
-                        this.removeCellInputElement();
-                        // Replace cell contents with an input element
-                        const inputHeight = cellEl.clientHeight;
-                        cellEl.textContent = '';
-                        input = this.cellInputEl = document.createElement('input');
-                        input.style.height = inputHeight + 'px';
-                        input.className = Globals.classNames.cellInput;
-                        cellEl.appendChild(input);
-                        input.focus();
-                        input.value = cellValue || '';
+            onKeyDown(e) {
+                const { row, column } = this;
+                const vp = row.viewport;
+                const changeFocusKeys = {
+                    ArrowDown: [1, 0],
+                    ArrowUp: [-1, 0],
+                    ArrowLeft: [0, -1],
+                    ArrowRight: [0, 1]
+                };
+                const dir = changeFocusKeys[e.key];
+                if (dir) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const localRowIndex = row.index === void 0 ? -1 : (row.index - vp.rows[0].index);
+                    const nextVerticalDir = localRowIndex + dir[0];
+                    if (nextVerticalDir < 0 && vp.header) {
+                        vp.columns[column.index + dir[1]]?.header?.htmlElement.focus();
+                        return;
                     }
-                    // Emit for use in extensions
-                    this.emit({ type: 'cellClick', input });
-                }
-            }
-            /**
-             * Handle the user clicking somewhere outside the grid.
-             *
-             * @internal
-             *
-             * @param e
-             * Related mouse event.
-             */
-            onDocumentClick(e) {
-                if (this.cellInputEl && e.target) {
-                    const cellEl = this.cellInputEl.parentNode;
-                    const isClickInInput = cellEl && cellEl.contains(e.target);
-                    if (!isClickInInput) {
-                        this.removeCellInputElement();
+                    const nextRow = vp.rows[nextVerticalDir];
+                    if (nextRow) {
+                        nextRow.cells[column.index + dir[1]]?.htmlElement.focus();
                     }
                 }
             }
             /**
-             * Handle hovering over rows- highlight proper row if needed.
-             *
-             * @internal
-             *
-             * @param e
-             * Related mouse event.
+             * Renders the cell by appending the HTML element to the row.
              */
-            handleMouseOver(e) {
-                const target = e.target;
-                if (target && target.classList.contains(Globals.classNames.cell)) {
-                    const row = target.parentElement;
-                    this.toggleRowHighlight(row);
-                    this.hoveredRow = row;
-                    fireEvent(this.container, 'dataGridHover', {
-                        row,
-                        columnName: target.dataset?.columnName
-                    });
-                }
-                else if (this.hoveredRow) {
-                    this.toggleRowHighlight();
-                    this.hoveredRow = void 0;
-                }
+            render() {
+                this.row.htmlElement.appendChild(this.htmlElement);
             }
             /**
-             * Handle click over rows.
-             *
-             * @internal
-             *
-             * @param e
-             * Related mouse event.
+             * Reflows the cell dimensions.
              */
-            handleRowClick(e) {
-                const target = e.target;
-                const clickEvent = this.options.events?.row?.click;
-                if (clickEvent &&
-                    target?.classList.contains(Globals.classNames.cell)) {
-                    clickEvent.call(target.parentElement, e);
-                }
+            reflow() {
+                const column = this.column;
+                const elementStyle = this.htmlElement.style;
+                elementStyle.width = elementStyle.maxWidth = column.getWidth() + 'px';
             }
             /**
-             * Remove the <input> overlay and update the cell value
-             * @internal
-             */
-            removeCellInputElement() {
-                const cellInputEl = this.cellInputEl;
-                if (cellInputEl) {
-                    const parentNode = cellInputEl.parentNode;
-                    // TODO: This needs to modify DataTable. The change in DataTable
-                    // should cause a re-render?
-                    if (parentNode) {
-                        const cellValueType = parentNode.getAttribute('data-data-type'), columnName = parentNode.getAttribute('data-column-name');
-                        let cellValue = cellInputEl.value;
-                        if (cellValueType === 'number') {
-                            cellValue = parseFloat(cellValue);
-                        }
-                        parentNode.textContent =
-                            this.formatCell(cellValue, columnName || '');
-                    }
-                    cellInputEl.remove();
-                    delete this.cellInputEl;
-                }
-            }
-            /**
-             * Updates the scroll container to reflect the data size.
-             * @internal
-             */
-            updateScrollingLength() {
-                let i = this.dataTable.modified.getRowCount() - 1;
-                let height = 0;
-                const top = i - this.getNumRowsToDraw();
-                const outerHeight = this.outerContainer.clientHeight;
-                // Explicit height is needed for overflow: hidden to work, to make sure
-                // innerContainer is not scrollable by user input
-                this.innerContainer.style.height = outerHeight + 'px';
-                this.scrollContainer.appendChild(this.innerContainer);
-                for (let j = 0; i > top; i--, j++) {
-                    height += this.rowElements[j].offsetHeight;
-                    if (height > outerHeight) {
-                        i--;
-                        break;
-                    }
-                }
-                const extraRows = i - top;
-                this.scrollEndRowCount = this.rowElements.length - extraRows;
-                // How much innerContainer needs to be scrolled to fully show the last
-                // row when scrolled to the end
-                this.scrollEndTop = height - outerHeight;
-                const scrollHeight = (this.dataTable.modified.getRowCount() + extraRows) *
-                    this.options.cellHeight;
-                this.scrollContainer.style.height = scrollHeight + 'px';
-            }
-            /**
-             * Calculates the number of rows to render pending of cell sizes.
+             * Returns the formatted string where the templating context is the cell.
              *
-             * @internal
+             * @param template
+             * The template string.
              *
              * @return
-             * The number rows to render.
+             * The formatted string.
              */
-            getNumRowsToDraw() {
-                return Math.min(this.dataTable.modified.getRowCount(), Math.ceil((this.outerContainer.offsetHeight ||
-                    this.options.defaultHeight // When datagrid is hidden,
-                // offsetHeight is 0, so we need to get defaultValue to
-                // avoid empty rows
-                ) / this.options.cellHeight));
+            format(template) {
+                return Templating.format(template, this);
             }
             /**
-             * Internal method that calculates the data grid height. If the container
-             * has a height declared in CSS it uses that, otherwise it uses a default.
-             * @internal
+             * Sets the custom class name of the cell based on the template.
+             *
+             * @param template
+             * The template string.
              */
-            getDataGridSize() {
-                const grid = this, options = grid.options, { height } = grid.container.getBoundingClientRect();
-                // If the container has a height declared in CSS, use that.
-                if (height > 2) {
-                    return height;
+            setCustomClassName(template) {
+                const element = this.htmlElement;
+                if (this.customClassName) {
+                    element.classList.remove(...this.customClassName.split(/\s+/g));
                 }
-                // Use the default height if the container has no height declared in CSS
-                return options.defaultHeight;
+                if (!template) {
+                    delete this.customClassName;
+                    return;
+                }
+                const newClassName = this.format(template);
+                if (!newClassName) {
+                    delete this.customClassName;
+                    return;
+                }
+                element.classList.add(...newClassName.split(/\s+/g));
+                this.customClassName = newClassName;
             }
             /**
-             * Renders a data cell.
-             *
-             * @internal
-             *
-             * @param parentRow
-             * The parent row to add the cell to.
-             *
-             * @param columnName
-             * The column the cell belongs to.
-             */
-            renderCell(parentRow, columnName) {
-                let className = Globals.classNames.cell;
-                if (!this.isColumnEditable(columnName)) {
-                    className += ` ${className}-readonly`;
-                }
-                const cellEl = makeDiv(className);
-                cellEl.style.minHeight = this.options.cellHeight + 'px';
-                cellEl.addEventListener('click', () => this.onCellClick(cellEl, columnName));
-                parentRow.appendChild(cellEl);
-            }
-            /**
-             * Renders a row of data.
-             * @internal
-             */
-            renderRow() {
-                const rowEl = makeDiv(Globals.classNames.row);
-                for (let i = 0; i < this.columnNames.length; i++) {
-                    this.renderCell(rowEl, this.columnNames[i]);
-                }
-                this.innerContainer.appendChild(rowEl);
-                this.rowElements.push(rowEl);
-            }
-            /**
-             * Allows formatting of the header cell text based on provided format
-             * option. If that is not provided, the column name is returned.
-             * @internal
-             *
-             * @param columnName
-             * Column name to format.
-             */
-            formatHeaderCell(columnName) {
-                const options = this.options, columnOptions = options.columns[columnName], headerFormat = columnOptions && columnOptions.headerFormat;
-                if (headerFormat) {
-                    return Templating.format(headerFormat, { text: columnName });
-                }
-                return columnName;
-            }
-            /**
-             * Allows formatting of the cell text based on provided format option.
-             * If that is not provided, the cell value is returned.
-             * @internal
-             *
-             * @param  cellValue
-             * The value of the cell to format.
-             *
-             * @param  column
-             * The column name the cell belongs to.
-             */
-            formatCell(cellValue, column) {
-                const options = this.options, columnOptions = options.columns[column], cellFormat = columnOptions && columnOptions.cellFormat, cellFormatter = columnOptions && columnOptions.cellFormatter;
-                let formattedCell = defined(cellValue) ? cellValue : '';
-                if (cellFormat) {
-                    if (typeof cellValue === 'number' &&
-                        cellFormat.indexOf('value') > -1) {
-                        formattedCell =
-                            Templating.format(cellFormat, { value: cellValue });
-                    }
-                    else if (typeof cellValue === 'string' &&
-                        cellFormat.indexOf('text') > -1) {
-                        formattedCell =
-                            Templating.format(cellFormat, { text: cellValue });
-                    }
-                }
-                if (cellFormatter) {
-                    return cellFormatter.call({ value: cellValue });
-                }
-                return formattedCell.toString();
-            }
-            /**
-             * When useHTML enabled, parse the syntax and render HTML.
+             * Renders content of cell.
              *
              * @param cellContent
              * Content to render.
@@ -11657,332 +11720,2240 @@
              * @param parentElement
              * Parent element where the content should be.
              *
+             * @internal
              */
             renderHTMLCellContent(cellContent, parentElement) {
                 const formattedNodes = new AST(cellContent);
-                parentElement.innerHTML = '';
                 formattedNodes.addToDOM(parentElement);
             }
             /**
-             * Render a column header for a column.
-             *
-             * @internal
-             *
-             * @param parentEl
-             * The parent element of the column header.
-             *
-             * @param columnName
-             * The name of the column.
+             * Destroys the cell.
              */
-            renderColumnHeader(parentEl, columnName) {
-                let className = Globals.classNames.columnHeader;
-                if (!this.isColumnEditable(columnName)) {
-                    className += ` ${className}-readonly`;
-                }
-                const headerEl = makeDiv(className);
-                headerEl.style.minHeight = this.options.cellHeight + 'px';
-                headerEl.style.maxHeight = this.options.cellHeight * 2 + 'px';
-                headerEl.textContent = this.formatHeaderCell(columnName);
-                parentEl.appendChild(headerEl);
-            }
-            /**
-             * Render the column headers of the table.
-             * @internal
-             */
-            renderColumnHeaders() {
-                const columnNames = this.columnNames, columnHeadersContainer = this.columnHeadersContainer =
-                    this.columnHeadersContainer ||
-                        makeDiv(`${Globals.classNamePrefix}column-headers`);
-                emptyHTMLElement(columnHeadersContainer);
-                columnNames.forEach(this.renderColumnHeader.bind(this, columnHeadersContainer));
-                if (!this.headerContainer) {
-                    this.headerContainer =
-                        makeDiv(`${Globals.classNamePrefix}header-container`);
-                    this.headerContainer.appendChild(columnHeadersContainer);
-                }
-                this.gridContainer.insertBefore(this.headerContainer, this.outerContainer);
-                this.updateColumnHeaders();
-            }
-            /**
-             * Refresh container elements to adapt them to new container dimensions.
-             * @internal
-             */
-            updateGridElements() {
-                this.updateColumnHeaders();
-                this.redrawRowElements();
-                this.updateDragHandlesPosition();
-            }
-            /**
-             * Update the column headers of the table.
-             * @internal
-             */
-            updateColumnHeaders() {
-                const headersContainer = this.columnHeadersContainer;
-                if (!headersContainer) {
-                    return;
-                }
-                // Handle overflowing text in headers.
-                for (let i = 0; i < this.columnNames.length; i++) {
-                    const columnName = this.columnNames[i], header = headersContainer.children[i], overflowWidth = this.overflowHeaderWidths[i];
-                    if (header.scrollWidth > header.clientWidth) {
-                        // Headers overlap
-                        this.overflowHeaderWidths[i] = header.scrollWidth;
-                        header.textContent = this.formatHeaderCell(columnName)
-                            .split(' ').map((word) => (word.length < 4 ? word : word.slice(0, 2) + '...')).join(' ');
-                    }
-                    else if (isNumber(overflowWidth) &&
-                        overflowWidth <= header.clientWidth) {
-                        // Headers not overlap
-                        this.overflowHeaderWidths[i] = null;
-                        header.textContent = this.formatHeaderCell(columnName);
-                    }
-                }
-                // Offset the outer container by the header row height.
-                this.outerContainer.style.top = headersContainer.clientHeight + 'px';
-                // Header columns alignment when scrollbar is shown.
-                if (headersContainer.lastChild) {
-                    headersContainer.lastChild
-                        .style.marginRight = (this.outerContainer.offsetWidth -
-                        this.outerContainer.clientWidth) + 'px';
-                }
-            }
-            /**
-             * Redraw existing row elements.
-             * @internal
-             */
-            redrawRowElements() {
-                if (!this.rowElements.length) {
-                    return;
-                }
-                const prevColumnFlexes = [], firstRowChildren = this.rowElements[0].children;
-                for (let i = 0; i < firstRowChildren.length; i++) {
-                    prevColumnFlexes.push(firstRowChildren[i].style.flex);
-                }
-                emptyHTMLElement(this.innerContainer);
-                this.renderInitialRows();
-                this.updateScrollingLength();
-                this.updateVisibleCells(true);
-                for (let i = 0; i < this.rowElements.length; i++) {
-                    const row = this.rowElements[i];
-                    for (let j = 0; j < row.childElementCount; j++) {
-                        row.children[j].style.flex =
-                            prevColumnFlexes[j];
-                    }
-                }
-            }
-            /**
-             * Update the column drag handles position.
-             * @internal
-             */
-            updateDragHandlesPosition() {
-                const headersContainer = this.columnHeadersContainer, handlesContainer = this.columnDragHandlesContainer;
-                if (!handlesContainer || !headersContainer) {
-                    return;
-                }
-                for (let i = 0; i < handlesContainer.childElementCount - 1; i++) {
-                    const handle = handlesContainer.children[i], header = headersContainer.children[i + 1];
-                    handle.style.height = headersContainer.clientHeight + 'px';
-                    handle.style.left = header.offsetLeft - 2 + 'px';
-                }
-            }
-            /**
-             * Render initial rows before the user starts scrolling.
-             * @internal
-             */
-            renderInitialRows() {
-                this.rowElements = [];
-                const rowsToDraw = this.getNumRowsToDraw();
-                for (let i = 0; i < rowsToDraw; i++) {
-                    this.renderRow();
-                }
-            }
-            /**
-             * Render the drag handles for resizing columns.
-             * @internal
-             */
-            renderColumnDragHandles() {
-                if (!this.columnHeadersContainer) {
-                    return;
-                }
-                const container = this.columnDragHandlesContainer = (this.columnDragHandlesContainer ||
-                    makeDiv(`${Globals.classNamePrefix}col-resize-container`));
-                const columnEls = this.columnHeadersContainer.children;
-                const handleHeight = this.options.cellHeight;
-                emptyHTMLElement(container);
-                for (let i = 1; i < columnEls.length; ++i) {
-                    const col = columnEls[i];
-                    const handle = makeDiv(`${Globals.classNamePrefix}col-resize-handle`);
-                    handle.style.height = handleHeight + 'px';
-                    handle.style.left = col.offsetLeft - 2 + 'px';
-                    handle.addEventListener('mouseover', () => {
-                        if (!this.draggedResizeHandle) {
-                            handle.style.opacity = '1';
-                        }
-                    });
-                    handle.addEventListener('mouseleave', () => {
-                        if (!this.draggedResizeHandle) {
-                            handle.style.opacity = '0';
-                        }
-                    });
-                    handle.addEventListener('mousedown', this.onHandleMouseDown.bind(this, handle, i));
-                    container.appendChild(handle);
-                }
-                this.renderColumnResizeCrosshair(container);
-                document.addEventListener('mouseup', (e) => {
-                    if (this.draggedResizeHandle) {
-                        this.stopColumnResize(this.draggedResizeHandle, e);
-                    }
+            destroy() {
+                this.cellEvents.forEach((pair) => {
+                    this.htmlElement.removeEventListener(pair[0], pair[1]);
                 });
-                document.addEventListener('mousemove', (e) => {
-                    if (this.draggedResizeHandle) {
-                        this.updateColumnResizeDrag(e);
-                    }
-                });
-                if (this.headerContainer) {
-                    this.headerContainer.appendChild(container);
+                this.column.unregisterCell(this);
+                this.row.unregisterCell(this);
+                this.htmlElement.remove();
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Cell;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Actions/ColumnSorting.js', [_modules['DataGrid/Globals.js']], function (Globals) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Class that manages sorting for a dedicated column.
+         */
+        class ColumnSorting {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs sorting for a dedicated column.
+             *
+             * @param column
+             * The column that be sorted.
+             *
+             * @param headerCellElement
+             * The head element of the column.
+             */
+            constructor(column, headerCellElement) {
+                /**
+                 * Toggle sorting order for the column in the order: asc -> desc -> none
+                 */
+                this.toggle = () => {
+                    const viewport = this.column.viewport;
+                    const querying = viewport.dataGrid.querying;
+                    const sortingController = querying.sorting;
+                    const currentOrder = (sortingController.currentSorting?.columnId === this.column.id ?
+                        sortingController.currentSorting.order : null) || 'none';
+                    const consequents = {
+                        none: 'asc',
+                        asc: 'desc',
+                        desc: null
+                    };
+                    void this.setOrder(consequents[currentOrder]);
+                };
+                this.column = column;
+                this.headerCellElement = headerCellElement;
+                this.addHeaderElementAttributes();
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Adds attributes to the column header.
+             */
+            addHeaderElementAttributes() {
+                const col = this.column;
+                const sortingOptions = col.options.sorting;
+                const { currentSorting } = col.viewport.dataGrid.querying.sorting;
+                const el = this.headerCellElement;
+                if (sortingOptions?.sortable) {
+                    el.classList.add(Globals.classNames.columnSortable);
+                }
+                if (currentSorting?.columnId !== col.id || !currentSorting?.order) {
+                    el.classList.remove(Globals.classNames.columnSortedAsc);
+                    el.classList.remove(Globals.classNames.columnSortedDesc);
+                    return;
+                }
+                switch (currentSorting?.order) {
+                    case 'asc':
+                        el.classList.add(Globals.classNames.columnSortedAsc);
+                        el.classList.remove(Globals.classNames.columnSortedDesc);
+                        break;
+                    case 'desc':
+                        el.classList.remove(Globals.classNames.columnSortedAsc);
+                        el.classList.add(Globals.classNames.columnSortedDesc);
+                        break;
                 }
             }
             /**
-             * Renders the crosshair shown when resizing columns.
+             * Set sorting order for the column. It will modify the presentation data
+             * and rerender the rows.
              *
-             * @internal
-             *
-             * @param container
-             * The container to place the crosshair in.
+             * @param order
+             * The order of sorting. It can be `'asc'`, `'desc'` or `null` if the
+             * sorting should be disabled.
              */
-            renderColumnResizeCrosshair(container) {
-                const el = this.columnResizeCrosshair = (this.columnResizeCrosshair ||
-                    makeDiv(`${Globals.classNamePrefix}col-resize-crosshair`));
-                const handleHeight = this.options.cellHeight;
-                el.style.top = handleHeight + 'px';
-                el.style.height = this.innerContainer.offsetHeight + 'px';
-                container.appendChild(el);
+            async setOrder(order) {
+                const viewport = this.column.viewport;
+                const querying = viewport.dataGrid.querying;
+                const sortingController = querying.sorting;
+                sortingController.setSorting(order, this.column.id);
+                await querying.proceed();
+                viewport.loadPresentationData();
+                for (const col of viewport.columns) {
+                    col.sorting?.addHeaderElementAttributes();
+                }
+                viewport.dataGrid.options?.events?.column?.afterSorting?.call(this.column);
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return ColumnSorting;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Header/HeaderCell.js', [_modules['DataGrid/Table/Cell.js'], _modules['DataGrid/Utils.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Table/Actions/ColumnSorting.js'], _modules['Core/Utilities.js']], function (Cell, DGUtils, Globals, ColumnSorting, Utilities) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement, isHTML } = DGUtils;
+        const { merge } = Utilities;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a cell in the data grid header.
+         */
+        class HeaderCell extends Cell {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a cell in the data grid header.
+             *
+             * @param column
+             * The column of the cell.
+             *
+             * @param row
+             * The row of the cell.
+             */
+            constructor(column, row) {
+                super(column, row);
+                /**
+                 * Reference to options in settings header.
+                 */
+                this.options = {};
+                /**
+                 * Content value of the header cell.
+                 */
+                this.value = '';
+                column.header = this;
+                this.isMain = !!this.row.viewport.getColumn(this.column.id);
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Init element.
+             */
+            init() {
+                const elem = document.createElement('th', {});
+                elem.classList.add(Globals.classNames.headerCell);
+                return elem;
             }
             /**
-             * On column resize handle click.
+             * Render the cell container.
+             */
+            render() {
+                const column = this.column;
+                const options = merge(column.options, this.options);
+                const headerCellOptions = options.header || {};
+                if (headerCellOptions.formatter) {
+                    this.value = headerCellOptions.formatter.call(this).toString();
+                }
+                else if (headerCellOptions.format) {
+                    this.value = column.format(headerCellOptions.format);
+                }
+                else {
+                    this.value = column.id;
+                }
+                // Render content of th element
+                this.row.htmlElement.appendChild(this.htmlElement);
+                this.headerContent = makeHTMLElement('div', {
+                    className: Globals.classNames.headerCellContent
+                }, this.htmlElement);
+                if (isHTML(this.value)) {
+                    this.renderHTMLCellContent(this.value, this.headerContent);
+                }
+                else {
+                    this.headerContent.innerText = this.value;
+                }
+                // Set the accessibility attributes.
+                this.htmlElement.setAttribute('scope', 'col');
+                this.htmlElement.setAttribute('data-column-id', column.id);
+                if (this.options.className) {
+                    this.htmlElement.classList.add(...this.options.className.split(/\s+/g));
+                }
+                if (this.isMain) {
+                    // Add user column classname
+                    if (column.options.className) {
+                        this.htmlElement.classList.add(...column.options.className.split(/\s+/g));
+                    }
+                    // Add resizing
+                    this.column.viewport.columnsResizer?.renderColumnDragHandles(this.column, this);
+                    // Add sorting
+                    this.initColumnSorting();
+                }
+                this.setCustomClassName(options.header?.className);
+            }
+            reflow() {
+                const cell = this;
+                const th = cell.htmlElement;
+                const vp = cell.column.viewport;
+                if (!th) {
+                    return;
+                }
+                let width = 0;
+                if (cell.columns) {
+                    for (const col of cell.columns) {
+                        width += (vp.getColumn(col.columnId || '')?.getWidth()) || 0;
+                    }
+                }
+                else {
+                    width = cell.column.getWidth();
+                }
+                // Set the width of the column. Max width is needed for the
+                // overflow: hidden to work.
+                th.style.width = th.style.maxWidth = width + 'px';
+            }
+            onKeyDown(e) {
+                if (e.target !== this.htmlElement) {
+                    return;
+                }
+                if (e.key === 'Enter') {
+                    if (this.column.options.sorting?.sortable) {
+                        this.column.sorting?.toggle();
+                    }
+                    return;
+                }
+                super.onKeyDown(e);
+            }
+            onClick(e) {
+                const column = this.column;
+                if (!this.isMain || (e.target !== this.htmlElement &&
+                    e.target !== column.header?.headerContent)) {
+                    return;
+                }
+                if (column.options.sorting?.sortable) {
+                    column.sorting?.toggle();
+                }
+                column.viewport.dataGrid.options?.events?.header?.click?.call(column);
+            }
+            /**
+             * Add sorting option to the column.
+             */
+            initColumnSorting() {
+                const { column } = this;
+                column.sorting = new ColumnSorting(column, this.htmlElement);
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return HeaderCell;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Header/HeaderRow.js', [_modules['DataGrid/Table/Row.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Table/Header/HeaderCell.js'], _modules['DataGrid/Table/Column.js'], _modules['DataGrid/Utils.js']], function (Row, Globals, HeaderCell, Column, DGUtils) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { sanitizeText } = DGUtils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a row in the data grid header.
+         */
+        class HeaderRow extends Row {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a row in the data grid.
              *
-             * @internal
+             * @param viewport
+             * The Data Grid Table instance which the row belongs to.
              *
-             * @param handle
-             * The drag handle being clicked.
+             * @param level
+             * The current level of header that is rendered.
+             */
+            constructor(viewport, level) {
+                super(viewport);
+                this.level = level;
+                this.setRowAttributes();
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            createCell(column) {
+                return new HeaderCell(column, this);
+            }
+            /**
+             * Renders the row's content in the header.
              *
-             * @param colRightIx
-             * The column ix to the right of the resize handle.
+             * @param level
+             * The current level in the header tree
+             */
+            renderMultipleLevel(level) {
+                const header = this.viewport.dataGrid.options?.header;
+                const vp = this.viewport;
+                const enabledColumns = vp.dataGrid.enabledColumns;
+                // Render element
+                vp.theadElement?.appendChild(this.htmlElement);
+                this.htmlElement.classList.add(Globals.classNames.headerRow);
+                if (!header) {
+                    super.render();
+                    return;
+                }
+                const columnsOnLevel = this.getColumnsAtLevel(header, level);
+                for (let i = 0, iEnd = columnsOnLevel.length; i < iEnd; i++) {
+                    const column = columnsOnLevel[i];
+                    const colSpan = (typeof column !== 'string' && column.columns) ?
+                        vp.dataGrid.getColumnIds(column.columns).length : 0;
+                    const columnId = typeof column === 'string' ?
+                        column : column.columnId;
+                    const dataColumn = vp.getColumn(columnId || '');
+                    const headerFormat = (typeof column !== 'string') ?
+                        column.format : void 0;
+                    const className = (typeof column !== 'string') ?
+                        column.className : void 0;
+                    // Skip hidden column or header when all columns are hidden.
+                    if ((columnId &&
+                        enabledColumns && enabledColumns?.indexOf(columnId) < 0) || (!dataColumn && colSpan === 0)) {
+                        continue;
+                    }
+                    const headerCell = this.createCell(vp.getColumn(columnId || '') ||
+                        new Column(vp, 
+                        // Remove HTML tags and empty spaces.
+                        sanitizeText(headerFormat || '').trim() || '', i));
+                    if (headerFormat) {
+                        if (!headerCell.options.header) {
+                            headerCell.options.header = {};
+                        }
+                        headerCell.options.header.format = headerFormat;
+                    }
+                    if (className) {
+                        headerCell.options.className = className;
+                    }
+                    // Add class to disable left border on first column
+                    if (dataColumn?.index === 0 && i === 0) {
+                        headerCell.htmlElement.classList.add(Globals.classNames.columnFirst);
+                    }
+                    headerCell.render();
+                    headerCell.columns =
+                        typeof column !== 'string' ? column.columns : void 0;
+                    if (columnId) {
+                        headerCell.htmlElement.setAttribute('rowSpan', (this.viewport.header?.levels || 1) - level);
+                    }
+                    else {
+                        if (colSpan > 1) {
+                            headerCell.htmlElement.setAttribute('colSpan', colSpan);
+                        }
+                    }
+                }
+            }
+            reflow() {
+                const row = this;
+                for (let i = 0, iEnd = row.cells.length; i < iEnd; i++) {
+                    const cell = row.cells[i];
+                    cell.reflow();
+                }
+            }
+            /**
+             * Get all headers that should be rendered in a level.
+             *
+             * @param scope
+             * Level that we start
+             *
+             * @param targetLevel
+             * Max level
+             *
+             * @param currentLevel
+             * Current level
+             *
+             * @return
+             * Array of headers that should be rendered in a level
+             */
+            getColumnsAtLevel(scope, targetLevel, currentLevel = 0) {
+                let result = [];
+                for (const column of scope) {
+                    if (currentLevel === targetLevel) {
+                        result.push(column);
+                    }
+                    if (typeof column !== 'string' && column.columns) {
+                        result = result.concat(this.getColumnsAtLevel(column.columns, targetLevel, currentLevel + 1));
+                    }
+                }
+                return result;
+            }
+            /**
+             * Sets the row HTML element attributes and additional classes.
+             */
+            setRowAttributes() {
+                const el = this.htmlElement;
+                el.setAttribute('aria-rowindex', this.level);
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return HeaderRow;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Header/TableHeader.js', [_modules['DataGrid/Table/Header/HeaderRow.js'], _modules['Core/Utilities.js']], function (HeaderRow, Utils) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { getStyle } = Utils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a table header row containing the cells (headers) with
+         * column names.
+         */
+        class TableHeader {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a new table head.
+             *
+             * @param viewport
+             * The viewport (table) the table head belongs to.
+             */
+            constructor(viewport) {
+                /* *
+                *
+                *  Properties
+                *
+                * */
+                /**
+                 * The visible columns of the table.
+                 */
+                this.columns = [];
+                /**
+                 * The container of the table head.
+                 */
+                this.rows = [];
+                /**
+                 * Amount of levels in the header, that is used in creating correct rows.
+                 */
+                this.levels = 1;
+                this.viewport = viewport;
+                this.columns = viewport.columns;
+                if (viewport.dataGrid.options?.header) {
+                    this.levels = this.getRowLevels(viewport.dataGrid.options?.header);
+                }
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Renders the table head content.
+             */
+            render() {
+                const vp = this.viewport;
+                const dataGrid = vp.dataGrid;
+                if (!dataGrid.enabledColumns) {
+                    return;
+                }
+                for (let i = 0, iEnd = this.levels; i < iEnd; i++) {
+                    const row = new HeaderRow(vp, i + 1); // Avoid indexing from 0
+                    row.renderMultipleLevel(i);
+                    this.rows.push(row);
+                }
+            }
+            /**
+             * Reflows the table head's content dimensions.
+             */
+            reflow() {
+                const vp = this.viewport;
+                if (!vp.theadElement) {
+                    return;
+                }
+                const { clientWidth, offsetWidth } = vp.tbodyElement;
+                const header = vp.header;
+                const rows = this.rows;
+                const tableEl = header?.viewport.dataGrid.tableElement;
+                const theadEL = header?.viewport.theadElement;
+                const theadBorder = theadEL && getStyle(theadEL, 'border-right-width', true) || 0;
+                const tableBorder = (tableEl && getStyle(tableEl, 'border-right-width', true)) || 0;
+                const bordersWidth = offsetWidth - clientWidth - theadBorder - tableBorder;
+                for (const row of rows) {
+                    row.reflow();
+                }
+                if (vp.rowsWidth) {
+                    vp.theadElement.style.width =
+                        Math.max(vp.rowsWidth, clientWidth) + bordersWidth + 'px';
+                }
+                // Adjust cell's width when scrollbar is enabled.
+                if (header && bordersWidth > 0) {
+                    const cells = header.rows[header.rows.length - 1].cells;
+                    const cellHtmlElement = cells[cells.length - 1].htmlElement;
+                    cellHtmlElement.style.width = cellHtmlElement.style.maxWidth =
+                        cellHtmlElement.offsetWidth + bordersWidth + 'px';
+                }
+            }
+            /**
+             * Returns amount of rows for the current cell in header tree.
+             *
+             * @param scope
+             * Structure of header
+             *
+             * @returns
+             */
+            getRowLevels(scope) {
+                let maxDepth = 0;
+                for (const item of scope) {
+                    if (typeof item !== 'string' && item.columns) {
+                        const depth = this.getRowLevels(item.columns);
+                        if (depth > maxDepth) {
+                            maxDepth = depth;
+                        }
+                    }
+                }
+                return maxDepth + 1;
+            }
+            /**
+             * Scrolls the table head horizontally.
+             *
+             * @param scrollLeft
+             * The left scroll position.
+             */
+            scrollHorizontally(scrollLeft) {
+                const el = this.viewport.theadElement;
+                if (!el) {
+                    return;
+                }
+                el.style.transform = `translateX(${-scrollLeft}px)`;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TableHeader;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Content/TableCell.js', [_modules['DataGrid/Table/Cell.js'], _modules['Core/Utilities.js'], _modules['DataGrid/Utils.js']], function (Cell, Utils, DGUtils) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { defined, fireEvent } = Utils;
+        const { isHTML } = DGUtils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a cell in the data grid.
+         */
+        class TableCell extends Cell {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a cell in the data grid.
+             *
+             * @param column
+             * The column of the cell.
+             *
+             * @param row
+             * The row of the cell.
+             */
+            constructor(column, row) {
+                super(column, row);
+                this.row = row;
+                this.column.registerCell(this);
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Renders the cell by appending it to the row and setting its value.
+             */
+            render() {
+                super.render();
+                // It may happen that `await` will be needed here in the future.
+                void this.setValue(this.column.data?.[this.row.index], false);
+            }
+            initEvents() {
+                this.cellEvents.push(['dblclick', (e) => {
+                        this.onDblClick(e);
+                    }]);
+                this.cellEvents.push(['mouseout', () => this.onMouseOut()]);
+                this.cellEvents.push(['mouseover', () => this.onMouseOver()]);
+                this.cellEvents.push(['mousedown', (e) => {
+                        this.onMouseDown(e);
+                    }]);
+                super.initEvents();
+            }
+            /**
+             * Handles the focus event on the cell.
+             */
+            onFocus() {
+                super.onFocus();
+                const vp = this.row.viewport;
+                vp.focusCursor = [
+                    this.row.index,
+                    this.column.index
+                ];
+            }
+            /**
+             * Handles the mouse down event on the cell.
              *
              * @param e
-             * The mousedown event.
+             * The mouse event object.
              */
-            onHandleMouseDown(handle, colRightIx, e) {
-                if (this.draggedResizeHandle) {
-                    return;
+            onMouseDown(e) {
+                const { dataGrid } = this.row.viewport;
+                if (e.target === this.htmlElement) {
+                    this.htmlElement.focus();
                 }
-                e.preventDefault();
-                this.draggedResizeHandle = handle;
-                this.draggedColumnRightIx = colRightIx;
-                this.dragResizeStart = e.pageX;
-                const crosshair = this.columnResizeCrosshair;
-                if (crosshair) {
-                    crosshair.style.left = (handle.offsetLeft + handle.offsetWidth / 2 -
-                        crosshair.offsetWidth / 2 + 'px');
-                    crosshair.style.opacity = '1';
-                }
+                fireEvent(dataGrid, 'cellMouseDown', {
+                    target: this
+                });
             }
             /**
-             * Update as we drag column resizer
-             * @internal
+             * Handles the mouse over event on the cell.
              */
-            updateColumnResizeDrag(e) {
-                const handle = this.draggedResizeHandle;
-                const crosshair = this.columnResizeCrosshair;
-                const colRightIx = this.draggedColumnRightIx;
-                const colHeaders = this.columnHeadersContainer;
-                if (!handle ||
-                    !crosshair ||
-                    colRightIx === null ||
-                    !colHeaders ||
-                    !this.dragResizeStart) {
-                    return;
-                }
-                const col = colHeaders.children[colRightIx];
-                const diff = e.pageX - this.dragResizeStart;
-                const newPos = col.offsetLeft + diff;
-                handle.style.left = newPos - handle.offsetWidth / 2 + 'px';
-                crosshair.style.left = newPos - crosshair.offsetWidth / 2 + 'px';
+            onMouseOver() {
+                const { dataGrid } = this.row.viewport;
+                dataGrid.hoverRow(this.row.index);
+                dataGrid.hoverColumn(this.column.id);
+                dataGrid.options?.events?.cell?.mouseOver?.call(this);
+                fireEvent(dataGrid, 'cellMouseOver', {
+                    target: this
+                });
             }
             /**
-             * Stop resizing a column.
-             *
-             * @internal
-             *
-             * @param handle
-             * The related resize handle.
+             * Handles the mouse out event on the cell.
+             */
+            onMouseOut() {
+                const { dataGrid } = this.row.viewport;
+                dataGrid.hoverRow();
+                dataGrid.hoverColumn();
+                dataGrid.options?.events?.cell?.mouseOut?.call(this);
+                fireEvent(dataGrid, 'cellMouseOut', {
+                    target: this
+                });
+            }
+            /**
+             * Handles the double click event on the cell.
              *
              * @param e
-             * The related mouse event.
+             * The mouse event object.
              */
-            stopColumnResize(handle, e) {
-                const crosshair = this.columnResizeCrosshair;
-                const colRightIx = this.draggedColumnRightIx;
-                const colContainer = this.columnHeadersContainer;
-                if (!crosshair ||
-                    !colContainer ||
-                    !this.dragResizeStart ||
-                    colRightIx === null) {
+            onDblClick(e) {
+                const vp = this.row.viewport;
+                const { dataGrid } = vp;
+                if (this.column.options.cells?.editable) {
+                    e.preventDefault();
+                    vp.cellEditing.startEditing(this);
+                }
+                dataGrid.options?.events?.cell?.dblClick?.call(this);
+                fireEvent(dataGrid, 'cellDblClick', {
+                    target: this
+                });
+            }
+            onClick() {
+                const vp = this.row.viewport;
+                const { dataGrid } = vp;
+                dataGrid.options?.events?.cell?.click?.call(this);
+                fireEvent(dataGrid, 'cellClick', {
+                    target: this
+                });
+            }
+            onKeyDown(e) {
+                if (e.target !== this.htmlElement) {
                     return;
                 }
-                handle.style.opacity = '0';
-                crosshair.style.opacity = '0';
-                const colLeft = colContainer.children[colRightIx - 1];
-                const colRight = colContainer.children[colRightIx];
-                const diff = e.pageX - this.dragResizeStart;
-                const newWidthLeft = colLeft.offsetWidth + diff;
-                const newWidthRight = colRight.offsetWidth - diff;
-                const diffRatioLeft = newWidthLeft / colLeft.offsetWidth;
-                const diffRatioRight = newWidthRight / colRight.offsetWidth;
-                const leftFlexRatio = ((colLeft.style.flex ? parseFloat(colLeft.style.flex) : 1) *
-                    diffRatioLeft);
-                const rightFlexRatio = ((colRight.style.flex ? parseFloat(colRight.style.flex) : 1) *
-                    diffRatioRight);
-                this.resizeColumn(leftFlexRatio, colRightIx - 1);
-                this.resizeColumn(rightFlexRatio, colRightIx);
-                this.draggedResizeHandle = null;
-                this.draggedColumnRightIx = null;
-                this.updateGridElements();
+                if (e.key === 'Enter') {
+                    if (this.column.options.cells?.editable) {
+                        this.row.viewport.cellEditing.startEditing(this);
+                    }
+                    return;
+                }
+                super.onKeyDown(e);
             }
             /**
-             * Update the size of grid container.
+             * Sets the value & updating content of the cell.
              *
+             * @param value
+             * The raw value to set.
+             *
+             * @param updateTable
+             * Whether to update the table after setting the content.
+             */
+            async setValue(value, updateTable) {
+                this.value = value;
+                const vp = this.column.viewport;
+                const element = this.htmlElement;
+                const cellContent = this.formatCell();
+                if (isHTML(cellContent)) {
+                    this.renderHTMLCellContent(cellContent, element);
+                }
+                else {
+                    element.innerText = cellContent;
+                }
+                this.htmlElement.setAttribute('data-value', this.value + '');
+                this.setCustomClassName(this.column.options.cells?.className);
+                vp.dataGrid.options?.events?.cell?.afterSetValue?.call(this);
+                if (!updateTable) {
+                    return;
+                }
+                const { dataTable: originalDataTable } = vp.dataGrid;
+                // Taken the local row index of the original datagrid data table, but
+                // in the future it should affect the globally original data table.
+                // (To be done after the DataLayer refinement)
+                const rowTableIndex = this.row.id && originalDataTable?.getLocalRowIndex(this.row.id);
+                if (!originalDataTable || rowTableIndex === void 0) {
+                    return;
+                }
+                originalDataTable.setCell(this.column.id, rowTableIndex, this.value);
+                if (vp.dataGrid.querying.willNotModify()) {
+                    // If the data table does not need to be modified, skip the
+                    // data modification and don't update the whole table. It checks
+                    // if the modifiers are globally set. Can be changed in the future
+                    // to check if the modifiers are set for the specific columns.
+                    return;
+                }
+                let focusedRowId;
+                if (vp.focusCursor) {
+                    focusedRowId = vp.dataTable.getOriginalRowIndex(vp.focusCursor[0]);
+                }
+                await vp.dataGrid.querying.proceed(true);
+                vp.loadPresentationData();
+                if (focusedRowId !== void 0 && vp.focusCursor) {
+                    const newRowIndex = vp.dataTable.getLocalRowIndex(focusedRowId);
+                    if (newRowIndex !== void 0) {
+                        vp.rows[newRowIndex - vp.rows[0].index]
+                            ?.cells[vp.focusCursor[1]].htmlElement.focus();
+                    }
+                }
+            }
+            /**
+             * Handle the formatting content of the cell.
+             */
+            formatCell() {
+                const options = this.column.options.cells || {};
+                const { format, formatter } = options;
+                let value = this.value;
+                if (!defined(value)) {
+                    value = '';
+                }
+                let cellContent = '';
+                if (formatter) {
+                    cellContent = formatter.call(this).toString();
+                }
+                else {
+                    cellContent = (format ? this.format(format) : value + '');
+                }
+                return cellContent;
+            }
+            /**
+             * Destroys the cell.
+             */
+            destroy() {
+                super.destroy();
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TableCell;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Content/TableRow.js', [_modules['DataGrid/Table/Row.js'], _modules['DataGrid/Table/Content/TableCell.js'], _modules['DataGrid/Globals.js']], function (Row, TableCell, Globals) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a row in the data grid.
+         */
+        class TableRow extends Row {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a row in the data grid.
+             *
+             * @param viewport
+             * The Data Grid Table instance which the row belongs to.
+             *
+             * @param index
+             * The index of the row in the data table.
+             */
+            constructor(viewport, index) {
+                super(viewport);
+                this.index = index;
+                this.id = viewport.dataTable.getOriginalRowIndex(index);
+                this.setRowAttributes();
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            createCell(column) {
+                return new TableCell(column, this);
+            }
+            /**
+             * Adds or removes the hovered CSS class to the row element.
+             *
+             * @param hovered
+             * Whether the row should be hovered.
+             */
+            setHoveredState(hovered) {
+                this.htmlElement.classList[hovered ? 'add' : 'remove'](Globals.classNames.hoveredRow);
+                if (hovered) {
+                    this.viewport.dataGrid.hoveredRowIndex = this.index;
+                }
+            }
+            /**
+             * Sets the row HTML element attributes and additional classes.
+             */
+            setRowAttributes() {
+                const idx = this.index;
+                const el = this.htmlElement;
+                el.style.transform = `translateY(${this.getDefaultTopOffset()}px)`;
+                el.classList.add(Globals.classNames.rowElement);
+                // Index of the row in the presentation data table
+                el.setAttribute('data-row-index', idx);
+                // Index of the row in the original data table (ID)
+                if (this.id !== void 0) {
+                    el.setAttribute('data-row-id', this.id);
+                }
+                // Calculate levels of header, 1 to avoid indexing from 0
+                el.setAttribute('aria-rowindex', idx + (this.viewport.header?.levels ?? 1) + 1);
+                if (idx % 2 === 1) {
+                    el.classList.add(Globals.classNames.rowOdd);
+                }
+                if (this.viewport.dataGrid.hoveredRowIndex === idx) {
+                    el.classList.add(Globals.classNames.hoveredRow);
+                }
+            }
+            /**
+             * Returns the default top offset of the row (before adjusting row heights).
              * @internal
+             */
+            getDefaultTopOffset() {
+                return this.index * this.viewport.rowsVirtualizer.defaultRowHeight;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TableRow;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Actions/RowsVirtualizer.js', [_modules['DataGrid/Utils.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Table/Content/TableRow.js']], function (DGUtils, Globals, TableRow) {
+        /* *
+         *
+         *  Data Grid Rows Renderer class.
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { makeHTMLElement, getTranslateY } = DGUtils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a virtualized rows renderer for the data grid.
+         */
+        class RowsVirtualizer {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs an instance of the rows virtualizer.
+             *
+             * @param viewport
+             * The viewport of the data grid to render rows in.
+             */
+            constructor(viewport) {
+                /**
+                 * The index of the first visible row.
+                 */
+                this.rowCursor = 0;
+                /**
+                 * Flag indicating if the scrolling handler should be prevented to avoid
+                 * flickering loops when scrolling to the last row.
+                 */
+                this.preventScroll = false;
+                const rowSettings = viewport.dataGrid.options?.rendering?.rows;
+                this.viewport = viewport;
+                this.strictRowHeights = rowSettings?.strictHeights;
+                this.buffer = Math.max(rowSettings?.bufferSize, 0);
+                this.defaultRowHeight = this.getDefaultRowHeight();
+                if (this.strictRowHeights) {
+                    viewport.tbodyElement.classList.add(Globals.classNames.rowsContentNowrap);
+                }
+            }
+            /* *
+            *
+            *  Functions
+            *
+            * */
+            /**
+             * Renders the rows in the viewport for the first time.
+             */
+            initialRender() {
+                // Initial reflow to set the viewport height
+                this.viewport.reflow();
+                // Load & render rows
+                this.renderRows(this.rowCursor);
+                this.adjustRowHeights();
+            }
+            /**
+             * Renders the rows in the viewport. It is called when the rows need to be
+             * re-rendered, e.g., after a sort or filter operation.
+             */
+            rerender() {
+                const rows = this.viewport.rows;
+                const tbody = this.viewport.tbodyElement;
+                let oldScrollTop;
+                if (rows.length) {
+                    oldScrollTop = tbody.scrollTop;
+                    for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
+                        rows[i].destroy();
+                    }
+                    rows.length = 0;
+                }
+                this.renderRows(this.rowCursor);
+                if (oldScrollTop !== void 0) {
+                    tbody.scrollTop = oldScrollTop;
+                }
+                this.scroll();
+                // Reflow the rendered row cells widths (check redundancy)
+                for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
+                    rows[i].reflow();
+                }
+            }
+            /**
+             * Method called on the viewport scroll event.
+             */
+            scroll() {
+                const target = this.viewport.tbodyElement;
+                const { defaultRowHeight: rowHeight } = this;
+                const lastScrollTop = target.scrollTop;
+                if (this.preventScroll) {
+                    if (lastScrollTop <= target.scrollTop) {
+                        this.preventScroll = false;
+                    }
+                    this.adjustBottomRowHeights();
+                    return;
+                }
+                // Do vertical virtual scrolling
+                const rowCursor = Math.floor(target.scrollTop / rowHeight);
+                if (this.rowCursor !== rowCursor) {
+                    this.renderRows(rowCursor);
+                }
+                this.rowCursor = rowCursor;
+                this.adjustRowHeights();
+                if (!this.strictRowHeights &&
+                    lastScrollTop > target.scrollTop &&
+                    !this.preventScroll) {
+                    target.scrollTop = lastScrollTop;
+                    this.preventScroll = true;
+                }
+            }
+            /**
+             * Adjusts the visible row heights from the bottom of the viewport.
+             */
+            adjustBottomRowHeights() {
+                const rows = this.viewport.rows;
+                const rowsLn = rows.length;
+                const lastRow = rows[rowsLn - 1];
+                let rowTop = getTranslateY(lastRow.htmlElement);
+                const rowBottom = rowTop + lastRow.htmlElement.offsetHeight;
+                let newHeight = lastRow.cells[0].htmlElement.offsetHeight;
+                rowTop = rowBottom - newHeight;
+                lastRow.htmlElement.style.height = newHeight + 'px';
+                lastRow.htmlElement.style.transform = `translateY(${rowTop}px)`;
+                for (let j = 0, jEnd = lastRow.cells.length; j < jEnd; ++j) {
+                    lastRow.cells[j].htmlElement.style.transform = '';
+                }
+                for (let i = rowsLn - 2; i >= 0; i--) {
+                    const row = rows[i];
+                    newHeight = row.cells[0].htmlElement.offsetHeight;
+                    rowTop -= newHeight;
+                    row.htmlElement.style.height = newHeight + 'px';
+                    row.htmlElement.style.transform = `translateY(${rowTop}px)`;
+                    for (let j = 0, jEnd = row.cells.length; j < jEnd; ++j) {
+                        row.cells[j].htmlElement.style.transform = '';
+                    }
+                }
+            }
+            /**
+             * Renders rows in the specified range. Removes rows that are out of the
+             * range except the last row.
+             *
+             * @param rowCursor
+             * The index of the first visible row.
+             */
+            renderRows(rowCursor) {
+                const { viewport: vp, buffer } = this;
+                const rowsPerPage = Math.ceil(vp.tbodyElement.offsetHeight / this.defaultRowHeight);
+                const rows = vp.rows;
+                if (!rows.length) {
+                    const last = new TableRow(vp, vp.dataTable.getRowCount() - 1);
+                    last.render();
+                    rows.push(last);
+                    vp.tbodyElement.appendChild(last.htmlElement);
+                }
+                const from = Math.max(0, Math.min(rowCursor - buffer, vp.dataTable.getRowCount() - rowsPerPage));
+                const to = Math.min(rowCursor + rowsPerPage + buffer, rows[rows.length - 1].index - 1);
+                const alwaysLastRow = rows.pop();
+                for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
+                    rows[i].destroy();
+                }
+                rows.length = 0;
+                for (let i = from; i <= to; ++i) {
+                    const newRow = new TableRow(vp, i);
+                    newRow.render();
+                    vp.tbodyElement.insertBefore(newRow.htmlElement, vp.tbodyElement.lastChild);
+                    rows.push(newRow);
+                }
+                if (alwaysLastRow) {
+                    rows.push(alwaysLastRow);
+                }
+                // Focus the cell if the focus cursor is set
+                if (vp.focusCursor) {
+                    const [rowIndex, columnIndex] = vp.focusCursor;
+                    const row = rows.find((row) => row.index === rowIndex);
+                    if (row) {
+                        row.cells[columnIndex]?.htmlElement.focus({
+                            preventScroll: true
+                        });
+                    }
+                }
+                const firstVisibleRow = rows[rowCursor - rows[0].index];
+                this.focusAnchorCell = firstVisibleRow?.cells[0];
+                this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '0');
+            }
+            /**
+             * Adjusts the heights of the rows based on the current scroll position.
+             * It handles the possibility of the rows having different heights than
+             * the default height.
+             */
+            adjustRowHeights() {
+                if (this.strictRowHeights) {
+                    return;
+                }
+                const { rowCursor: cursor, defaultRowHeight: defaultH } = this;
+                const { rows, tbodyElement } = this.viewport;
+                const rowsLn = rows.length;
+                let translateBuffer = rows[0].getDefaultTopOffset();
+                for (let i = 0; i < rowsLn; ++i) {
+                    const row = rows[i];
+                    // Reset row height and cell transforms
+                    row.htmlElement.style.height = '';
+                    if (row.cells[0].htmlElement.style.transform) {
+                        for (let j = 0, jEnd = row.cells.length; j < jEnd; ++j) {
+                            const cell = row.cells[j];
+                            cell.htmlElement.style.transform = '';
+                        }
+                    }
+                    // Rows above the first visible row
+                    if (row.index < cursor) {
+                        row.htmlElement.style.height = defaultH + 'px';
+                        continue;
+                    }
+                    const cellHeight = row.cells[0].htmlElement.offsetHeight;
+                    row.htmlElement.style.height = cellHeight + 'px';
+                    // Rows below the first visible row
+                    if (row.index > cursor) {
+                        continue;
+                    }
+                    // First visible row
+                    if (row.htmlElement.offsetHeight > defaultH) {
+                        const newHeight = Math.floor(cellHeight - (cellHeight - defaultH) * (tbodyElement.scrollTop / defaultH - cursor));
+                        row.htmlElement.style.height = newHeight + 'px';
+                        for (let j = 0, jEnd = row.cells.length; j < jEnd; ++j) {
+                            const cell = row.cells[j];
+                            cell.htmlElement.style.transform = `translateY(${newHeight - cellHeight}px)`;
+                        }
+                    }
+                }
+                for (let i = 1, iEnd = rowsLn - 1; i < iEnd; ++i) {
+                    translateBuffer += rows[i - 1].htmlElement.offsetHeight;
+                    rows[i].htmlElement.style.transform =
+                        `translateY(${translateBuffer}px)`;
+                }
+                // Set the proper offset for the last row
+                const lastRow = rows[rowsLn - 1];
+                const preLastRow = rows[rowsLn - 2];
+                if (preLastRow && preLastRow.index === lastRow.index - 1) {
+                    lastRow.htmlElement.style.transform = `translateY(${preLastRow.htmlElement.offsetHeight +
+                        getTranslateY(preLastRow.htmlElement)}px)`;
+                }
+            }
+            /**
+             * Reflow the rendered rows content dimensions.
+             */
+            reflowRows() {
+                const rows = this.viewport.rows;
+                if (rows.length < 1) {
+                    return;
+                }
+                for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
+                    rows[i].reflow();
+                }
+                this.adjustRowHeights();
+            }
+            /**
+             * Returns the default height of a row. This method should be called only
+             * once on initialization.
+             */
+            getDefaultRowHeight() {
+                const mockRow = makeHTMLElement('tr', {
+                    className: Globals.classNames.rowElement
+                }, this.viewport.tbodyElement);
+                const defaultRowHeight = mockRow.offsetHeight;
+                mockRow.remove();
+                return defaultRowHeight;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return RowsVirtualizer;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Actions/ColumnsResizer.js', [_modules['DataGrid/Table/Column.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Utils.js']], function (Column, Globals, DGUtils) {
+        /* *
+         *
+         *  Data Grid Columns Resizer class.
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = DGUtils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * The class that handles the resizing of columns in the data grid.
+         */
+        class ColumnsResizer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(viewport) {
+                /**
+                 * The handles and their mouse down event listeners.
+                 */
+                this.handles = [];
+                /**
+                 * Handles the mouse move event on the document.
+                 *
+                 * @param e
+                 * The mouse event.
+                 */
+                this.onDocumentMouseMove = (e) => {
+                    if (!this.draggedResizeHandle || !this.draggedColumn) {
+                        return;
+                    }
+                    const diff = e.pageX - (this.dragStartX || 0);
+                    if (this.viewport.columnDistribution === 'full') {
+                        this.fullDistributionResize(diff);
+                    }
+                    else {
+                        this.fixedDistributionResize(diff);
+                    }
+                    this.viewport.reflow();
+                    this.viewport.rowsVirtualizer.adjustRowHeights();
+                    this.viewport.dataGrid.options?.events?.column?.afterResize?.call(this.draggedColumn);
+                };
+                /**
+                 * Handles the mouse up event on the document.
+                 */
+                this.onDocumentMouseUp = () => {
+                    this.draggedColumn?.header?.htmlElement?.classList.remove(Globals.classNames.resizedColumn);
+                    this.dragStartX = void 0;
+                    this.draggedColumn = void 0;
+                    this.draggedResizeHandle = void 0;
+                    this.columnStartWidth = void 0;
+                    this.nextColumnStartWidth = void 0;
+                };
+                this.viewport = viewport;
+                document.addEventListener('mousemove', this.onDocumentMouseMove);
+                document.addEventListener('mouseup', this.onDocumentMouseUp);
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Resizes the columns in the full distribution mode.
+             *
+             * @param diff
+             * The X position difference in pixels.
+             */
+            fullDistributionResize(diff) {
+                const vp = this.viewport;
+                const column = this.draggedColumn;
+                if (!column) {
+                    return;
+                }
+                const nextColumn = vp.columns[column.index + 1];
+                if (!nextColumn) {
+                    return;
+                }
+                const leftColW = this.columnStartWidth ?? 0;
+                const rightColW = this.nextColumnStartWidth ?? 0;
+                const MIN_WIDTH = Column.MIN_COLUMN_WIDTH;
+                let newLeftW = leftColW + diff;
+                let newRightW = rightColW - diff;
+                if (newLeftW < MIN_WIDTH) {
+                    newLeftW = MIN_WIDTH;
+                    newRightW = leftColW + rightColW - MIN_WIDTH;
+                }
+                if (newRightW < MIN_WIDTH) {
+                    newRightW = MIN_WIDTH;
+                    newLeftW = leftColW + rightColW - MIN_WIDTH;
+                }
+                column.width = vp.getRatioFromWidth(newLeftW);
+                nextColumn.width = vp.getRatioFromWidth(newRightW);
+            }
+            /**
+             * Render the drag handle for resizing columns.
+             *
+             * @param column
+             * The reference to rendered column
+             *
+             * @param cell
+             * The reference to rendered cell, where hadles should be added
+             */
+            renderColumnDragHandles(column, cell) {
+                const vp = column.viewport;
+                if (vp.columnsResizer && (vp.columnDistribution !== 'full' ||
+                    (vp.dataGrid.enabledColumns &&
+                        column.index < vp.dataGrid.enabledColumns.length - 1))) {
+                    const handle = makeHTMLElement('div', {
+                        className: Globals.classNames.resizerHandles
+                    }, cell.htmlElement);
+                    vp.columnsResizer?.addHandleListeners(handle, column);
+                }
+            }
+            /**
+             * Resizes the columns in the fixed distribution mode.
+             *
+             * @param diff
+             * The X position difference in pixels.
+             */
+            fixedDistributionResize(diff) {
+                const column = this.draggedColumn;
+                if (!column) {
+                    return;
+                }
+                const colW = this.columnStartWidth ?? 0;
+                const MIN_WIDTH = Column.MIN_COLUMN_WIDTH;
+                let newW = colW + diff;
+                if (newW < MIN_WIDTH) {
+                    newW = MIN_WIDTH;
+                }
+                column.width = newW;
+            }
+            /**
+             * Adds event listeners to the handle.
+             *
+             * @param handle
+             * The handle element.
+             *
+             * @param column
+             * The column the handle belongs to.
+             */
+            addHandleListeners(handle, column) {
+                const onHandleMouseDown = (e) => {
+                    this.dragStartX = e.pageX;
+                    this.draggedColumn = column;
+                    this.draggedResizeHandle = handle;
+                    this.columnStartWidth = column.getWidth();
+                    this.nextColumnStartWidth =
+                        this.viewport.columns[column.index + 1]?.getWidth();
+                    column.header?.htmlElement.classList.add(Globals.classNames.resizedColumn);
+                };
+                this.handles.push([handle, onHandleMouseDown]);
+                handle.addEventListener('mousedown', onHandleMouseDown);
+            }
+            /**
+             * Removes all added event listeners from the document and handles. This
+             * should be called on the destroy of the data grid.
+             */
+            removeEventListeners() {
+                document.removeEventListener('mousemove', this.onDocumentMouseMove);
+                document.removeEventListener('mouseup', this.onDocumentMouseUp);
+                for (let i = 0, iEnd = this.handles.length; i < iEnd; i++) {
+                    const [handle, listener] = this.handles[i];
+                    handle.removeEventListener('mousedown', listener);
+                }
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return ColumnsResizer;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Actions/CellEditing.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/Utils.js']], function (Globals, DGUtils) {
+        /* *
+         *
+         *  Data Grid Cell Editing class.
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = DGUtils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * The class that handles the manual editing of cells in the data grid.
+         */
+        class CellEditing {
+            constructor() {
+                /* *
+                *
+                *  Properties
+                *
+                * */
+                /**
+                 * Handles the blur event on the input field.
+                 */
+                this.onInputBlur = () => {
+                    this.stopEditing();
+                };
+                /**
+                 * Handles the keydown event on the input field. Cancels editing on escape
+                 * and saves the value on enter.
+                 *
+                 * @param e
+                 * The keyboard event.
+                 */
+                this.onInputKeyDown = (e) => {
+                    const { keyCode } = e;
+                    // Enter / Escape
+                    if (keyCode === 13 || keyCode === 27) {
+                        // Cancel editing on escape
+                        this.stopEditing(keyCode === 13);
+                    }
+                };
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            /**
+             * Turns the cell into an editable input field.
+             *
+             * @param cell
+             * The cell that is to be edited.
+             */
+            startEditing(cell) {
+                if (this.editedCell === cell) {
+                    return;
+                }
+                if (this.editedCell) {
+                    this.stopEditing();
+                }
+                this.editedCell = cell;
+                const cellElement = cell.htmlElement;
+                cellElement.innerHTML = '';
+                cellElement.classList.add(Globals.classNames.editedCell);
+                this.renderInput();
+            }
+            /**
+             * Stops the editing of the cell.
+             *
+             * @param submit
+             * Whether to save the value of the input to the cell. Defaults to true.
+             */
+            stopEditing(submit = true) {
+                const cell = this.editedCell;
+                const input = this.inputElement;
+                if (!cell || !input) {
+                    return;
+                }
+                const dataGrid = cell.column.viewport.dataGrid;
+                let newValue = input.value;
+                this.destroyInput();
+                cell.htmlElement.classList.remove(Globals.classNames.editedCell);
+                cell.htmlElement.focus();
+                // Convert to number if possible
+                if (!isNaN(+newValue)) {
+                    newValue = +newValue;
+                }
+                void cell.setValue(submit ? newValue : cell.value, submit && cell.value !== newValue);
+                dataGrid.options?.events?.cell?.afterEdit?.call(cell);
+                delete this.editedCell;
+            }
+            /**
+             * Renders the input field for the cell, focuses it and sets up event
+             * listeners.
+             */
+            renderInput() {
+                const cell = this.editedCell;
+                if (!cell) {
+                    return;
+                }
+                const cellEl = cell.htmlElement;
+                const input = this.inputElement = makeHTMLElement('input', {}, cellEl);
+                input.value = '' + cell.value;
+                input.focus();
+                input.addEventListener('blur', this.onInputBlur);
+                input.addEventListener('keydown', this.onInputKeyDown);
+            }
+            /**
+             * Removes event listeners and the input element.
+             */
+            destroyInput() {
+                const input = this.inputElement;
+                if (!input) {
+                    return;
+                }
+                input.removeEventListener('keydown', this.onInputKeyDown);
+                input.removeEventListener('blur', this.onInputBlur);
+                input.remove();
+                delete this.inputElement;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CellEditing;
+    });
+    _registerModule(_modules, 'DataGrid/Table/Table.js', [_modules['DataGrid/Utils.js'], _modules['DataGrid/Table/Column.js'], _modules['DataGrid/Table/Header/TableHeader.js'], _modules['DataGrid/Table/Actions/RowsVirtualizer.js'], _modules['DataGrid/Table/Actions/ColumnsResizer.js'], _modules['DataGrid/Globals.js'], _modules['Core/Utilities.js'], _modules['DataGrid/Table/Actions/CellEditing.js']], function (DGUtils, Column, TableHeader, RowsVirtualizer, ColumnsResizer, Globals, Utils, CellEditing) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = DGUtils;
+        const { getStyle } = Utils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a table viewport of the data grid.
+         */
+        class Table {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a new data grid table.
+             *
+             * @param dataGrid
+             * The data grid instance which the table (viewport) belongs to.
+             *
+             * @param tableElement
+             * The HTML table element of the data grid.
+             */
+            constructor(dataGrid, tableElement) {
+                /**
+                 * The visible columns of the table.
+                 */
+                this.columns = [];
+                /**
+                 * The visible rows of the table.
+                 */
+                this.rows = [];
+                /**
+                 * Handles the focus event on the table body.
+                 *
+                 * @param e
+                 * The focus event.
+                 */
+                this.onTBodyFocus = (e) => {
+                    e.preventDefault();
+                    this.rows[this.rowsVirtualizer.rowCursor - this.rows[0].index]
+                        ?.cells[0]?.htmlElement.focus();
+                };
+                /**
+                 * Handles the resize event.
+                 */
+                this.onResize = () => {
+                    this.reflow();
+                };
+                /**
+                 * Handles the scroll event.
+                 */
+                this.onScroll = () => {
+                    this.rowsVirtualizer.scroll();
+                    this.header?.scrollHorizontally(this.tbodyElement.scrollLeft);
+                };
+                this.dataGrid = dataGrid;
+                this.dataTable = this.dataGrid.presentationTable;
+                const dgOptions = dataGrid.options;
+                const customClassName = dgOptions?.rendering?.table?.className;
+                this.columnDistribution =
+                    dgOptions?.rendering?.columns?.distribution;
+                this.renderCaption();
+                if (dgOptions?.rendering?.header?.enabled) {
+                    this.theadElement = makeHTMLElement('thead', {}, tableElement);
+                }
+                this.tbodyElement = makeHTMLElement('tbody', {}, tableElement);
+                this.rowsVirtualizer = new RowsVirtualizer(this);
+                if (dgOptions?.columnDefaults?.resizing) {
+                    this.columnsResizer = new ColumnsResizer(this);
+                }
+                this.cellEditing = new CellEditing();
+                if (customClassName) {
+                    tableElement.classList.add(...customClassName.split(/\s+/g));
+                }
+                this.init();
+                // Add event listeners
+                this.resizeObserver = new ResizeObserver(this.onResize);
+                this.resizeObserver.observe(tableElement);
+                this.tbodyElement.addEventListener('scroll', this.onScroll);
+                this.tbodyElement.addEventListener('focus', this.onTBodyFocus);
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Initializes the data grid table.
+             */
+            init() {
+                // Load columns
+                this.loadColumns();
+                // Load & render head
+                if (this.dataGrid.options?.rendering?.header?.enabled) {
+                    this.header = new TableHeader(this);
+                    this.header.render();
+                }
+                // TODO: Load & render footer
+                // this.footer = new TableFooter(this);
+                // this.footer.render();
+                this.rowsVirtualizer.initialRender();
+            }
+            /**
+             * Loads the columns of the table.
+             */
+            loadColumns() {
+                const { enabledColumns } = this.dataGrid;
+                if (!enabledColumns) {
+                    return;
+                }
+                let columnId;
+                for (let i = 0, iEnd = enabledColumns.length; i < iEnd; ++i) {
+                    columnId = enabledColumns[i];
+                    this.columns.push(new Column(this, columnId, i));
+                }
+            }
+            /**
+             * Loads the modified data from the data table and renders the rows.
+             */
+            loadPresentationData() {
+                this.dataTable = this.dataGrid.presentationTable;
+                for (const column of this.columns) {
+                    column.loadData();
+                }
+                this.rowsVirtualizer.rerender();
+            }
+            /**
+             * Reflows the table's content dimensions.
+             */
+            reflow() {
+                const tableEl = this.dataGrid.tableElement;
+                const borderWidth = tableEl ? ((getStyle(tableEl, 'border-top-width', true) || 0) +
+                    (getStyle(tableEl, 'border-bottom-width', true) || 0)) : 0;
+                this.tbodyElement.style.height = this.tbodyElement.style.minHeight = `${(this.dataGrid.container?.clientHeight || 0) -
+                    (this.theadElement?.offsetHeight || 0) -
+                    (this.captionElement?.offsetHeight || 0) -
+                    (this.dataGrid.credits?.getHeight() || 0) -
+                    borderWidth}px`;
+                // Get the width of the rows.
+                if (this.columnDistribution === 'fixed') {
+                    let rowsWidth = 0;
+                    for (let i = 0, iEnd = this.columns.length; i < iEnd; ++i) {
+                        rowsWidth += this.columns[i].width;
+                    }
+                    this.rowsWidth = rowsWidth;
+                }
+                // Reflow the head
+                this.header?.reflow();
+                // Reflow rows content dimensions
+                this.rowsVirtualizer.reflowRows();
+            }
+            /**
+             * Scrolls the table to the specified row.
+             *
+             * @param index
+             * The index of the row to scroll to.
+             *
+             * Try it: {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/data-grid/basic/scroll-to-row | Scroll to row}
+             */
+            scrollToRow(index) {
+                this.tbodyElement.scrollTop =
+                    index * this.rowsVirtualizer.defaultRowHeight;
+            }
+            /**
+             * Get the widthRatio value from the width in pixels. The widthRatio is
+             * calculated based on the width of the viewport.
              *
              * @param width
-             * The new width in pixel, or `null` for no change.
+             * The width in pixels.
              *
-             * @param height
-             * The new height in pixel, or `null` for no change.
+             * @return The width ratio.
+             *
+             * @internal
              */
-            setSize(width, height) {
-                if (width) {
-                    this.innerContainer.style.width = width + 'px';
-                }
-                if (height) {
-                    this.gridContainer.style.height = this.getDataGridSize() + 'px';
-                    this.outerContainer.style.height =
-                        height -
-                            (this.options.cellHeight + // Header height
-                                this.getMarginHeight(height)) + 'px';
-                }
-                this.render();
+            getRatioFromWidth(width) {
+                return width / this.tbodyElement.clientWidth;
             }
             /**
-             * If the grid is in the parent container that has margins, calculate the
-             * height of the margins.
-             * @internal
+             * Get the width in pixels from the widthRatio value. The width is
+             * calculated based on the width of the viewport.
              *
-             * @param  height
-             * The height of the parent container.
+             * @param ratio
+             * The width ratio.
+             *
+             * @returns The width in pixels.
+             *
+             * @internal
              */
-            getMarginHeight(height) {
-                return height - this.gridContainer.getBoundingClientRect().height;
+            getWidthFromRatio(ratio) {
+                return this.tbodyElement.clientWidth * ratio;
+            }
+            /**
+             * Render caption above the datagrid
+             * @internal
+             */
+            renderCaption() {
+                const captionOptions = this.dataGrid.options?.caption;
+                if (!captionOptions?.text) {
+                    return;
+                }
+                this.captionElement = makeHTMLElement('caption', {
+                    innerText: captionOptions.text,
+                    className: Globals.classNames.captionElement
+                }, this.dataGrid.tableElement);
+                if (captionOptions.className) {
+                    this.captionElement.classList.add(...captionOptions.className.split(/\s+/g));
+                }
+            }
+            /**
+             * Destroys the data grid table.
+             */
+            destroy() {
+                this.tbodyElement.removeEventListener('focus', this.onTBodyFocus);
+                this.tbodyElement.removeEventListener('scroll', this.onScroll);
+                this.resizeObserver.disconnect();
+                this.columnsResizer?.removeEventListeners();
+                for (let i = 0, iEnd = this.rows.length; i < iEnd; ++i) {
+                    this.rows[i].destroy();
+                }
+            }
+            /**
+             * Get the viewport state metadata. It is used to save the state of the
+             * viewport and restore it when the data grid is re-rendered.
+             *
+             * @returns
+             * The viewport state metadata.
+             */
+            getStateMeta() {
+                return {
+                    scrollTop: this.tbodyElement.scrollTop,
+                    scrollLeft: this.tbodyElement.scrollLeft,
+                    columnDistribution: this.columnDistribution,
+                    columnWidths: this.columns.map((column) => column.width),
+                    focusCursor: this.focusCursor
+                };
+            }
+            /**
+             * Apply the metadata to the viewport state. It is used to restore the state
+             * of the viewport when the data grid is re-rendered.
+             *
+             * @param meta
+             * The viewport state metadata.
+             */
+            applyStateMeta(meta) {
+                this.tbodyElement.scrollTop = meta.scrollTop;
+                this.tbodyElement.scrollLeft = meta.scrollLeft;
+                if (this.columnDistribution === meta.columnDistribution &&
+                    this.columns.length === meta.columnWidths.length) {
+                    const widths = meta.columnWidths;
+                    for (let i = 0, iEnd = widths.length; i < iEnd; ++i) {
+                        this.columns[i].width = widths[i];
+                    }
+                    this.reflow();
+                    if (meta.focusCursor) {
+                        const [rowIndex, columnIndex] = meta.focusCursor;
+                        const row = this.rows[rowIndex - this.rows[0].index];
+                        row?.cells[columnIndex]?.htmlElement.focus();
+                    }
+                }
+            }
+            /**
+             * Returns the column with the provided ID.
+             *
+             * @param id
+             * The ID of the column.
+             */
+            getColumn(id) {
+                const columns = this.dataGrid.enabledColumns;
+                if (!columns) {
+                    return;
+                }
+                const columnIndex = columns.indexOf(id);
+                if (columnIndex < 0) {
+                    return;
+                }
+                return this.columns[columnIndex];
+            }
+            /**
+             * Returns the row with the provided ID.
+             *
+             * @param id
+             * The ID of the row.
+             */
+            getRow(id) {
+                return this.rows.find((row) => row.id === id);
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Table;
+    });
+    _registerModule(_modules, 'Data/Modifiers/ChainModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Modifies a table with the help of modifiers in an ordered chain.
+         *
+         */
+        class ChainModifier extends DataModifier {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the modifier chain.
+             *
+             * @param {Partial<ChainModifier.Options>} [options]
+             * Options to configure the modifier chain.
+             *
+             * @param {...DataModifier} [chain]
+             * Ordered chain of modifiers.
+             */
+            constructor(options, ...chain) {
+                super();
+                this.chain = chain;
+                this.options = merge(ChainModifier.defaultOptions, options);
+                const optionsChain = this.options.chain || [];
+                for (let i = 0, iEnd = optionsChain.length, modifierOptions, ModifierClass; i < iEnd; ++i) {
+                    modifierOptions = optionsChain[i];
+                    if (!modifierOptions.type) {
+                        continue;
+                    }
+                    ModifierClass = DataModifier.types[modifierOptions.type];
+                    if (ModifierClass) {
+                        chain.push(new ModifierClass(modifierOptions));
+                    }
+                }
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Adds a configured modifier to the end of the modifier chain. Please note,
+             * that the modifier can be added multiple times.
+             *
+             * @param {DataModifier} modifier
+             * Configured modifier to add.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             */
+            add(modifier, eventDetail) {
+                this.emit({
+                    type: 'addModifier',
+                    detail: eventDetail,
+                    modifier
+                });
+                this.chain.push(modifier);
+                this.emit({
+                    type: 'addModifier',
+                    detail: eventDetail,
+                    modifier
+                });
+            }
+            /**
+             * Clears all modifiers from the chain.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             */
+            clear(eventDetail) {
+                this.emit({
+                    type: 'clearChain',
+                    detail: eventDetail
+                });
+                this.chain.length = 0;
+                this.emit({
+                    type: 'afterClearChain',
+                    detail: eventDetail
+                });
+            }
+            /**
+             * Applies several modifications to the table and returns a modified copy of
+             * the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Table to modify.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Promise<Highcharts.DataTable>}
+             * Table with `modified` property as a reference.
+             */
+            async modify(table, eventDetail) {
+                const modifiers = (this.options.reverse ?
+                    this.chain.slice().reverse() :
+                    this.chain.slice());
+                if (table.modified === table) {
+                    table.modified = table.clone(false, eventDetail);
+                }
+                let modified = table;
+                for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
+                    try {
+                        await modifiers[i].modify(modified, eventDetail);
+                    }
+                    catch (error) {
+                        this.emit({
+                            type: 'error',
+                            detail: eventDetail,
+                            table
+                        });
+                        throw error;
+                    }
+                    modified = modified.modified;
+                }
+                table.modified = modified;
+                return table;
+            }
+            /**
+             * Applies partial modifications of a cell change to the property `modified`
+             * of the given modified table.
+             *
+             * *Note:* The `modified` property of the table gets replaced.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {string} columnName
+             * Column name of changed cell.
+             *
+             * @param {number|undefined} rowIndex
+             * Row index of changed cell.
+             *
+             * @param {Highcharts.DataTableCellType} cellValue
+             * Changed cell value.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyCell(table, columnName, rowIndex, cellValue, eventDetail) {
+                const modifiers = (this.options.reverse ?
+                    this.chain.reverse() :
+                    this.chain);
+                if (modifiers.length) {
+                    let clone = table.clone();
+                    for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
+                        modifiers[i].modifyCell(clone, columnName, rowIndex, cellValue, eventDetail);
+                        clone = clone.modified;
+                    }
+                    table.modified = clone;
+                }
+                return table;
+            }
+            /**
+             * Applies partial modifications of column changes to the property
+             * `modified` of the given table.
+             *
+             * *Note:* The `modified` property of the table gets replaced.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {Highcharts.DataTableColumnCollection} columns
+             * Changed columns as a collection, where the keys are the column names.
+             *
+             * @param {number} [rowIndex=0]
+             * Index of the first changed row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyColumns(table, columns, rowIndex, eventDetail) {
+                const modifiers = (this.options.reverse ?
+                    this.chain.reverse() :
+                    this.chain.slice());
+                if (modifiers.length) {
+                    let clone = table.clone();
+                    for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
+                        modifiers[i].modifyColumns(clone, columns, rowIndex, eventDetail);
+                        clone = clone.modified;
+                    }
+                    table.modified = clone;
+                }
+                return table;
+            }
+            /**
+             * Applies partial modifications of row changes to the property `modified`
+             * of the given table.
+             *
+             * *Note:* The `modified` property of the table gets replaced.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
+             * Changed rows.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first changed row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyRows(table, rows, rowIndex, eventDetail) {
+                const modifiers = (this.options.reverse ?
+                    this.chain.reverse() :
+                    this.chain.slice());
+                if (modifiers.length) {
+                    let clone = table.clone();
+                    for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
+                        modifiers[i].modifyRows(clone, rows, rowIndex, eventDetail);
+                        clone = clone.modified;
+                    }
+                    table.modified = clone;
+                }
+                return table;
+            }
+            /**
+             * Applies several modifications to the table.
+             *
+             * *Note:* The `modified` property of the table gets replaced.
+             *
+             * @param {DataTable} table
+             * Table to modify.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {DataTable}
+             * Table as a reference.
+             *
+             * @emits ChainDataModifier#execute
+             * @emits ChainDataModifier#afterExecute
+             */
+            modifyTable(table, eventDetail) {
+                const chain = this;
+                chain.emit({
+                    type: 'modify',
+                    detail: eventDetail,
+                    table
+                });
+                const modifiers = (chain.options.reverse ?
+                    chain.chain.reverse() :
+                    chain.chain.slice());
+                let modified = table.modified;
+                for (let i = 0, iEnd = modifiers.length, modifier; i < iEnd; ++i) {
+                    modifier = modifiers[i];
+                    modified = modifier.modifyTable(modified, eventDetail).modified;
+                }
+                table.modified = modified;
+                chain.emit({
+                    type: 'afterModify',
+                    detail: eventDetail,
+                    table
+                });
+                return table;
+            }
+            /**
+             * Removes a configured modifier from all positions in the modifier chain.
+             *
+             * @param {DataModifier} modifier
+             * Configured modifier to remove.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             */
+            remove(modifier, eventDetail) {
+                const modifiers = this.chain;
+                this.emit({
+                    type: 'removeModifier',
+                    detail: eventDetail,
+                    modifier
+                });
+                modifiers.splice(modifiers.indexOf(modifier), 1);
+                this.emit({
+                    type: 'afterRemoveModifier',
+                    detail: eventDetail,
+                    modifier
+                });
             }
         }
         /* *
@@ -11991,9 +13962,1017 @@
          *
          * */
         /**
-         * Default options for all DataGrid instances.
+         * Default option for the ordered modifier chain.
          */
-        DataGrid.defaultOptions = DataGridDefaults;
+        ChainModifier.defaultOptions = {
+            type: 'Chain'
+        };
+        DataModifier.registerType('Chain', ChainModifier);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return ChainModifier;
+    });
+    _registerModule(_modules, 'Data/Modifiers/SortModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataModifier, DataTable, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Sort table rows according to values of a column.
+         *
+         */
+        class SortModifier extends DataModifier {
+            /* *
+             *
+             *  Static Functions
+             *
+             * */
+            static ascending(a, b) {
+                return ((a || 0) < (b || 0) ? -1 :
+                    (a || 0) > (b || 0) ? 1 :
+                        0);
+            }
+            static descending(a, b) {
+                return ((b || 0) < (a || 0) ? -1 :
+                    (b || 0) > (a || 0) ? 1 :
+                        0);
+            }
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the range modifier.
+             *
+             * @param {Partial<RangeDataModifier.Options>} [options]
+             * Options to configure the range modifier.
+             */
+            constructor(options) {
+                super();
+                this.options = merge(SortModifier.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Returns index and row for sort reference.
+             *
+             * @private
+             *
+             * @param {Highcharts.DataTable} table
+             * Table with rows to reference.
+             *
+             * @return {Array<SortModifier.RowReference>}
+             * Array of row references.
+             */
+            getRowReferences(table) {
+                const rows = table.getRows(), rowReferences = [];
+                for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
+                    rowReferences.push({
+                        index: i,
+                        row: rows[i]
+                    });
+                }
+                return rowReferences;
+            }
+            /**
+             * Applies partial modifications of a cell change to the property `modified`
+             * of the given modified table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {string} columnName
+             * Column name of changed cell.
+             *
+             * @param {number|undefined} rowIndex
+             * Row index of changed cell.
+             *
+             * @param {Highcharts.DataTableCellType} cellValue
+             * Changed cell value.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyCell(table, columnName, rowIndex, cellValue, eventDetail) {
+                const modifier = this, { orderByColumn, orderInColumn } = modifier.options;
+                if (columnName === orderByColumn) {
+                    if (orderInColumn) {
+                        table.modified.setCell(columnName, rowIndex, cellValue);
+                        table.modified.setColumn(orderInColumn, modifier
+                            .modifyTable(new DataTable({
+                            columns: table
+                                .getColumns([orderByColumn, orderInColumn])
+                        }))
+                            .modified
+                            .getColumn(orderInColumn));
+                    }
+                    else {
+                        modifier.modifyTable(table, eventDetail);
+                    }
+                }
+                return table;
+            }
+            /**
+             * Applies partial modifications of column changes to the property
+             * `modified` of the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {Highcharts.DataTableColumnCollection} columns
+             * Changed columns as a collection, where the keys are the column names.
+             *
+             * @param {number} [rowIndex=0]
+             * Index of the first changed row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyColumns(table, columns, rowIndex, eventDetail) {
+                const modifier = this, { orderByColumn, orderInColumn } = modifier.options, columnNames = Object.keys(columns);
+                if (columnNames.indexOf(orderByColumn) > -1) {
+                    if (orderInColumn &&
+                        columns[columnNames[0]].length) {
+                        table.modified.setColumns(columns, rowIndex);
+                        table.modified.setColumn(orderInColumn, modifier
+                            .modifyTable(new DataTable({
+                            columns: table
+                                .getColumns([orderByColumn, orderInColumn])
+                        }))
+                            .modified
+                            .getColumn(orderInColumn));
+                    }
+                    else {
+                        modifier.modifyTable(table, eventDetail);
+                    }
+                }
+                return table;
+            }
+            /**
+             * Applies partial modifications of row changes to the property `modified`
+             * of the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
+             * Changed rows.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first changed row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyRows(table, rows, rowIndex, eventDetail) {
+                const modifier = this, { orderByColumn, orderInColumn } = modifier.options;
+                if (orderInColumn &&
+                    rows.length) {
+                    table.modified.setRows(rows, rowIndex);
+                    table.modified.setColumn(orderInColumn, modifier
+                        .modifyTable(new DataTable({
+                        columns: table
+                            .getColumns([orderByColumn, orderInColumn])
+                    }))
+                        .modified
+                        .getColumn(orderInColumn));
+                }
+                else {
+                    modifier.modifyTable(table, eventDetail);
+                }
+                return table;
+            }
+            /**
+             * Sorts rows in the table.
+             *
+             * @param {DataTable} table
+             * Table to sort in.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyTable(table, eventDetail) {
+                const modifier = this;
+                modifier.emit({ type: 'modify', detail: eventDetail, table });
+                const columnNames = table.getColumnNames(), rowCount = table.getRowCount(), rowReferences = this.getRowReferences(table), { direction, orderByColumn, orderInColumn } = modifier.options, compare = (direction === 'asc' ?
+                    SortModifier.ascending :
+                    SortModifier.descending), orderByColumnIndex = columnNames.indexOf(orderByColumn), modified = table.modified;
+                if (orderByColumnIndex !== -1) {
+                    rowReferences.sort((a, b) => compare(a.row[orderByColumnIndex], b.row[orderByColumnIndex]));
+                }
+                if (orderInColumn) {
+                    const column = [];
+                    for (let i = 0; i < rowCount; ++i) {
+                        column[rowReferences[i].index] = i;
+                    }
+                    modified.setColumns({ [orderInColumn]: column });
+                }
+                else {
+                    const originalIndexes = [];
+                    const rows = [];
+                    let rowReference;
+                    for (let i = 0; i < rowCount; ++i) {
+                        rowReference = rowReferences[i];
+                        originalIndexes.push(modified.getOriginalRowIndex(rowReference.index));
+                        rows.push(rowReference.row);
+                    }
+                    modified.setRows(rows, 0);
+                    modified.setOriginalRowIndexes(originalIndexes);
+                }
+                modifier.emit({ type: 'afterModify', detail: eventDetail, table });
+                return table;
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Default options to group table rows.
+         */
+        SortModifier.defaultOptions = {
+            type: 'Sort',
+            direction: 'desc',
+            orderByColumn: 'y'
+        };
+        DataModifier.registerType('Sort', SortModifier);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return SortModifier;
+    });
+    _registerModule(_modules, 'DataGrid/Querying/SortingController.js', [_modules['Data/Modifiers/SortModifier.js']], function (SortModifier) {
+        /* *
+         *
+         *  Data Grid Sorting Controller class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Class that manages one of the data grid querying types - sorting.
+         */
+        class SortingController {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs the SortingController instance.
+             *
+             * @param dataGrid
+             * The data grid instance.
+             */
+            constructor(dataGrid) {
+                /**
+                 * The flag that indicates if the data should be updated because of the
+                 * change in the sorting options.
+                 */
+                this.shouldBeUpdated = false;
+                this.dataGrid = dataGrid;
+            }
+            /* *
+            *
+            *  Functions
+            *
+            * */
+            /**
+             * Sets the sorting state. If the new sorting state is different than the
+             * current one, the `shouldBeUpdated` flag is set to `true`. If the
+             * same, the flag is set to `false`.
+             *
+             * @param order
+             * The sorting order.
+             *
+             * @param columnId
+             * The column ID to sort by.
+             */
+            setSorting(order, columnId) {
+                if (this.currentSorting?.columnId !== columnId ||
+                    this.currentSorting?.order !== order) {
+                    this.shouldBeUpdated = true;
+                    this.currentSorting = {
+                        columnId,
+                        order
+                    };
+                }
+                this.modifier = this.createModifier();
+            }
+            /**
+             * Returns the sorting options from the data grid options.
+             */
+            getSortingOptions() {
+                const dataGrid = this.dataGrid, { columnOptionsMap } = dataGrid;
+                if (!columnOptionsMap) {
+                    return { order: null };
+                }
+                const columnIDs = Object.keys(columnOptionsMap);
+                let foundOrder = null;
+                let foundColumnId;
+                for (let i = columnIDs.length - 1; i > -1; --i) {
+                    const columnId = columnIDs[i];
+                    const columnOptions = columnOptionsMap[columnId];
+                    const order = columnOptions.sorting?.order;
+                    if (order) {
+                        if (foundColumnId) {
+                            // eslint-disable-next-line no-console
+                            console.warn('DataGrid: Only one column can be sorted at a time. ' +
+                                'Data will be sorted only by the last found column ' +
+                                `with the sorting order defined in the options: "${foundColumnId}".`);
+                            break;
+                        }
+                        foundOrder = order;
+                        foundColumnId = columnId;
+                    }
+                }
+                return {
+                    columnId: foundColumnId,
+                    order: foundOrder
+                };
+            }
+            /**
+             * Loads sorting options from the data grid options.
+             */
+            loadOptions() {
+                const stateFromOptions = this.getSortingOptions();
+                if (stateFromOptions.columnId !== this.initialSorting?.columnId ||
+                    stateFromOptions.order !== this.initialSorting?.order) {
+                    this.initialSorting = stateFromOptions;
+                    this.setSorting(stateFromOptions.order, stateFromOptions.columnId);
+                }
+            }
+            /**
+             * Returns the sorting modifier based on the loaded sorting options.
+             */
+            createModifier() {
+                if (!this.currentSorting) {
+                    return;
+                }
+                const { columnId, order } = this.currentSorting;
+                if (!order) {
+                    return;
+                }
+                return new SortModifier({
+                    orderByColumn: columnId,
+                    direction: order
+                });
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return SortingController;
+    });
+    _registerModule(_modules, 'DataGrid/Querying/QueryingController.js', [_modules['Data/Modifiers/ChainModifier.js'], _modules['DataGrid/Querying/SortingController.js']], function (ChainModifier, SortingController) {
+        /* *
+         *
+         *  Data Grid Querying Controller class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Imports
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Class that manage data modification of the visible data in the data grid.
+         * It manages the modifiers that are applied to the data table.
+         */
+        class QueryingController {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            constructor(dataGrid) {
+                this.dataGrid = dataGrid;
+                this.sorting = new SortingController(dataGrid);
+                /// this.filtering = new FilteringController(dataGrid);
+            }
+            /* *
+            *
+            *  Functions
+            *
+            * */
+            /**
+             * Proceeds with the data modification if needed.
+             *
+             * @param force
+             * If the data should be modified even if the significant options are not
+             * changed.
+             */
+            async proceed(force = false) {
+                if (force ||
+                    this.sorting.shouldBeUpdated // ||
+                // this.filtering.shouldBeUpdated
+                ) {
+                    await this.modifyData();
+                }
+            }
+            /**
+             * Load all options needed to generate the modifiers.
+             */
+            loadOptions() {
+                this.sorting.loadOptions();
+            }
+            /**
+             * Check if the data table does not need to be modified.
+             */
+            willNotModify() {
+                return (!this.sorting.modifier
+                // && !this.filtering.modifier
+                );
+            }
+            /**
+             * Apply all modifiers to the data table.
+             */
+            async modifyData() {
+                const originalDataTable = this.dataGrid.dataTable;
+                if (!originalDataTable) {
+                    return;
+                }
+                const modifiers = [];
+                // TODO: Implement filtering
+                // if (this.filtering.modifier) {
+                //     modifiers.push(this.filtering.modifier);
+                // }
+                if (this.sorting.modifier) {
+                    modifiers.push(this.sorting.modifier);
+                }
+                if (modifiers.length > 0) {
+                    const chainModifier = new ChainModifier({}, ...modifiers);
+                    const dataTableCopy = originalDataTable.clone();
+                    await chainModifier.modify(dataTableCopy.modified);
+                    this.dataGrid.presentationTable = dataTableCopy.modified;
+                }
+                else {
+                    this.dataGrid.presentationTable = originalDataTable.modified;
+                }
+                this.sorting.shouldBeUpdated = false;
+                /// this.filtering.shouldBeUpdated = false;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return QueryingController;
+    });
+    _registerModule(_modules, 'DataGrid/DataGrid.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['DataGrid/Credits.js'], _modules['DataGrid/DefaultOptions.js'], _modules['DataGrid/Table/Table.js'], _modules['DataGrid/Utils.js'], _modules['Data/DataTable.js'], _modules['DataGrid/Querying/QueryingController.js'], _modules['DataGrid/Globals.js'], _modules['Core/Utilities.js']], function (AST, Credits, DataGridDefaultOptions, Table, DataGridUtils, DataTable, QueryingController, Globals, U) {
+        /* *
+         *
+         *  Data Grid class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = DataGridUtils;
+        const { win } = Globals;
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Creates a grid structure (table).
+         */
+        class DataGrid {
+            // Implementation
+            static dataGrid(renderTo, options, async) {
+                if (async) {
+                    return new Promise((resolve) => {
+                        void new DataGrid(renderTo, options, (dataGrid) => {
+                            resolve(dataGrid);
+                        });
+                    });
+                }
+                return new DataGrid(renderTo, options);
+            }
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Constructs a new data grid.
+             *
+             * @param renderTo
+             * The render target (container) of the data grid.
+             *
+             * @param options
+             * The options of the data grid.
+             *
+             * @param afterLoadCallback
+             * The callback that is called after the data grid is loaded.
+             */
+            constructor(renderTo, options, afterLoadCallback) {
+                /**
+                 * The user options declared for the columns as an object of column ID to
+                 * column options.
+                 */
+                this.columnOptionsMap = {};
+                /**
+                 * The options that were declared by the user when creating the data grid
+                 * or when updating it.
+                 */
+                this.userOptions = {};
+                this.loadUserOptions(options);
+                this.querying = new QueryingController(this);
+                this.initContainers(renderTo);
+                this.loadDataTable(this.options?.dataTable);
+                this.querying.loadOptions();
+                void this.querying.proceed().then(() => {
+                    this.renderViewport();
+                    afterLoadCallback?.(this);
+                });
+                DataGrid.dataGrids.push(this);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            /**
+             * Initializes the container of the data grid.
+             *
+             * @param renderTo
+             * The render target (html element or id) of the data grid.
+             *
+             */
+            initContainers(renderTo) {
+                const container = (typeof renderTo === 'string') ?
+                    win.document.getElementById(renderTo) : renderTo;
+                // Display an error if the renderTo is wrong
+                if (!container) {
+                    // eslint-disable-next-line no-console
+                    console.error(`
+                        Rendering div not found. It is unable to find the HTML element
+                        to render the DataGrid in.
+                    `);
+                    return;
+                }
+                this.container = container;
+                this.container.innerHTML = AST.emptyHTML;
+                this.contentWrapper = makeHTMLElement('div', {
+                    className: Globals.classNames.container
+                }, this.container);
+            }
+            /**
+             * Loads the new user options to all the important fields (`userOptions`,
+             * `options` and `columnOptionsMap`).
+             *
+             * @param newOptions
+             * The options that were declared by the user.
+             *
+             * @param oneToOne
+             * When `false` (default), the existing column options will be merged with
+             * the ones that are currently defined in the user options. When `true`,
+             * the columns not defined in the new options will be removed.
+             */
+            loadUserOptions(newOptions, oneToOne = false) {
+                // Operate on a copy of the options argument
+                newOptions = merge(newOptions);
+                if (newOptions.columns) {
+                    if (oneToOne) {
+                        this.loadColumnOptionsOneToOne(newOptions.columns);
+                    }
+                    else {
+                        this.loadColumnOptions(newOptions.columns);
+                    }
+                    delete newOptions.columns;
+                }
+                this.userOptions = merge(this.userOptions, newOptions);
+                this.options = merge(this.options ?? DataGrid.defaultOptions, this.userOptions);
+                const columnOptionsArray = this.options?.columns;
+                if (!columnOptionsArray) {
+                    return;
+                }
+                const columnOptionsObj = {};
+                for (let i = 0, iEnd = columnOptionsArray?.length ?? 0; i < iEnd; ++i) {
+                    columnOptionsObj[columnOptionsArray[i].id] = columnOptionsArray[i];
+                }
+                this.columnOptionsMap = columnOptionsObj;
+            }
+            /**
+             * Loads the new column options to the userOptions field.
+             *
+             * @param newColumnOptions
+             * The new column options that should be loaded.
+             *
+             * @param overwrite
+             * Whether to overwrite the existing column options with the new ones.
+             * Default is `false`.
+             */
+            loadColumnOptions(newColumnOptions, overwrite = false) {
+                if (!this.userOptions.columns) {
+                    this.userOptions.columns = [];
+                }
+                const columnOptions = this.userOptions.columns;
+                for (let i = 0, iEnd = newColumnOptions.length; i < iEnd; ++i) {
+                    const newOptions = newColumnOptions[i];
+                    const indexInPrevOptions = columnOptions.findIndex((prev) => prev.id === newOptions.id);
+                    // If the new column options contain only the id.
+                    if (Object.keys(newOptions).length < 2) {
+                        if (overwrite && indexInPrevOptions !== -1) {
+                            columnOptions.splice(indexInPrevOptions, 1);
+                        }
+                        continue;
+                    }
+                    if (indexInPrevOptions === -1) {
+                        columnOptions.push(newOptions);
+                    }
+                    else if (overwrite) {
+                        columnOptions[indexInPrevOptions] = newOptions;
+                    }
+                    else {
+                        columnOptions[indexInPrevOptions] = merge(columnOptions[indexInPrevOptions], newOptions);
+                    }
+                }
+                if (columnOptions.length < 1) {
+                    delete this.userOptions.columns;
+                }
+            }
+            /**
+             * Loads the new column options to the userOptions field in a one-to-one
+             * manner. It means that all the columns that are not defined in the new
+             * options will be removed.
+             *
+             * @param newColumnOptions
+             * The new column options that should be loaded.
+             */
+            loadColumnOptionsOneToOne(newColumnOptions) {
+                const prevColumnOptions = this.userOptions.columns;
+                const columnOptions = [];
+                let prevOptions;
+                for (let i = 0, iEnd = newColumnOptions.length; i < iEnd; ++i) {
+                    const newOptions = newColumnOptions[i];
+                    const indexInPrevOptions = prevColumnOptions?.findIndex((prev) => prev.id === newOptions.id);
+                    if (indexInPrevOptions !== void 0 && indexInPrevOptions !== -1) {
+                        prevOptions = prevColumnOptions?.[indexInPrevOptions];
+                    }
+                    const resultOptions = merge(prevOptions ?? {}, newOptions);
+                    if (Object.keys(resultOptions).length > 1) {
+                        columnOptions.push(resultOptions);
+                    }
+                }
+                this.userOptions.columns = columnOptions;
+            }
+            /**
+             * Updates the data grid with new options.
+             *
+             * @param options
+             * The options of the data grid that should be updated. If not provided,
+             * the update will be proceeded based on the `this.userOptions` property.
+             * The `column` options are merged using the `id` property as a key.
+             *
+             * @param render
+             * Whether to re-render the data grid after updating the options.
+             *
+             * @param oneToOne
+             * When `false` (default), the existing column options will be merged with
+             * the ones that are currently defined in the user options. When `true`,
+             * the columns not defined in the new options will be removed.
+             */
+            async update(options = {}, render = true, oneToOne = false) {
+                this.loadUserOptions(options, oneToOne);
+                let newDataTable = false;
+                if (!this.dataTable || options.dataTable) {
+                    this.userOptions.dataTable = options.dataTable;
+                    (this.options ?? {}).dataTable = options.dataTable;
+                    this.loadDataTable(this.options?.dataTable);
+                    newDataTable = true;
+                }
+                this.querying.loadOptions();
+                if (render) {
+                    await this.querying.proceed(newDataTable);
+                    this.renderViewport();
+                }
+            }
+            /**
+             * Updates the column of the data grid with new options.
+             *
+             * @param columnId
+             * The ID of the column that should be updated.
+             *
+             * @param options
+             * The options of the columns that should be updated. If null,
+             * column options for this column ID will be removed.
+             *
+             * @param render
+             * Whether to re-render the data grid after updating the columns.
+             *
+             * @param overwrite
+             * If true, the column options will be updated by replacing the existing
+             * options with the new ones instead of merging them.
+             */
+            async updateColumn(columnId, options, render = true, overwrite = false) {
+                this.loadColumnOptions([{
+                        id: columnId,
+                        ...options
+                    }], overwrite);
+                await this.update(void 0, render);
+            }
+            /**
+             * Hovers the row with the provided index. It removes the hover effect from
+             * the previously hovered row.
+             *
+             * @param rowIndex
+             * The index of the row.
+             */
+            hoverRow(rowIndex) {
+                const rows = this.viewport?.rows;
+                if (!rows) {
+                    return;
+                }
+                const firstRowIndex = this.viewport?.rows[0]?.index ?? 0;
+                if (this.hoveredRowIndex !== void 0) {
+                    rows[this.hoveredRowIndex - firstRowIndex]?.setHoveredState(false);
+                }
+                if (rowIndex !== void 0) {
+                    rows[rowIndex - firstRowIndex]?.setHoveredState(true);
+                }
+                this.hoveredRowIndex = rowIndex;
+            }
+            /**
+             * Hovers the column with the provided ID. It removes the hover effect from
+             * the previously hovered column.
+             *
+             * @param columnId
+             * The ID of the column.
+             */
+            hoverColumn(columnId) {
+                const vp = this.viewport;
+                if (!vp) {
+                    return;
+                }
+                if (this.hoveredColumnId) {
+                    vp.getColumn(this.hoveredColumnId)?.setHoveredState(false);
+                }
+                if (columnId) {
+                    vp.getColumn(columnId)?.setHoveredState(true);
+                }
+                this.hoveredColumnId = columnId;
+            }
+            /**
+             * Renders the viewport of the data grid. If the data grid is already
+             * rendered, it will be destroyed and re-rendered with the new data.
+             * @internal
+             */
+            renderViewport() {
+                let vp = this.viewport;
+                const viewportMeta = vp?.getStateMeta();
+                this.enabledColumns = this.getEnabledColumnIDs();
+                this.credits?.destroy();
+                vp?.destroy();
+                if (this.contentWrapper) {
+                    this.contentWrapper.innerHTML = AST.emptyHTML;
+                }
+                if (this.enabledColumns.length > 0) {
+                    this.renderTable();
+                    vp = this.viewport;
+                    if (viewportMeta && vp) {
+                        vp.applyStateMeta(viewportMeta);
+                    }
+                }
+                else {
+                    this.renderNoData();
+                }
+                if (this.options?.credits?.enabled) {
+                    this.credits = new Credits(this);
+                }
+                this.viewport?.reflow();
+            }
+            /**
+             * Renders the table (viewport) of the data grid.
+             */
+            renderTable() {
+                this.tableElement = makeHTMLElement('table', {
+                    className: Globals.classNames.tableElement
+                }, this.contentWrapper);
+                this.viewport = new Table(this, this.tableElement);
+                // Accessibility
+                this.tableElement.setAttribute('aria-rowcount', this.dataTable?.getRowCount() ?? 0);
+            }
+            /**
+             * Renders a message that there is no data to display.
+             */
+            renderNoData() {
+                makeHTMLElement('div', {
+                    className: Globals.classNames.noData,
+                    innerText: 'No data to display'
+                }, this.contentWrapper);
+            }
+            /**
+             * Returns the array of IDs of columns that should be displayed in the data
+             * grid, in the correct order.
+             */
+            getEnabledColumnIDs() {
+                const { columnOptionsMap } = this;
+                const header = this.options?.header;
+                const headerColumns = this.getColumnIds(header || [], false);
+                const columnsIncluded = this.options?.rendering?.columns?.included || (headerColumns && headerColumns.length > 0 ?
+                    headerColumns : this.dataTable?.getColumnNames());
+                if (!columnsIncluded?.length) {
+                    return [];
+                }
+                if (!columnOptionsMap) {
+                    return columnsIncluded;
+                }
+                let columnName;
+                const result = [];
+                for (let i = 0, iEnd = columnsIncluded.length; i < iEnd; ++i) {
+                    columnName = columnsIncluded[i];
+                    if (columnOptionsMap?.[columnName]?.enabled !== false) {
+                        result.push(columnName);
+                    }
+                }
+                return result;
+            }
+            loadDataTable(tableOptions) {
+                // If the table is passed as a reference, it should be used instead of
+                // creating a new one.
+                if (tableOptions?.id) {
+                    this.dataTable = tableOptions;
+                    this.presentationTable = this.dataTable.modified;
+                    return;
+                }
+                this.dataTable = this.presentationTable =
+                    new DataTable(tableOptions);
+            }
+            /**
+             * Extracts all references to columnIds on all levels below defined level
+             * in the settings.header structure.
+             *
+             * @param columns
+             * Structure that we start calculation
+             *
+             * @param [onlyEnabledColumns=true]
+             * Extract all columns from header or columns filtered by enabled param
+             * @returns
+             */
+            getColumnIds(columns, onlyEnabledColumns = true) {
+                let columnIds = [];
+                const { enabledColumns } = this;
+                for (const column of columns) {
+                    const columnId = typeof column === 'string' ? column : column.columnId;
+                    if (columnId &&
+                        (!onlyEnabledColumns || (enabledColumns?.includes(columnId)))) {
+                        columnIds.push(columnId);
+                    }
+                    if (typeof column !== 'string' && column.columns) {
+                        columnIds = columnIds.concat(this.getColumnIds(column.columns, onlyEnabledColumns));
+                    }
+                }
+                return columnIds;
+            }
+            /**
+             * Destroys the data grid.
+             */
+            destroy() {
+                const dgIndex = DataGrid.dataGrids.findIndex((dg) => dg === this);
+                this.viewport?.destroy();
+                if (this.container) {
+                    this.container.innerHTML = AST.emptyHTML;
+                    this.container.classList.remove(Globals.classNames.container);
+                }
+                // Clear all properties
+                Object.keys(this).forEach((key) => {
+                    delete this[key];
+                });
+                DataGrid.dataGrids.splice(dgIndex, 1);
+            }
+            /**
+             * Returns the current dataGrid data as a JSON string.
+             *
+             * @return
+             * JSON representation of the data
+             */
+            getJSON() {
+                const json = this.viewport?.dataTable.modified.columns;
+                if (!this.enabledColumns || !json) {
+                    return '{}';
+                }
+                for (const key of Object.keys(json)) {
+                    if (this.enabledColumns.indexOf(key) === -1) {
+                        delete json[key];
+                    }
+                }
+                return JSON.stringify(json);
+            }
+            /**
+             * Returns the current DataGrid options as a JSON string.
+             *
+             * @param onlyUserOptions
+             * Whether to return only the user options or all options (user options
+             * merged with the default ones). Default is `true`.
+             *
+             * @returns
+             * Options as a JSON string.
+             */
+            getOptionsJSON(onlyUserOptions = true) {
+                const optionsCopy = onlyUserOptions ? merge(this.userOptions) : merge(this.options);
+                if (optionsCopy.dataTable?.id) {
+                    optionsCopy.dataTable = {
+                        columns: optionsCopy.dataTable.columns
+                    };
+                }
+                return JSON.stringify(optionsCopy);
+            }
+        }
+        /* *
+        *
+        *  Properties
+        *
+        * */
+        /**
+         * Default options for all DataGrid instances.
+         * @internal
+         */
+        DataGrid.defaultOptions = DataGridDefaultOptions;
+        /**
+         * An array containing the current DataGrid objects in the page.
+         */
+        DataGrid.dataGrids = [];
         /* *
          *
          *  Default Export
@@ -13974,336 +16953,6 @@
 
         return JSONConnector;
     });
-    _registerModule(_modules, 'Data/Modifiers/ChainModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Dawid Dragula
-         *
-         * */
-        const { merge } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Modifies a table with the help of modifiers in an ordered chain.
-         *
-         */
-        class ChainModifier extends DataModifier {
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            /**
-             * Constructs an instance of the modifier chain.
-             *
-             * @param {Partial<ChainModifier.Options>} [options]
-             * Options to configure the modifier chain.
-             *
-             * @param {...DataModifier} [chain]
-             * Ordered chain of modifiers.
-             */
-            constructor(options, ...chain) {
-                super();
-                this.chain = chain;
-                this.options = merge(ChainModifier.defaultOptions, options);
-                const optionsChain = this.options.chain || [];
-                for (let i = 0, iEnd = optionsChain.length, modifierOptions, ModifierClass; i < iEnd; ++i) {
-                    modifierOptions = optionsChain[i];
-                    if (!modifierOptions.type) {
-                        continue;
-                    }
-                    ModifierClass = DataModifier.types[modifierOptions.type];
-                    if (ModifierClass) {
-                        chain.push(new ModifierClass(modifierOptions));
-                    }
-                }
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Adds a configured modifier to the end of the modifier chain. Please note,
-             * that the modifier can be added multiple times.
-             *
-             * @param {DataModifier} modifier
-             * Configured modifier to add.
-             *
-             * @param {DataEvent.Detail} [eventDetail]
-             * Custom information for pending events.
-             */
-            add(modifier, eventDetail) {
-                this.emit({
-                    type: 'addModifier',
-                    detail: eventDetail,
-                    modifier
-                });
-                this.chain.push(modifier);
-                this.emit({
-                    type: 'addModifier',
-                    detail: eventDetail,
-                    modifier
-                });
-            }
-            /**
-             * Clears all modifiers from the chain.
-             *
-             * @param {DataEvent.Detail} [eventDetail]
-             * Custom information for pending events.
-             */
-            clear(eventDetail) {
-                this.emit({
-                    type: 'clearChain',
-                    detail: eventDetail
-                });
-                this.chain.length = 0;
-                this.emit({
-                    type: 'afterClearChain',
-                    detail: eventDetail
-                });
-            }
-            /**
-             * Applies several modifications to the table and returns a modified copy of
-             * the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Table to modify.
-             *
-             * @param {DataEvent.Detail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Promise<Highcharts.DataTable>}
-             * Table with `modified` property as a reference.
-             */
-            async modify(table, eventDetail) {
-                const modifiers = (this.options.reverse ?
-                    this.chain.slice().reverse() :
-                    this.chain.slice());
-                if (table.modified === table) {
-                    table.modified = table.clone(false, eventDetail);
-                }
-                let modified = table;
-                for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
-                    try {
-                        await modifiers[i].modify(modified, eventDetail);
-                    }
-                    catch (error) {
-                        this.emit({
-                            type: 'error',
-                            detail: eventDetail,
-                            table
-                        });
-                        throw error;
-                    }
-                    modified = modified.modified;
-                }
-                table.modified = modified;
-                return table;
-            }
-            /**
-             * Applies partial modifications of a cell change to the property `modified`
-             * of the given modified table.
-             *
-             * *Note:* The `modified` property of the table gets replaced.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {string} columnName
-             * Column name of changed cell.
-             *
-             * @param {number|undefined} rowIndex
-             * Row index of changed cell.
-             *
-             * @param {Highcharts.DataTableCellType} cellValue
-             * Changed cell value.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyCell(table, columnName, rowIndex, cellValue, eventDetail) {
-                const modifiers = (this.options.reverse ?
-                    this.chain.reverse() :
-                    this.chain);
-                if (modifiers.length) {
-                    let clone = table.clone();
-                    for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
-                        modifiers[i].modifyCell(clone, columnName, rowIndex, cellValue, eventDetail);
-                        clone = clone.modified;
-                    }
-                    table.modified = clone;
-                }
-                return table;
-            }
-            /**
-             * Applies partial modifications of column changes to the property
-             * `modified` of the given table.
-             *
-             * *Note:* The `modified` property of the table gets replaced.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {Highcharts.DataTableColumnCollection} columns
-             * Changed columns as a collection, where the keys are the column names.
-             *
-             * @param {number} [rowIndex=0]
-             * Index of the first changed row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyColumns(table, columns, rowIndex, eventDetail) {
-                const modifiers = (this.options.reverse ?
-                    this.chain.reverse() :
-                    this.chain.slice());
-                if (modifiers.length) {
-                    let clone = table.clone();
-                    for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
-                        modifiers[i].modifyColumns(clone, columns, rowIndex, eventDetail);
-                        clone = clone.modified;
-                    }
-                    table.modified = clone;
-                }
-                return table;
-            }
-            /**
-             * Applies partial modifications of row changes to the property `modified`
-             * of the given table.
-             *
-             * *Note:* The `modified` property of the table gets replaced.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
-             * Changed rows.
-             *
-             * @param {number} [rowIndex]
-             * Index of the first changed row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyRows(table, rows, rowIndex, eventDetail) {
-                const modifiers = (this.options.reverse ?
-                    this.chain.reverse() :
-                    this.chain.slice());
-                if (modifiers.length) {
-                    let clone = table.clone();
-                    for (let i = 0, iEnd = modifiers.length; i < iEnd; ++i) {
-                        modifiers[i].modifyRows(clone, rows, rowIndex, eventDetail);
-                        clone = clone.modified;
-                    }
-                    table.modified = clone;
-                }
-                return table;
-            }
-            /**
-             * Applies several modifications to the table.
-             *
-             * *Note:* The `modified` property of the table gets replaced.
-             *
-             * @param {DataTable} table
-             * Table to modify.
-             *
-             * @param {DataEvent.Detail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {DataTable}
-             * Table as a reference.
-             *
-             * @emits ChainDataModifier#execute
-             * @emits ChainDataModifier#afterExecute
-             */
-            modifyTable(table, eventDetail) {
-                const chain = this;
-                chain.emit({
-                    type: 'modify',
-                    detail: eventDetail,
-                    table
-                });
-                const modifiers = (chain.options.reverse ?
-                    chain.chain.reverse() :
-                    chain.chain.slice());
-                let modified = table.modified;
-                for (let i = 0, iEnd = modifiers.length, modifier; i < iEnd; ++i) {
-                    modifier = modifiers[i];
-                    modified = modifier.modifyTable(modified, eventDetail).modified;
-                }
-                table.modified = modified;
-                chain.emit({
-                    type: 'afterModify',
-                    detail: eventDetail,
-                    table
-                });
-                return table;
-            }
-            /**
-             * Removes a configured modifier from all positions in the modifier chain.
-             *
-             * @param {DataModifier} modifier
-             * Configured modifier to remove.
-             *
-             * @param {DataEvent.Detail} [eventDetail]
-             * Custom information for pending events.
-             */
-            remove(modifier, eventDetail) {
-                const modifiers = this.chain;
-                this.emit({
-                    type: 'removeModifier',
-                    detail: eventDetail,
-                    modifier
-                });
-                modifiers.splice(modifiers.indexOf(modifier), 1);
-                this.emit({
-                    type: 'afterRemoveModifier',
-                    detail: eventDetail,
-                    modifier
-                });
-            }
-        }
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        /**
-         * Default option for the ordered modifier chain.
-         */
-        ChainModifier.defaultOptions = {
-            type: 'Chain'
-        };
-        DataModifier.registerType('Chain', ChainModifier);
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return ChainModifier;
-    });
     _registerModule(_modules, 'Data/Modifiers/InvertModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
         /* *
          *
@@ -14677,270 +17326,6 @@
 
         return RangeModifier;
     });
-    _registerModule(_modules, 'Data/Modifiers/SortModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataModifier, DataTable, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Dawid Dragula
-         *
-         * */
-        const { merge } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Sort table rows according to values of a column.
-         *
-         */
-        class SortModifier extends DataModifier {
-            /* *
-             *
-             *  Static Functions
-             *
-             * */
-            static ascending(a, b) {
-                return ((a || 0) < (b || 0) ? -1 :
-                    (a || 0) > (b || 0) ? 1 :
-                        0);
-            }
-            static descending(a, b) {
-                return ((b || 0) < (a || 0) ? -1 :
-                    (b || 0) > (a || 0) ? 1 :
-                        0);
-            }
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            /**
-             * Constructs an instance of the range modifier.
-             *
-             * @param {Partial<RangeDataModifier.Options>} [options]
-             * Options to configure the range modifier.
-             */
-            constructor(options) {
-                super();
-                this.options = merge(SortModifier.defaultOptions, options);
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Returns index and row for sort reference.
-             *
-             * @private
-             *
-             * @param {Highcharts.DataTable} table
-             * Table with rows to reference.
-             *
-             * @return {Array<SortModifier.RowReference>}
-             * Array of row references.
-             */
-            getRowReferences(table) {
-                const rows = table.getRows(), rowReferences = [];
-                for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
-                    rowReferences.push({
-                        index: i,
-                        row: rows[i]
-                    });
-                }
-                return rowReferences;
-            }
-            /**
-             * Applies partial modifications of a cell change to the property `modified`
-             * of the given modified table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {string} columnName
-             * Column name of changed cell.
-             *
-             * @param {number|undefined} rowIndex
-             * Row index of changed cell.
-             *
-             * @param {Highcharts.DataTableCellType} cellValue
-             * Changed cell value.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyCell(table, columnName, rowIndex, cellValue, eventDetail) {
-                const modifier = this, { orderByColumn, orderInColumn } = modifier.options;
-                if (columnName === orderByColumn) {
-                    if (orderInColumn) {
-                        table.modified.setCell(columnName, rowIndex, cellValue);
-                        table.modified.setColumn(orderInColumn, modifier
-                            .modifyTable(new DataTable({
-                            columns: table
-                                .getColumns([orderByColumn, orderInColumn])
-                        }))
-                            .modified
-                            .getColumn(orderInColumn));
-                    }
-                    else {
-                        modifier.modifyTable(table, eventDetail);
-                    }
-                }
-                return table;
-            }
-            /**
-             * Applies partial modifications of column changes to the property
-             * `modified` of the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {Highcharts.DataTableColumnCollection} columns
-             * Changed columns as a collection, where the keys are the column names.
-             *
-             * @param {number} [rowIndex=0]
-             * Index of the first changed row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyColumns(table, columns, rowIndex, eventDetail) {
-                const modifier = this, { orderByColumn, orderInColumn } = modifier.options, columnNames = Object.keys(columns);
-                if (columnNames.indexOf(orderByColumn) > -1) {
-                    if (orderInColumn &&
-                        columns[columnNames[0]].length) {
-                        table.modified.setColumns(columns, rowIndex);
-                        table.modified.setColumn(orderInColumn, modifier
-                            .modifyTable(new DataTable({
-                            columns: table
-                                .getColumns([orderByColumn, orderInColumn])
-                        }))
-                            .modified
-                            .getColumn(orderInColumn));
-                    }
-                    else {
-                        modifier.modifyTable(table, eventDetail);
-                    }
-                }
-                return table;
-            }
-            /**
-             * Applies partial modifications of row changes to the property `modified`
-             * of the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
-             * Changed rows.
-             *
-             * @param {number} [rowIndex]
-             * Index of the first changed row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyRows(table, rows, rowIndex, eventDetail) {
-                const modifier = this, { orderByColumn, orderInColumn } = modifier.options;
-                if (orderInColumn &&
-                    rows.length) {
-                    table.modified.setRows(rows, rowIndex);
-                    table.modified.setColumn(orderInColumn, modifier
-                        .modifyTable(new DataTable({
-                        columns: table
-                            .getColumns([orderByColumn, orderInColumn])
-                    }))
-                        .modified
-                        .getColumn(orderInColumn));
-                }
-                else {
-                    modifier.modifyTable(table, eventDetail);
-                }
-                return table;
-            }
-            /**
-             * Sorts rows in the table.
-             *
-             * @param {DataTable} table
-             * Table to sort in.
-             *
-             * @param {DataEvent.Detail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyTable(table, eventDetail) {
-                const modifier = this;
-                modifier.emit({ type: 'modify', detail: eventDetail, table });
-                const columnNames = table.getColumnNames(), rowCount = table.getRowCount(), rowReferences = this.getRowReferences(table), { direction, orderByColumn, orderInColumn } = modifier.options, compare = (direction === 'asc' ?
-                    SortModifier.ascending :
-                    SortModifier.descending), orderByColumnIndex = columnNames.indexOf(orderByColumn), modified = table.modified;
-                if (orderByColumnIndex !== -1) {
-                    rowReferences.sort((a, b) => compare(a.row[orderByColumnIndex], b.row[orderByColumnIndex]));
-                }
-                if (orderInColumn) {
-                    const column = [];
-                    for (let i = 0; i < rowCount; ++i) {
-                        column[rowReferences[i].index] = i;
-                    }
-                    modified.setColumns({ [orderInColumn]: column });
-                }
-                else {
-                    const originalIndexes = [];
-                    const rows = [];
-                    let rowReference;
-                    for (let i = 0; i < rowCount; ++i) {
-                        rowReference = rowReferences[i];
-                        originalIndexes.push(modified.getOriginalRowIndex(rowReference.index));
-                        rows.push(rowReference.row);
-                    }
-                    modified.setRows(rows, 0);
-                    modified.setOriginalRowIndexes(originalIndexes);
-                }
-                modifier.emit({ type: 'afterModify', detail: eventDetail, table });
-                return table;
-            }
-        }
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        /**
-         * Default options to group table rows.
-         */
-        SortModifier.defaultOptions = {
-            type: 'Sort',
-            direction: 'desc',
-            orderByColumn: 'y'
-        };
-        DataModifier.registerType('Sort', SortModifier);
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return SortModifier;
-    });
     _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataCursor.js'], _modules['DataGrid/DataGrid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['DataGrid/Globals.js']], function (AST, DataConnector, DataConverter, DataCursor, _DataGrid, DataModifier, DataPool, DataTable, Globals) {
 
         /* *
@@ -14961,6 +17346,7 @@
         G.DataConverter = DataConverter;
         G.DataGrid = _DataGrid;
         G.dataGrid = _DataGrid.dataGrid;
+        G.dataGrids = _DataGrid.dataGrids;
         G.DataModifier = DataModifier;
         G.DataPool = DataPool;
         G.DataTable = DataTable;

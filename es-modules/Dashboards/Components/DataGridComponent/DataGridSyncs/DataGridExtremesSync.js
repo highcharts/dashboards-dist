@@ -34,7 +34,11 @@ const syncPair = {
                 component.dataGrid &&
                 typeof cursor?.row === 'number') {
                 const { row } = cursor;
-                component.dataGrid.scrollToRow(row);
+                const { viewport } = component.dataGrid;
+                const rowIndex = viewport?.dataTable?.getLocalRowIndex(row);
+                if (rowIndex !== void 0) {
+                    component.dataGrid.viewport?.scrollToRow(rowIndex);
+                }
             }
         };
         const registerCursorListeners = () => {

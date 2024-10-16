@@ -29,6 +29,7 @@ declare global {
         AST: typeof AST;
         DataGrid: typeof _DataGrid;
         dataGrid: typeof _DataGrid.dataGrid;
+        dataGrids: Array<(_DataGrid | undefined)>;
         DataConverter: typeof DataConverter;
         DataCursor: typeof DataCursor;
         DataModifier: typeof DataModifier;

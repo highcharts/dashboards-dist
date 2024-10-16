@@ -73,7 +73,7 @@ declare class Tooltip {
      * @private
      * @function Highcharts.Tooltip#bodyFormatter
      */
-    bodyFormatter(items: Array<Point>): Array<string>;
+    bodyFormatter(items: Array<Tooltip.FormatterContextObject>): Array<string>;
     /**
      * Destroy the single tooltips in a split tooltip.
      * If the tooltip is active then it is not destroyed, unless forced to.

@@ -35,19 +35,19 @@ const syncPair = {
             return;
         }
         const { dataCursor: cursor } = board;
-        const onDataGridHover = (e) => {
+        const onCellHover = (e) => {
             const table = this.getFirstConnector()?.table;
             if (table) {
-                const row = e.row;
+                const cell = e.target;
                 cursor.emitCursor(table, {
                     type: 'position',
-                    row: parseInt(row.dataset.rowIndex, 10),
-                    column: e.columnName,
+                    row: cell.row.id,
+                    column: cell.column.id,
                     state: 'dataGrid.hoverRow' + groupKey
                 });
             }
         };
-        const onDataGridMouseOut = () => {
+        const onCellMouseOut = () => {
             const table = this.getFirstConnector()?.table;
             if (table) {
                 cursor.emitCursor(table, {
@@ -56,12 +56,12 @@ const syncPair = {
                 });
             }
         };
-        addEvent(dataGrid.container, 'dataGridHover', onDataGridHover);
-        addEvent(dataGrid.container, 'mouseout', onDataGridMouseOut);
+        addEvent(dataGrid, 'cellMouseOver', onCellHover);
+        addEvent(dataGrid, 'cellMouseOut', onCellMouseOut);
         // Return a function that calls the callbacks
         return function () {
-            removeEvent(dataGrid.container, 'dataGridHover', onDataGridHover);
-            removeEvent(dataGrid.container, 'mouseout', onDataGridMouseOut);
+            removeEvent(dataGrid.container, 'cellMouseOver', onCellHover);
+            removeEvent(dataGrid.container, 'cellMouseOut', onCellMouseOut);
         };
     },
     handler: function () {
@@ -76,36 +76,32 @@ const syncPair = {
         if (!highlightOptions?.enabled) {
             return;
         }
-        let highlightTimeout;
         const handleCursor = (e) => {
             const cursor = e.cursor;
             if (cursor.type !== 'position') {
                 return;
             }
-            const { row } = cursor;
+            const { row, column } = cursor;
             const { dataGrid } = component;
-            if (row === void 0 || !dataGrid) {
+            const viewport = dataGrid?.viewport;
+            if (row === void 0 || !viewport) {
+                return;
+            }
+            const rowIndex = viewport.dataTable.getLocalRowIndex(row);
+            if (rowIndex === void 0) {
                 return;
             }
             if (highlightOptions.autoScroll) {
-                dataGrid.scrollToRow(row - Math.round(dataGrid.rowElements.length / 2) + 1);
+                viewport.scrollToRow(rowIndex);
             }
-            if (highlightTimeout) {
-                clearTimeout(highlightTimeout);
-            }
-            highlightTimeout = setTimeout(() => {
-                const highlightedDataRow = dataGrid.container
-                    .querySelector(`.highcharts-datagrid-row[data-row-index="${row}"]`);
-                if (highlightedDataRow) {
-                    dataGrid.toggleRowHighlight(highlightedDataRow);
-                    dataGrid.hoveredRow = highlightedDataRow;
-                }
-            }, highlightOptions.autoScroll ? 10 : 0);
+            dataGrid.hoverRow(rowIndex);
+            dataGrid.hoverColumn(column);
         };
         const handleCursorOut = () => {
             const { dataGrid } = component;
             if (dataGrid) {
-                dataGrid.toggleRowHighlight(void 0);
+                dataGrid.hoverColumn();
+                dataGrid.hoverRow();
             }
         };
         const registerCursorListeners = () => {

@@ -19,6 +19,7 @@ declare class Color implements ColorLike {
     /**
      * Collection of parsers. This can be extended from the outside by pushing
      * parsers to `Color.parsers`.
+     * @private
      */
     static parsers: {
         regex: RegExp;

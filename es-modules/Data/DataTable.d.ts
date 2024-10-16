@@ -60,7 +60,7 @@ declare class DataTable implements DataEvent.Emitter {
      */
     constructor(options?: DataTableOptions);
     readonly autoId: boolean;
-    private columns;
+    readonly columns: Record<string, DataTable.Column>;
     readonly id: string;
     private localRowIndexes?;
     modified: DataTable;
