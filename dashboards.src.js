@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.0.0 (2024-10-16)
+ * @license Highcharts Dashboards v3.1.0 (2024-12-04)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,14 +62,12 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.0.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.1.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
                 Globals.doc.createElementNS &&
-                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.hasBidiBug = (Globals.isFirefox &&
-                parseInt(Globals.userAgent.split('Firefox/')[1], 10) < 4 // Issue #38
-            ), Globals.marginNames = [
+                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
                 'plotTop',
                 'marginRight',
                 'marginBottom',
@@ -114,8 +112,15 @@
              * value. This function returns the formatted portion of the
              * date.
              *
+             * Using `dateFormats` is also a convenient way to define new keys for
+             * complex locale-aware date formats compatible with the
+             * [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat)
+             * browser API, whenever the built-in formats are not sufficient.
+             *
              * @sample highcharts/global/dateformats/
              *         Adding support for week number
+             * @sample highcharts/global/dateformats-object/
+             *         A locale-aware date format using `Intl.DateTimeFormat`
              *
              * @name Highcharts.dateFormats
              * @type {Record<string, Highcharts.TimeFormatCallbackFunction>}
@@ -327,10 +332,10 @@
          *                             is flipped (scaleY is -1)
          * @return {number}            The pixel position to use for a crisp display
          */
-        const crisp = (value, lineWidth = 0, inverted) => {
+        function crisp(value, lineWidth = 0, inverted) {
             const mod = lineWidth % 2 / 2, inverter = inverted ? -1 : 1;
             return (Math.round(value * inverter - mod) + mod) * inverter;
-        };
+        }
         // eslint-disable-next-line valid-jsdoc
         /**
          * Return the deep difference between two objects. It can either return the new
@@ -1184,6 +1189,17 @@
             return -0.5 * (Math.cos(Math.PI * pos) - 1);
         };
         /**
+         * Convenience function to get the align factor, used several places for
+         * computing positions
+         * @private
+         */
+        const getAlignFactor = (align = '') => ({
+            center: 0.5,
+            right: 1,
+            middle: 0.5,
+            bottom: 1
+        }[align] || 0);
+        /**
          * Find the closest distance between two values of a two-dimensional array
          * @private
          * @function Highcharts.getClosestDistance
@@ -1316,29 +1332,6 @@
             return style;
         }
         /**
-         * Search for an item in an array.
-         *
-         * @function Highcharts.inArray
-         *
-         * @deprecated
-         *
-         * @param {*} item
-         *        The item to search for.
-         *
-         * @param {Array<*>} arr
-         *        The array or node collection to search in.
-         *
-         * @param {number} [fromIndex=0]
-         *        The index to start searching from.
-         *
-         * @return {number}
-         *         The index within the array, or -1 if not found.
-         */
-        function inArray(item, arr, fromIndex) {
-            error(32, false, void 0, { 'Highcharts.inArray': 'use Array.indexOf' });
-            return arr.indexOf(item, fromIndex);
-        }
-        /**
          * Return the value of the first element in the array that satisfies the
          * provided testing function.
          *
@@ -1368,22 +1361,6 @@
                     }
                 }
             };
-        /**
-         * Returns an array of a given object's own properties.
-         *
-         * @function Highcharts.keys
-         * @deprecated
-         *
-         * @param {*} obj
-         *        The object of which the properties are to be returned.
-         *
-         * @return {Array<string>}
-         *         An array of strings that represents all the properties.
-         */
-        function keys(obj) {
-            error(32, false, void 0, { 'Highcharts.keys': 'use Object.keys' });
-            return Object.keys(obj);
-        }
         /**
          * Get the element's offset position, corrected for `overflow: auto`.
          *
@@ -1435,108 +1412,6 @@
                 }
             }
         }
-        /**
-         * Iterate over an array.
-         *
-         * @deprecated
-         * @function Highcharts.each
-         *
-         * @param {Array<*>} arr
-         *        The array to iterate over.
-         *
-         * @param {Function} fn
-         *        The iterator callback. It passes three arguments:
-         *        - `item`: The array item.
-         *        - `index`: The item's index in the array.
-         *        - `arr`: The array that each is being applied to.
-         *
-         * @param {*} [ctx]
-         *        The context.
-         *
-         * @return {void}
-         */
-        /**
-         * Filter an array by a callback.
-         *
-         * @deprecated
-         * @function Highcharts.grep
-         *
-         * @param {Array<*>} arr
-         *        The array to filter.
-         *
-         * @param {Function} callback
-         *        The callback function. The function receives the item as the first
-         *        argument. Return `true` if the item is to be preserved.
-         *
-         * @return {Array<*>}
-         *         A new, filtered array.
-         */
-        /**
-         * Map an array by a callback.
-         *
-         * @deprecated
-         * @function Highcharts.map
-         *
-         * @param {Array<*>} arr
-         *        The array to map.
-         *
-         * @param {Function} fn
-         *        The callback function. Return the new value for the new array.
-         *
-         * @return {Array<*>}
-         *         A new array item with modified items.
-         */
-        /**
-         * Reduce an array to a single value.
-         *
-         * @deprecated
-         * @function Highcharts.reduce
-         *
-         * @param {Array<*>} arr
-         *        The array to reduce.
-         *
-         * @param {Function} fn
-         *        The callback function. Return the reduced value. Receives 4
-         *        arguments: Accumulated/reduced value, current value, current array
-         *        index, and the array.
-         *
-         * @param {*} initialValue
-         *        The initial value of the accumulator.
-         *
-         * @return {*}
-         *         The reduced value.
-         */
-        /**
-         * Test whether at least one element in the array passes the test implemented by
-         * the provided function.
-         *
-         * @deprecated
-         * @function Highcharts.some
-         *
-         * @param {Array<*>} arr
-         *        The array to test
-         *
-         * @param {Function} fn
-         *        The function to run on each item. Return truthy to pass the test.
-         *        Receives arguments `currentValue`, `index` and `array`.
-         *
-         * @param {*} ctx
-         *        The context.
-         *
-         * @return {boolean}
-         */
-        objectEach({
-            map: 'map',
-            each: 'forEach',
-            grep: 'filter',
-            reduce: 'reduce',
-            some: 'some'
-        }, function (val, key) {
-            H[key] = function (arr) {
-                error(32, false, void 0, { [`Highcharts.${key}`]: `use Array.${val}` });
-                return Array.prototype[val].apply(arr, [].slice.call(arguments, 1));
-            };
-        });
         /* eslint-disable valid-jsdoc */
         /**
          * Add an event listener.
@@ -1829,6 +1704,16 @@
         function isFunction(obj) {
             return typeof obj === 'function';
         }
+        function ucfirst(s) {
+            return ((isString(s) ?
+                s.substring(0, 1).toUpperCase() + s.substring(1) :
+                String(s)));
+        }
+        /* *
+         *
+         *  External
+         *
+         * */
         // Register Highcharts as a plugin in jQuery
         if (win.jQuery) {
             /**
@@ -1908,11 +1793,11 @@
             extendClass,
             find,
             fireEvent,
+            getAlignFactor,
             getClosestDistance,
             getMagnitude,
             getNestedProperty,
             getStyle,
-            inArray,
             insertItem,
             isArray,
             isClass,
@@ -1921,7 +1806,6 @@
             isNumber,
             isObject,
             isString,
-            keys,
             merge,
             normalizeTickInterval,
             objectEach,
@@ -1937,6 +1821,7 @@
             stableSort,
             syncTimeout,
             timeUnits,
+            ucfirst,
             uniqueKey,
             useSerialIds,
             wrap
@@ -2055,6 +1940,11 @@
         */ /**
         * Height of the element.
         * @name Highcharts.CSSObject#height
+        * @type {number|undefined}
+        */ /**
+        * The maximum number of lines. If lines are cropped away, an ellipsis will be
+        * added.
+        * @name Highcharts.CSSObject#lineClamp
         * @type {number|undefined}
         */ /**
         * Width of the element border.
@@ -3082,11 +2972,13 @@
                 accordionContainer: PREFIX + 'accordion',
                 accordionHeader: PREFIX + 'accordion-header',
                 accordionHeaderBtn: PREFIX + 'accordion-header-btn',
+                accordionHeaderWrapper: PREFIX + 'accordion-header-wrapper',
                 accordionHeaderIcon: PREFIX + 'accordion-header-icon',
                 accordionContent: PREFIX + 'accordion-content',
                 accordionNestedWrapper: PREFIX + 'accordion-nested',
                 accordionMenuButtonsContainer: PREFIX + 'accordion-menu-buttons-container',
                 accordionMenuButton: PREFIX + 'accordion-menu-button',
+                accordionStandaloneWrapper: PREFIX + 'accordion-standalone-wrapper',
                 hiddenElement: PREFIX + 'hidden-element',
                 collapsableContentHeader: PREFIX + 'collapsable-content-header',
                 standaloneElement: PREFIX + 'standalone-element',
@@ -4882,6 +4774,35 @@
             return obj;
         }
         /**
+         * Returns a deep copy of an argument. It differs from `merge` in that it copies
+         * also arrays.
+         *
+         * @param value
+         * The value to clone.
+         *
+         * @param excludedKeys
+         * An array of keys to exclude from the clone.
+         */
+        function deepClone(value, excludedKeys) {
+            if (Array.isArray(value)) {
+                return value.map((v) => deepClone(v, excludedKeys));
+            }
+            if (value && typeof value === 'object') {
+                const clone = {};
+                const keys = Object.keys(value);
+                for (const key of keys) {
+                    if (excludedKeys && excludedKeys.includes(key)) {
+                        clone[key] = value[key];
+                    }
+                    else {
+                        clone[key] = deepClone(value[key], excludedKeys);
+                    }
+                }
+                return clone;
+            }
+            return value;
+        }
+        /**
          * Creates a session-dependent unique key string for reference purposes.
          *
          * @function Dashboards.uniqueKey
@@ -5123,6 +5044,7 @@
          * */
         const Utilities = {
             addEvent,
+            deepClone,
             error,
             fireEvent,
             merge,
@@ -5151,7 +5073,7 @@
         const { classNamePrefix } = Globals;
         const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, diffObjects } = U;
         const { getMargins, getPaddings } = CU;
-        const { uniqueKey } = DU;
+        const { deepClone, uniqueKey } = DU;
         /* *
          *
          *  Class
@@ -5730,7 +5652,11 @@
             }
             getEditableOptions() {
                 const component = this;
-                return merge(component.options);
+                // When refactoring, limit the copied options to the ones that are
+                // actually editable to avoid unnecessary memory usage.
+                return deepClone(component.options, [
+                    'dataTable', 'points', 'series', 'data', 'editableOptions'
+                ]);
             }
             getEditableOptionValue(propertyPath) {
                 const component = this;
@@ -5739,12 +5665,10 @@
                 }
                 let result = component.getEditableOptions();
                 for (let i = 0, end = propertyPath.length; i < end; i++) {
-                    if (isArray(result)) {
-                        if (propertyPath[0] === 'connector' &&
-                            result.length > 1) {
-                            return 'multiple connectors';
-                        }
-                        result = result[0];
+                    if (isArray(result) &&
+                        propertyPath[0] === 'connector' &&
+                        result.length > 1) {
+                        return 'multiple connectors';
                     }
                     if (!result) {
                         return;
@@ -5868,7 +5792,7 @@
 
         return predefinedSyncConfig;
     });
-    _registerModule(_modules, 'Dashboards/Components/HTMLComponent/HTMLComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js'], _modules['Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js'], _modules['Core/Utilities.js']], function (AST, Component, HTMLComponentDefaults, HTMLSyncs, U) {
+    _registerModule(_modules, 'Dashboards/Components/HTMLComponent/HTMLComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js'], _modules['Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js'], _modules['Dashboards/Utilities.js'], _modules['Core/Utilities.js']], function (AST, Component, HTMLComponentDefaults, HTMLSyncs, DU, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -5885,6 +5809,7 @@
          *
          * */
         const { merge, diffObjects } = U;
+        const { deepClone } = DU;
         // TODO: This may affect the AST parsing in Highcharts
         // should look into adding these as options if possible
         // Needs to go in a composition in the Highcharts plugin
@@ -6043,6 +5968,9 @@
                     this.options.elements = this.elements;
                     this.constructTree();
                 }
+                else if (options.elements) {
+                    this.elements = options.elements;
+                }
                 await super.update(options, shouldRerender);
                 this.emit({ type: 'afterUpdate' });
             }
@@ -6114,14 +6042,7 @@
              * Retrieves editable options for the HTML component.
              */
             getEditableOptions() {
-                const component = this;
-                // When adding a new component, the elements are not yet set.
-                if (this.elements.length) {
-                    return merge(component.options, {
-                        elements: this.elements
-                    });
-                }
-                return component.options;
+                return deepClone(this.options, ['editableOptions']);
             }
             /**
              * Get the value of the editable option by property path. Parse the elements
@@ -6217,7 +6138,7 @@
 
         return HTMLComponent;
     });
-    _registerModule(_modules, 'Data/DataTable.js', [_modules['Core/Utilities.js']], function (U) {
+    _registerModule(_modules, 'Data/DataTableCore.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -6229,11 +6150,10 @@
          *  Authors:
          *  - Sophie Bremer
          *  - Gøran Slettemark
-         *  - Jomar Hønsi
-         *  - Dawid Dragula
+         *  - Torstein Hønsi
          *
          * */
-        const { addEvent, defined, fireEvent, uniqueKey } = U;
+        const { fireEvent, isArray, objectEach, uniqueKey } = U;
         /* *
          *
          *  Class
@@ -6250,7 +6170,283 @@
          * @param {Highcharts.DataTableOptions} [options]
          * Options to initialize the new DataTable instance.
          */
-        class DataTable {
+        class DataTableCore {
+            /**
+             * Constructs an instance of the DataTable class.
+             *
+             * @example
+             * const dataTable = new Highcharts.DataTableCore({
+             *   columns: {
+             *     year: [2020, 2021, 2022, 2023],
+             *     cost: [11, 13, 12, 14],
+             *     revenue: [12, 15, 14, 18]
+             *   }
+             * });
+
+             *
+             * @param {Highcharts.DataTableOptions} [options]
+             * Options to initialize the new DataTable instance.
+             */
+            constructor(options = {}) {
+                /**
+                 * Whether the ID was automatic generated or given in the constructor.
+                 *
+                 * @name Highcharts.DataTable#autoId
+                 * @type {boolean}
+                 */
+                this.autoId = !options.id;
+                this.columns = {};
+                /**
+                 * ID of the table for indentification purposes.
+                 *
+                 * @name Highcharts.DataTable#id
+                 * @type {string}
+                 */
+                this.id = (options.id || uniqueKey());
+                this.modified = this;
+                this.rowCount = 0;
+                this.versionTag = uniqueKey();
+                let rowCount = 0;
+                objectEach(options.columns || {}, (column, columnName) => {
+                    this.columns[columnName] = column.slice();
+                    rowCount = Math.max(rowCount, column.length);
+                });
+                this.applyRowCount(rowCount);
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Applies a row count to the table by setting the `rowCount` property and
+             * adjusting the length of all columns.
+             *
+             * @private
+             * @param {number} rowCount The new row count.
+             */
+            applyRowCount(rowCount) {
+                this.rowCount = rowCount;
+                objectEach(this.columns, (column) => {
+                    if (isArray(column)) { // Not on typed array
+                        column.length = rowCount;
+                    }
+                });
+            }
+            /**
+             * Fetches the given column by the canonical column name. Simplified version
+             * of the full `DataTable.getRow` method, always returning by reference.
+             *
+             * @param {string} columnName
+             * Name of the column to get.
+             *
+             * @return {Highcharts.DataTableColumn|undefined}
+             * A copy of the column, or `undefined` if not found.
+             */
+            getColumn(columnName, 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            asReference) {
+                return this.columns[columnName];
+            }
+            /**
+             * Retrieves all or the given columns. Simplified version of the full
+             * `DataTable.getColumns` method, always returning by reference.
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names to retrieve.
+             *
+             * @return {Highcharts.DataTableColumnCollection}
+             * Collection of columns. If a requested column was not found, it is
+             * `undefined`.
+             */
+            getColumns(columnNames, 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            asReference) {
+                return (columnNames || Object.keys(this.columns)).reduce((columns, columnName) => {
+                    columns[columnName] = this.columns[columnName];
+                    return columns;
+                }, {});
+            }
+            /**
+             * Retrieves the row at a given index.
+             *
+             * @param {number} rowIndex
+             * Row index to retrieve. First row has index 0.
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names to retrieve.
+             *
+             * @return {Record<string, number|string|undefined>|undefined}
+             * Returns the row values, or `undefined` if not found.
+             */
+            getRow(rowIndex, columnNames) {
+                return (columnNames || Object.keys(this.columns)).map((key) => this.columns[key]?.[rowIndex]);
+            }
+            /**
+             * Sets cell values for a column. Will insert a new column, if not found.
+             *
+             * @param {string} columnName
+             * Column name to set.
+             *
+             * @param {Highcharts.DataTableColumn} [column]
+             * Values to set in the column.
+             *
+             * @param {number} [rowIndex=0]
+             * Index of the first row to change. (Default: 0)
+             *
+             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #setColumns
+             * @emits #afterSetColumns
+             */
+            setColumn(columnName, column = [], rowIndex = 0, eventDetail) {
+                this.setColumns({ [columnName]: column }, rowIndex, eventDetail);
+            }
+            /**
+             * * Sets cell values for multiple columns. Will insert new columns, if not
+             * found. Simplified version of the full `DataTable.setColumns`, limited to
+             * full replacement of the columns (undefined `rowIndex`).
+             *
+             * @param {Highcharts.DataTableColumnCollection} columns
+             * Columns as a collection, where the keys are the column names.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first row to change. Keep undefined to reset.
+             *
+             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #setColumns
+             * @emits #afterSetColumns
+             */
+            setColumns(columns, rowIndex, eventDetail) {
+                let rowCount = this.rowCount;
+                objectEach(columns, (column, columnName) => {
+                    this.columns[columnName] = column.slice();
+                    rowCount = column.length;
+                });
+                this.applyRowCount(rowCount);
+                if (!eventDetail?.silent) {
+                    fireEvent(this, 'afterSetColumns');
+                    this.versionTag = uniqueKey();
+                }
+            }
+            /**
+             * Sets cell values of a row. Will insert a new row if no index was
+             * provided, or if the index is higher than the total number of table rows.
+             * A simplified version of the full `DateTable.setRow`, limited to objects.
+             *
+             * @param {Record<string, number|string|undefined>} row
+             * Cell values to set.
+             *
+             * @param {number} [rowIndex]
+             * Index of the row to set. Leave `undefind` to add as a new row.
+             *
+             * @param {boolean} [insert]
+             * Whether to insert the row at the given index, or to overwrite the row.
+             *
+             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #afterSetRows
+             */
+            setRow(row, rowIndex = this.rowCount, insert, eventDetail) {
+                const { columns } = this, indexRowCount = insert ? this.rowCount + 1 : rowIndex + 1;
+                objectEach(row, (cellValue, columnName) => {
+                    const column = columns[columnName] ||
+                        eventDetail?.addColumns !== false && new Array(indexRowCount);
+                    if (column) {
+                        if (insert) {
+                            column.splice(rowIndex, 0, cellValue);
+                        }
+                        else {
+                            column[rowIndex] = cellValue;
+                        }
+                        columns[columnName] = column;
+                    }
+                });
+                if (indexRowCount > this.rowCount) {
+                    this.applyRowCount(indexRowCount);
+                }
+                if (!eventDetail?.silent) {
+                    fireEvent(this, 'afterSetRows');
+                    this.versionTag = uniqueKey();
+                }
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+        /* *
+         *
+         *  API Declarations
+         *
+         * */
+        /**
+         * A column of values in a data table.
+         * @typedef {Array<boolean|null|number|string|undefined>} Highcharts.DataTableColumn
+         */ /**
+        * A collection of data table columns defined by a object where the key is the
+        * column name and the value is an array of the column values.
+        * @typedef {Record<string, Highcharts.DataTableColumn>} Highcharts.DataTableColumnCollection
+        */
+        /**
+         * Options for the `DataTable` or `DataTableCore` classes.
+         * @interface Highcharts.DataTableOptions
+         */ /**
+        * The column options for the data table. The columns are defined by an object
+        * where the key is the column ID and the value is an array of the column
+        * values.
+        *
+        * @name Highcharts.DataTableOptions.columns
+        * @type {Highcharts.DataTableColumnCollection|undefined}
+        */ /**
+        * Custom ID to identify the new DataTable instance.
+        *
+        * @name Highcharts.DataTableOptions.id
+        * @type {string|undefined}
+        */
+        (''); // Keeps doclets above in JS file
+
+        return DataTableCore;
+    });
+    _registerModule(_modules, 'Data/DataTable.js', [_modules['Data/DataTableCore.js'], _modules['Core/Utilities.js']], function (DataTableCore, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Gøran Slettemark
+         *  - Jomar Hønsi
+         *  - Dawid Dragula
+         *
+         * */
+        const { addEvent, defined, fireEvent, extend, uniqueKey } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Class to manage columns and rows in a table structure. It provides methods
+         * to add, remove, and manipulate columns and rows, as well as to retrieve data
+         * from specific cells.
+         *
+         * @class
+         * @name Highcharts.DataTable
+         *
+         * @param {Highcharts.DataTableOptions} [options]
+         * Options to initialize the new DataTable instance.
+         */
+        class DataTable extends DataTableCore {
             /* *
              *
              *  Static Functions
@@ -6307,43 +6503,9 @@
              *  Constructor
              *
              * */
-            /**
-             * Constructs an instance of the DataTable class.
-             *
-             * @param {Highcharts.DataTableOptions} [options]
-             * Options to initialize the new DataTable instance.
-             */
             constructor(options = {}) {
-                /**
-                 * Whether the ID was automatic generated or given in the constructor.
-                 *
-                 * @name Highcharts.DataTable#autoId
-                 * @type {boolean}
-                 */
-                this.autoId = !options.id;
-                this.columns = {};
-                /**
-                 * ID of the table for identification purposes.
-                 *
-                 * @name Highcharts.DataTable#id
-                 * @type {string}
-                 */
-                this.id = (options.id || uniqueKey());
+                super(options);
                 this.modified = this;
-                this.rowCount = 0;
-                this.versionTag = uniqueKey();
-                const columns = options.columns || {}, columnNames = Object.keys(columns), thisColumns = this.columns;
-                let rowCount = 0;
-                for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
-                    columnName = columnNames[i];
-                    column = columns[columnName].slice();
-                    thisColumns[columnName] = column;
-                    rowCount = Math.max(rowCount, column.length);
-                }
-                for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
-                    thisColumns[columnNames[i]].length = rowCount;
-                }
-                this.rowCount = rowCount;
             }
             /* *
              *
@@ -6524,18 +6686,16 @@
              * Event object with event information.
              */
             emit(e) {
-                const table = this;
-                switch (e.type) {
-                    case 'afterDeleteColumns':
-                    case 'afterDeleteRows':
-                    case 'afterSetCell':
-                    case 'afterSetColumns':
-                    case 'afterSetRows':
-                        table.versionTag = uniqueKey();
-                        break;
-                    default:
+                if ([
+                    'afterDeleteColumns',
+                    'afterDeleteRows',
+                    'afterSetCell',
+                    'afterSetColumns',
+                    'afterSetRows'
+                ].includes(e.type)) {
+                    this.versionTag = uniqueKey();
                 }
-                fireEvent(table, e.type, e);
+                fireEvent(this, e.type, e);
             }
             /**
              * Fetches a single cell value.
@@ -7058,29 +7218,6 @@
                 });
             }
             /**
-             * Sets cell values for a column. Will insert a new column, if not found.
-             *
-             * @function Highcharts.DataTable#setColumn
-             *
-             * @param {string} columnName
-             * Column name to set.
-             *
-             * @param {Highcharts.DataTableColumn} [column]
-             * Values to set in the column.
-             *
-             * @param {number} [rowIndex=0]
-             * Index of the first row to change. (Default: 0)
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @emits #setColumns
-             * @emits #afterSetColumns
-             */
-            setColumn(columnName, column = [], rowIndex = 0, eventDetail) {
-                this.setColumns({ [columnName]: column }, rowIndex, eventDetail);
-            }
-            /**
              * Sets cell values for multiple columns. Will insert new columns, if not
              * found.
              *
@@ -7099,7 +7236,8 @@
              * @emits #afterSetColumns
              */
             setColumns(columns, rowIndex, eventDetail) {
-                const table = this, tableColumns = table.columns, tableModifier = table.modifier, reset = (typeof rowIndex === 'undefined'), columnNames = Object.keys(columns);
+                const table = this, tableColumns = table.columns, tableModifier = table.modifier, columnNames = Object.keys(columns);
+                let rowCount = table.rowCount;
                 table.emit({
                     type: 'setColumns',
                     columns,
@@ -7107,29 +7245,25 @@
                     detail: eventDetail,
                     rowIndex
                 });
-                for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
-                    columnName = columnNames[i];
-                    column = columns[columnName];
-                    if (reset) {
-                        tableColumns[columnName] = column.slice();
-                        table.rowCount = column.length;
-                    }
-                    else {
+                if (typeof rowIndex === 'undefined') {
+                    super.setColumns(columns, rowIndex, extend(eventDetail, { silent: true }));
+                }
+                else {
+                    for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
+                        columnName = columnNames[i];
+                        column = columns[columnName];
                         const tableColumn = (tableColumns[columnName] ?
                             tableColumns[columnName] :
                             tableColumns[columnName] = new Array(table.rowCount));
                         for (let i = (rowIndex || 0), iEnd = column.length; i < iEnd; ++i) {
                             tableColumn[i] = column[i];
                         }
-                        table.rowCount = Math.max(table.rowCount, tableColumn.length);
+                        rowCount = Math.max(rowCount, tableColumn.length);
                     }
-                }
-                const tableColumnNames = Object.keys(tableColumns);
-                for (let i = 0, iEnd = tableColumnNames.length; i < iEnd; ++i) {
-                    tableColumns[tableColumnNames[i]].length = table.rowCount;
+                    this.applyRowCount(rowCount);
                 }
                 if (tableModifier) {
-                    tableModifier.modifyColumns(table, columns, (rowIndex || 0));
+                    tableModifier.modifyColumns(table, columns, rowIndex || 0);
                 }
                 table.emit({
                     type: 'afterSetColumns',
@@ -7228,14 +7362,17 @@
              * @param {number} [rowIndex]
              * Index of the row to set. Leave `undefind` to add as a new row.
              *
+             * @param {boolean} [insert]
+             * Whether to insert the row at the given index, or to overwrite the row.
+             *
              * @param {Highcharts.DataTableEventDetail} [eventDetail]
              * Custom information for pending events.
              *
              * @emits #setRows
              * @emits #afterSetRows
              */
-            setRow(row, rowIndex, eventDetail) {
-                this.setRows([row], rowIndex, eventDetail);
+            setRow(row, rowIndex, insert, eventDetail) {
+                this.setRows([row], rowIndex, insert, eventDetail);
             }
             /**
              * Sets cell values for multiple rows. Will insert new rows, if no index was
@@ -7250,13 +7387,16 @@
              * @param {number} [rowIndex]
              * Index of the first row to set. Leave `undefined` to add as new rows.
              *
+             * @param {boolean} [insert]
+             * Whether to insert the row at the given index, or to overwrite the row.
+             *
              * @param {Highcharts.DataTableEventDetail} [eventDetail]
              * Custom information for pending events.
              *
              * @emits #setRows
              * @emits #afterSetRows
              */
-            setRows(rows, rowIndex = this.rowCount, eventDetail) {
+            setRows(rows, rowIndex = this.rowCount, insert, eventDetail) {
                 const table = this, columns = table.columns, columnNames = Object.keys(columns), modifier = table.modifier, rowCount = rows.length;
                 table.emit({
                     type: 'setRows',
@@ -7269,7 +7409,12 @@
                     row = rows[i];
                     if (row === DataTable.NULL) {
                         for (let j = 0, jEnd = columnNames.length; j < jEnd; ++j) {
-                            columns[columnNames[j]][i2] = null;
+                            if (insert) {
+                                columns[columnNames[j]].splice(i2, 0, null);
+                            }
+                            else {
+                                columns[columnNames[j]][i2] = null;
+                            }
                         }
                     }
                     else if (row instanceof Array) {
@@ -7278,17 +7423,12 @@
                         }
                     }
                     else {
-                        const rowColumnNames = Object.keys(row);
-                        for (let j = 0, jEnd = rowColumnNames.length, rowColumnName; j < jEnd; ++j) {
-                            rowColumnName = rowColumnNames[j];
-                            if (!columns[rowColumnName]) {
-                                columns[rowColumnName] = new Array(i2 + 1);
-                            }
-                            columns[rowColumnName][i2] = row[rowColumnName];
-                        }
+                        super.setRow(row, i2, void 0, { silent: true });
                     }
                 }
-                const indexRowCount = (rowIndex + rowCount);
+                const indexRowCount = insert ?
+                    rowCount + rows.length :
+                    rowIndex + rowCount;
                 if (indexRowCount > table.rowCount) {
                     table.rowCount = indexRowCount;
                     for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
@@ -13645,7 +13785,7 @@
 
         return DataGridComponentDefaults;
     });
-    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridSyncs.js'], _modules['Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js'], _modules['Core/Utilities.js']], function (Component, DataGridSyncs, DataGridComponentDefaults, U) {
+    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridSyncs.js'], _modules['Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Utilities.js']], function (Component, DataGridSyncs, DataGridComponentDefaults, U, DU) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -13660,6 +13800,7 @@
          *
          * */
         const { merge, diffObjects } = U;
+        const { deepClone } = DU;
         /* *
          *
          *  Class
@@ -13759,9 +13900,9 @@
             getEditableOptions() {
                 const componentOptions = this.options;
                 const dataGridOptions = this.dataGrid?.options;
-                return merge({
+                return deepClone(merge({
                     dataGridOptions: dataGridOptions
-                }, componentOptions);
+                }, componentOptions), ['editableOptions', 'dataTable']);
             }
             getOptionsOnDrop(sidebar) {
                 const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
@@ -14871,7 +15012,7 @@
 
         return HighchartsComponentDefaults;
     });
-    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsSyncs.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js'], _modules['Core/Utilities.js']], function (Component, DataConverter, DataTable, Globals, HighchartsSyncs, HighchartsComponentDefaults, U) {
+    _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsSyncs.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js'], _modules['Dashboards/Utilities.js'], _modules['Core/Utilities.js']], function (Component, DataConverter, DataTable, Globals, HighchartsSyncs, HighchartsComponentDefaults, DU, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -14888,6 +15029,7 @@
          *
          * */
         const { createElement, diffObjects, isString, merge, splat } = U;
+        const { deepClone } = DU;
         /* *
          *
          *  Class
@@ -15425,7 +15567,7 @@
                 const chart = component.chart;
                 const chartOptions = chart && chart.options;
                 const chartType = chartOptions?.chart?.type || 'line';
-                return merge({
+                return deepClone(merge({
                     chartOptions
                 }, {
                     chartOptions: {
@@ -15436,7 +15578,7 @@
                                 {})[chartType]
                         }
                     }
-                }, componentOptions);
+                }, componentOptions), ['dataTable', 'points', 'series', 'data', 'editableOptions']);
             }
             getEditableOptionValue(propertyPath) {
                 const component = this;
@@ -16562,7 +16704,7 @@
              *         Using a serif type font
              *
              * @type      {Highcharts.CSSObject}
-             * @default   {"fontFamily": Helvetica, Arial, sans-serif","fontSize":"1rem"}
+             * @default   {"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif", "fontSize":"1rem"}
              * @apioption chart.style
              */
             /**
@@ -16963,19 +17105,20 @@
          *
          * */
         const { win } = H;
-        const { defined, error, extend, isNumber, isObject, merge, objectEach, pad, pick, splat, timeUnits } = U;
+        const { defined, error, extend, isNumber, isObject, isString, merge, objectEach, pad, splat, timeUnits, ucfirst } = U;
         /* *
          *
          *  Constants
          *
          * */
-        const hasNewSafariBug = H.isSafari &&
-            win.Intl &&
-            win.Intl.DateTimeFormat.prototype.formatRange;
         // To do: Remove this when we no longer need support for Safari < v14.1
         const hasOldSafariBug = H.isSafari &&
             win.Intl &&
             !win.Intl.DateTimeFormat.prototype.formatRange;
+        const isDateTimeFormatOptions = (obj) => obj.main === void 0;
+        // We use the Spanish locale for internal weekday handling because it uses
+        // unique letters for narrow weekdays
+        const spanishWeekdayIndex = (weekday) => ['D', 'L', 'M', 'X', 'J', 'V', 'S'].indexOf(weekday);
         /* *
          *
          *  Class
@@ -17000,7 +17143,7 @@
          * });
          *
          * // Apply time settings by instance
-         * let chart = Highcharts.chart('container', {
+         * const chart = Highcharts.chart('container', {
          *     time: {
          *         timezone: 'America/New_York'
          *     },
@@ -17009,11 +17152,18 @@
          *     }]
          * });
          *
-         * // Use the Time object
+         * // Use the Time object of a chart instance
          * console.log(
          *        'Current time in New York',
          *        chart.time.dateFormat('%Y-%m-%d %H:%M:%S', Date.now())
          * );
+         *
+         * // Standalone use
+         * const time = new Highcharts.Time({
+         *    timezone: 'America/New_York'
+         * });
+         * const s = time.dateFormat('%Y-%m-%d %H:%M:%S', Date.UTC(2020, 0, 1));
+         * console.log(s); // => 2019-12-31 19:00:00
          *
          * @since 6.0.5
          *
@@ -17036,22 +17186,8 @@
                  *
                  * */
                 this.options = {};
-                this.useUTC = false;
                 this.variableTimezone = false;
                 this.Date = win.Date;
-                /**
-                 * Get the time zone offset based on the current timezone information as
-                 * set in the global options.
-                 *
-                 * @function Highcharts.Time#getTimezoneOffset
-                 *
-                 * @param {number} timestamp
-                 *        The JavaScript timestamp to inspect.
-                 *
-                 * @return {number}
-                 *         The timezone offset in minutes compared to UTC.
-                 */
-                this.getTimezoneOffset = this.timezoneOffsetFunction();
                 this.update(options);
             }
             /* *
@@ -17059,90 +17195,6 @@
              *  Functions
              *
              * */
-            /**
-             * Time units used in `Time.get` and `Time.set`
-             *
-             * @typedef {"Date"|"Day"|"FullYear"|"Hours"|"Milliseconds"|"Minutes"|"Month"|"Seconds"} Highcharts.TimeUnitValue
-             */
-            /**
-             * Get the value of a date object in given units, and subject to the Time
-             * object's current timezone settings. This function corresponds directly to
-             * JavaScripts `Date.getXXX / Date.getUTCXXX`, so instead of calling
-             * `date.getHours()` or `date.getUTCHours()` we will call
-             * `time.get('Hours')`.
-             *
-             * @function Highcharts.Time#get
-             *
-             * @param {Highcharts.TimeUnitValue} unit
-             * @param {Date} date
-             *
-             * @return {number}
-             *        The given time unit
-             */
-            get(unit, date) {
-                if (this.variableTimezone || this.timezoneOffset) {
-                    const realMs = date.getTime();
-                    const ms = realMs - this.getTimezoneOffset(date);
-                    date.setTime(ms); // Temporary adjust to timezone
-                    const ret = date['getUTC' + unit]();
-                    date.setTime(realMs); // Reset
-                    return ret;
-                }
-                // UTC time with no timezone handling
-                if (this.useUTC) {
-                    return date['getUTC' + unit]();
-                }
-                // Else, local time
-                return date['get' + unit]();
-            }
-            /**
-             * Set the value of a date object in given units, and subject to the Time
-             * object's current timezone settings. This function corresponds directly to
-             * JavaScripts `Date.setXXX / Date.setUTCXXX`, so instead of calling
-             * `date.setHours(0)` or `date.setUTCHours(0)` we will call
-             * `time.set('Hours', 0)`.
-             *
-             * @function Highcharts.Time#set
-             *
-             * @param {Highcharts.TimeUnitValue} unit
-             * @param {Date} date
-             * @param {number} value
-             *
-             * @return {number}
-             *        The epoch milliseconds of the updated date
-             */
-            set(unit, date, value) {
-                // UTC time with timezone handling
-                if (this.variableTimezone || this.timezoneOffset) {
-                    // For lower order time units, just set it directly using UTC
-                    // time
-                    if (unit === 'Milliseconds' ||
-                        unit === 'Seconds' ||
-                        (unit === 'Minutes' &&
-                            this.getTimezoneOffset(date) % 3600000 === 0) // #13961
-                    ) {
-                        return date['setUTC' + unit](value);
-                    }
-                    // Higher order time units need to take the time zone into
-                    // account
-                    // Adjust by timezone
-                    const offset = this.getTimezoneOffset(date);
-                    let ms = date.getTime() - offset;
-                    date.setTime(ms);
-                    date['setUTC' + unit](value);
-                    const newOffset = this.getTimezoneOffset(date);
-                    ms = date.getTime() + newOffset;
-                    return date.setTime(ms);
-                }
-                // UTC time with no timezone handling
-                if (this.useUTC ||
-                    // Leap calculation in UTC only
-                    (hasNewSafariBug && unit === 'FullYear')) {
-                    return date['setUTC' + unit](value);
-                }
-                // Else, local time
-                return date['set' + unit](value);
-            }
             /**
              * Update the Time object with current options. It is called internally on
              * initializing Highcharts, after running `Highcharts.setOptions` and on
@@ -17155,24 +17207,145 @@
              *
              */
             update(options = {}) {
-                const useUTC = pick(options.useUTC, true);
+                let timezone = options.timezone ?? 'UTC';
+                this.dTLCache = {};
                 this.options = options = merge(true, this.options, options);
+                const { timezoneOffset, useUTC } = options;
                 // Allow using a different Date class
                 this.Date = options.Date || win.Date || Date;
-                this.useUTC = useUTC;
-                this.timezoneOffset = (useUTC && options.timezoneOffset) || void 0;
-                this.getTimezoneOffset = this.timezoneOffsetFunction();
+                if (defined(useUTC)) {
+                    timezone = useUTC ? 'UTC' : void 0;
+                }
+                // The Etc/GMT time zones do not support offsets with half-hour
+                // resolutions
+                if (timezoneOffset && timezoneOffset % 60 === 0) {
+                    timezone = 'Etc/GMT' + ((timezoneOffset > 0 ? '+' : '')) + timezoneOffset / 60;
+                }
                 /*
                  * The time object has options allowing for variable time zones, meaning
                  * the axis ticks or series data needs to consider this.
                  */
-                this.variableTimezone = useUTC && !!(options.getTimezoneOffset ||
-                    options.timezone);
+                this.variableTimezone = timezone !== 'UTC' &&
+                    timezone?.indexOf('Etc/GMT') !== 0;
+                this.timezone = timezone;
+                // Assign default time formats from locale strings
+                ['months', 'shortMonths', 'weekdays', 'shortWeekdays'].forEach((name) => {
+                    const isMonth = /months/i.test(name), isShort = /short/.test(name), options = { timeZone: 'UTC' };
+                    options[isMonth ? 'month' : 'weekday'] = isShort ? 'short' : 'long';
+                    this[name] = (isMonth ?
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] :
+                        [3, 4, 5, 6, 7, 8, 9]).map((position) => this.dateFormat(options, (isMonth ? 31 : 1) * 24 * 36e5 * position));
+                });
             }
             /**
-             * Make a time and returns milliseconds. Interprets the inputs as UTC time,
-             * local time or a specific timezone time depending on the current time
-             * settings.
+             * Get a date in terms of numbers (year, month, day etc) for further
+             * processing. Takes the current `timezone` setting into account. Inverse of
+             * `makeTime` and the native `Date` constructor and `Date.UTC`.
+             *
+             * The date is returned in array format with the following indices:
+             *
+             * 0: year,
+             * 1: month (zero based),
+             * 2: day,
+             * 3: hours,
+             * 4: minutes,
+             * 5: seconds,
+             * 6: milliseconds,
+             * 7: weekday (Sunday as 0)
+             *
+             * @function Highcharts.Time#toParts
+             *
+             * @param {number|Date} [timestamp]
+             *                 The timestamp in milliseconds since January 1st 1970.
+             *                 A Date object is also accepted.
+             *
+             * @return {Array<number>} The date parts in array format.
+             */
+            toParts(timestamp) {
+                const [weekday, dayOfMonth, month, year, hours, minutes, seconds] = this.dateTimeFormat({
+                    weekday: 'narrow',
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric'
+                }, timestamp, 'es')
+                    .split(/(?:, |\/|:)/g);
+                return [
+                    year,
+                    +month - 1,
+                    dayOfMonth,
+                    hours,
+                    minutes,
+                    seconds,
+                    // Milliseconds
+                    Math.floor(Number(timestamp) || 0) % 1000,
+                    // Weekday index
+                    spanishWeekdayIndex(weekday)
+                ].map(Number);
+            }
+            /**
+             * Shorthand to get a cached `Intl.DateTimeFormat` instance.
+             */
+            dateTimeFormat(options, timestamp, locale = this.options.locale) {
+                const cacheKey = JSON.stringify(options) + locale;
+                if (isString(options)) {
+                    options = this.str2dtf(options);
+                }
+                let dTL = this.dTLCache[cacheKey];
+                if (!dTL) {
+                    options.timeZone ?? (options.timeZone = this.timezone);
+                    try {
+                        dTL = new Intl.DateTimeFormat(locale, options);
+                    }
+                    catch (e) {
+                        if (/Invalid time zone/i.test(e.message)) {
+                            error(34);
+                            options.timeZone = 'UTC';
+                            dTL = new Intl.DateTimeFormat(locale, options);
+                        }
+                        else {
+                            error(e.message, false);
+                        }
+                    }
+                }
+                this.dTLCache[cacheKey] = dTL;
+                return dTL?.format(timestamp) || '';
+            }
+            /**
+             * Take a locale-aware string format and return a full DateTimeFormat in
+             * object form.
+             */
+            str2dtf(s, dtf = {}) {
+                const mapping = {
+                    L: { fractionalSecondDigits: 3 },
+                    S: { second: '2-digit' },
+                    M: { minute: 'numeric' },
+                    H: { hour: '2-digit' },
+                    k: { hour: 'numeric' },
+                    E: { weekday: 'narrow' },
+                    a: { weekday: 'short' },
+                    A: { weekday: 'long' },
+                    d: { day: '2-digit' },
+                    e: { day: 'numeric' },
+                    b: { month: 'short' },
+                    B: { month: 'long' },
+                    m: { month: '2-digit' },
+                    o: { month: 'numeric' },
+                    y: { year: '2-digit' },
+                    Y: { year: 'numeric' }
+                };
+                Object.keys(mapping).forEach((key) => {
+                    if (s.indexOf(key) !== -1) {
+                        extend(dtf, mapping[key]);
+                    }
+                });
+                return dtf;
+            }
+            /**
+             * Make a time and returns milliseconds. Similar to `Date.UTC`, but takes
+             * the current `timezone` setting into account.
              *
              * @function Highcharts.Time#makeTime
              *
@@ -17197,203 +17370,296 @@
              * @return {number}
              *         The time in milliseconds since January 1st 1970.
              */
-            makeTime(year, month, date, hours, minutes, seconds) {
-                let d, offset, newOffset;
-                if (this.useUTC) {
-                    d = this.Date.UTC.apply(0, arguments);
-                    offset = this.getTimezoneOffset(d);
+            makeTime(year, month, date = 1, hours = 0, minutes, seconds, milliseconds) {
+                // eslint-disable-next-line new-cap
+                let d = this.Date.UTC(year, month, date, hours, minutes || 0, seconds || 0, milliseconds || 0);
+                if (this.timezone !== 'UTC') {
+                    const offset = this.getTimezoneOffset(d);
                     d += offset;
-                    newOffset = this.getTimezoneOffset(d);
-                    if (offset !== newOffset) {
-                        d += newOffset - offset;
-                        // A special case for transitioning from summer time to winter time.
-                        // When the clock is set back, the same time is repeated twice, i.e.
-                        // 02:30 am is repeated since the clock is set back from 3 am to
-                        // 2 am. We need to make the same time as local Date does.
+                    // Adjustments close to DST transitions
+                    if (
+                    // Optimize for speed by limiting the number of calls to
+                    // `getTimezoneOffset`. According to
+                    // https://en.wikipedia.org/wiki/Daylight_saving_time_by_country,
+                    // DST change may only occur in these months.
+                    [2, 3, 8, 9, 10, 11].indexOf(month) !== -1 &&
+                        // DST transitions occur only in the night-time
+                        (hours < 5 || hours > 20)) {
+                        const newOffset = this.getTimezoneOffset(d);
+                        if (offset !== newOffset) {
+                            d += newOffset - offset;
+                            // A special case for transitioning from summer time to winter
+                            // time. When the clock is set back, the same time is repeated
+                            // twice, i.e. 02:30 am is repeated since the clock is set back
+                            // from 3 am to 2 am. We need to make the same time as local
+                            // Date does.
+                        }
+                        else if (offset - 36e5 === this.getTimezoneOffset(d - 36e5) &&
+                            !hasOldSafariBug) {
+                            d -= 36e5;
+                        }
                     }
-                    else if (offset - 36e5 === this.getTimezoneOffset(d - 36e5) &&
-                        !hasOldSafariBug) {
-                        d -= 36e5;
-                    }
-                }
-                else {
-                    d = new this.Date(year, month, pick(date, 1), pick(hours, 0), pick(minutes, 0), pick(seconds, 0)).getTime();
                 }
                 return d;
             }
             /**
-             * Sets the getTimezoneOffset function. If the `timezone` option is set, a
-             * default getTimezoneOffset function with that timezone is returned. If
-             * a `getTimezoneOffset` option is defined, it is returned. If neither are
-             * specified, the function using the `timezoneOffset` option or 0 offset is
-             * returned.
+             * Parse a datetime string. Unless the string contains time zone
+             * information, apply the current `timezone` from options. If the argument
+             * is a number, return it.
              *
-             * @private
-             * @function Highcharts.Time#timezoneOffsetFunction
-             *
-             * @return {Function}
-             *         A getTimezoneOffset function
+             * @function Highcharts.Time#parse
+             * @param    {string|number|undefined} s The datetime string to parse
+             * @return   {number|undefined}          Parsed JavaScript timestamp
              */
-            timezoneOffsetFunction() {
-                const time = this, options = this.options, getTimezoneOffset = options.getTimezoneOffset;
-                if (!this.useUTC) {
-                    return (timestamp) => new Date(timestamp.toString()).getTimezoneOffset() * 60000;
+            parse(s) {
+                if (!isString(s)) {
+                    return s ?? void 0;
                 }
-                if (options.timezone) {
-                    return (timestamp) => {
-                        try {
-                            // Cache the DateTimeFormat instances for performance
-                            // (#20720)
-                            const cacheKey = `shortOffset,${options.timezone || ''}`, dateTimeFormat = Time.formatCache[cacheKey] = (Time.formatCache[cacheKey] ||
-                                // eslint-disable-next-line new-cap
-                                Intl.DateTimeFormat('en', {
-                                    timeZone: options.timezone,
-                                    timeZoneName: 'shortOffset'
-                                }));
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            const [date, gmt, hours, colon, minutes = 0] = dateTimeFormat
-                                .format(timestamp)
-                                .split(/(GMT|:)/)
-                                .map(Number), offset = -(hours + minutes / 60) * 60 * 60000;
-                            // Possible future NaNs stop here
-                            if (isNumber(offset)) {
-                                return offset;
-                            }
-                        }
-                        catch (e) {
-                            error(34);
-                        }
-                        return 0;
-                    };
+                s = s
+                    // Firefox fails on YYYY/MM/DD
+                    .replace(/\//g, '-')
+                    // Replace some non-standard notations
+                    .replace(/(GMT|UTC)/, '');
+                // Extend shorthand hour timezone offset like +02
+                // .replace(/([+-][0-9]{2})$/, '$1:00');
+                // Check if the string has time zone information
+                const hasTimezone = s.indexOf('Z') > -1 ||
+                    /([+-][0-9]{2}):?[0-9]{2}$/.test(s), isYYYYMMDD = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s);
+                if (!hasTimezone && !isYYYYMMDD) {
+                    s += 'Z';
                 }
-                // If not timezone is set, look for the getTimezoneOffset callback
-                if (this.useUTC && getTimezoneOffset) {
-                    return (timestamp) => getTimezoneOffset(timestamp.valueOf()) * 60000;
+                const ts = Date.parse(s);
+                if (isNumber(ts)) {
+                    // Unless the string contains time zone information, convert from
+                    // the local time result of `Date.parse` via UTC into the current
+                    // timezone of the time object.
+                    return ts + ((!hasTimezone || isYYYYMMDD) ?
+                        this.getTimezoneOffset(ts) :
+                        0);
                 }
-                // Last, use the `timezoneOffset` option if set
-                return () => (time.timezoneOffset || 0) * 60000;
             }
             /**
-             * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970)
-             * into a human readable date string. The available format keys are listed
-             * below. Additional formats can be given in the
-             * {@link Highcharts.dateFormats} hook.
+             * Get the time zone offset based on the current timezone information as
+             * set in the global options.
+             *
+             * @function Highcharts.Time#getTimezoneOffset
+             *
+             * @param {number} timestamp
+             *        The JavaScript timestamp to inspect.
+             *
+             * @return {number}
+             *         The timezone offset in minutes compared to UTC.
+             */
+            getTimezoneOffset(timestamp) {
+                if (this.timezone !== 'UTC') {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const [date, gmt, hours, colon, minutes = 0] = this.dateTimeFormat({ timeZoneName: 'shortOffset' }, timestamp, 'en')
+                        .split(/(GMT|:)/)
+                        .map(Number), offset = -(hours + minutes / 60) * 60 * 60000;
+                    // Possible future NaNs stop here
+                    if (isNumber(offset)) {
+                        return offset;
+                    }
+                }
+                return 0;
+            }
+            /**
+             * Formats a JavaScript date timestamp (milliseconds since January 1 1970)
+             * into a human readable date string.
+             *
+             * The `format` parameter accepts two types of values:
+             * - An object containing settings that are passed directly on to
+             *   [Intl.DateTimeFormat.prototype.format](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/format).
+             * - A format string containing either individual or locale-aware format
+             *   keys. **Individual keys**, for example `%Y-%m-%d`, are listed below.
+             *   **Locale-aware keys** are grouped by square brackets, for example
+             *   `%[Ymd]`. The order of keys within the square bracket doesn't affect
+             *   the output, which is determined by the locale. See example below.
+             *   Internally, the locale-aware format keys are just a shorthand for the
+             *   full object formats, but are particularly practical in
+             *   [templating](https://www.highcharts.com/docs/chart-concepts/templating)
+             *   where full object definitions are not an option.
+             *
+             * The available string format keys are listed below. Additional formats can
+             * be given in the {@link Highcharts.dateFormats} hook.
              *
              * Supported format keys:
-             * - `%a`: Short weekday, like 'Mon'
-             * - `%A`: Long weekday, like 'Monday'
-             * - `%d`: Two digit day of the month, 01 to 31
-             * - `%e`: Day of the month, 1 through 31
-             * - `%w`: Day of the week, 0 through 6
-             * - `%b`: Short month, like 'Jan'
-             * - `%B`: Long month, like 'January'
-             * - `%m`: Two digit month number, 01 through 12
-             * - `%y`: Two digits year, like 09 for 2009
-             * - `%Y`: Four digits year, like 2009
-             * - `%H`: Two digits hours in 24h format, 00 through 23
-             * - `%k`: Hours in 24h format, 0 through 23
-             * - `%I`: Two digits hours in 12h format, 00 through 11
-             * - `%l`: Hours in 12h format, 1 through 12
-             * - `%M`: Two digits minutes, 00 through 59
-             * - `%p`: Upper case AM or PM
-             * - `%P`: Lower case AM or PM
-             * - `%S`: Two digits seconds, 00 through 59
-             * - `%L`: Milliseconds (naming from Ruby)
+             * | Key  | Description                     | Notes on locale-aware format |
+             * -------|----------------------------------------------|-------|
+             * | `%A` | Long weekday, like 'Monday'                  |       |
+             * | `%a` | Short weekday, like 'Mon'                    |       |
+             * | `%E` | Narrow weekday, single character             |       |
+             * | `%d` | Two digit day of the month, 01 to 31         |       |
+             * | `%e` | Day of the month, 1 through 31               |       |
+             * | `%w` | Day of the week, 0 through 6                 | N/A   |
+             * | `%b` | Short month, like 'Jan'                      |       |
+             * | `%B` | Long month, like 'January'                   |       |
+             * | `%m` | Two digit month number, 01 through 12        |       |
+             * | `%o` | Month number, 1 through 12                   |       |
+             * | `%y` | Two digits year, like 24 for 2024            |       |
+             * | `%Y` | Four digits year, like 2024                  |       |
+             * | `%H` | Two digits hours in 24h format, 00 through 23 | Depending on the locale, 12h format may be instered. |
+             * | `%k` | Hours in 24h format, 0 through 23            | Depending on the locale, 12h format may be instered. |
+             * | `%I` | Two digits hours in 12h format, 00 through 11 | N/A. The locale determines the hour format. |
+             * | `%l` | Hours in 12h format, 1 through 12            | N/A. The locale determines the hour format. |
+             * | `%M` | Two digits minutes, 00 through 59            |       |
+             * | `%p` | Upper case AM or PM                          | N/A. The locale determines whether to add AM and PM. |
+             * | `%P` | Lower case AM or PM                          | N/A. The locale determines whether to add AM and PM. |
+             * | `%S` | Two digits seconds, 00 through 59            |       |
+             * | `%L` | Milliseconds (naming from Ruby)              |       |
              *
              * @example
-             * const time = new Highcharts.Time();
-             * const s = time.dateFormat('%Y-%m-%d %H:%M:%S', Date.UTC(2020, 0, 1));
-             * console.log(s); // => 2020-01-01 00:00:00
+             * // Object format, US English
+             * const time1 = new Highcharts.Time({ locale: 'en-US' });
+             * console.log(
+             *     time1.dateFormat({
+             *         day: 'numeric',
+             *         month: 'short',
+             *         year: 'numeric',
+             *         hour: 'numeric',
+             *         minute: 'numeric'
+             *     }, Date.UTC(2024, 11, 31))
+             * ); // => Dec 31, 2024, 12:00 AM
+             *
+             * // Object format, British English
+             * const time2 = new Highcharts.Time({ locale: 'en-GB' });
+             * console.log(
+             *     time2.dateFormat({
+             *         day: 'numeric',
+             *         month: 'short',
+             *         year: 'numeric',
+             *         hour: 'numeric',
+             *         minute: 'numeric'
+             *     }, Date.UTC(2024, 11, 31))
+             * ); // => 31 Dec 2024, 00:00
+             *
+             * // Individual key string replacement
+             * const time3 = new Highcharts.Time();
+             * console.log(
+             *     time3.dateFormat('%Y-%m-%d %H:%M:%S', Date.UTC(2024, 11, 31))
+             * ); // => 2024-12-31 00:00:00
+             *
+             * // Locale-aware keys, US English
+             * const time4 = new Highcharts.Time({ locale: 'en-US' });
+             * console.log(
+             *     time4.dateFormat('%[YebHM]', Date.UTC(2024, 11, 31))
+             * ); // => Dec 31, 2024, 12:00 AM
+             *
+             * // Locale-aware keys, British English
+             * const time5 = new Highcharts.Time({ locale: 'en-GB' });
+             * console.log(
+             *     time5.dateFormat('%[YebHM]', Date.UTC(2024, 11, 31))
+             * ); // => 31 Dec 2024, 00:00
+             *
+             * // Mixed locale-aware and individual keys
+             * console.log(
+             *     time5.dateFormat('%[Yeb], %H:%M', Date.UTC(2024, 11, 31))
+             * ); // => 31 Dec 2024, 00:00
              *
              * @function Highcharts.Time#dateFormat
              *
-             * @param {string} format
-             *        The desired format where various time representations are
-             *        prefixed with %.
+             * @param {string|Highcharts.DateTimeFormatOptions} format
+             *        The desired string format where various time representations are
+             *        prefixed with %, or an object representing the locale-aware format
+             *        options.
              *
              * @param {number} [timestamp]
              *        The JavaScript timestamp.
              *
-             * @param {boolean} [capitalize=false]
+             * @param {boolean} [upperCaseFirst=false]
              *        Upper case first letter in the return.
              *
              * @return {string}
              *         The formatted date.
              */
-            dateFormat(format, timestamp, capitalize) {
+            dateFormat(format, timestamp, upperCaseFirst) {
+                const lang = H.defaultOptions?.lang;
                 if (!defined(timestamp) || isNaN(timestamp)) {
-                    return (H.defaultOptions.lang &&
-                        H.defaultOptions.lang.invalidDate ||
-                        '');
+                    return lang?.invalidDate || '';
                 }
-                format = pick(format, '%Y-%m-%d %H:%M:%S');
-                const time = this, date = new this.Date(timestamp), 
-                // Get the basic time values
-                hours = this.get('Hours', date), day = this.get('Day', date), dayOfMonth = this.get('Date', date), month = this.get('Month', date), fullYear = this.get('FullYear', date), lang = H.defaultOptions.lang, langWeekdays = (lang && lang.weekdays), shortWeekdays = (lang && lang.shortWeekdays), 
-                // List all format keys. Custom formats can be added from the
-                // outside.
-                replacements = extend({
-                    // Day
-                    // Short weekday, like 'Mon'
-                    a: shortWeekdays ?
-                        shortWeekdays[day] :
-                        langWeekdays[day].substr(0, 3),
-                    // Long weekday, like 'Monday'
-                    A: langWeekdays[day],
-                    // Two digit day of the month, 01 to 31
-                    d: pad(dayOfMonth),
-                    // Day of the month, 1 through 31
-                    e: pad(dayOfMonth, 2, ' '),
-                    // Day of the week, 0 through 6
-                    w: day,
-                    // Week (none implemented)
-                    // 'W': weekNumber(),
-                    // Month
-                    // Short month, like 'Jan'
-                    b: lang.shortMonths[month],
-                    // Long month, like 'January'
-                    B: lang.months[month],
-                    // Two digit month number, 01 through 12
-                    m: pad(month + 1),
-                    // Month number, 1 through 12 (#8150)
-                    o: month + 1,
-                    // Year
-                    // Two digits year, like 09 for 2009
-                    y: fullYear.toString().substr(2, 2),
-                    // Four digits year, like 2009
-                    Y: fullYear,
-                    // Time
-                    // Two digits hours in 24h format, 00 through 23
-                    H: pad(hours),
-                    // Hours in 24h format, 0 through 23
-                    k: hours,
-                    // Two digits hours in 12h format, 00 through 11
-                    I: pad((hours % 12) || 12),
-                    // Hours in 12h format, 1 through 12
-                    l: (hours % 12) || 12,
-                    // Two digits minutes, 00 through 59
-                    M: pad(this.get('Minutes', date)),
-                    // Upper case AM or PM
-                    p: hours < 12 ? 'AM' : 'PM',
-                    // Lower case AM or PM
-                    P: hours < 12 ? 'am' : 'pm',
-                    // Two digits seconds, 00 through 59
-                    S: pad(this.get('Seconds', date)),
-                    // Milliseconds (naming from Ruby)
-                    L: pad(Math.floor(timestamp % 1000), 3)
-                }, H.dateFormats);
-                // Do the replaces
-                objectEach(replacements, function (val, key) {
-                    // Regex would do it in one line, but this is faster
-                    while (format.indexOf('%' + key) !== -1) {
-                        format = format.replace('%' + key, typeof val === 'function' ? val.call(time, timestamp) : val);
+                format = format ?? '%Y-%m-%d %H:%M:%S';
+                // First, identify and replace locale-aware formats like %[Ymd]
+                if (isString(format)) {
+                    const localeAwareRegex = /%\[([a-zA-Z]+)\]/g;
+                    let match;
+                    while ((match = localeAwareRegex.exec(format))) {
+                        format = format.replace(match[0], this.dateTimeFormat(match[1], timestamp));
                     }
-                });
-                // Optionally capitalize the string and return
-                return capitalize ?
-                    (format.substr(0, 1).toUpperCase() +
-                        format.substr(1)) :
-                    format;
+                }
+                // Then, replace static formats like %Y, %m, %d etc.
+                if (isString(format) && format.indexOf('%') !== -1) {
+                    const time = this, [fullYear, month, dayOfMonth, hours, minutes, seconds, milliseconds, weekday] = this.toParts(timestamp), langWeekdays = lang?.weekdays || this.weekdays, shortWeekdays = lang?.shortWeekdays || this.shortWeekdays, months = lang?.months || this.months, shortMonths = lang?.shortMonths || this.shortMonths, 
+                    // List all format keys. Custom formats can be added from the
+                    // outside.
+                    replacements = extend({
+                        // Day
+                        // Short weekday, like 'Mon'
+                        a: shortWeekdays ?
+                            shortWeekdays[weekday] :
+                            langWeekdays[weekday].substr(0, 3),
+                        // Long weekday, like 'Monday'
+                        A: langWeekdays[weekday],
+                        // Two digit day of the month, 01 to 31
+                        d: pad(dayOfMonth),
+                        // Day of the month, 1 through 31
+                        e: pad(dayOfMonth, 2, ' '),
+                        // Day of the week, 0 through 6
+                        w: weekday,
+                        // Week (none implemented)
+                        // 'W': weekNumber(),
+                        // Month
+                        // Short month, like 'Jan'
+                        b: shortMonths[month],
+                        // Long month, like 'January'
+                        B: months[month],
+                        // Two digit month number, 01 through 12
+                        m: pad(month + 1),
+                        // Month number, 1 through 12 (#8150)
+                        o: month + 1,
+                        // Year
+                        // Two digits year, like 09 for 2009
+                        y: fullYear.toString().substr(2, 2),
+                        // Four digits year, like 2009
+                        Y: fullYear,
+                        // Time
+                        // Two digits hours in 24h format, 00 through 23
+                        H: pad(hours),
+                        // Hours in 24h format, 0 through 23
+                        k: hours,
+                        // Two digits hours in 12h format, 00 through 11
+                        I: pad((hours % 12) || 12),
+                        // Hours in 12h format, 1 through 12
+                        l: (hours % 12) || 12,
+                        // Two digits minutes, 00 through 59
+                        M: pad(minutes),
+                        // Upper case AM or PM
+                        p: hours < 12 ? 'AM' : 'PM',
+                        // Lower case AM or PM
+                        P: hours < 12 ? 'am' : 'pm',
+                        // Two digits seconds, 00 through 59
+                        S: pad(seconds),
+                        // Milliseconds (naming from Ruby)
+                        L: pad(milliseconds, 3)
+                    }, H.dateFormats);
+                    // Do the replaces
+                    objectEach(replacements, function (val, key) {
+                        if (isString(format)) {
+                            // Regex would do it in one line, but this is faster
+                            while (format.indexOf('%' + key) !== -1) {
+                                format = format.replace('%' + key, typeof val === 'function' ?
+                                    val.call(time, timestamp) :
+                                    val);
+                            }
+                        }
+                    });
+                }
+                else if (isObject(format)) {
+                    const tzHours = (this.getTimezoneOffset(timestamp) || 0) /
+                        (60000 * 60), timeZone = this.options.timezone || ('Etc/GMT' + (tzHours >= 0 ? '+' : '') + tzHours), { prefix = '', suffix = '' } = format;
+                    format = prefix + this.dateTimeFormat(extend({ timeZone }, format), timestamp) + suffix;
+                }
+                // Optionally sentence-case the string and return
+                return upperCaseFirst ? ucfirst(format) : format;
             }
             /**
              * Resolve legacy formats of dateTimeLabelFormats (strings and arrays) into
@@ -17412,6 +17678,10 @@
                         from: f[1],
                         to: f[2]
                     };
+                }
+                // Type-check DateTimeFormatOptions against DateTimeLabelFormatObject
+                if (isObject(f, true) && isDateTimeFormatOptions(f)) {
+                    return { main: f };
                 }
                 return f;
             }
@@ -17437,62 +17707,58 @@
              * Time positions
              */
             getTimeTicks(normalizedInterval, min, max, startOfWeek) {
-                const time = this, Date = time.Date, tickPositions = [], higherRanks = {}, 
-                // When crossing DST, use the max. Resolves #6278.
-                minDate = new Date(min), interval = normalizedInterval.unitRange, count = normalizedInterval.count || 1;
-                let i, minYear, // Used in months and years as a basis for Date.UTC()
-                variableDayLength, minDay;
-                startOfWeek = pick(startOfWeek, 1);
+                const time = this, tickPositions = [], higherRanks = {}, { count = 1, unitRange } = normalizedInterval;
+                let [year, month, dayOfMonth, hours, minutes, seconds] = time.toParts(min), milliseconds = (min || 0) % 1000, variableDayLength;
+                startOfWeek ?? (startOfWeek = 1);
                 if (defined(min)) { // #1300
-                    time.set('Milliseconds', minDate, interval >= timeUnits.second ?
+                    milliseconds = unitRange >= timeUnits.second ?
                         0 : // #3935
-                        count * Math.floor(time.get('Milliseconds', minDate) / count)); // #3652, #3654
-                    if (interval >= timeUnits.second) { // Second
-                        time.set('Seconds', minDate, interval >= timeUnits.minute ?
+                        count * Math.floor(milliseconds / count);
+                    if (unitRange >= timeUnits.second) { // Second
+                        seconds = unitRange >= timeUnits.minute ?
                             0 : // #3935
-                            count * Math.floor(time.get('Seconds', minDate) / count));
+                            count * Math.floor(seconds / count);
                     }
-                    if (interval >= timeUnits.minute) { // Minute
-                        time.set('Minutes', minDate, interval >= timeUnits.hour ?
+                    if (unitRange >= timeUnits.minute) { // Minute
+                        minutes = unitRange >= timeUnits.hour ?
                             0 :
-                            count * Math.floor(time.get('Minutes', minDate) / count));
+                            count * Math.floor(minutes / count);
                     }
-                    if (interval >= timeUnits.hour) { // Hour
-                        time.set('Hours', minDate, interval >= timeUnits.day ?
+                    if (unitRange >= timeUnits.hour) { // Hour
+                        hours = unitRange >= timeUnits.day ?
                             0 :
-                            count * Math.floor(time.get('Hours', minDate) / count));
+                            count * Math.floor(hours / count);
                     }
-                    if (interval >= timeUnits.day) { // Day
-                        time.set('Date', minDate, interval >= timeUnits.month ?
+                    if (unitRange >= timeUnits.day) { // Day
+                        dayOfMonth = unitRange >= timeUnits.month ?
                             1 :
-                            Math.max(1, count * Math.floor(time.get('Date', minDate) / count)));
+                            Math.max(1, count * Math.floor(dayOfMonth / count));
                     }
-                    if (interval >= timeUnits.month) { // Month
-                        time.set('Month', minDate, interval >= timeUnits.year ? 0 :
-                            count * Math.floor(time.get('Month', minDate) / count));
-                        minYear = time.get('FullYear', minDate);
+                    if (unitRange >= timeUnits.month) { // Month
+                        month = unitRange >= timeUnits.year ? 0 :
+                            count * Math.floor(month / count);
                     }
-                    if (interval >= timeUnits.year) { // Year
-                        minYear -= minYear % count;
-                        time.set('FullYear', minDate, minYear);
+                    if (unitRange >= timeUnits.year) { // Year
+                        year -= year % count;
                     }
                     // Week is a special case that runs outside the hierarchy
-                    if (interval === timeUnits.week) {
+                    if (unitRange === timeUnits.week) {
+                        if (count) {
+                            min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
+                        }
                         // Get start of current week, independent of count
-                        minDay = time.get('Day', minDate);
-                        time.set('Date', minDate, (time.get('Date', minDate) -
-                            minDay + startOfWeek +
+                        const weekday = this.dateTimeFormat({
+                            timeZone: this.timezone,
+                            weekday: 'narrow'
+                        }, min, 'es'), weekdayNo = spanishWeekdayIndex(weekday);
+                        dayOfMonth += -weekdayNo + startOfWeek +
                             // We don't want to skip days that are before
                             // startOfWeek (#7051)
-                            (minDay < startOfWeek ? -7 : 0)));
+                            (weekdayNo < startOfWeek ? -7 : 0);
                     }
-                    // Get basics for variable time spans
-                    minYear = time.get('FullYear', minDate);
-                    const minMonth = time.get('Month', minDate), minDateDate = time.get('Date', minDate), minHours = time.get('Hours', minDate);
-                    // Redefine min to the floored/rounded minimum time (#7432)
-                    min = minDate.getTime();
+                    min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
                     // Handle local timezone offset
-                    if ((time.variableTimezone || !time.useUTC) && defined(max)) {
+                    if (time.variableTimezone && defined(max)) {
                         // Detect whether we need to take the DST crossover into
                         // consideration. If we're crossing over DST, the day length may
                         // be 23h or 25h and we need to compute the exact clock time for
@@ -17507,35 +17773,34 @@
                                 time.getTimezoneOffset(max));
                     }
                     // Iterate and add tick positions at appropriate values
-                    let t = minDate.getTime();
-                    i = 1;
+                    let t = min, i = 1;
                     while (t < max) {
                         tickPositions.push(t);
-                        // If the interval is years, use Date.UTC to increase years
-                        if (interval === timeUnits.year) {
-                            t = time.makeTime(minYear + i * count, 0);
-                            // If the interval is months, use Date.UTC to increase months
+                        // Increase the years
+                        if (unitRange === timeUnits.year) {
+                            t = time.makeTime(year + i * count, 0);
+                            // Increase the months
                         }
-                        else if (interval === timeUnits.month) {
-                            t = time.makeTime(minYear, minMonth + i * count);
-                            // If we're using global time, the interval is not fixed as it
+                        else if (unitRange === timeUnits.month) {
+                            t = time.makeTime(year, month + i * count);
+                            // If we're using local time, the interval is not fixed as it
                             // jumps one hour at the DST crossover
                         }
-                        else if (variableDayLength &&
-                            (interval === timeUnits.day || interval === timeUnits.week)) {
-                            t = time.makeTime(minYear, minMonth, minDateDate +
-                                i * count * (interval === timeUnits.day ? 1 : 7));
+                        else if (variableDayLength && (unitRange === timeUnits.day ||
+                            unitRange === timeUnits.week)) {
+                            t = time.makeTime(year, month, dayOfMonth +
+                                i * count * (unitRange === timeUnits.day ? 1 : 7));
                         }
                         else if (variableDayLength &&
-                            interval === timeUnits.hour &&
+                            unitRange === timeUnits.hour &&
                             count > 1) {
                             // Make sure higher ranks are preserved across DST (#6797,
                             // #7621)
-                            t = time.makeTime(minYear, minMonth, minDateDate, minHours + i * count);
+                            t = time.makeTime(year, month, dayOfMonth, hours + i * count);
                             // Else, the interval is fixed and we use simple addition
                         }
                         else {
-                            t += interval * count;
+                            t += unitRange * count;
                         }
                         i++;
                     }
@@ -17544,8 +17809,8 @@
                     // Handle higher ranks. Mark new days if the time is on midnight
                     // (#950, #1649, #1760, #3349). Use a reasonable dropout threshold
                     // to prevent looping over dense data grouping (#6156).
-                    if (interval <= timeUnits.hour && tickPositions.length < 10000) {
-                        tickPositions.forEach(function (t) {
+                    if (unitRange <= timeUnits.hour && tickPositions.length < 10000) {
+                        tickPositions.forEach((t) => {
                             if (
                             // Speed optimization, no need to run dateFormat unless
                             // we're on a full or half hour
@@ -17560,7 +17825,7 @@
                 // Record information on the chosen unit - for dynamic label formatter
                 tickPositions.info = extend(normalizedInterval, {
                     higherRanks,
-                    totalRange: interval * count
+                    totalRange: unitRange * count
                 });
                 return tickPositions;
             }
@@ -17626,7 +17891,6 @@
                 return this.resolveDTLFormat(dateTimeLabelFormats[n]).main;
             }
         }
-        Time.formatCache = {};
         /* *
          *
          * Default export
@@ -17687,6 +17951,94 @@
          * @return {number}
          * Timezone offset in minutes.
          */
+        /**
+         * Options for formatting dates and times using the [Intl.DateTimeFormat](
+         * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat
+         * ) API, and extended with some custom options for Highcharts.
+         *
+         * @interface Highcharts.DateTimeFormatOptions
+         */ /**
+        * The locale matching algorithm to use.
+        *
+        * @name Highcharts.DateTimeFormatOptions#localeMatcher
+        * @type {string|undefined}
+        */ /**
+        * The time zone to use. The default is the browser's default time zone.
+        *
+        * @name Highcharts.DateTimeFormatOptions#timeZone
+        * @type {string|undefined}
+        */ /**
+        * Whether to use 12-hour time (as opposed to 24-hour time).
+        *
+        * @name Highcharts.DateTimeFormatOptions#hour12
+        * @type {'auto'|'always'|'never'|undefined}
+        */ /**
+        * The format matching algorithm to use.
+        *
+        * @name Highcharts.DateTimeFormatOptions#formatMatcher
+        * @type {string|undefined}
+        */ /**
+        * The representation of the weekday.
+        *
+        * @name Highcharts.DateTimeFormatOptions#weekday
+        * @type {'narrow'|'short'|'long'|undefined}
+        */ /**
+        * The representation of the era.
+        *
+        * @name Highcharts.DateTimeFormatOptions#era
+        * @type {'narrow'|'short'|'long'|undefined}
+        */ /**
+        * The representation of the year.
+        *
+        * @name Highcharts.DateTimeFormatOptions#year
+        * @type {'numeric'|'2-digit'|undefined}
+        */ /**
+        * The representation of the month.
+        * "narrow", "short", "long".
+        *
+        * @name Highcharts.DateTimeFormatOptions#month
+        * @type {'numeric'|'2-digit'|'narrow'|'short'|'long'|undefined}
+        */ /**
+        * The representation of the day.
+        *
+        * @name Highcharts.DateTimeFormatOptions#day
+        * @type {'numeric'|'2-digit'|undefined}
+        */ /**
+        * The representation of the hour.
+        *
+        * @name Highcharts.DateTimeFormatOptions#hour
+        * @type {'numeric'|'2-digit'|undefined}
+        */ /**
+        * The representation of the minute.
+        *
+        * @name Highcharts.DateTimeFormatOptions#minute
+        * @type {'numeric'|'2-digit'|undefined}
+        */ /**
+        * The representation of the second.
+        *
+        * @name Highcharts.DateTimeFormatOptions#second
+        * @type {'numeric'|'2-digit'|undefined}
+        */ /**
+        * The number of fractional digits to use. 3 means milliseconds.
+        *
+        * @name Highcharts.DateTimeFormatOptions#fractionalSecondDigits
+        * @type {number|undefined}
+        */ /**
+        * The representation of the time zone name.
+        *
+        * @name Highcharts.DateTimeFormatOptions#timeZoneName
+        * @type {'short'|'long'|undefined}
+        */ /**
+        * A prefix for the time string. Custom Highcharts option.
+        *
+        * @name Highcharts.DateTimeFormatOptions#prefix
+        * @type {'string'|undefined}
+        */ /**
+        * A suffix for the time string. Custom Highcharts option.
+        *
+        * @name Highcharts.DateTimeFormatOptions#suffix
+        * @type {'string'|undefined}
+        */
         ''; // Keeps doclets above in JS file
 
         return Time;
@@ -17765,27 +18117,41 @@
              */
             symbols: ['circle', 'diamond', 'square', 'triangle', 'triangle-down'],
             /**
-             * The language object is global and it can't be set on each chart
-             * initialization. Instead, use `Highcharts.setOptions` to set it before any
-             * chart is initialized.
+             * An object containing language-related strings and settings. A typical
+             * setup uses `Highcharts.setOptions` to make the options apply to all
+             * charts in the same page.
              *
              * ```js
              * Highcharts.setOptions({
              *     lang: {
-             *         months: [
-             *             'Janvier', 'Février', 'Mars', 'Avril',
-             *             'Mai', 'Juin', 'Juillet', 'Août',
-             *             'Septembre', 'Octobre', 'Novembre', 'Décembre'
-             *         ],
-             *         weekdays: [
-             *             'Dimanche', 'Lundi', 'Mardi', 'Mercredi',
-             *             'Jeudi', 'Vendredi', 'Samedi'
-             *         ]
+             *         locale: 'fr'
              *     }
              * });
              * ```
              */
             lang: {
+                /**
+                 * The browser locale to use for date and number formatting. The actual
+                 * locale used for each chart is determined in three steps:
+                 * 1. If this `lang.locale` option is specified, it is used.
+                 * 2. Else, look for the closest ancestor HTML element with a `lang`
+                 *    attribute, typically the `<html>` element.
+                 * 3. If no 'lang' attribute is found, use the default browser locale.
+                 *
+                 * Use `en-GB`, British English, for approximate consistency with
+                 * Highcharts v < 12.
+                 *
+                 * @sample highcharts/lang/locale/
+                 *         Set the locale using the `lang.locale` option
+                 * @sample highcharts/lang/locale-attribute/
+                 *         Pick up the locale from the HTML `lang` attribute
+                 * @sample highcharts/members/highcharts-numberformat
+                 *         Arabic locale with digits and dates         *
+                 *
+                 * @since 12.0.0
+                 * @type {string|Array<string>}
+                 */
+                locale: void 0,
                 /**
                  * The loading text that appears when the chart is set into the loading
                  * state following a call to `chart.showLoading`.
@@ -17793,43 +18159,34 @@
                 loading: 'Loading...',
                 /**
                  * An array containing the months names. Corresponds to the `%B` format
-                 * in `Highcharts.dateFormat()`.
+                 * in `Highcharts.dateFormat()`. Defaults to 'undefined',
+                 * meaning the default month names are used according to the
+                 * `lang.locale` setting.
                  *
                  * @type    {Array<string>}
-                 * @default ["January", "February", "March", "April", "May", "June",
-                 *          "July", "August", "September", "October", "November",
-                 *          "December"]
                  */
-                months: [
-                    'January', 'February', 'March', 'April', 'May', 'June', 'July',
-                    'August', 'September', 'October', 'November', 'December'
-                ],
+                months: void 0,
                 /**
                  * An array containing the months names in abbreviated form. Corresponds
-                 * to the `%b` format in `Highcharts.dateFormat()`.
+                 * to the `%b` format in `Highcharts.dateFormat()`. Defaults to
+                 * 'undefined', meaning the default short month names are used according
+                 * to the `lang.locale` setting.
                  *
                  * @type    {Array<string>}
-                 * @default ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                 *          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
                  */
-                shortMonths: [
-                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
-                    'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-                ],
+                shortMonths: void 0,
                 /**
-                 * An array containing the weekday names.
+                 * An array containing the weekday names. Defaults to 'undefined',
+                 * meaning the default weekday names are used according to the
+                 * `lang.locale` setting.
                  *
                  * @type    {Array<string>}
-                 * @default ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
-                 *          "Friday", "Saturday"]
                  */
-                weekdays: [
-                    'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-                    'Thursday', 'Friday', 'Saturday'
-                ],
+                weekdays: void 0,
                 /**
-                 * Short week days, starting Sunday. If not specified, Highcharts uses
-                 * the first three letters of the `lang.weekdays` option.
+                 * Short week days, starting Sunday. Defaults to 'undefined', meaning
+                 * the default short weekday names are used according to the
+                 * `lang.locale` setting.
                  *
                  * @sample highcharts/lang/shortweekdays/
                  *         Finnish two-letter abbreviations
@@ -17867,11 +18224,14 @@
                  */
                 /**
                  * The default decimal point used in the `Highcharts.numberFormat`
-                 * method unless otherwise specified in the function arguments.
+                 * method unless otherwise specified in the function arguments. Defaults
+                 * to the locale decimal point as determined by `lang.locale`.
                  *
-                 * @since 1.2.2
+                 * @type      {string}
+                 * @default   undefined
+                 * @since     1.2.2
+                 * @apioption lang.decimalPoint
                  */
-                decimalPoint: '.',
                 /**
                  * [Metric prefixes](https://en.wikipedia.org/wiki/Metric_prefix) used
                  * to shorten high numbers in axis labels. Replacing any of the
@@ -17902,6 +18262,16 @@
                  * @apioption lang.numericSymbolMagnitude
                  */
                 /**
+                 * The default thousands separator used in the `Highcharts.numberFormat`
+                 * method unless otherwise specified in the function arguments. Defaults
+                 * to the locale thousands separator as determined by `lang.locale`.
+                 *
+                 * @type      {string}
+                 * @default   undefined
+                 * @since     1.2.2
+                 * @apioption lang.thousandsSep
+                 */
+                /**
                  * The text for the label appearing when a chart is zoomed.
                  *
                  * @since 1.2.4
@@ -17912,18 +18282,7 @@
                  *
                  * @since 1.2.4
                  */
-                resetZoomTitle: 'Reset zoom level 1:1',
-                /**
-                 * The default thousands separator used in the `Highcharts.numberFormat`
-                 * method unless otherwise specified in the function arguments. Defaults
-                 * to a single space character, which is recommended in
-                 * [ISO 31-0](https://en.wikipedia.org/wiki/ISO_31-0#Numbers) and works
-                 * across Anglo-American and continental European languages.
-                 *
-                 * @default \u0020
-                 * @since   1.2.2
-                 */
-                thousandsSep: ' '
+                resetZoomTitle: 'Reset zoom level 1:1'
             },
             /**
              * Global options that don't apply to each chart. These options, like
@@ -17941,78 +18300,6 @@
              * ```
              */
             global: {
-                /**
-                 * _Canvg rendering for Android 2.x is removed as of Highcharts 5.0\.
-                 * Use the [libURL](#exporting.libURL) option to configure exporting._
-                 *
-                 * The URL to the additional file to lazy load for Android 2.x devices.
-                 * These devices don't support SVG, so we download a helper file that
-                 * contains [canvg](https://github.com/canvg/canvg), its dependency
-                 * rbcolor, and our own CanVG Renderer class. To avoid hotlinking to
-                 * our site, you can install canvas-tools.js on your own server and
-                 * change this option accordingly.
-                 *
-                 * @deprecated
-                 *
-                 * @type      {string}
-                 * @default   https://code.highcharts.com/{version}/modules/canvas-tools.js
-                 * @product   highcharts highmaps
-                 * @apioption global.canvasToolsURL
-                 */
-                /**
-                 * This option is deprecated since v6.0.5. Instead, use
-                 * [time.useUTC](#time.useUTC) that supports individual time settings
-                 * per chart.
-                 *
-                 * @deprecated
-                 *
-                 * @type      {boolean}
-                 * @apioption global.useUTC
-                 */
-                /**
-                 * This option is deprecated since v6.0.5. Instead, use
-                 * [time.Date](#time.Date) that supports individual time settings
-                 * per chart.
-                 *
-                 * @deprecated
-                 *
-                 * @type      {Function}
-                 * @product   highcharts highstock
-                 * @apioption global.Date
-                 */
-                /**
-                 * This option is deprecated since v6.0.5. Instead, use
-                 * [time.getTimezoneOffset](#time.getTimezoneOffset) that supports
-                 * individual time settings per chart.
-                 *
-                 * @deprecated
-                 *
-                 * @type      {Function}
-                 * @product   highcharts highstock
-                 * @apioption global.getTimezoneOffset
-                 */
-                /**
-                 * This option is deprecated since v6.0.5. Instead, use
-                 * [time.timezone](#time.timezone) that supports individual time
-                 * settings per chart.
-                 *
-                 * @deprecated
-                 *
-                 * @type      {string}
-                 * @product   highcharts highstock
-                 * @apioption global.timezone
-                 */
-                /**
-                 * This option is deprecated since v6.0.5. Instead, use
-                 * [time.timezoneOffset](#time.timezoneOffset) that supports individual
-                 * time settings per chart.
-                 *
-                 * @deprecated
-                 *
-                 * @type      {number}
-                 * @product   highcharts highstock
-                 * @apioption global.timezoneOffset
-                 */
                 /**
                  * General theme for buttons. This applies to the zoom button, exporting
                  * context menu, map navigation, range selector buttons and custom
@@ -18109,7 +18396,7 @@
              *     }
              * });
              * // Apply time settings by instance
-             * let chart = Highcharts.chart('container', {
+             * const chart = Highcharts.chart('container', {
              *     time: {
              *         timezone: 'America/New_York'
              *     },
@@ -18153,32 +18440,18 @@
                  */
                 Date: void 0,
                 /**
-                 * A callback to return the time zone offset for a given datetime. It
-                 * takes the timestamp in terms of milliseconds since January 1 1970,
-                 * and returns the timezone offset in minutes. This provides a hook
-                 * for drawing time based charts in specific time zones using their
-                 * local DST crossover dates, with the help of external libraries.
-                 *
-                 * This option is deprecated as of v11.4.1 and will be removed in a
-                 * future release. Use the [time.timezone](#time.timezone) option
-                 * instead.
-                 *
-                 * @sample {highcharts|highstock} highcharts/time/gettimezoneoffset/
-                 *         Use moment.js to draw Oslo time regardless of browser locale
-                 *
-                 * @type      {Highcharts.TimezoneOffsetCallbackFunction}
-                 * @since     4.1.0
-                 * @deprecated 11.4.2
-                 * @product   highcharts highstock gantt
-                 */
-                getTimezoneOffset: void 0,
-                /**
                  * A named time zone. Supported time zone names rely on the browser
                  * implementations, as described in the [mdn
                  * docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#timezone).
                  * If the given time zone is not recognized by the browser, Highcharts
                  * provides a warning and falls back to returning a 0 offset,
                  * corresponding to the UTC time zone.
+                 *
+                 * The time zone affects axis scaling, tickmark placement and
+                 * time display in `Highcharts.dateFormat`.
+                 *
+                 * Setting `timezone` to `undefined` falls back to the default browser
+                 * timezone setting.
                  *
                  * Until v11.2.0, this option depended on moment.js.
                  *
@@ -18188,7 +18461,7 @@
                  * @since     5.0.7
                  * @product   highcharts highstock gantt
                  */
-                timezone: void 0,
+                timezone: 'UTC',
                 /**
                  * The timezone offset in minutes. Positive values are west, negative
                  * values are east of UTC, as in the ECMAScript
@@ -18217,12 +18490,20 @@
                  * in real time or when correct Daylight Saving Time transitions are
                  * required.
                  *
+                 * Setting `useUTC` to true is equivalent to setting `time.timezone` to
+                 * `"UTC"`. Setting `useUTC` to false is equivalent to setting
+                 * `time.timezone` to `undefined`.
+                 *
+                 * @see [time.timezone](#timezone)
+                 *
                  * @sample {highcharts} highcharts/time/useutc-true/
                  *         True by default
                  * @sample {highcharts} highcharts/time/useutc-false/
                  *         False
+                 *
+                 * @deprecated
                  */
-                useUTC: true
+                useUTC: void 0
             },
             chart: ChartDefaults,
             /**
@@ -18230,6 +18511,8 @@
              *
              * @sample {highmaps} maps/title/title/
              *         Title options demonstrated
+             * @sample {highcharts} highcharts/title/align-auto/
+             *         Default title alignment
              */
             title: {
                 /**
@@ -18305,6 +18588,10 @@
                  * CSS styles for the title. Use this for font styling, but use `align`,
                  * `x` and `y` for text alignment.
                  *
+                 * Note that the default [title.minScale](#title.minScale) option also
+                 * affects the rendered font size. In order to keep the font size fixed
+                 * regardless of title length, set `minScale` to 1.
+                 *
                  * In styled mode, the title style is given in the `.highcharts-title`
                  * class.
                  *
@@ -18340,6 +18627,13 @@
                  * The horizontal alignment of the title. Can be one of "left", "center"
                  * and "right".
                  *
+                 * Since v12 it defaults to `undefined`, meaning the alignment is
+                 * computed for best fit. If the text fits in one line, it aligned to
+                 * the center, but if it is wrapped into multiple lines, it is aligned
+                 * to the left.
+                 *
+                 * @sample {highcharts} highcharts/title/align-auto/
+                 *         Default alignment, dynamic
                  * @sample {highcharts} highcharts/title/align/
                  *         Aligned to the plot area (x = 70px = margin left - spacing
                  *         left)
@@ -18347,10 +18641,11 @@
                  *         Aligned to the plot area (x = 50px = margin left - spacing
                  *         left)
                  *
-                 * @type  {Highcharts.AlignValue}
-                 * @since 2.0
+                 * @type      {Highcharts.AlignValue}
+                 * @default   undefined
+                 * @since     2.0
+                 * @apioption title.align
                  */
-                align: 'center',
                 /**
                  * The margin between the title and the plot area, or if a subtitle
                  * is present, the margin between the subtitle and the plot area.
@@ -18366,15 +18661,22 @@
                  */
                 margin: 15,
                 /**
-                 * Adjustment made to the title width, normally to reserve space for
-                 * the exporting burger menu.
+                 * When the title is too wide to fit in the chart, the default behavior
+                 * is to scale it down to fit, or apply word wrap if it is scaled down
+                 * to `minScale` and still doesn't fit.
                  *
-                 * @sample highcharts/title/widthadjust/
-                 *         Wider menu, greater padding
+                 * The default value reflects the scale, when using default font sizes,
+                 * when the title font size matches that of the subtitle. The title
+                 * still stands out as it is bold by default.
                  *
-                 * @since 4.2.5
+                 * Set `minScale` to 1 to avoid downscaling.
+                 *
+                 * @sample {highcharts} highcharts/title/align-auto/
+                 *         Downscaling demonstrated
+                 *
+                 * @since 12.0.0
                  */
-                widthAdjust: -44
+                minScale: 0.67
             },
             /**
              * The chart's subtitle. This can be used both to display a subtitle below
@@ -18382,6 +18684,8 @@
              * subtitle can be updated after chart initialization through the
              * `Chart.setTitle` method.
              *
+             * @sample {highcharts} highcharts/title/align-auto/
+             *         Default title alignment
              * @sample {highmaps} maps/title/subtitle/
              *         Subtitle options demonstrated
              */
@@ -18494,6 +18798,9 @@
                  */
                 style: {
                     color: "#666666" /* Palette.neutralColor60 */,
+                    /**
+                     * @type {number|string}
+                     */
                     fontSize: '0.8em'
                 },
                 /**
@@ -18504,32 +18811,25 @@
                  * @sample {highcharts|highstock} highcharts/subtitle/text-formatted/
                  *         Formatted and linked text.
                  */
-                text: '',
+                text: ''
                 /**
                  * The horizontal alignment of the subtitle. Can be one of "left",
-                 *  "center" and "right".
+                 * "center" and "right". Since v12, it defaults to `undefined`, meaning
+                 * the actual alignment is inherited from the alignment of the main
+                 * title.
                  *
+                 * @sample {highcharts} highcharts/title/align-auto/
+                 *         Default title and subtitle alignment, dynamic
                  * @sample {highcharts} highcharts/subtitle/align/
                  *         Footnote at right of plot area
                  * @sample {highstock} stock/chart/subtitle-footnote
                  *         Footnote at bottom right of plot area
                  *
                  * @type  {Highcharts.AlignValue}
+                 * @default undefined
                  * @since 2.0
+                 * @apioption subtitle.align
                  */
-                align: 'center',
-                /**
-                 * Adjustment made to the subtitle width, normally to reserve space
-                 * for the exporting burger menu.
-                 *
-                 * @see [title.widthAdjust](#title.widthAdjust)
-                 *
-                 * @sample highcharts/title/widthadjust/
-                 *         Wider menu, greater padding
-                 *
-                 * @since 4.2.5
-                 */
-                widthAdjust: -44
             },
             /**
              * The chart's caption, which will render below the chart and will be part
@@ -18591,6 +18891,9 @@
                  */
                 style: {
                     color: "#666666" /* Palette.neutralColor60 */,
+                    /**
+                     * @type {number|string}
+                     */
                     fontSize: '0.8em'
                 },
                 /**
@@ -19014,6 +19317,9 @@
                      * @apioption legend.navigation.style
                      */
                     style: {
+                        /**
+                         * @type {number|string}
+                         */
                         fontSize: '0.8em'
                     },
                     /**
@@ -19667,37 +19973,32 @@
                  * attribute, but only text-related CSS, that is shared with SVG, is
                  * handled.
                  *
-                 * The available data in the formatter differ a bit depending on whether
-                 * the tooltip is shared or split, or belongs to a single point. In a
-                 * shared/split tooltip, all properties except `x`, which is common for
-                 * all points, are kept in an array, `this.points`.
+                 * The context of the formatter (since v12) is the
+                 * [Point](https://api.highcharts.com/class-reference/Highcharts.Point)
+                 * instance. If the tooltip is shared or split, an array `this.points`
+                 * contains all points of the hovered x-value.
                  *
-                 * Available data are:
+                 * Common properties from the Point to use in the formatter include:
                  *
-                 * - **this.percentage (not shared) /**
-                 *   **this.points[i].percentage (shared)**:
+                 * - **Point.percentage**:
                  *   Stacked series and pies only. The point's percentage of the total.
                  *
-                 * - **this.point (not shared) / this.points[i].point (shared)**:
-                 *   The point object. The point name, if defined, is available through
-                 *   `this.point.name`.
+                 * - **Point.points**:
+                 *   In a shared or split tooltip, this is an array containing all the
+                 *   hovered points.
                  *
-                 * - **this.points**:
-                 *   In a shared tooltip, this is an array containing all other
-                 *   properties for each point.
-                 *
-                 * - **this.series (not shared) / this.points[i].series (shared)**:
+                 * - **this.series**:
                  *   The series object. The series name is available through
                  *   `this.series.name`.
                  *
-                 * - **this.total (not shared) / this.points[i].total (shared)**:
-                 *   Stacked series only. The total value at this point's x value.
+                 * - **this.total**:
+                 *   The total value at this point's x value in a stacked series, or the
+                 *   sum of all slices in a pie series.
                  *
                  * - **this.x**:
-                 *   The x value. This property is the same regardless of the tooltip
-                 *   being shared or not.
+                 *   The x value.
                  *
-                 * - **this.y (not shared) / this.points[i].y (shared)**:
+                 * - **this.y**:
                  *   The y value.
                  *
                  * @sample {highcharts} highcharts/tooltip/formatter-simple/
@@ -19734,7 +20035,10 @@
                  * inside the chart area. For small charts, this may result in clipping
                  * or overlapping. When `true`, a separate SVG element is created and
                  * overlaid on the page, allowing the tooltip to be aligned inside the
-                 * page itself.
+                 * page itself. Beware that with this option active, CSS classes on the
+                 * chart's target container, with classnames matching the pattern
+                 * 'highcharts-*', will be set on the tooltip as well. This is done to
+                 * support theming for tooltips with this option.
                  *
                  * Defaults to `true` if `chart.scrollablePlotArea` is activated,
                  * otherwise `false`.
@@ -19895,7 +20199,7 @@
                  * @sample {highcharts} highcharts/tooltip/xdateformat/
                  *         A different format
                  *
-                 * @type      {string}
+                 * @type      {string|Highcharts.DateTimeFormatOptions}
                  * @product   highcharts highstock gantt
                  * @apioption tooltip.xDateFormat
                  */
@@ -19946,29 +20250,29 @@
                  * For series on datetime axes, the date format in the tooltip's
                  * header will by default be guessed based on the closest data points.
                  * This member gives the default string representations used for
-                 * each unit. For an overview of the replacement codes, see
+                 * each unit. For an overview of the string or object configuration, see
                  * [dateFormat](/class-reference/Highcharts.Time#dateFormat).
                  *
                  * @see [xAxis.dateTimeLabelFormats](#xAxis.dateTimeLabelFormats)
                  *
-                 * @type    {Highcharts.Dictionary<string>}
+                 * @type    {Highcharts.Dictionary<string|Highcharts.DateTimeFormatOptions>}
                  * @product highcharts highstock gantt
                  */
                 dateTimeLabelFormats: {
                     /** @internal */
-                    millisecond: '%A, %e %b, %H:%M:%S.%L',
+                    millisecond: '%[AebHMSL]',
                     /** @internal */
-                    second: '%A, %e %b, %H:%M:%S',
+                    second: '%[AebHMS]',
                     /** @internal */
-                    minute: '%A, %e %b, %H:%M',
+                    minute: '%[AebHM]',
                     /** @internal */
-                    hour: '%A, %e %b, %H:%M',
+                    hour: '%[AebHM]',
                     /** @internal */
-                    day: '%A, %e %b %Y',
+                    day: '%[AebY]',
                     /** @internal */
-                    week: 'Week from %A, %e %b %Y',
+                    week: 'Week from %[AebY]',
                     /** @internal */
-                    month: '%B %Y',
+                    month: '%[BY]',
                     /** @internal */
                     year: '%Y'
                 },
@@ -20078,13 +20382,14 @@
                  */
                 snap: isTouchDevice ? 25 : 10,
                 /**
-                 * The HTML of the tooltip header line. Variables are enclosed by
-                 * curly brackets. Available variables are `point.key`, `series.name`,
-                 * `series.color` and other members from the `point` and `series`
-                 * objects. The `point.key` variable contains the category name, x
-                 * value or datetime string depending on the type of axis. For datetime
-                 * axes, the `point.key` date format can be set using
-                 * `tooltip.xDateFormat`.
+                 * The HTML of the tooltip header line. The context is the
+                 * [Point class](https://api.highcharts.com/class-reference/Highcharts.Point).
+                 * Variables are enclosed in curly brackets. Examples of common
+                 * variables to include are `x`, `y`, `series.name` and `series.color`
+                 * and other properties on the same form. The `point.key` variable
+                 * contains the category name, x value or datetime string depending on
+                 * the type of axis. For datetime axes, the `point.key` date format can
+                 * be set using `tooltip.xDateFormat`.
                  *
                  * @sample {highcharts} highcharts/tooltip/footerformat/
                  *         An HTML table in the tooltip
@@ -20096,7 +20401,7 @@
                  * @type      {string}
                  * @apioption tooltip.headerFormat
                  */
-                headerFormat: '<span style="font-size: 0.8em">{point.key}</span><br/>',
+                headerFormat: '<span style="font-size: 0.8em">{ucfirst point.key}</span><br/>',
                 /**
                  * The HTML of the null point's line in the tooltip. Works analogously
                  * to [pointFormat](#tooltip.pointFormat).
@@ -20108,16 +20413,17 @@
                  * @apioption tooltip.nullFormat
                  */
                 /**
-                 * The HTML of the point's line in the tooltip. Variables are enclosed
-                 * by curly brackets. Available variables are `point.x`, `point.y`,
-                 * `series.name` and `series.color` and other properties on the same
-                 * form. Furthermore, `point.y` can be extended by the
-                 * `tooltip.valuePrefix` and `tooltip.valueSuffix` variables. This can
-                 * also be overridden for each series, which makes it a good hook for
-                 * displaying units.
+                 * The HTML of the point's line in the tooltip. The context is the
+                 * [Point class](https://api.highcharts.com/class-reference/Highcharts.Point).
+                 * Variables are enclosed in curly brackets. Examples of common
+                 * variables to include are `x`, `y`, `series.name` and `series.color`
+                 * and other properties on the same form. Furthermore, `y` can be
+                 * extended by the `tooltip.valuePrefix` and `tooltip.valueSuffix`
+                 * variables. This can also be overridden for each series, which makes
+                 * it a good hook for displaying units.
                  *
-                 * In styled mode, the dot is colored by a class name rather
-                 * than the point color.
+                 * In styled mode, the dot is colored by a class name rather than the
+                 * point color.
                  *
                  * @sample {highcharts} highcharts/tooltip/pointformat/
                  *         A different point format with value suffix
@@ -20221,7 +20527,9 @@
                     color: "#333333" /* Palette.neutralColor80 */,
                     /** @internal */
                     cursor: 'default',
-                    /** @internal */
+                    /**
+                     * @type {number|string}
+                     */
                     fontSize: '0.8em'
                 },
                 /**
@@ -20332,7 +20640,9 @@
                     cursor: 'pointer',
                     /** @internal */
                     color: "#999999" /* Palette.neutralColor40 */,
-                    /** @internal */
+                    /**
+                     * @type {number|string}
+                     */
                     fontSize: '0.6em'
                 },
                 /**
@@ -20374,7 +20684,6 @@
          * Merge the default options with custom options and return the new options
          * structure. Commonly used for defining reusable templates.
          *
-         * @sample highcharts/global/useutc-false Setting a global option
          * @sample highcharts/members/setoptions Applying a global theme
          *
          * @function Highcharts.setOptions
@@ -20390,22 +20699,13 @@
             // Copy in the default options
             merge(true, defaultOptions, options);
             // Update the time object
-            if (options.time || options.global) {
-                if (H.time) {
-                    H.time.update(merge(defaultOptions.global, defaultOptions.time, options.global, options.time));
-                }
-                else {
-                    /**
-                     * Global `Time` object with default options. Since v6.0.5, time
-                     * settings can be applied individually for each chart. If no
-                     * individual settings apply, this `Time` object is shared by all
-                     * instances.
-                     *
-                     * @name Highcharts.time
-                     * @type {Highcharts.Time}
-                     */
-                    H.time = defaultTime;
-                }
+            if (options.time) {
+                defaultTime.update(defaultOptions.time);
+            }
+            if (options.lang && 'locale' in options.lang) {
+                defaultTime.update({
+                    locale: options.lang.locale
+                });
             }
             return defaultOptions;
         }
@@ -20561,7 +20861,7 @@
 
         return DefaultOptions;
     });
-    _registerModule(_modules, 'Core/Templating.js', [_modules['Core/Defaults.js'], _modules['Core/Utilities.js']], function (D, U) {
+    _registerModule(_modules, 'Core/Templating.js', [_modules['Core/Defaults.js'], _modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (D, G, U) {
         /* *
          *
          *  (c) 2010-2024 Torstein Honsi
@@ -20572,7 +20872,8 @@
          *
          * */
         const { defaultOptions, defaultTime } = D;
-        const { extend, getNestedProperty, isArray, isNumber, isObject, pick, pInt } = U;
+        const { doc } = G;
+        const { extend, getNestedProperty, isArray, isNumber, isObject, pick, ucfirst } = U;
         const helpers = {
             // Built-in helpers
             add: (a, b) => a + b,
@@ -20598,8 +20899,10 @@
             // eslint-disable-next-line eqeqeq
             ne: (a, b) => a != b,
             subtract: (a, b) => a - b,
+            ucfirst,
             unless: (condition) => !condition
         };
+        const numberFormatCache = {};
         /* *
          *
          *  Functions
@@ -20646,14 +20949,14 @@
          * @param {number} timestamp
          *        The JavaScript timestamp.
          *
-         * @param {boolean} [capitalize=false]
+         * @param {boolean} [upperCaseFirst=false]
          *        Upper case first letter in the return.
          *
          * @return {string}
          *         The formatted date.
          */
-        function dateFormat(format, timestamp, capitalize) {
-            return defaultTime.dateFormat(format, timestamp, capitalize);
+        function dateFormat(format, timestamp, upperCaseFirst) {
+            return defaultTime.dateFormat(format, timestamp, upperCaseFirst);
         }
         /**
          * Format a string according to a subset of the rules of Python's String.format
@@ -20682,11 +20985,11 @@
          *         The formatted string.
          */
         function format(str = '', ctx, chart) {
-            const regex = /\{([\w\:\.\,;\-\/<>%@"'’= #\(\)]+)\}/g, 
+            const regex = /\{([\p{L}\d:\.,;\-\/<>\[\]%_@"'’= #\(\)]+)\}/gu, 
             // The sub expression regex is the same as the top expression regex,
             // but except parens and block helpers (#), and surrounded by parens
             // instead of curly brackets.
-            subRegex = /\(([\w\:\.\,;\-\/<>%@"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
+            subRegex = /\(([\p{L}\d:\.,;\-\/<>\[\]%_@"'= ]+)\)/gu, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = chart?.options.lang || defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
             /*
              * Get a literal or variable value inside a template expression. May be
              * extended with other types like string or null if needed, but keep it
@@ -20703,6 +21006,9 @@
                 }
                 if ((n = Number(key)).toString() === key) {
                     return n;
+                }
+                if (/^["'].+["']$/.test(key)) {
+                    return key.slice(1, -1);
                 }
                 // Variables and constants
                 return getNestedProperty(key, ctx);
@@ -20783,7 +21089,24 @@
                 if (fn) {
                     // Pass the helpers the amount of arguments defined by the function,
                     // then the match as the last argument.
-                    const args = [match], parts = expression.split(' ');
+                    const args = [match], parts = [], len = expression.length;
+                    let start = 0, startChar;
+                    for (i = 0; i <= len; i++) {
+                        const char = expression.charAt(i);
+                        // Start of string
+                        if (!startChar && (char === '"' || char === '\'')) {
+                            startChar = char;
+                            // End of string
+                        }
+                        else if (startChar === char) {
+                            startChar = '';
+                        }
+                        if (!startChar &&
+                            (char === ' ' || i === len)) {
+                            parts.push(expression.substr(start, i - start));
+                            start = i + 1;
+                        }
+                    }
                     i = helpers[fn].length;
                     while (i--) {
                         args.unshift(resolveProperty(parts[i + 1]));
@@ -20810,6 +21133,11 @@
                         }
                         else {
                             replacement = time.dateFormat(segment, replacement);
+                            // Use string literal in order to be preserved in the outer
+                            // expression
+                            if (hasSub) {
+                                replacement = `"${replacement}"`;
+                            }
                         }
                     }
                 }
@@ -20846,8 +21174,10 @@
         function numberFormat(number, decimals, decimalPoint, thousandsSep) {
             number = +number || 0;
             decimals = +decimals;
-            let ret, fractionDigits;
-            const lang = defaultOptions.lang, origDec = (number.toString().split('.')[1] || '').split('e')[0].length, exponent = number.toString().split('e'), firstDecimals = decimals;
+            let ret, fractionDigits, [mantissa, exp] = number.toString().split('e').map(Number);
+            const lang = this?.options?.lang || defaultOptions.lang, origDec = (number.toString().split('.')[1] || '').split('e')[0].length, firstDecimals = decimals, options = {};
+            decimalPoint ?? (decimalPoint = lang.decimalPoint);
+            thousandsSep ?? (thousandsSep = lang.thousandsSep);
             if (decimals === -1) {
                 // Preserve decimals. Not huge numbers (#3793).
                 decimals = Math.min(origDec, 20);
@@ -20855,65 +21185,61 @@
             else if (!isNumber(decimals)) {
                 decimals = 2;
             }
-            else if (decimals && exponent[1] && exponent[1] < 0) {
+            else if (decimals && exp < 0) {
                 // Expose decimals from exponential notation (#7042)
-                fractionDigits = decimals + +exponent[1];
+                fractionDigits = decimals + exp;
                 if (fractionDigits >= 0) {
                     // Remove too small part of the number while keeping the notation
-                    exponent[0] = (+exponent[0]).toExponential(fractionDigits)
-                        .split('e')[0];
+                    mantissa = +mantissa.toExponential(fractionDigits).split('e')[0];
                     decimals = fractionDigits;
                 }
                 else {
                     // `fractionDigits < 0`
-                    exponent[0] = exponent[0].split('.')[0] || 0;
+                    mantissa = Math.floor(mantissa);
                     if (decimals < 20) {
                         // Use number instead of exponential notation (#7405)
-                        number = (exponent[0] * Math.pow(10, exponent[1]))
-                            .toFixed(decimals);
+                        number = +(mantissa * Math.pow(10, exp)).toFixed(decimals);
                     }
                     else {
                         // Or zero
                         number = 0;
                     }
-                    exponent[1] = 0;
+                    exp = 0;
                 }
             }
-            // Add another decimal to avoid rounding errors of float numbers. (#4573)
-            // Then use toFixed to handle rounding.
-            const roundedNumber = (Math.abs(exponent[1] ? exponent[0] : number) +
-                Math.pow(10, -Math.max(decimals, origDec) - 1)).toFixed(decimals);
-            // A string containing the positive integer component of the number
-            const strinteger = String(pInt(roundedNumber));
-            // Leftover after grouping into thousands. Can be 0, 1 or 2.
-            const thousands = strinteger.length > 3 ? strinteger.length % 3 : 0;
-            // Language
-            decimalPoint = pick(decimalPoint, lang.decimalPoint);
-            thousandsSep = pick(thousandsSep, lang.thousandsSep);
-            // Start building the return
-            ret = number < 0 ? '-' : '';
-            // Add the leftover after grouping into thousands. For example, in the
-            // number 42 000 000, this line adds 42.
-            ret += thousands ? strinteger.substr(0, thousands) + thousandsSep : '';
-            if (+exponent[1] < 0 && !firstDecimals) {
+            if (exp) {
+                decimals ?? (decimals = 2);
+                number = mantissa;
+            }
+            if (isNumber(decimals) && decimals >= 0) {
+                options.minimumFractionDigits = decimals;
+                options.maximumFractionDigits = decimals;
+            }
+            if (thousandsSep === '') {
+                options.useGrouping = false;
+            }
+            const hasSeparators = thousandsSep || decimalPoint, locale = hasSeparators ?
+                'en' :
+                (this?.locale ||
+                    lang.locale ||
+                    doc.body.closest('[lang]')?.lang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
+            ret = nf.format(number);
+            // If thousandsSep or decimalPoint are set, fall back to using English
+            // format with string replacement for the separators.
+            if (hasSeparators) {
+                ret = ret
+                    .replace(/\,/g, thousandsSep ?? ',')
+                    .replace('.', decimalPoint ?? '.');
+            }
+            if (
+            // Remove signed zero (#20564)
+            (!decimals && +ret === 0) ||
+                // Small numbers, no decimals (#14023)
+                (exp < 0 && !firstDecimals)) {
                 ret = '0';
             }
-            else {
-                // Add the remaining thousands groups, joined by the thousands separator
-                ret += strinteger
-                    .substr(thousands)
-                    .replace(/(\d{3})(?=\d)/g, '$1' + thousandsSep);
-            }
-            // Add the decimal point and the decimal component
-            if (decimals) {
-                // Get the decimal component
-                ret += decimalPoint + roundedNumber.slice(-decimals);
-            }
-            else if (+ret === 0) { // Remove signed minus #20564
-                ret = '0';
-            }
-            if (exponent[1] && +ret !== 0) {
-                ret += 'e' + exponent[1];
+            if (exp && +ret !== 0) {
+                ret += 'e' + (exp < 0 ? '' : '+') + exp;
             }
             return ret;
         }

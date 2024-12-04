@@ -63,7 +63,7 @@ class AccordionMenu {
         let options;
         let content;
         this.component = component;
-        this.oldOptionsBuffer = merge({}, component.options);
+        this.oldOptionsBuffer = component.getEditableOptions();
         if (editMode) {
             this.confirmationPopup = new ConfirmationPopup(component.board.container, editMode.iconsURLPrefix, editMode, { close: { icon: '' } });
         }
@@ -87,6 +87,7 @@ class AccordionMenu {
             className: EditGlobals.classNames.popupConfirmBtn,
             callback: async () => {
                 await this.confirmChanges();
+                fireEvent(editMode, 'confirmEditing');
             }
         });
         EditRenderer.renderButton(buttonContainer, {
@@ -95,6 +96,7 @@ class AccordionMenu {
             className: EditGlobals.classNames.popupCancelBtn,
             callback: () => {
                 this.cancelChanges();
+                fireEvent(editMode, 'cancelEditing');
             }
         });
         sidebarMainContainer.appendChild(buttonContainer);
@@ -242,10 +244,11 @@ class AccordionMenu {
                 iconsURLPrefix: this.iconsURLPrefix,
                 showToggle: showToggle,
                 onchange: (value) => this.updateOptions(propertyPath, value),
-                isNested: true,
+                isNested: !!accordionOptions,
+                isStandalone: !accordionOptions,
                 lang: (component.board?.editMode || EditGlobals).lang
             });
-            for (let j = 0, jEnd = accordionOptions.length; j < jEnd; ++j) {
+            for (let j = 0, jEnd = accordionOptions?.length; j < jEnd; ++j) {
                 this.renderAccordion(accordionOptions[j], collapsedHeader.content, component);
             }
         }

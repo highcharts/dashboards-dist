@@ -20,8 +20,10 @@ import DataTable from '../../../Data/DataTable.js';
 import Globals from '../../Globals.js';
 import HighchartsSyncs from './HighchartsSyncs/HighchartsSyncs.js';
 import HighchartsComponentDefaults from './HighchartsComponentDefaults.js';
+import DU from '../../Utilities.js';
 import U from '../../../Core/Utilities.js';
 const { createElement, diffObjects, isString, merge, splat } = U;
+const { deepClone } = DU;
 /* *
  *
  *  Class
@@ -559,7 +561,7 @@ class HighchartsComponent extends Component {
         const chart = component.chart;
         const chartOptions = chart && chart.options;
         const chartType = chartOptions?.chart?.type || 'line';
-        return merge({
+        return deepClone(merge({
             chartOptions
         }, {
             chartOptions: {
@@ -570,7 +572,7 @@ class HighchartsComponent extends Component {
                         {})[chartType]
                 }
             }
-        }, componentOptions);
+        }, componentOptions), ['dataTable', 'points', 'series', 'data', 'editableOptions']);
     }
     getEditableOptionValue(propertyPath) {
         const component = this;

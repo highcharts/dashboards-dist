@@ -1,7 +1,8 @@
+import type A11yOptions from './Accessibility/A11yOptions';
 import type DataTable from '../Data/DataTable';
 import type DataTableOptions from '../Data/DataTableOptions';
 import type Cell from './Table/Cell';
-import Column from './Table/Column';
+import type Column from './Table/Column';
 /**
  * The distribution of the columns in the grid structure.
  */
@@ -27,6 +28,10 @@ export type ColumnSortingOrder = 'asc' | 'desc' | null;
  * Options to control the content and the user experience of a grid structure.
  */
 export interface Options {
+    /**
+     * Accessibility options for the datagrid.
+     */
+    accessibility?: A11yOptions.GeneralA11yOptions;
     /**
      * Options for the table caption.
      */
@@ -61,6 +66,10 @@ export interface Options {
      * Try it: {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/data-grid/basic/grouped-headers | Grouped headers}
      */
     header?: Array<GroupedHeaderOptions | string>;
+    /**
+     * Language options for the datagrid.
+     */
+    lang?: LangOptions;
     /**
      * Options to control the way datagrid is rendered.
      */
@@ -413,6 +422,10 @@ export interface HeaderEvents {
  */
 export interface GroupedHeaderOptions {
     /**
+     * Accessibility options for one of the column header cells.
+     */
+    accessibility?: A11yOptions.HeaderCellA11yOptions;
+    /**
      * The format of the column header. Use `{id}` to display the column id.
      */
     format?: string;
@@ -463,5 +476,20 @@ export interface CreditsOptions {
      * @default 'bottom'
      */
     position?: 'bottom' | 'top';
+}
+/**
+ * Language options for the datagrid.
+ */
+export interface LangOptions {
+    /**
+     * Configure the accessibility strings in the chart.
+     */
+    accessibility?: A11yOptions.LangAccessibilityOptions;
+    /**
+     * The text to display when there is no data to show.
+     *
+     * @default 'No data to display'
+     */
+    noData?: string;
 }
 export default Options;

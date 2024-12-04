@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.0.0 (2024-10-16)
+ * @license Highcharts Dashboards v3.1.0 (2024-12-04)
  * @module datagrid/datagrid
  *
  * (c) 2009-2024 Highsoft AS
@@ -20,7 +20,9 @@ import _DataGrid from '../DataGrid/DataGrid.js';
 import DataModifier from '../Data/Modifiers/DataModifier.js';
 import DataPool from '../Data/DataPool.js';
 import DataTable from '../Data/DataTable.js';
+import Defaults from '../DataGrid/Defaults.js';
 import Globals from '../DataGrid/Globals.js';
+import whcm from '../Accessibility/HighContrastMode.js';
 // Fill registries
 import '../Data/Connectors/CSVConnector.js';
 import '../Data/Connectors/GoogleSheetsConnector.js';
@@ -46,6 +48,9 @@ G.dataGrids = _DataGrid.dataGrids;
 G.DataModifier = DataModifier;
 G.DataPool = DataPool;
 G.DataTable = DataTable;
+G.defaultOptions = Defaults.defaultOptions;
+G.setOptions = Defaults.setOptions;
+G.isHighContrastModeActive = whcm.isHighContrastModeActive;
 /* *
  *
  *  Classic Export

@@ -73,7 +73,7 @@ declare class Tooltip {
      * @private
      * @function Highcharts.Tooltip#bodyFormatter
      */
-    bodyFormatter(items: Array<Tooltip.FormatterContextObject>): Array<string>;
+    bodyFormatter(points: Array<Point>): Array<string>;
     /**
      * Destroy the single tooltips in a split tooltip.
      * If the tooltip is active then it is not destroyed, unless forced to.
@@ -97,7 +97,7 @@ declare class Tooltip {
      * Returns a string (single tooltip and shared)
      * or an array of strings (split tooltip)
      */
-    defaultFormatter(this: Tooltip.FormatterContextObject, tooltip: Tooltip): (string | Array<string>);
+    defaultFormatter(this: Point, tooltip: Tooltip): (string | Array<string>);
     /**
      * Removes and destroys the tooltip and its elements.
      *
@@ -238,9 +238,9 @@ declare class Tooltip {
      * #3397: abstraction to enable formatting of footer and header
      *
      * @private
-     * @function Highcharts.Tooltip#tooltipFooterHeaderFormatter
+     * @function Highcharts.Tooltip#headerFooterFormatter
      */
-    tooltipFooterHeaderFormatter(labelConfig: Point.PointLabelObject, isFooter?: boolean): string;
+    headerFooterFormatter(point: Point, isFooter?: boolean): string;
     /**
      * Updates the tooltip with the provided tooltip options.
      *
@@ -262,10 +262,12 @@ declare class Tooltip {
 }
 declare namespace Tooltip {
     interface FormatterCallbackFunction {
-        (this: FormatterContextObject, tooltip: Tooltip): (false | string | Array<string>);
+        (this: Point, tooltip: Tooltip): (false | string | Array<string>);
     }
-    interface FormatterContextObject extends Point.PointLabelObject {
-        points?: Array<FormatterContextObject>;
+    interface HeaderFormatterEventObject {
+        isFooter?: boolean;
+        point: Point;
+        text?: string;
     }
     interface PositionerCallbackFunction {
         (this: Tooltip, labelWidth: number, labelHeight: number, point: (Point | PositionerPointObject)): PositionObject;

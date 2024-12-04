@@ -313,7 +313,7 @@ declare abstract class Component {
      */
     getOptions(): Partial<Component.Options>;
     getEditableOptions(): Component.Options;
-    getEditableOptionValue(propertyPath?: string[]): number | boolean | undefined | string;
+    getEditableOptionValue(propertyPath?: (string | number)[]): number | boolean | undefined | string;
 }
 interface Component {
     type: keyof ComponentTypeRegistry;

@@ -20,6 +20,8 @@ declare namespace EditGlobals {
         accordionMenuButton: string;
         accordionMenuButtonsContainer: string;
         accordionNestedWrapper: string;
+        accordionStandaloneWrapper: string;
+        accordionHeaderWrapper: string;
         button: string;
         cellEditHighlight: string;
         collapsableContentHeader: string;

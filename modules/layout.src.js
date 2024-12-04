@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Layout 3.0.0 (2024-10-16)
+ * @license Highcharts Dashboards Layout 3.1.0 (2024-12-04)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -113,19 +113,24 @@
         function renderCollapseHeader(parentElement, options) {
             const { name, showToggle, onchange, isEnabled, isNested, isStandalone, lang } = options;
             const accordion = createElement('div', {
-                className: EditGlobals.classNames[isNested ? 'accordionNestedWrapper' : 'accordionContainer'] + ' ' + EditGlobals.classNames.collapsableContentHeader
+                className: EditGlobals.classNames[(isNested ? 'accordionNestedWrapper' : 'accordionContainer')] + ' ' +
+                    (isStandalone ?
+                        EditGlobals.classNames.accordionStandaloneWrapper : '') + ' ' + EditGlobals.classNames.collapsableContentHeader
             }, {}, parentElement);
             const header = createElement('div', {
                 className: EditGlobals.classNames.accordionHeader
             }, {}, accordion);
             let headerBtn;
-            if (!isStandalone) {
-                headerBtn = createElement('button', { className: EditGlobals.classNames.accordionHeaderBtn }, {}, header);
+            if (!isStandalone || showToggle) {
+                headerBtn = createElement(isStandalone && showToggle ? 'span' : 'button', {
+                    className: EditGlobals.classNames[isStandalone ?
+                        'accordionHeaderWrapper' : 'accordionHeaderBtn']
+                }, {}, header);
             }
             createElement('span', {
                 textContent: lang[name] || name
             }, {}, headerBtn);
-            if (showToggle) {
+            if (showToggle && header) {
                 renderToggle(header, {
                     enabledOnOffLabels: true,
                     id: name,
@@ -135,20 +140,22 @@
                     lang
                 });
             }
-            const headerIcon = createElement('span', {
-                className: EditGlobals.classNames.accordionHeaderIcon + ' ' +
-                    EditGlobals.classNames.collapsedElement
-            }, {}, headerBtn);
+            if (!isStandalone) {
+                const headerIcon = createElement('span', {
+                    className: EditGlobals.classNames.accordionHeaderIcon + ' ' +
+                        EditGlobals.classNames.collapsedElement
+                }, {}, headerBtn);
+                headerBtn?.addEventListener('click', function () {
+                    content.classList.toggle(EditGlobals.classNames.hiddenElement);
+                    headerIcon?.classList.toggle(EditGlobals.classNames.collapsedElement);
+                });
+            }
             const content = createElement('div', {
                 className: EditGlobals.classNames.accordionContent + ' ' +
                     (isStandalone ?
                         EditGlobals.classNames.standaloneElement :
                         EditGlobals.classNames.hiddenElement)
             }, {}, accordion);
-            headerBtn?.addEventListener('click', function () {
-                content.classList.toggle(EditGlobals.classNames.hiddenElement);
-                headerIcon.classList.toggle(EditGlobals.classNames.collapsedElement);
-            });
             return { outerElement: accordion, content: content };
         }
         /**
@@ -1644,7 +1651,7 @@
                 let options;
                 let content;
                 this.component = component;
-                this.oldOptionsBuffer = merge({}, component.options);
+                this.oldOptionsBuffer = component.getEditableOptions();
                 if (editMode) {
                     this.confirmationPopup = new ConfirmationPopup(component.board.container, editMode.iconsURLPrefix, editMode, { close: { icon: '' } });
                 }
@@ -1668,6 +1675,7 @@
                     className: EditGlobals.classNames.popupConfirmBtn,
                     callback: async () => {
                         await this.confirmChanges();
+                        fireEvent(editMode, 'confirmEditing');
                     }
                 });
                 EditRenderer.renderButton(buttonContainer, {
@@ -1676,6 +1684,7 @@
                     className: EditGlobals.classNames.popupCancelBtn,
                     callback: () => {
                         this.cancelChanges();
+                        fireEvent(editMode, 'cancelEditing');
                     }
                 });
                 sidebarMainContainer.appendChild(buttonContainer);
@@ -1823,10 +1832,11 @@
                         iconsURLPrefix: this.iconsURLPrefix,
                         showToggle: showToggle,
                         onchange: (value) => this.updateOptions(propertyPath, value),
-                        isNested: true,
+                        isNested: !!accordionOptions,
+                        isStandalone: !accordionOptions,
                         lang: (component.board?.editMode || EditGlobals).lang
                     });
-                    for (let j = 0, jEnd = accordionOptions.length; j < jEnd; ++j) {
+                    for (let j = 0, jEnd = accordionOptions?.length; j < jEnd; ++j) {
                         this.renderAccordion(accordionOptions[j], collapsedHeader.content, component);
                     }
                 }
@@ -3466,7 +3476,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.0.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.1.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(

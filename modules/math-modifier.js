@@ -1,5 +1,5 @@
 !/**
- * Highcharts Dashboards Math 3.0.0 (2024-10-16)
+ * Highcharts Dashboards Math 3.1.0 (2024-12-04)
  *
  * (c) 2009-2024 Highsoft AS
  *

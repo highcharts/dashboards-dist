@@ -1,6 +1,6 @@
 /* *
  *
- *  Data Grid class
+ *  DataGrid class
  *
  *  (c) 2020-2024 Highsoft AS
  *
@@ -14,15 +14,16 @@
  *
  * */
 'use strict';
+import Accessibility from './Accessibility/Accessibility.js';
 import AST from '../Core/Renderer/HTML/AST.js';
 import Credits from './Credits.js';
-import DataGridDefaultOptions from './DefaultOptions.js';
-import Table from './Table/Table.js';
+import Defaults from './Defaults.js';
 import DataGridUtils from './Utils.js';
 import DataTable from '../Data/DataTable.js';
-import QueryingController from './Querying/QueryingController.js';
 import Globals from './Globals.js';
+import Table from './Table/Table.js';
 import U from '../Core/Utilities.js';
+import QueryingController from './Querying/QueryingController.js';
 const { makeHTMLElement } = DataGridUtils;
 const { win } = Globals;
 const { merge } = U;
@@ -77,6 +78,7 @@ class DataGrid {
         this.loadUserOptions(options);
         this.querying = new QueryingController(this);
         this.initContainers(renderTo);
+        this.initAccessibility();
         this.loadDataTable(this.options?.dataTable);
         this.querying.loadOptions();
         void this.querying.proceed().then(() => {
@@ -90,6 +92,16 @@ class DataGrid {
      *  Methods
      *
      * */
+    /**
+     * Initializes the accessibility controller.
+     */
+    initAccessibility() {
+        if (!this.options?.accessibility?.enabled) {
+            return;
+        }
+        // Can be moved to a separate module in the future (if needed).
+        this.accessibility = new Accessibility(this);
+    }
     /**
      * Initializes the container of the data grid.
      *
@@ -140,7 +152,7 @@ class DataGrid {
             delete newOptions.columns;
         }
         this.userOptions = merge(this.userOptions, newOptions);
-        this.options = merge(this.options ?? DataGrid.defaultOptions, this.userOptions);
+        this.options = merge(this.options ?? Defaults.defaultOptions, this.userOptions);
         const columnOptionsArray = this.options?.columns;
         if (!columnOptionsArray) {
             return;
@@ -357,7 +369,7 @@ class DataGrid {
     renderNoData() {
         makeHTMLElement('div', {
             className: Globals.classNames.noData,
-            innerText: 'No data to display'
+            innerText: this.options?.lang?.noData
         }, this.contentWrapper);
     }
     /**
@@ -482,11 +494,6 @@ class DataGrid {
 *  Properties
 *
 * */
-/**
- * Default options for all DataGrid instances.
- * @internal
- */
-DataGrid.defaultOptions = DataGridDefaultOptions;
 /**
  * An array containing the current DataGrid objects in the page.
  */

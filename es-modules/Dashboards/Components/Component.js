@@ -26,7 +26,7 @@ const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFuncti
 import CU from './ComponentUtilities.js';
 const { getMargins, getPaddings } = CU;
 import DU from '../Utilities.js';
-const { uniqueKey } = DU;
+const { deepClone, uniqueKey } = DU;
 /* *
  *
  *  Class
@@ -605,7 +605,11 @@ class Component {
     }
     getEditableOptions() {
         const component = this;
-        return merge(component.options);
+        // When refactoring, limit the copied options to the ones that are
+        // actually editable to avoid unnecessary memory usage.
+        return deepClone(component.options, [
+            'dataTable', 'points', 'series', 'data', 'editableOptions'
+        ]);
     }
     getEditableOptionValue(propertyPath) {
         const component = this;
@@ -614,12 +618,10 @@ class Component {
         }
         let result = component.getEditableOptions();
         for (let i = 0, end = propertyPath.length; i < end; i++) {
-            if (isArray(result)) {
-                if (propertyPath[0] === 'connector' &&
-                    result.length > 1) {
-                    return 'multiple connectors';
-                }
-                result = result[0];
+            if (isArray(result) &&
+                propertyPath[0] === 'connector' &&
+                result.length > 1) {
+                return 'multiple connectors';
             }
             if (!result) {
                 return;

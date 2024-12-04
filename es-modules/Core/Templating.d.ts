@@ -40,13 +40,13 @@ import type Chart from './Chart/Chart';
  * @param {number} timestamp
  *        The JavaScript timestamp.
  *
- * @param {boolean} [capitalize=false]
+ * @param {boolean} [upperCaseFirst=false]
  *        Upper case first letter in the return.
  *
  * @return {string}
  *         The formatted date.
  */
-declare function dateFormat(format: string, timestamp: number, capitalize?: boolean): string;
+declare function dateFormat(format: string, timestamp: number, upperCaseFirst?: boolean): string;
 /**
  * Format a string according to a subset of the rules of Python's String.format
  * method.
@@ -100,7 +100,7 @@ declare function format(str: string | undefined, ctx: any, chart?: Chart): strin
  * @return {string}
  *         The formatted number.
  */
-declare function numberFormat(number: number, decimals: number, decimalPoint?: string, thousandsSep?: string): string;
+declare function numberFormat(this: Chart | Object | void, number: number, decimals: number, decimalPoint?: string, thousandsSep?: string): string;
 declare const Templating: {
     dateFormat: typeof dateFormat;
     format: typeof format;

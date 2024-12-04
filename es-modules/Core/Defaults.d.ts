@@ -21,7 +21,6 @@ declare function getOptions(): DefaultOptions;
  * Merge the default options with custom options and return the new options
  * structure. Commonly used for defining reusable templates.
  *
- * @sample highcharts/global/useutc-false Setting a global option
  * @sample highcharts/members/setoptions Applying a global theme
  *
  * @function Highcharts.setOptions

@@ -1,6 +1,6 @@
 /* *
  *
- *  Data Grid class
+ *  DataGrid class
  *
  *  (c) 2020-2024 Highsoft AS
  *
@@ -75,7 +75,7 @@ class HeaderCell extends Cell {
      */
     render() {
         const column = this.column;
-        const options = merge(column.options, this.options);
+        const options = merge(column.options, this.options); // ??
         const headerCellOptions = options.header || {};
         if (headerCellOptions.formatter) {
             this.value = headerCellOptions.formatter.call(this).toString();
@@ -88,7 +88,7 @@ class HeaderCell extends Cell {
         }
         // Render content of th element
         this.row.htmlElement.appendChild(this.htmlElement);
-        this.headerContent = makeHTMLElement('div', {
+        this.headerContent = makeHTMLElement(options.sorting?.sortable && column.data ? 'button' : 'span', {
             className: Globals.classNames.headerCellContent
         }, this.htmlElement);
         if (isHTML(this.value)) {
@@ -97,13 +97,12 @@ class HeaderCell extends Cell {
         else {
             this.headerContent.innerText = this.value;
         }
-        // Set the accessibility attributes.
         this.htmlElement.setAttribute('scope', 'col');
-        this.htmlElement.setAttribute('data-column-id', column.id);
         if (this.options.className) {
             this.htmlElement.classList.add(...this.options.className.split(/\s+/g));
         }
         if (this.isMain) {
+            this.htmlElement.setAttribute('data-column-id', column.id);
             // Add user column classname
             if (column.options.className) {
                 this.htmlElement.classList.add(...column.options.className.split(/\s+/g));

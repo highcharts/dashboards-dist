@@ -28,7 +28,7 @@ declare module './Axis/TickPositionsArray' {
  * });
  *
  * // Apply time settings by instance
- * let chart = Highcharts.chart('container', {
+ * const chart = Highcharts.chart('container', {
  *     time: {
  *         timezone: 'America/New_York'
  *     },
@@ -37,11 +37,18 @@ declare module './Axis/TickPositionsArray' {
  *     }]
  * });
  *
- * // Use the Time object
+ * // Use the Time object of a chart instance
  * console.log(
  *        'Current time in New York',
  *        chart.time.dateFormat('%Y-%m-%d %H:%M:%S', Date.now())
  * );
+ *
+ * // Standalone use
+ * const time = new Highcharts.Time({
+ *    timezone: 'America/New_York'
+ * });
+ * const s = time.dateFormat('%Y-%m-%d %H:%M:%S', Date.UTC(2020, 0, 1));
+ * console.log(s); // => 2019-12-31 19:00:00
  *
  * @since 6.0.5
  *
@@ -52,52 +59,16 @@ declare module './Axis/TickPositionsArray' {
  * Time options as defined in [chart.options.time](/highcharts/time).
  */
 declare class Time {
-    static formatCache: Record<string, Intl.DateTimeFormat>;
+    dTLCache: Record<string, Intl.DateTimeFormat>;
     constructor(options?: Time.TimeOptions);
     options: Time.TimeOptions;
-    timezoneOffset?: number;
-    useUTC: boolean;
+    timezone?: string;
     variableTimezone: boolean;
     Date: typeof Date;
-    getTimezoneOffset: ReturnType<Time['timezoneOffsetFunction']>;
-    /**
-     * Time units used in `Time.get` and `Time.set`
-     *
-     * @typedef {"Date"|"Day"|"FullYear"|"Hours"|"Milliseconds"|"Minutes"|"Month"|"Seconds"} Highcharts.TimeUnitValue
-     */
-    /**
-     * Get the value of a date object in given units, and subject to the Time
-     * object's current timezone settings. This function corresponds directly to
-     * JavaScripts `Date.getXXX / Date.getUTCXXX`, so instead of calling
-     * `date.getHours()` or `date.getUTCHours()` we will call
-     * `time.get('Hours')`.
-     *
-     * @function Highcharts.Time#get
-     *
-     * @param {Highcharts.TimeUnitValue} unit
-     * @param {Date} date
-     *
-     * @return {number}
-     *        The given time unit
-     */
-    get(unit: Time.TimeUnitValue, date: Date): number;
-    /**
-     * Set the value of a date object in given units, and subject to the Time
-     * object's current timezone settings. This function corresponds directly to
-     * JavaScripts `Date.setXXX / Date.setUTCXXX`, so instead of calling
-     * `date.setHours(0)` or `date.setUTCHours(0)` we will call
-     * `time.set('Hours', 0)`.
-     *
-     * @function Highcharts.Time#set
-     *
-     * @param {Highcharts.TimeUnitValue} unit
-     * @param {Date} date
-     * @param {number} value
-     *
-     * @return {number}
-     *        The epoch milliseconds of the updated date
-     */
-    set(unit: Time.TimeUnitValue, date: Date, value: number): number;
+    private months;
+    private shortMonths;
+    private weekdays;
+    private shortWeekdays;
     /**
      * Update the Time object with current options. It is called internally on
      * initializing Highcharts, after running `Highcharts.setOptions` and on
@@ -111,9 +82,42 @@ declare class Time {
      */
     update(options?: Time.TimeOptions): void;
     /**
-     * Make a time and returns milliseconds. Interprets the inputs as UTC time,
-     * local time or a specific timezone time depending on the current time
-     * settings.
+     * Get a date in terms of numbers (year, month, day etc) for further
+     * processing. Takes the current `timezone` setting into account. Inverse of
+     * `makeTime` and the native `Date` constructor and `Date.UTC`.
+     *
+     * The date is returned in array format with the following indices:
+     *
+     * 0: year,
+     * 1: month (zero based),
+     * 2: day,
+     * 3: hours,
+     * 4: minutes,
+     * 5: seconds,
+     * 6: milliseconds,
+     * 7: weekday (Sunday as 0)
+     *
+     * @function Highcharts.Time#toParts
+     *
+     * @param {number|Date} [timestamp]
+     *                 The timestamp in milliseconds since January 1st 1970.
+     *                 A Date object is also accepted.
+     *
+     * @return {Array<number>} The date parts in array format.
+     */
+    toParts(timestamp?: number | Date): number[];
+    /**
+     * Shorthand to get a cached `Intl.DateTimeFormat` instance.
+     */
+    private dateTimeFormat;
+    /**
+     * Take a locale-aware string format and return a full DateTimeFormat in
+     * object form.
+     */
+    private str2dtf;
+    /**
+     * Make a time and returns milliseconds. Similar to `Date.UTC`, but takes
+     * the current `timezone` setting into account.
      *
      * @function Highcharts.Time#makeTime
      *
@@ -138,69 +142,140 @@ declare class Time {
      * @return {number}
      *         The time in milliseconds since January 1st 1970.
      */
-    makeTime(year: number, month: number, date?: number, hours?: number, minutes?: number, seconds?: number): number;
+    makeTime(year: number, month: number, date?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): number;
     /**
-     * Sets the getTimezoneOffset function. If the `timezone` option is set, a
-     * default getTimezoneOffset function with that timezone is returned. If
-     * a `getTimezoneOffset` option is defined, it is returned. If neither are
-     * specified, the function using the `timezoneOffset` option or 0 offset is
-     * returned.
+     * Parse a datetime string. Unless the string contains time zone
+     * information, apply the current `timezone` from options. If the argument
+     * is a number, return it.
      *
-     * @private
-     * @function Highcharts.Time#timezoneOffsetFunction
-     *
-     * @return {Function}
-     *         A getTimezoneOffset function
+     * @function Highcharts.Time#parse
+     * @param    {string|number|undefined} s The datetime string to parse
+     * @return   {number|undefined}          Parsed JavaScript timestamp
      */
-    timezoneOffsetFunction(): (timestamp: (number | Date)) => number;
+    parse(s: string | number | undefined | null): number | undefined;
     /**
-     * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970)
-     * into a human readable date string. The available format keys are listed
-     * below. Additional formats can be given in the
-     * {@link Highcharts.dateFormats} hook.
+     * Get the time zone offset based on the current timezone information as
+     * set in the global options.
+     *
+     * @function Highcharts.Time#getTimezoneOffset
+     *
+     * @param {number} timestamp
+     *        The JavaScript timestamp to inspect.
+     *
+     * @return {number}
+     *         The timezone offset in minutes compared to UTC.
+     */
+    getTimezoneOffset(timestamp: number | Date): number;
+    /**
+     * Formats a JavaScript date timestamp (milliseconds since January 1 1970)
+     * into a human readable date string.
+     *
+     * The `format` parameter accepts two types of values:
+     * - An object containing settings that are passed directly on to
+     *   [Intl.DateTimeFormat.prototype.format](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/format).
+     * - A format string containing either individual or locale-aware format
+     *   keys. **Individual keys**, for example `%Y-%m-%d`, are listed below.
+     *   **Locale-aware keys** are grouped by square brackets, for example
+     *   `%[Ymd]`. The order of keys within the square bracket doesn't affect
+     *   the output, which is determined by the locale. See example below.
+     *   Internally, the locale-aware format keys are just a shorthand for the
+     *   full object formats, but are particularly practical in
+     *   [templating](https://www.highcharts.com/docs/chart-concepts/templating)
+     *   where full object definitions are not an option.
+     *
+     * The available string format keys are listed below. Additional formats can
+     * be given in the {@link Highcharts.dateFormats} hook.
      *
      * Supported format keys:
-     * - `%a`: Short weekday, like 'Mon'
-     * - `%A`: Long weekday, like 'Monday'
-     * - `%d`: Two digit day of the month, 01 to 31
-     * - `%e`: Day of the month, 1 through 31
-     * - `%w`: Day of the week, 0 through 6
-     * - `%b`: Short month, like 'Jan'
-     * - `%B`: Long month, like 'January'
-     * - `%m`: Two digit month number, 01 through 12
-     * - `%y`: Two digits year, like 09 for 2009
-     * - `%Y`: Four digits year, like 2009
-     * - `%H`: Two digits hours in 24h format, 00 through 23
-     * - `%k`: Hours in 24h format, 0 through 23
-     * - `%I`: Two digits hours in 12h format, 00 through 11
-     * - `%l`: Hours in 12h format, 1 through 12
-     * - `%M`: Two digits minutes, 00 through 59
-     * - `%p`: Upper case AM or PM
-     * - `%P`: Lower case AM or PM
-     * - `%S`: Two digits seconds, 00 through 59
-     * - `%L`: Milliseconds (naming from Ruby)
+     * | Key  | Description                     | Notes on locale-aware format |
+     * -------|----------------------------------------------|-------|
+     * | `%A` | Long weekday, like 'Monday'                  |       |
+     * | `%a` | Short weekday, like 'Mon'                    |       |
+     * | `%E` | Narrow weekday, single character             |       |
+     * | `%d` | Two digit day of the month, 01 to 31         |       |
+     * | `%e` | Day of the month, 1 through 31               |       |
+     * | `%w` | Day of the week, 0 through 6                 | N/A   |
+     * | `%b` | Short month, like 'Jan'                      |       |
+     * | `%B` | Long month, like 'January'                   |       |
+     * | `%m` | Two digit month number, 01 through 12        |       |
+     * | `%o` | Month number, 1 through 12                   |       |
+     * | `%y` | Two digits year, like 24 for 2024            |       |
+     * | `%Y` | Four digits year, like 2024                  |       |
+     * | `%H` | Two digits hours in 24h format, 00 through 23 | Depending on the locale, 12h format may be instered. |
+     * | `%k` | Hours in 24h format, 0 through 23            | Depending on the locale, 12h format may be instered. |
+     * | `%I` | Two digits hours in 12h format, 00 through 11 | N/A. The locale determines the hour format. |
+     * | `%l` | Hours in 12h format, 1 through 12            | N/A. The locale determines the hour format. |
+     * | `%M` | Two digits minutes, 00 through 59            |       |
+     * | `%p` | Upper case AM or PM                          | N/A. The locale determines whether to add AM and PM. |
+     * | `%P` | Lower case AM or PM                          | N/A. The locale determines whether to add AM and PM. |
+     * | `%S` | Two digits seconds, 00 through 59            |       |
+     * | `%L` | Milliseconds (naming from Ruby)              |       |
      *
      * @example
-     * const time = new Highcharts.Time();
-     * const s = time.dateFormat('%Y-%m-%d %H:%M:%S', Date.UTC(2020, 0, 1));
-     * console.log(s); // => 2020-01-01 00:00:00
+     * // Object format, US English
+     * const time1 = new Highcharts.Time({ locale: 'en-US' });
+     * console.log(
+     *     time1.dateFormat({
+     *         day: 'numeric',
+     *         month: 'short',
+     *         year: 'numeric',
+     *         hour: 'numeric',
+     *         minute: 'numeric'
+     *     }, Date.UTC(2024, 11, 31))
+     * ); // => Dec 31, 2024, 12:00 AM
+     *
+     * // Object format, British English
+     * const time2 = new Highcharts.Time({ locale: 'en-GB' });
+     * console.log(
+     *     time2.dateFormat({
+     *         day: 'numeric',
+     *         month: 'short',
+     *         year: 'numeric',
+     *         hour: 'numeric',
+     *         minute: 'numeric'
+     *     }, Date.UTC(2024, 11, 31))
+     * ); // => 31 Dec 2024, 00:00
+     *
+     * // Individual key string replacement
+     * const time3 = new Highcharts.Time();
+     * console.log(
+     *     time3.dateFormat('%Y-%m-%d %H:%M:%S', Date.UTC(2024, 11, 31))
+     * ); // => 2024-12-31 00:00:00
+     *
+     * // Locale-aware keys, US English
+     * const time4 = new Highcharts.Time({ locale: 'en-US' });
+     * console.log(
+     *     time4.dateFormat('%[YebHM]', Date.UTC(2024, 11, 31))
+     * ); // => Dec 31, 2024, 12:00 AM
+     *
+     * // Locale-aware keys, British English
+     * const time5 = new Highcharts.Time({ locale: 'en-GB' });
+     * console.log(
+     *     time5.dateFormat('%[YebHM]', Date.UTC(2024, 11, 31))
+     * ); // => 31 Dec 2024, 00:00
+     *
+     * // Mixed locale-aware and individual keys
+     * console.log(
+     *     time5.dateFormat('%[Yeb], %H:%M', Date.UTC(2024, 11, 31))
+     * ); // => 31 Dec 2024, 00:00
      *
      * @function Highcharts.Time#dateFormat
      *
-     * @param {string} format
-     *        The desired format where various time representations are
-     *        prefixed with %.
+     * @param {string|Highcharts.DateTimeFormatOptions} format
+     *        The desired string format where various time representations are
+     *        prefixed with %, or an object representing the locale-aware format
+     *        options.
      *
      * @param {number} [timestamp]
      *        The JavaScript timestamp.
      *
-     * @param {boolean} [capitalize=false]
+     * @param {boolean} [upperCaseFirst=false]
      *        Upper case first letter in the return.
      *
      * @return {string}
      *         The formatted date.
      */
-    dateFormat(format: string, timestamp?: number, capitalize?: boolean): string;
+    dateFormat(format?: Time.DateTimeFormat | null, timestamp?: number, upperCaseFirst?: boolean): string;
     /**
      * Resolve legacy formats of dateTimeLabelFormats (strings and arrays) into
      * an object.
@@ -255,27 +330,35 @@ declare class Time {
      * @return {string}
      *         The optimal date format for a point.
      */
-    getDateFormat(range: number, timestamp: number, startOfWeek: number, dateTimeLabelFormats: Time.DateTimeLabelFormatsOption): string | undefined;
+    getDateFormat(range: number, timestamp: number, startOfWeek: number, dateTimeLabelFormats: Time.DateTimeLabelFormatsOption): Time.DateTimeFormat | undefined;
 }
 declare namespace Time {
-    interface DateTimeLabelFormatObject {
-        from?: string;
-        list?: string[];
-        main: string;
-        range?: boolean;
-        to?: string;
+    interface DateTimeFormatOptions extends Intl.DateTimeFormatOptions {
+        dateStyle?: 'full' | 'long' | 'medium' | 'short';
+        fractionalSecondDigits?: number;
+        prefix?: string;
+        suffix?: string;
+        timeStyle?: 'full' | 'long' | 'medium' | 'short';
     }
-    type DateTimeLabelFormatOption = (string | Array<string> | Time.DateTimeLabelFormatObject);
+    type DateTimeFormat = string | DateTimeFormatOptions;
+    interface DateTimeLabelFormatObject {
+        from?: DateTimeFormat;
+        list?: DateTimeFormat[];
+        main: DateTimeFormat;
+        range?: boolean;
+        to?: DateTimeFormat;
+    }
+    type DateTimeLabelFormatOption = (DateTimeFormat | Array<string> | Time.DateTimeLabelFormatObject);
     type DateTimeLabelFormatsOption = (Record<TimeUnit, DateTimeLabelFormatOption>);
     interface TimeOptions {
         Date?: any;
-        getTimezoneOffset?: Function;
+        locale?: string | Array<string>;
         timezone?: string;
         timezoneOffset?: number;
         useUTC?: boolean;
     }
     interface TimeFormatCallbackFunction {
-        (timestamp: number): string;
+        (this: Time, timestamp: number): string;
     }
     interface TimeNormalizedObject {
         count: number;

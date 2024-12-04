@@ -1,6 +1,7 @@
 import type DataEvent from './DataEvent';
 import type DataModifier from './Modifiers/DataModifier';
 import type DataTableOptions from './DataTableOptions';
+import DataTableCore from './DataTableCore.js';
 /**
  * Class to manage columns and rows in a table structure. It provides methods
  * to add, remove, and manipulate columns and rows, as well as to retrieve data
@@ -12,7 +13,7 @@ import type DataTableOptions from './DataTableOptions';
  * @param {Highcharts.DataTableOptions} [options]
  * Options to initialize the new DataTable instance.
  */
-declare class DataTable implements DataEvent.Emitter {
+declare class DataTable extends DataTableCore implements DataEvent.Emitter {
     /**
      * Null state for a row record. In some cases, a row in a table may not
      * contain any data or may be invalid. In these cases, a null state can be
@@ -52,22 +53,11 @@ declare class DataTable implements DataEvent.Emitter {
      * }
      */
     static isNull(row: (DataTable.Row | DataTable.RowObject)): boolean;
-    /**
-     * Constructs an instance of the DataTable class.
-     *
-     * @param {Highcharts.DataTableOptions} [options]
-     * Options to initialize the new DataTable instance.
-     */
     constructor(options?: DataTableOptions);
-    readonly autoId: boolean;
-    readonly columns: Record<string, DataTable.Column>;
-    readonly id: string;
+    private modifier?;
     private localRowIndexes?;
     modified: DataTable;
-    private modifier?;
     private originalRowIndexes?;
-    private rowCount;
-    private versionTag;
     /**
      * Returns a clone of this table. The cloned table is completely independent
      * of the original, and any changes made to the clone will not affect
@@ -422,27 +412,6 @@ declare class DataTable implements DataEvent.Emitter {
      */
     setCell(columnName: string, rowIndex: number, cellValue: DataTable.CellType, eventDetail?: DataEvent.Detail): void;
     /**
-     * Sets cell values for a column. Will insert a new column, if not found.
-     *
-     * @function Highcharts.DataTable#setColumn
-     *
-     * @param {string} columnName
-     * Column name to set.
-     *
-     * @param {Highcharts.DataTableColumn} [column]
-     * Values to set in the column.
-     *
-     * @param {number} [rowIndex=0]
-     * Index of the first row to change. (Default: 0)
-     *
-     * @param {Highcharts.DataTableEventDetail} [eventDetail]
-     * Custom information for pending events.
-     *
-     * @emits #setColumns
-     * @emits #afterSetColumns
-     */
-    setColumn(columnName: string, column?: DataTable.Column, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
-    /**
      * Sets cell values for multiple columns. Will insert new columns, if not
      * found.
      *
@@ -503,13 +472,16 @@ declare class DataTable implements DataEvent.Emitter {
      * @param {number} [rowIndex]
      * Index of the row to set. Leave `undefind` to add as a new row.
      *
+     * @param {boolean} [insert]
+     * Whether to insert the row at the given index, or to overwrite the row.
+     *
      * @param {Highcharts.DataTableEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits #setRows
      * @emits #afterSetRows
      */
-    setRow(row: (DataTable.Row | DataTable.RowObject), rowIndex?: number, eventDetail?: DataEvent.Detail): void;
+    setRow(row: (DataTable.Row | DataTable.RowObject), rowIndex?: number, insert?: boolean, eventDetail?: DataEvent.Detail): void;
     /**
      * Sets cell values for multiple rows. Will insert new rows, if no index was
      * was provided, or if the index is higher than the total number of table
@@ -523,13 +495,16 @@ declare class DataTable implements DataEvent.Emitter {
      * @param {number} [rowIndex]
      * Index of the first row to set. Leave `undefined` to add as new rows.
      *
+     * @param {boolean} [insert]
+     * Whether to insert the row at the given index, or to overwrite the row.
+     *
      * @param {Highcharts.DataTableEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits #setRows
      * @emits #afterSetRows
      */
-    setRows(rows: Array<(DataTable.Row | DataTable.RowObject)>, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
+    setRows(rows: Array<(DataTable.Row | DataTable.RowObject)>, rowIndex?: number, insert?: boolean, eventDetail?: DataEvent.Detail): void;
 }
 /**
  * Additionally it provides necessary types for events.

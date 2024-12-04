@@ -164,10 +164,10 @@ function clamp(value, min, max) {
  *                             is flipped (scaleY is -1)
  * @return {number}            The pixel position to use for a crisp display
  */
-const crisp = (value, lineWidth = 0, inverted) => {
+function crisp(value, lineWidth = 0, inverted) {
     const mod = lineWidth % 2 / 2, inverter = inverted ? -1 : 1;
     return (Math.round(value * inverter - mod) + mod) * inverter;
-};
+}
 // eslint-disable-next-line valid-jsdoc
 /**
  * Return the deep difference between two objects. It can either return the new
@@ -1021,6 +1021,17 @@ Math.easeInOutSine = function (pos) {
     return -0.5 * (Math.cos(Math.PI * pos) - 1);
 };
 /**
+ * Convenience function to get the align factor, used several places for
+ * computing positions
+ * @private
+ */
+const getAlignFactor = (align = '') => ({
+    center: 0.5,
+    right: 1,
+    middle: 0.5,
+    bottom: 1
+}[align] || 0);
+/**
  * Find the closest distance between two values of a two-dimensional array
  * @private
  * @function Highcharts.getClosestDistance
@@ -1153,29 +1164,6 @@ function getStyle(el, prop, toInt) {
     return style;
 }
 /**
- * Search for an item in an array.
- *
- * @function Highcharts.inArray
- *
- * @deprecated
- *
- * @param {*} item
- *        The item to search for.
- *
- * @param {Array<*>} arr
- *        The array or node collection to search in.
- *
- * @param {number} [fromIndex=0]
- *        The index to start searching from.
- *
- * @return {number}
- *         The index within the array, or -1 if not found.
- */
-function inArray(item, arr, fromIndex) {
-    error(32, false, void 0, { 'Highcharts.inArray': 'use Array.indexOf' });
-    return arr.indexOf(item, fromIndex);
-}
-/**
  * Return the value of the first element in the array that satisfies the
  * provided testing function.
  *
@@ -1205,22 +1193,6 @@ const find = Array.prototype.find ?
             }
         }
     };
-/**
- * Returns an array of a given object's own properties.
- *
- * @function Highcharts.keys
- * @deprecated
- *
- * @param {*} obj
- *        The object of which the properties are to be returned.
- *
- * @return {Array<string>}
- *         An array of strings that represents all the properties.
- */
-function keys(obj) {
-    error(32, false, void 0, { 'Highcharts.keys': 'use Object.keys' });
-    return Object.keys(obj);
-}
 /**
  * Get the element's offset position, corrected for `overflow: auto`.
  *
@@ -1272,108 +1244,6 @@ function objectEach(obj, fn, ctx) {
         }
     }
 }
-/**
- * Iterate over an array.
- *
- * @deprecated
- * @function Highcharts.each
- *
- * @param {Array<*>} arr
- *        The array to iterate over.
- *
- * @param {Function} fn
- *        The iterator callback. It passes three arguments:
- *        - `item`: The array item.
- *        - `index`: The item's index in the array.
- *        - `arr`: The array that each is being applied to.
- *
- * @param {*} [ctx]
- *        The context.
- *
- * @return {void}
- */
-/**
- * Filter an array by a callback.
- *
- * @deprecated
- * @function Highcharts.grep
- *
- * @param {Array<*>} arr
- *        The array to filter.
- *
- * @param {Function} callback
- *        The callback function. The function receives the item as the first
- *        argument. Return `true` if the item is to be preserved.
- *
- * @return {Array<*>}
- *         A new, filtered array.
- */
-/**
- * Map an array by a callback.
- *
- * @deprecated
- * @function Highcharts.map
- *
- * @param {Array<*>} arr
- *        The array to map.
- *
- * @param {Function} fn
- *        The callback function. Return the new value for the new array.
- *
- * @return {Array<*>}
- *         A new array item with modified items.
- */
-/**
- * Reduce an array to a single value.
- *
- * @deprecated
- * @function Highcharts.reduce
- *
- * @param {Array<*>} arr
- *        The array to reduce.
- *
- * @param {Function} fn
- *        The callback function. Return the reduced value. Receives 4
- *        arguments: Accumulated/reduced value, current value, current array
- *        index, and the array.
- *
- * @param {*} initialValue
- *        The initial value of the accumulator.
- *
- * @return {*}
- *         The reduced value.
- */
-/**
- * Test whether at least one element in the array passes the test implemented by
- * the provided function.
- *
- * @deprecated
- * @function Highcharts.some
- *
- * @param {Array<*>} arr
- *        The array to test
- *
- * @param {Function} fn
- *        The function to run on each item. Return truthy to pass the test.
- *        Receives arguments `currentValue`, `index` and `array`.
- *
- * @param {*} ctx
- *        The context.
- *
- * @return {boolean}
- */
-objectEach({
-    map: 'map',
-    each: 'forEach',
-    grep: 'filter',
-    reduce: 'reduce',
-    some: 'some'
-}, function (val, key) {
-    H[key] = function (arr) {
-        error(32, false, void 0, { [`Highcharts.${key}`]: `use Array.${val}` });
-        return Array.prototype[val].apply(arr, [].slice.call(arguments, 1));
-    };
-});
 /* eslint-disable valid-jsdoc */
 /**
  * Add an event listener.
@@ -1666,6 +1536,16 @@ function useSerialIds(mode) {
 function isFunction(obj) {
     return typeof obj === 'function';
 }
+function ucfirst(s) {
+    return ((isString(s) ?
+        s.substring(0, 1).toUpperCase() + s.substring(1) :
+        String(s)));
+}
+/* *
+ *
+ *  External
+ *
+ * */
 // Register Highcharts as a plugin in jQuery
 if (win.jQuery) {
     /**
@@ -1745,11 +1625,11 @@ const Utilities = {
     extendClass,
     find,
     fireEvent,
+    getAlignFactor,
     getClosestDistance,
     getMagnitude,
     getNestedProperty,
     getStyle,
-    inArray,
     insertItem,
     isArray,
     isClass,
@@ -1758,7 +1638,6 @@ const Utilities = {
     isNumber,
     isObject,
     isString,
-    keys,
     merge,
     normalizeTickInterval,
     objectEach,
@@ -1774,6 +1653,7 @@ const Utilities = {
     stableSort,
     syncTimeout,
     timeUnits,
+    ucfirst,
     uniqueKey,
     useSerialIds,
     wrap
@@ -1893,6 +1773,11 @@ export default Utilities;
 */ /**
 * Height of the element.
 * @name Highcharts.CSSObject#height
+* @type {number|undefined}
+*/ /**
+* The maximum number of lines. If lines are cropped away, an ellipsis will be
+* added.
+* @name Highcharts.CSSObject#lineClamp
 * @type {number|undefined}
 */ /**
 * Width of the element border.

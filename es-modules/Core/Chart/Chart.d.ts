@@ -128,6 +128,7 @@ declare class Chart {
     loadingDiv?: HTMLDOMElement;
     loadingShown?: boolean;
     loadingSpan?: HTMLDOMElement;
+    locale?: string | Array<string>;
     margin: Array<number>;
     marginBottom?: number;
     numberFormatter: NumberFormatterCallbackFunction;
@@ -287,11 +288,11 @@ declare class Chart {
      * Create the Axis instances based on the config options.
      *
      * @private
-     * @function Highcharts.Chart#getAxes
-     * @emits Highcharts.Chart#event:afterGetAxes
-     * @emits Highcharts.Chart#event:getAxes
+     * @function Highcharts.Chart#createAxes
+     * @emits Highcharts.Chart#event:afterCreateAxes
+     * @emits Highcharts.Chart#event:createAxes
      */
-    getAxes(): void;
+    createAxes(): void;
     /**
      * Returns an array of all currently selected points in the chart. Points
      * can be selected by clicking or programmatically by the
@@ -354,12 +355,12 @@ declare class Chart {
      *
      * @private
      * @function Highcharts.Chart#applyDescription
-     * @param name {string}
+     * @param key {string}
      * Either title, subtitle or caption
      * @param {Highcharts.TitleOptions|Highcharts.SubtitleOptions|Highcharts.CaptionOptions|undefined} explicitOptions
      * The options to set, will be merged with default options.
      */
-    applyDescription(name: ('title' | 'subtitle' | 'caption'), explicitOptions?: Chart.DescriptionOptionsType): void;
+    applyDescription(key: Chart.DescriptionKey, explicitOptions?: Chart.DescriptionOptionsType): void;
     /**
      * Internal function to lay out the chart title, subtitle and caption, and
      * cache the full offset height for use in `getMargins`. The result is
@@ -910,9 +911,10 @@ declare namespace Chart {
         text?: string;
         useHTML?: boolean;
         verticalAlign?: VerticalAlignValue;
-        widthAdjust?: number;
+        width?: number;
         x?: number;
         y?: number;
+        zIndex?: number;
     }
     interface ChartTransformParams {
         axes?: Array<Axis>;
@@ -938,6 +940,7 @@ declare namespace Chart {
         text?: string;
     }
     type DescriptionOptionsType = (TitleOptions | SubtitleOptions | CaptionOptions);
+    type DescriptionKey = 'title' | 'subtitle' | 'caption';
     interface IsInsideOptionsObject {
         axis?: Axis;
         ignoreX?: boolean;
@@ -950,6 +953,11 @@ declare namespace Chart {
     interface LabelCollectorFunction {
         (): (Array<(SVGElement | undefined)> | undefined);
     }
+    interface LayoutTitleEventObject {
+        alignTo: BBoxObject;
+        key: Chart.DescriptionKey;
+        textPxLength: number;
+    }
     interface Renderer extends SVGRenderer {
         plotBox: BBoxObject;
         spacingBox: BBoxObject;
@@ -961,21 +969,24 @@ declare namespace Chart {
         text?: string;
         useHTML?: boolean;
         verticalAlign?: VerticalAlignValue;
-        widthAdjust?: number;
+        width?: number;
         x?: number;
         y?: number;
+        zIndex?: number;
     }
     interface TitleOptions {
         align?: AlignValue;
         floating?: boolean;
         margin?: number;
+        minScale?: number;
         style: CSSObject;
         text?: string;
         useHTML?: boolean;
         verticalAlign?: VerticalAlignValue;
-        widthAdjust?: number;
+        width?: number;
         x?: number;
         y?: number;
+        zIndex?: number;
     }
 }
 export default Chart;

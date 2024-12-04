@@ -26,6 +26,7 @@ declare namespace Globals {
         theadElement: string;
         tbodyElement: string;
         rowElement: string;
+        rowEven: string;
         rowOdd: string;
         hoveredRow: string;
         columnElement: string;
@@ -35,17 +36,18 @@ declare namespace Globals {
         rowsContentNowrap: string;
         headerCell: string;
         headerCellContent: string;
-        headerCellResized: string;
         headerRow: string;
         noData: string;
         columnFirst: string;
         columnSortable: string;
+        columnSortableIcon: string;
         columnSortedAsc: string;
         columnSortedDesc: string;
         resizerHandles: string;
         resizedColumn: string;
         creditsContainer: string;
         creditsText: string;
+        visuallyHidden: string;
     };
     const win: Window & typeof globalThis;
     const userAgent: string;

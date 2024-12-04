@@ -1,10 +1,10 @@
 import type { Options, GroupedHeaderOptions, IndividualColumnOptions } from './Options';
 import type Column from './Table/Column';
+import Accessibility from './Accessibility/Accessibility.js';
 import Credits from './Credits.js';
-import Table from './Table/Table.js';
 import DataTable from '../Data/DataTable.js';
+import Table from './Table/Table.js';
 import QueryingController from './Querying/QueryingController.js';
-import Globals from './Globals.js';
 /**
  * Creates a grid structure (table).
  */
@@ -44,14 +44,13 @@ declare class DataGrid {
      */
     static dataGrid(renderTo: string | HTMLElement, options: Options, async: true): Promise<DataGrid>;
     /**
-     * Default options for all DataGrid instances.
-     * @internal
-     */
-    static readonly defaultOptions: Globals.DeepPartial<Options>;
-    /**
      * An array containing the current DataGrid objects in the page.
      */
     static readonly dataGrids: Array<(DataGrid | undefined)>;
+    /**
+     * The accessibility controller.
+     */
+    accessibility?: Accessibility;
     /**
      * The user options declared for the columns as an object of column ID to
      * column options.
@@ -130,6 +129,10 @@ declare class DataGrid {
      * The callback that is called after the data grid is loaded.
      */
     constructor(renderTo: string | HTMLElement, options: Options, afterLoadCallback?: DataGrid.AfterLoadCallback);
+    /**
+     * Initializes the accessibility controller.
+     */
+    private initAccessibility;
     /**
      * Initializes the container of the data grid.
      *

@@ -16,7 +16,9 @@ import Component from '../Component.js';
 import DataGridSyncs from './DataGridSyncs/DataGridSyncs.js';
 import DataGridComponentDefaults from './DataGridComponentDefaults.js';
 import U from '../../../Core/Utilities.js';
+import DU from '../../Utilities.js';
 const { merge, diffObjects } = U;
+const { deepClone } = DU;
 /* *
  *
  *  Class
@@ -116,9 +118,9 @@ class DataGridComponent extends Component {
     getEditableOptions() {
         const componentOptions = this.options;
         const dataGridOptions = this.dataGrid?.options;
-        return merge({
+        return deepClone(merge({
             dataGridOptions: dataGridOptions
-        }, componentOptions);
+        }, componentOptions), ['editableOptions', 'dataTable']);
     }
     getOptionsOnDrop(sidebar) {
         const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();

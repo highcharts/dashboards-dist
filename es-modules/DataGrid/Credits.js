@@ -1,6 +1,6 @@
 /* *
  *
- *  Data Grid Credits class
+ *  DataGrid Credits class
  *
  *  (c) 2020-2024 Highsoft AS
  *
@@ -34,7 +34,7 @@ class Credits {
      * Construct the credits.
      *
      * @param dataGrid
-     * The Data Grid Table instance which the credits belong to.
+     * The DataGrid Table instance which the credits belong to.
      */
     constructor(dataGrid) {
         this.dataGrid = dataGrid;

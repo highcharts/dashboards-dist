@@ -5,7 +5,7 @@ import type DataGrid from './DataGrid';
  */
 declare class Credits {
     /**
-     * The Data Grid Table instance which the credits belong to.
+     * The DataGrid Table instance which the credits belong to.
      */
     dataGrid: DataGrid;
     /**
@@ -24,7 +24,7 @@ declare class Credits {
      * Construct the credits.
      *
      * @param dataGrid
-     * The Data Grid Table instance which the credits belong to.
+     * The DataGrid Table instance which the credits belong to.
      */
     constructor(dataGrid: DataGrid);
     /**

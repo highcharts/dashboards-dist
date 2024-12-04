@@ -7,6 +7,7 @@ import type HTMLAttributes from './Renderer/HTML/HTMLAttributes';
 import type Series from './Series/Series';
 import type SVGAttributes from './Renderer/SVG/SVGAttributes';
 import type Time from './Time';
+import type { TypedArray } from './Series/SeriesOptions';
 type NonArray<T> = T extends Array<unknown> ? never : T;
 type NonFunction<T> = T extends Function ? never : T;
 type NullType = (null | undefined);
@@ -56,6 +57,18 @@ declare function merge<T1 extends object = object, T2 = unknown, T3 = unknown, T
  * @return {number} Returns a number value within min and max.
  */
 declare function clamp(value: number, min: number, max: number): number;
+/**
+ * Utility for crisping a line position to the nearest full pixel depening on
+ * the line width
+ * @param {number} value       The raw pixel position
+ * @param {number} lineWidth   The line width
+ * @param {boolean} [inverted] Whether the containing group is inverted.
+ *                             Crisping round numbers on the y-scale need to go
+ *                             to the other side because the coordinate system
+ *                             is flipped (scaleY is -1)
+ * @return {number}            The pixel position to use for a crisp display
+ */
+declare function crisp(value: number, lineWidth?: number, inverted?: boolean): number;
 /**
  * Return the deep difference between two objects. It can either return the new
  * properties, or optionally return the old values of new properties.
@@ -459,7 +472,7 @@ declare function stableSort<T>(arr: Array<T>, sortFunction: (a: T, b: T) => numb
  * @return {number}
  *         The lowest number.
  */
-declare function arrayMin(data: Array<any>): number;
+declare function arrayMin(data: Array<any> | TypedArray): number;
 /**
  * Non-recursive method to find the lowest member of an array. `Math.max` raises
  * a maximum call stack size exceeded error in Chrome when trying to apply more
@@ -473,7 +486,7 @@ declare function arrayMin(data: Array<any>): number;
  * @return {number}
  *         The highest number.
  */
-declare function arrayMax(data: Array<any>): number;
+declare function arrayMax(data: Array<any> | TypedArray): number;
 /**
  * Utility method that destroys any SVGElement instances that are properties on
  * the given object. It loops all properties and invokes destroy if there is a
@@ -523,7 +536,7 @@ declare function correctFloat(num: number, prec?: number): number;
  * @return {number | undefined}
  *          The closest distance between values
  */
-declare function getClosestDistance(arrays: number[][], onError?: Function): (number | undefined);
+declare function getClosestDistance(arrays: (number[] | TypedArray)[], onError?: Function): (number | undefined);
 /**
  * Returns the value of a property path on a given object.
  *
@@ -542,39 +555,6 @@ declare function getClosestDistance(arrays: number[][], onError?: Function): (nu
 declare function getNestedProperty(path: string, parent: unknown): unknown;
 declare function getStyle(el: HTMLDOMElement, prop: string, toInt: true): (number | undefined);
 declare function getStyle(el: HTMLDOMElement, prop: string, toInt?: false): (number | string | undefined);
-/**
- * Search for an item in an array.
- *
- * @function Highcharts.inArray
- *
- * @deprecated
- *
- * @param {*} item
- *        The item to search for.
- *
- * @param {Array<*>} arr
- *        The array or node collection to search in.
- *
- * @param {number} [fromIndex=0]
- *        The index to start searching from.
- *
- * @return {number}
- *         The index within the array, or -1 if not found.
- */
-declare function inArray(item: any, arr: Array<any>, fromIndex?: number): number;
-/**
- * Returns an array of a given object's own properties.
- *
- * @function Highcharts.keys
- * @deprecated
- *
- * @param {*} obj
- *        The object of which the properties are to be returned.
- *
- * @return {Array<string>}
- *         An array of strings that represents all the properties.
- */
-declare function keys(obj: any): Array<string>;
 /**
  * Get the element's offset position, corrected for `overflow: auto`.
  *
@@ -699,6 +679,7 @@ declare function fireEvent<T>(el: T, type: string, eventArguments?: (AnyRecord |
  */
 declare function useSerialIds(mode?: boolean): (boolean | undefined);
 declare function isFunction(obj: unknown): obj is Function;
+declare function ucfirst(s: unknown): string;
 declare namespace Utilities {
     type RelativeSize = (number | string);
     interface ErrorMessageEventObject {
@@ -740,7 +721,7 @@ declare const Utilities: {
     clearTimeout: typeof internalClearTimeout;
     correctFloat: typeof correctFloat;
     createElement: typeof createElement;
-    crisp: (value: number, lineWidth?: number, inverted?: boolean) => number;
+    crisp: typeof crisp;
     css: typeof css;
     defined: typeof defined;
     destroyObjectProperties: typeof destroyObjectProperties;
@@ -752,11 +733,11 @@ declare const Utilities: {
     extendClass: typeof extendClass;
     find: <T>(arr: Array<T>, callback: Utilities.FindCallback<T>) => (T | undefined);
     fireEvent: typeof fireEvent;
+    getAlignFactor: (align?: string) => number;
     getClosestDistance: typeof getClosestDistance;
     getMagnitude: typeof getMagnitude;
     getNestedProperty: typeof getNestedProperty;
     getStyle: typeof getStyle;
-    inArray: typeof inArray;
     insertItem: typeof insertItem;
     isArray: typeof isArray;
     isClass: typeof isClass;
@@ -765,7 +746,6 @@ declare const Utilities: {
     isNumber: typeof isNumber;
     isObject: typeof isObject;
     isString: typeof isString;
-    keys: typeof keys;
     merge: typeof merge;
     normalizeTickInterval: typeof normalizeTickInterval;
     objectEach: typeof objectEach;
@@ -781,6 +761,7 @@ declare const Utilities: {
     stableSort: typeof stableSort;
     syncTimeout: typeof syncTimeout;
     timeUnits: Record<Time.TimeUnit, number>;
+    ucfirst: typeof ucfirst;
     uniqueKey: () => string;
     useSerialIds: typeof useSerialIds;
     wrap: typeof wrap;

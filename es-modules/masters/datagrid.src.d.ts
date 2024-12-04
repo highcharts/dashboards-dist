@@ -14,7 +14,9 @@ import _DataGrid from '../DataGrid/DataGrid.js';
 import DataModifier from '../Data/Modifiers/DataModifier.js';
 import DataPool from '../Data/DataPool.js';
 import DataTable from '../Data/DataTable.js';
+import Defaults from '../DataGrid/Defaults.js';
 import Globals from '../DataGrid/Globals.js';
+import whcm from '../Accessibility/HighContrastMode.js';
 import '../Data/Connectors/CSVConnector.js';
 import '../Data/Connectors/GoogleSheetsConnector.js';
 import '../Data/Connectors/HTMLTableConnector.js';
@@ -36,6 +38,9 @@ declare global {
         DataConnector: typeof DataConnector;
         DataPool: typeof DataPool;
         DataTable: typeof DataTable;
+        defaultOptions: typeof Defaults.defaultOptions;
+        setOptions: typeof Defaults.setOptions;
+        isHighContrastModeActive: typeof whcm.isHighContrastModeActive;
     }
     interface Window {
         DataGrid: DataGridNamespace;

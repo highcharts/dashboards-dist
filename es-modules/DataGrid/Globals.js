@@ -47,6 +47,7 @@ var Globals;
         theadElement: Globals.classNamePrefix + 'thead',
         tbodyElement: Globals.classNamePrefix + 'tbody',
         rowElement: Globals.classNamePrefix + 'row',
+        rowEven: Globals.classNamePrefix + 'row-even',
         rowOdd: Globals.classNamePrefix + 'row-odd',
         hoveredRow: Globals.classNamePrefix + 'hovered-row',
         columnElement: Globals.classNamePrefix + 'column',
@@ -56,17 +57,18 @@ var Globals;
         rowsContentNowrap: Globals.classNamePrefix + 'rows-content-nowrap',
         headerCell: Globals.classNamePrefix + 'header-cell',
         headerCellContent: Globals.classNamePrefix + 'header-cell-content',
-        headerCellResized: Globals.classNamePrefix + 'header-cell-resized',
         headerRow: Globals.classNamePrefix + 'head-row-content',
         noData: Globals.classNamePrefix + 'no-data',
         columnFirst: Globals.classNamePrefix + 'column-first',
         columnSortable: Globals.classNamePrefix + 'column-sortable',
+        columnSortableIcon: Globals.classNamePrefix + 'column-sortable-icon',
         columnSortedAsc: Globals.classNamePrefix + 'column-sorted-asc',
         columnSortedDesc: Globals.classNamePrefix + 'column-sorted-desc',
         resizerHandles: Globals.classNamePrefix + 'column-resizer',
         resizedColumn: Globals.classNamePrefix + 'column-resized',
         creditsContainer: Globals.classNamePrefix + 'credits-container',
-        creditsText: Globals.classNamePrefix + 'credits'
+        creditsText: Globals.classNamePrefix + 'credits',
+        visuallyHidden: Globals.classNamePrefix + 'visually-hidden'
     };
     Globals.win = window;
     Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '';

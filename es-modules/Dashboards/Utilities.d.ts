@@ -63,6 +63,17 @@ declare function addEvent<T>(el: (D.Class<T> | T), type: string, fn: (Utilities.
 */
 declare function merge<T extends Object>(a: (true | T | undefined), ...n: Array<unknown>): T;
 /**
+ * Returns a deep copy of an argument. It differs from `merge` in that it copies
+ * also arrays.
+ *
+ * @param value
+ * The value to clone.
+ *
+ * @param excludedKeys
+ * An array of keys to exclude from the clone.
+ */
+declare function deepClone(value: any, excludedKeys?: string[]): any;
+/**
  * Creates a session-dependent unique key string for reference purposes.
  *
  * @function Dashboards.uniqueKey
@@ -149,6 +160,7 @@ declare namespace Utilities {
 }
 declare const Utilities: {
     addEvent: typeof addEvent;
+    deepClone: typeof deepClone;
     error: typeof error;
     fireEvent: typeof fireEvent;
     merge: typeof merge;

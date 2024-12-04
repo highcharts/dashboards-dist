@@ -18,8 +18,10 @@ import AST from '../../../Core/Renderer/HTML/AST.js';
 import Component from '../Component.js';
 import HTMLComponentDefaults from './HTMLComponentDefaults.js';
 import HTMLSyncs from './HTMLSyncs/HTMLSyncs.js';
+import DU from '../../Utilities.js';
 import U from '../../../Core/Utilities.js';
 const { merge, diffObjects } = U;
+const { deepClone } = DU;
 // TODO: This may affect the AST parsing in Highcharts
 // should look into adding these as options if possible
 // Needs to go in a composition in the Highcharts plugin
@@ -178,6 +180,9 @@ class HTMLComponent extends Component {
             this.options.elements = this.elements;
             this.constructTree();
         }
+        else if (options.elements) {
+            this.elements = options.elements;
+        }
         await super.update(options, shouldRerender);
         this.emit({ type: 'afterUpdate' });
     }
@@ -249,14 +254,7 @@ class HTMLComponent extends Component {
      * Retrieves editable options for the HTML component.
      */
     getEditableOptions() {
-        const component = this;
-        // When adding a new component, the elements are not yet set.
-        if (this.elements.length) {
-            return merge(component.options, {
-                elements: this.elements
-            });
-        }
-        return component.options;
+        return deepClone(this.options, ['editableOptions']);
     }
     /**
      * Get the value of the editable option by property path. Parse the elements

@@ -171,6 +171,35 @@ function merge(a, ...n) {
     return obj;
 }
 /**
+ * Returns a deep copy of an argument. It differs from `merge` in that it copies
+ * also arrays.
+ *
+ * @param value
+ * The value to clone.
+ *
+ * @param excludedKeys
+ * An array of keys to exclude from the clone.
+ */
+function deepClone(value, excludedKeys) {
+    if (Array.isArray(value)) {
+        return value.map((v) => deepClone(v, excludedKeys));
+    }
+    if (value && typeof value === 'object') {
+        const clone = {};
+        const keys = Object.keys(value);
+        for (const key of keys) {
+            if (excludedKeys && excludedKeys.includes(key)) {
+                clone[key] = value[key];
+            }
+            else {
+                clone[key] = deepClone(value[key], excludedKeys);
+            }
+        }
+        return clone;
+    }
+    return value;
+}
+/**
  * Creates a session-dependent unique key string for reference purposes.
  *
  * @function Dashboards.uniqueKey
@@ -412,6 +441,7 @@ function removeEvent(el, type, fn) {
  * */
 const Utilities = {
     addEvent,
+    deepClone,
     error,
     fireEvent,
     merge,
