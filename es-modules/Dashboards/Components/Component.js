@@ -22,7 +22,7 @@ import Sync from './Sync/Sync.js';
 import Globals from '../Globals.js';
 const { classNamePrefix } = Globals;
 import U from '../../Core/Utilities.js';
-const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, diffObjects } = U;
+const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, diffObjects, removeEvent } = U;
 import CU from './ComponentUtilities.js';
 const { getMargins, getPaddings } = CU;
 import DU from '../Utilities.js';
@@ -163,12 +163,12 @@ class Component {
         if (cell) {
             this.attachCellListeners();
             this.on('update', () => {
-                if (this.cell instanceof Cell) {
+                if (Cell.isCell(this.cell)) {
                     this.cell.setLoadingState();
                 }
             });
             this.on('afterRender', () => {
-                if (this.cell instanceof Cell) {
+                if (Cell.isCell(this.cell)) {
                     this.cell.setLoadingState(false);
                 }
             });
@@ -210,7 +210,7 @@ class Component {
             }
         }
         if (this.cell &&
-            this.cell instanceof Cell &&
+            Cell.isCell(this.cell) &&
             Object.keys(this.cell).length) {
             const board = this.cell.row.layout.board;
             this.cellListeners.push(
@@ -547,6 +547,8 @@ class Component {
         for (const connectorHandler of this.connectorHandlers) {
             connectorHandler.destroy();
         }
+        // Used to removed the onTableChanged event.
+        removeEvent(this);
         this.element.remove();
     }
     /** @internal */

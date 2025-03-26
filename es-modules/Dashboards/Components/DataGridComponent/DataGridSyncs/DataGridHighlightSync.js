@@ -23,7 +23,8 @@ const defaultOptions = {
 };
 const syncPair = {
     emitter: function () {
-        if (this.type !== 'DataGrid') {
+        if (this.type !== 'DataGrid' && // To be removed in v4
+            this.type !== 'Grid') {
             return;
         }
         const component = this;
@@ -65,7 +66,8 @@ const syncPair = {
         };
     },
     handler: function () {
-        if (this.type !== 'DataGrid') {
+        if (this.type !== 'DataGrid' && // To be removed in v4
+            this.type !== 'Grid') {
             return;
         }
         const component = this;
@@ -94,14 +96,14 @@ const syncPair = {
             if (highlightOptions.autoScroll) {
                 viewport.scrollToRow(rowIndex);
             }
-            dataGrid.hoverRow(rowIndex);
-            dataGrid.hoverColumn(column);
+            dataGrid.syncRow(rowIndex);
+            dataGrid.syncColumn(column);
         };
         const handleCursorOut = () => {
             const { dataGrid } = component;
             if (dataGrid) {
-                dataGrid.hoverColumn();
-                dataGrid.hoverRow();
+                dataGrid.syncColumn();
+                dataGrid.syncRow();
             }
         };
         const registerCursorListeners = () => {

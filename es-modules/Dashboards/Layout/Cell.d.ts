@@ -126,6 +126,10 @@ declare class Cell extends GUIElement {
 }
 declare namespace Cell {
     /**
+     * Checks if a valid cell instance.
+     */
+    function isCell(cell: unknown): cell is Cell;
+    /**
      * Responsive options of the cell.
      *
      * @deprecated

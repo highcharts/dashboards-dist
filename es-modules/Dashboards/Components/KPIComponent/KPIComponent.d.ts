@@ -5,6 +5,13 @@ import type Options from './KPIComponentOptions';
 import type SidebarPopup from '../../EditMode/SidebarPopup';
 import type Types from '../../../Shared/Types';
 import Component from '../Component.js';
+import SUM from '../../../Data/Formula/Functions/SUM.js';
+import AVERAGE from '../../../Data/Formula/Functions/AVERAGE.js';
+import MEDIAN from '../../../Data/Formula/Functions/MEDIAN.js';
+import MAX from '../../../Data/Formula/Functions/MAX.js';
+import MIN from '../../../Data/Formula/Functions/MIN.js';
+import COUNT from '../../../Data/Formula/Functions/COUNT.js';
+import PRODUCT from '../../../Data/Formula/Functions/PRODUCT.js';
 /**
  *
  * Class that represents a KPI component.
@@ -80,6 +87,18 @@ declare class KPIComponent extends Component {
      */
     static defaultChartOptions: Types.DeepPartial<ChartOptions>;
     /**
+     * The formula option's default formula functions map.
+     */
+    static formulaFunctions: {
+        readonly SUM: typeof SUM;
+        readonly AVERAGE: typeof AVERAGE;
+        readonly MEDIAN: typeof MEDIAN;
+        readonly MAX: typeof MAX;
+        readonly MIN: typeof MIN;
+        readonly COUNT: typeof COUNT;
+        readonly PRODUCT: typeof PRODUCT;
+    };
+    /**
      * KPI component's options.
      */
     options: Options;
@@ -136,6 +155,16 @@ declare class KPIComponent extends Component {
      * Destroys the highcharts component.
      */
     destroy(): void;
+    /**
+     * Gets a proper value, according to the provided formula option.
+     *
+     * @returns
+     * The formula value. Can be a number internally, or a string from the
+     * callback function.
+     *
+     * @internal
+     */
+    private getFormulaValue;
     /**
      * Gets the default value that should be displayed in the KPI.
      *
@@ -202,7 +231,7 @@ declare class KPIComponent extends Component {
     /**
      * Get the KPI component's options.
      * @returns
-     * The JSON of KPI component's options.
+     * KPI component's options.
      *
      * @internal
      *
@@ -212,6 +241,8 @@ declare class KPIComponent extends Component {
 declare namespace KPIComponent {
     /** @internal */
     type ComponentType = KPIComponent;
+    /** @internal */
+    type FormulaType = keyof typeof KPIComponent.formulaFunctions;
     /** @internal */
     interface ClassJSON extends Component.JSON {
         options: ComponentJSONOptions;

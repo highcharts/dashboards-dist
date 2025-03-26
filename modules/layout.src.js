@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Layout 3.1.0 (2024-12-04)
+ * @license Highcharts Dashboards Layout 3.2.0 (2025-03-26)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -263,6 +263,12 @@
                 return;
             }
             const lang = options.lang, value = options.value, title = options.title || options.name, langKey = options.langKey;
+            if (options.isNested) {
+                const labeledToggleWrapper = createElement('div', {
+                    className: EditGlobals.classNames.labeledToggleWrapper
+                }, {}, parentElement);
+                parentElement = labeledToggleWrapper;
+            }
             const toggleContainer = createElement('button', {
                 className: EditGlobals.classNames.toggleContainer,
                 type: 'button',
@@ -271,7 +277,7 @@
                 ariaLabel: langKey ? lang.accessibility[langKey][options.name] : ''
             }, {}, parentElement);
             if (title) {
-                renderText(toggleContainer, { title });
+                renderText(options.isNested ? parentElement : toggleContainer, { title });
             }
             if (options.enabledOnOffLabels) {
                 renderText(toggleContainer, {
@@ -895,7 +901,7 @@
 
         return EditToolbar;
     });
-    _registerModule(_modules, 'Dashboards/EditMode/Toolbar/CellEditToolbar.js', [_modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/Toolbar/EditToolbar.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (Cell, EditGlobals, EditToolbar, GUIElement, U) {
+    _registerModule(_modules, 'Dashboards/EditMode/Toolbar/CellEditToolbar.js', [_modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/Toolbar/EditToolbar.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (Cell, EditGlobals, EditToolbar, GUIElement, H, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -911,6 +917,7 @@
          *  - Sophie Bremer
          *
          * */
+        const { isFirefox } = H;
         const { merge, fireEvent, objectEach } = U;
         /**
          * @internal
@@ -925,12 +932,18 @@
                         icon: iconURLPrefix + 'drag.svg',
                         events: {
                             onmousedown: function (e) {
+                                // #22546, workaround for Firefox, where mouseenter
+                                // event is not fired when triggering it while dragging
+                                // another element.
+                                if (isFirefox) {
+                                    e.preventDefault();
+                                }
                                 const cellEditToolbar = this.menu
                                     .parent;
                                 const dragDrop = cellEditToolbar.editMode.dragDrop;
                                 if (dragDrop &&
                                     cellEditToolbar.cell &&
-                                    cellEditToolbar.cell instanceof Cell) {
+                                    Cell.isCell(cellEditToolbar.cell)) {
                                     dragDrop.onDragStart(e, cellEditToolbar.cell);
                                 }
                             }
@@ -1061,14 +1074,18 @@
             }
             onCellDestroy() {
                 const toolbar = this;
-                if (toolbar.cell && toolbar.cell instanceof Cell) {
+                if (toolbar.cell && Cell.isCell(toolbar.cell)) {
                     const row = toolbar.cell.row;
                     const cellId = toolbar.cell.id;
+                    // Disable row highlight.
+                    toolbar.cell.row.setHighlight();
                     toolbar.resetEditedCell();
                     toolbar.cell.destroy();
                     toolbar.cell = void 0;
                     // Hide row and cell toolbars.
                     toolbar.editMode.hideToolbars(['cell', 'row']);
+                    // Disable resizer.
+                    toolbar.editMode.resizer?.disableResizer();
                     // Call cellResize dashboard event.
                     if (row && row.cells && row.cells.length) {
                         fireEvent(toolbar.editMode.board, 'cellResize', {
@@ -1724,16 +1741,16 @@
                         currentLevel[key] = {};
                     }
                     currentLevel = currentLevel[key];
-                    if (key === 'dataGridOptions') {
-                        const realDataGridOptions = this.component.dataGrid?.options;
-                        if (realDataGridOptions) {
+                    if (key === 'gridOptions') {
+                        const realGridOptions = this.component.dataGrid?.options;
+                        if (realGridOptions) {
                             const oldOptionsBuffer = this.oldOptionsBuffer;
-                            if (!oldOptionsBuffer.dataGridOptions) {
-                                oldOptionsBuffer.dataGridOptions = {};
+                            if (!oldOptionsBuffer.gridOptions) {
+                                oldOptionsBuffer.gridOptions = {};
                             }
                             currentOldDataGridOptionsBufferLevel =
-                                oldOptionsBuffer.dataGridOptions;
-                            currentDataGridOptionsLevel = realDataGridOptions;
+                                oldOptionsBuffer.gridOptions;
+                            currentDataGridOptionsLevel = realGridOptions;
                         }
                     }
                     else if (currentDataGridOptionsLevel &&
@@ -1801,6 +1818,7 @@
                     ...options,
                     iconsURLPrefix: this.iconsURLPrefix,
                     value: component.getEditableOptionValue(options.propertyPath),
+                    enabledOnOffLabels: options.type === 'toggle',
                     onchange: (value) => this.updateOptions(options.propertyPath || [], value)
                 });
             }
@@ -1826,6 +1844,7 @@
                     const accordionOptions = nestedOptions[i].options;
                     const showToggle = !!nestedOptions[i].showToggle;
                     const propertyPath = nestedOptions[i].propertyPath || [];
+                    const lang = (component.board?.editMode || EditGlobals).lang;
                     const collapsedHeader = EditRenderer.renderCollapseHeader(parentElement, {
                         name,
                         isEnabled: !!component.getEditableOptionValue(propertyPath),
@@ -1834,10 +1853,10 @@
                         onchange: (value) => this.updateOptions(propertyPath, value),
                         isNested: !!accordionOptions,
                         isStandalone: !accordionOptions,
-                        lang: (component.board?.editMode || EditGlobals).lang
+                        lang
                     });
                     for (let j = 0, jEnd = accordionOptions?.length; j < jEnd; ++j) {
-                        this.renderAccordion(accordionOptions[j], collapsedHeader.content, component);
+                        this.renderAccordion(merge(accordionOptions[j], { lang, isNested: true }), collapsedHeader.content, component);
                     }
                 }
                 return;
@@ -2071,7 +2090,7 @@
                     editMode.resizer.disableResizer();
                 }
                 // Remove highlight from the row.
-                if (editMode.editCellContext instanceof Cell &&
+                if (Cell.isCell(editMode.editCellContext) &&
                     editMode.editCellContext.row) {
                     editMode.editCellContext.row.setHighlight();
                 }
@@ -2116,7 +2135,8 @@
                     // Drag drop new component.
                     gridElement.addEventListener('mousedown', (e) => {
                         e.preventDefault();
-                        if (sidebar.editMode.dragDrop) {
+                        const dragDrop = sidebar.editMode.dragDrop;
+                        if (dragDrop) {
                             // Workaround for Firefox, where mouseleave is not triggered
                             // correctly when dragging.
                             const onMouseMove = (event) => {
@@ -2137,7 +2157,7 @@
                             // Add event listeners
                             document.addEventListener('mousemove', onMouseMove);
                             document.addEventListener('mouseup', onMouseUp);
-                            sidebar.editMode.dragDrop.onDragStart(e, void 0, (dropContext) => {
+                            dragDrop.onDragStart(e, void 0, (dropContext) => {
                                 // Add component if there is no layout yet.
                                 if (this.editMode.board.layouts.length === 0) {
                                     const board = this.editMode.board, newLayoutId = GUIElement.getElementId('layout'), layout = new Layout(board, {
@@ -2152,12 +2172,31 @@
                                     }
                                     dropContext = layout.rows[0];
                                 }
-                                const newCell = components[i].onDrop(sidebar, dropContext);
-                                if (newCell) {
-                                    sidebar.editMode.setEditCellContext(newCell);
-                                    sidebar.show(newCell);
-                                    newCell.setHighlight();
+                                if (!dropContext) {
+                                    const layouts = sidebar.editMode.board.layouts;
+                                    dragDrop.dropContext = dropContext =
+                                        layouts[layouts.length - 1].addRow({}, void 0);
                                 }
+                                const newCell = components[i].onDrop(sidebar, dropContext);
+                                const unbindLayoutChanged = addEvent(this.editMode, 'layoutChanged', (e) => {
+                                    if (newCell && e.type === 'newComponent') {
+                                        if (newCell.mountedComponent.chart) {
+                                            const unbind = addEvent(newCell.mountedComponent.chart, 'render', () => {
+                                                sidebar.editMode
+                                                    .setEditCellContext(newCell);
+                                                sidebar.show(newCell);
+                                                newCell.setHighlight();
+                                                unbind();
+                                                unbindLayoutChanged();
+                                            });
+                                        }
+                                        else {
+                                            sidebar.editMode.setEditCellContext(newCell);
+                                            sidebar.show(newCell);
+                                            newCell.setHighlight();
+                                        }
+                                    }
+                                });
                                 // Clean up event listener after drop is complete
                                 document.removeEventListener('mousemove', onMouseMove);
                             });
@@ -2169,30 +2208,31 @@
             }
             onDropNewComponent(dropContext, componentOptions) {
                 const sidebar = this, dragDrop = sidebar.editMode.dragDrop;
-                if (dragDrop) {
-                    const row = (dropContext.getType() === 'cell' ?
-                        dropContext.row :
-                        dropContext), newCell = row.addCell({
-                        id: GUIElement.getElementId('col')
-                    });
-                    dragDrop.onCellDragEnd(newCell);
-                    const options = merge(componentOptions, {
-                        cell: newCell.id
-                    });
-                    const componentPromise = Bindings.addComponent(options, sidebar.editMode.board, newCell);
-                    sidebar.editMode.setEditOverlay();
-                    void (async () => {
-                        const component = await componentPromise;
-                        if (!component) {
-                            return;
-                        }
-                        fireEvent(this.editMode, 'layoutChanged', {
-                            type: 'newComponent',
-                            target: component
-                        });
-                    })();
-                    return newCell;
+                if (!dragDrop) {
+                    return;
                 }
+                const row = (dropContext.getType() === 'cell' ?
+                    dropContext.row :
+                    dropContext), newCell = row.addCell({
+                    id: GUIElement.getElementId('col')
+                });
+                dragDrop.onCellDragEnd(newCell);
+                const options = merge(componentOptions, {
+                    cell: newCell.id
+                });
+                const componentPromise = Bindings.addComponent(options, sidebar.editMode.board, newCell);
+                sidebar.editMode.setEditOverlay();
+                void (async () => {
+                    const component = await componentPromise;
+                    if (!component) {
+                        return;
+                    }
+                    fireEvent(this.editMode, 'layoutChanged', {
+                        type: 'newComponent',
+                        target: component
+                    });
+                })();
+                return newCell;
             }
             /**
              * Function to hide the sidebar.
@@ -2206,12 +2246,12 @@
                 if (editMode.isEditOverlayActive) {
                     editMode.setEditOverlay(true);
                 }
-                if (editCellContext instanceof Cell && editCellContext.row) {
+                if (Cell.isCell(editCellContext) && editCellContext.row) {
                     editMode.showToolbars(['cell', 'row'], editCellContext);
                     editCellContext.row.setHighlight();
                     editCellContext.setHighlight(true);
                 }
-                else if (editCellContext instanceof CellHTML && editMode.cellToolbar) {
+                else if (CellHTML.isCellHTML(editCellContext) && editMode.cellToolbar) {
                     editMode.cellToolbar.showToolbar(editCellContext);
                     editCellContext.setHighlight();
                 }
@@ -2274,7 +2314,11 @@
                         });
                     }
                     else if (componentName === 'row') {
-                        componentList.push(SidebarPopup.addRow);
+                        componentList.push({
+                            ...SidebarPopup.addRow,
+                            text: editMode.lang?.sidebar[componentName] ||
+                                SidebarPopup.addRow.text
+                        });
                     }
                 });
                 return componentList;
@@ -2449,6 +2493,11 @@
                         contextButtonElement.setAttribute('aria-expanded', 'false');
                     }
                 }
+                // Set editMode toggle state
+                const toggleEditMode = this.activeItems.find((item) => item.options.langKey === 'editMode');
+                if (toggleEditMode) {
+                    toggleEditMode.options.setValue(toggleEditMode, this.editMode.isActive());
+                }
             }
             updatePosition(ctxButton, x, y) {
                 const contextMenu = this, width = contextMenu.options.width || 0, left = (ctxButton ?
@@ -2481,6 +2530,12 @@
                 type: 'toggle',
                 getValue: function (item) {
                     return item.menu.editMode.isActive();
+                },
+                setValue: function (item, value) {
+                    const inputElem = item.innerElement?.querySelector('input');
+                    if (inputElem) {
+                        inputElem.checked = value;
+                    }
                 },
                 langKey: 'editMode',
                 events: {
@@ -3476,7 +3531,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.1.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.2.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -3539,7 +3594,7 @@
                         className: EditGlobals.classNames.editOverlay
                     }, {}, board.container);
                     this.isEditOverlayActive = false;
-                    board.fullscreen = new Dashboards.FullScreen(board);
+                    board.fullscreen = new Dashboards.Fullscreen(board);
                     if (this.customHTMLMode) {
                         board.container.classList.add(Globals.classNames.boardContainer);
                     }
@@ -3751,7 +3806,7 @@
              */
             setCellEvents(cell) {
                 const editMode = this;
-                if (cell instanceof CellHTML) {
+                if (CellHTML.isCellHTML(cell)) {
                     addEvent(cell.container, 'mouseenter', function () {
                         if (editMode.isContextDetectionActive) {
                             editMode.mouseCellContext = cell;
@@ -3822,7 +3877,7 @@
                 // Hide toolbars.
                 editMode.hideToolbars();
                 // Remove highlight from the context row if exists.
-                if (this.editCellContext && this.editCellContext instanceof Cell) {
+                if (this.editCellContext && Cell.isCell(this.editCellContext)) {
                     this.editCellContext.row?.setHighlight();
                 }
                 // TODO all buttons should be deactivated.
@@ -4034,8 +4089,8 @@
             setEditCellContext(editCellContext, oldEditCellContext) {
                 const editMode = this;
                 const oldContext = oldEditCellContext;
-                if (editCellContext instanceof CellHTML ||
-                    oldContext instanceof CellHTML) {
+                if (CellHTML.isCellHTML(editCellContext) ||
+                    CellHTML.isCellHTML(oldContext)) {
                     editMode.editCellContext = editCellContext;
                     editMode.cellToolbar?.showToolbar(editCellContext);
                 }
@@ -4230,7 +4285,7 @@
          * */
         const G = Globals;
         G.EditMode = EditMode;
-        G.FullScreen = Fullscreen;
+        G.Fullscreen = Fullscreen;
         /* *
          *
          *  Default Export

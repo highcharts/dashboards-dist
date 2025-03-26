@@ -45,6 +45,21 @@ declare class DataTableCore {
      */
     protected applyRowCount(rowCount: number): void;
     /**
+     * Delete rows. Simplified version of the full
+     * `DataTable.deleteRows` method.
+     *
+     * @param {number} rowIndex
+     * The start row index
+     *
+     * @param {number} [rowCount=1]
+     * The number of rows to delete
+     *
+     * @return {void}
+     *
+     * @emits #afterDeleteRows
+     */
+    deleteRows(rowIndex: number, rowCount?: number): void;
+    /**
      * Fetches the given column by the canonical column name. Simplified version
      * of the full `DataTable.getRow` method, always returning by reference.
      *
@@ -89,7 +104,7 @@ declare class DataTableCore {
      * @param {Highcharts.DataTableColumn} [column]
      * Values to set in the column.
      *
-     * @param {number} [rowIndex=0]
+     * @param {number} [rowIndex]
      * Index of the first row to change. (Default: 0)
      *
      * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
@@ -100,15 +115,16 @@ declare class DataTableCore {
      */
     setColumn(columnName: string, column?: DataTable.Column, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
     /**
-     * * Sets cell values for multiple columns. Will insert new columns, if not
-     * found. Simplified version of the full `DataTable.setColumns`, limited to
-     * full replacement of the columns (undefined `rowIndex`).
+     * Sets cell values for multiple columns. Will insert new columns, if not
+     * found. Simplified version of the full `DataTableCore.setColumns`, limited
+     * to full replacement of the columns (undefined `rowIndex`).
      *
      * @param {Highcharts.DataTableColumnCollection} columns
      * Columns as a collection, where the keys are the column names.
      *
      * @param {number} [rowIndex]
-     * Index of the first row to change. Keep undefined to reset.
+     * Index of the first row to change. Ignored in the `DataTableCore`, as it
+     * always replaces the full column.
      *
      * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
      * Custom information for pending events.
@@ -126,7 +142,7 @@ declare class DataTableCore {
      * Cell values to set.
      *
      * @param {number} [rowIndex]
-     * Index of the row to set. Leave `undefind` to add as a new row.
+     * Index of the row to set. Leave `undefined` to add as a new row.
      *
      * @param {boolean} [insert]
      * Whether to insert the row at the given index, or to overwrite the row.
@@ -137,62 +153,5 @@ declare class DataTableCore {
      * @emits #afterSetRows
      */
     setRow(row: DataTable.RowObject, rowIndex?: number, insert?: boolean, eventDetail?: DataEvent.Detail): void;
-}
-/**
- * Additionally it provides necessary types for events.
- */
-declare namespace DataTableCore {
-    /**
-     * Possible value types for a table cell.
-     */
-    type CellType = (boolean | number | null | string | undefined);
-    /**
-     * Array of table cells in vertical expansion.
-     */
-    interface Column extends Array<DataTable.CellType> {
-        [index: number]: CellType;
-    }
-    /**
-     * Collection of columns, where the key is the column name and
-     * the value is an array of column values.
-     */
-    interface ColumnCollection {
-        [columnName: string]: Column;
-    }
-    /**
-     * Event object for column-related events.
-     */
-    interface ColumnEvent extends DataEvent {
-        readonly type: ('deleteColumns' | 'afterDeleteColumns' | 'setColumns' | 'afterSetColumns');
-        readonly columns?: ColumnCollection;
-        readonly columnNames: Array<string>;
-        readonly rowIndex?: number;
-    }
-    /**
-     * All information objects of DataTable events.
-     */
-    type Event = (ColumnEvent | RowEvent);
-    /**
-     * Array of table cells in horizontal expansion. Index of the array is the
-     * index of the column names.
-     */
-    interface Row extends Array<CellType> {
-        [index: number]: CellType;
-    }
-    /**
-     * Event object for row-related events.
-     */
-    interface RowEvent extends DataEvent {
-        readonly type: ('deleteRows' | 'afterDeleteRows' | 'setRows' | 'afterSetRows');
-        readonly rowCount: number;
-        readonly rowIndex: number;
-        readonly rows?: Array<(Row | RowObject)>;
-    }
-    /**
-     * Object of row values, where the keys are the column names.
-     */
-    interface RowObject extends Record<string, CellType> {
-        [column: string]: CellType;
-    }
 }
 export default DataTableCore;

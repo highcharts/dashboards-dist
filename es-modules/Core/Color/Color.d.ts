@@ -25,6 +25,12 @@ declare class Color implements ColorLike {
         regex: RegExp;
         parse: (result: RegExpExecArray) => Color.RGBA;
     }[];
+    /**
+     * Whether to use CSS `color-mix` for color handling (brightening,
+     * tweening). This can be disabled from the outside.
+     * @private
+     */
+    static useColorMix: boolean;
     static readonly None: Color;
     /**
      * Creates a color instance out of a color string or object.
@@ -40,6 +46,7 @@ declare class Color implements ColorLike {
     static parse(input?: ColorType): Color;
     constructor(input: ColorType);
     input: ColorType;
+    output?: string;
     rgba: Color.RGBA;
     stops?: Array<Color>;
     /**

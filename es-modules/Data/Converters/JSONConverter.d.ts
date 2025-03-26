@@ -68,4 +68,9 @@ declare namespace JSONConverter {
      */
     type UserOptions = Partial<(Options & SpecialOptions)>;
 }
+declare module './DataConverterType' {
+    interface DataConverterTypes {
+        JSON: typeof JSONConverter;
+    }
+}
 export default JSONConverter;

@@ -283,7 +283,7 @@ class Board {
      * not support converting functions or events into JSON object.
      *
      * @returns
-     * The JSON of boards's options.
+     * Dashboards options.
      */
     getOptions() {
         const board = this, options = {

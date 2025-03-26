@@ -20,7 +20,8 @@ const defaultOptions = {};
 const syncPair = {
     emitter: void 0,
     handler: function () {
-        if (this.type !== 'DataGrid') {
+        if (this.type !== 'DataGrid' && // To be removed in v4
+            this.type !== 'Grid') {
             return;
         }
         const component = this;

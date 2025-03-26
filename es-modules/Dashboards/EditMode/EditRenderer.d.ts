@@ -219,6 +219,7 @@ export interface ToggleFormFieldOptions {
     name: string;
     lang: EditGlobals.LangOptions;
     langKey?: string;
+    isNested?: boolean;
 }
 export interface NestedHeaderFormFieldOptions {
     name: string;

@@ -76,6 +76,20 @@ class CellHTML extends GUIElement {
 }
 /* *
  *
+ *  Namespace
+ *
+ * */
+(function (CellHTML) {
+    /**
+     * Checks if a valid cell HTML instance.
+     */
+    function isCellHTML(cellHTML) {
+        return cellHTML instanceof CellHTML;
+    }
+    CellHTML.isCellHTML = isCellHTML;
+})(CellHTML || (CellHTML = {}));
+/* *
+ *
  *  Default Export
  *
  * */

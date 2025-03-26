@@ -71,4 +71,9 @@ declare namespace GoogleSheetsConverter {
      */
     type UserOptions = Partial<(Options & SpecialOptions)>;
 }
+declare module './DataConverterType' {
+    interface DataConverterTypes {
+        GoogleSheets: typeof GoogleSheetsConverter;
+    }
+}
 export default GoogleSheetsConverter;

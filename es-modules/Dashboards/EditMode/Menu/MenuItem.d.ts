@@ -49,6 +49,7 @@ declare namespace MenuItem {
     interface ToggleOptions extends ItemOptions {
         type: 'toggle';
         getValue?: (item: MenuItem) => boolean;
+        setValue: (item: MenuItem, value: boolean) => void;
         events: {
             update?: Function;
             click: Function;

@@ -3,6 +3,7 @@ import type Point from './Series/Point';
 import type Pointer from './Pointer';
 import type PointerEvent from './PointerEvent';
 import type PositionObject from './Renderer/PositionObject';
+import type Series from './Series/Series';
 import type SizeObject from './Renderer/SizeObject';
 import type SVGElement from './Renderer/SVG/SVGElement';
 import type SVGRenderer from './Renderer/SVG/SVGRenderer';
@@ -155,7 +156,14 @@ declare class Tooltip {
      * @return {Highcharts.PositionObject}
      *         Recommended position of the tooltip.
      */
-    getPosition(boxWidth: number, boxHeight: number, point: Point): PositionObject;
+    getPosition(boxWidth: number, boxHeight: number, point: Tooltip.PositionerPointObject | Point): PositionObject;
+    /**
+     * Place the tooltip when `position.fixed` is true. This is called both for
+     * single tooltips, and for partial tooltips when `split`.
+     *
+     * @private
+     */
+    getFixedPosition(boxWidth: number, boxHeight: number, point: Point | Tooltip.PositionerPointObject): PositionObject;
     /**
      * Hides the tooltip with a fade out animation.
      *
@@ -258,7 +266,7 @@ declare class Tooltip {
      *
      * @param {Highcharts.Point} point
      */
-    updatePosition(point: Point): void;
+    updatePosition(point: Tooltip.PositionerPointObject): void;
 }
 declare namespace Tooltip {
     interface FormatterCallbackFunction {
@@ -270,12 +278,16 @@ declare namespace Tooltip {
         text?: string;
     }
     interface PositionerCallbackFunction {
-        (this: Tooltip, labelWidth: number, labelHeight: number, point: (Point | PositionerPointObject)): PositionObject;
+        (this: Tooltip, labelWidth: number, labelHeight: number, point: (Point | PositionerPointObject), anchor?: [number, number], alignLeft?: boolean): PositionObject;
     }
     interface PositionerPointObject {
-        isHeader: true;
+        isHeader?: boolean;
+        h?: number;
         plotX: number;
         plotY: number;
+        negative?: boolean;
+        series?: Series;
+        ttBelow?: boolean;
     }
     type ShapeValue = ('callout' | 'circle' | 'rect');
     /**

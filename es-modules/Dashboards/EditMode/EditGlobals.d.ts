@@ -1,10 +1,4 @@
-/**
- * @internal
- */
 declare const EditGlobals: EditGlobals;
-/**
- * @internal
- */
 interface EditGlobals {
     classNames: EditGlobals.ClassNamesOptions;
     lang: EditGlobals.LangOptions;
@@ -95,6 +89,7 @@ declare namespace EditGlobals {
         toggleSlider: string;
         toggleWrapper: string;
         toggleWrapperColored: string;
+        labeledToggleWrapper: string;
         viewFullscreen: string;
     }
     interface LangOptions {

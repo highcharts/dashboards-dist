@@ -1,6 +1,15 @@
-import Component from './Component';
 import type DataModifier from '../../Data/Modifiers/DataModifier';
+import Component from './Component';
 import DataTable from '../../Data/DataTable.js';
+declare module '../../Data/Connectors/DataConnector' {
+    export default interface DataConnector {
+        /**
+         * Components that are fed by the connector.
+         * @internal
+         */
+        components?: Component[];
+    }
+}
 /**
  * A class that handles the connection between the component and the data
  * connector.
@@ -84,7 +93,31 @@ declare class ConnectorHandler {
      * @internal
      */
     private clearTableListeners;
+    /**
+     * Adds the component to the provided connector.
+     * Starts the connector polling if inactive and one component is provided.
+     */
+    private addConnectorAssignment;
+    /**
+     * Removes the component instance from the provided connector.
+     * Stops the connector polling if the last element is removed.
+     */
+    private removeConnectorAssignment;
+    /**
+     * Clears all event listeners in the table.
+     */
+    private removeTableEvents;
+    /**
+     * Updates the options for the connector handler.
+     *
+     * @param newOptions
+     * The new options to update.
+     */
     updateOptions(newOptions: ConnectorHandler.ConnectorOptions): void;
+    /**
+     * Destroys the connector handler.
+     * @internal
+     */
     destroy(): void;
 }
 declare namespace ConnectorHandler {

@@ -10,12 +10,14 @@ declare module '../SVG/SVGRendererLike' {
     }
 }
 declare class HTMLElement extends SVGElement {
+    static useForeignObject: boolean | undefined;
     /**
      * Compose
      * @private
      */
     static compose<T extends typeof SVGRenderer>(SVGRendererClass: T): void;
     div?: HTMLDOMElement;
+    foreignObject?: SVGElement;
     parentGroup?: SVGElement;
     xCorr?: number;
     yCorr?: number;
@@ -44,11 +46,6 @@ declare class HTMLElement extends SVGElement {
      * @private
      */
     updateTransform(): void;
-    /**
-     * Set the rotation of an individual HTML span.
-     * @private
-     */
-    private setSpanRotation;
     /**
      * Add the element to a group wrapper. For HTML elements, a parallel div
      * will be created for each ancenstor SVG `g` element.

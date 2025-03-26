@@ -17,6 +17,8 @@ import Cell from '../../Layout/Cell.js';
 import EditGlobals from '../EditGlobals.js';
 import EditToolbar from './EditToolbar.js';
 import GUIElement from '../../Layout/GUIElement.js';
+import H from '../../../Core/Globals.js';
+const { isFirefox } = H;
 import U from '../../../Core/Utilities.js';
 const { merge, fireEvent, objectEach } = U;
 /**
@@ -32,12 +34,18 @@ class CellEditToolbar extends EditToolbar {
                 icon: iconURLPrefix + 'drag.svg',
                 events: {
                     onmousedown: function (e) {
+                        // #22546, workaround for Firefox, where mouseenter
+                        // event is not fired when triggering it while dragging
+                        // another element.
+                        if (isFirefox) {
+                            e.preventDefault();
+                        }
                         const cellEditToolbar = this.menu
                             .parent;
                         const dragDrop = cellEditToolbar.editMode.dragDrop;
                         if (dragDrop &&
                             cellEditToolbar.cell &&
-                            cellEditToolbar.cell instanceof Cell) {
+                            Cell.isCell(cellEditToolbar.cell)) {
                             dragDrop.onDragStart(e, cellEditToolbar.cell);
                         }
                     }
@@ -168,14 +176,18 @@ class CellEditToolbar extends EditToolbar {
     }
     onCellDestroy() {
         const toolbar = this;
-        if (toolbar.cell && toolbar.cell instanceof Cell) {
+        if (toolbar.cell && Cell.isCell(toolbar.cell)) {
             const row = toolbar.cell.row;
             const cellId = toolbar.cell.id;
+            // Disable row highlight.
+            toolbar.cell.row.setHighlight();
             toolbar.resetEditedCell();
             toolbar.cell.destroy();
             toolbar.cell = void 0;
             // Hide row and cell toolbars.
             toolbar.editMode.hideToolbars(['cell', 'row']);
+            // Disable resizer.
+            toolbar.editMode.resizer?.disableResizer();
             // Call cellResize dashboard event.
             if (row && row.cells && row.cells.length) {
                 fireEvent(toolbar.editMode.board, 'cellResize', {

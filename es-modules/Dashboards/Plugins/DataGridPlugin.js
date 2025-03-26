@@ -8,10 +8,11 @@
  *
  *  Authors:
  *  - Karol Kolodziej
+ *  - Dawid Dragula
  *
  * */
 'use strict';
-import DataGridComponent from '../Components/DataGridComponent/DataGridComponent.js';
+import GridComponent from '../Components/DataGridComponent/DataGridComponent.js';
 /* *
  *
  *  Functions
@@ -20,10 +21,23 @@ import DataGridComponent from '../Components/DataGridComponent/DataGridComponent
 /**
  * Connects DataGrid with the Dashboard plugin.
  *
- * @param {Dashboards.DataGrid} dataGrid DataGrid core to connect.
+ * @param DataGridNS
+ * DataGrid core to connect.
+ *
+ * @deprecated
+ * DataGrid will be removed in behalf of Grid in the next major version.
  */
 function connectDataGrid(DataGridNS) {
-    DataGridComponent.DataGridNamespace = DataGridNS;
+    connectGrid(DataGridNS);
+}
+/**
+ * Connects DataGrid with the Dashboard plugin.
+ *
+ * @param GridNS
+ * Grid core to connect.
+ */
+function connectGrid(GridNS) {
+    GridComponent.GridNamespace = GridNS;
 }
 /**
  * Callback function of the Dashboard plugin.
@@ -33,7 +47,8 @@ function connectDataGrid(DataGridNS) {
  */
 function onRegister(e) {
     const { ComponentRegistry } = e;
-    ComponentRegistry.registerComponent('DataGrid', DataGridComponent);
+    ComponentRegistry.registerComponent('DataGrid', GridComponent);
+    ComponentRegistry.registerComponent('Grid', GridComponent);
 }
 /**
  * Callback function of the Dashboard plugin.
@@ -49,7 +64,8 @@ e) { }
  *
  * */
 const DataGridCustom = {
-    connectDataGrid
+    connectDataGrid,
+    connectGrid
 };
 const DataGridPlugin = {
     custom: DataGridCustom,

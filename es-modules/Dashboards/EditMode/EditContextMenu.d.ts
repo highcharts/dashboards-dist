@@ -16,6 +16,7 @@ declare class EditContextMenu extends Menu {
             id: string;
             type: string;
             getValue: (item: MenuItem) => boolean;
+            setValue: (item: MenuItem, value: boolean) => void;
             langKey: string;
             events: {
                 click: (this: MenuItem) => void;

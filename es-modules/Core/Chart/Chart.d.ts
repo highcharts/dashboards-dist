@@ -228,6 +228,14 @@ declare class Chart {
      */
     orderItems(coll: ('colorAxis' | 'series' | 'xAxis' | 'yAxis' | 'zAxis'), fromIndex?: number): void;
     /**
+     * Get the clipping for a series. Could be called for a series to initialate
+     * animating the clip or to set the final clip (only width and x).
+     *
+     * @private
+     * @function Highcharts.Chart#getClipBox
+     */
+    getClipBox(series?: Series, chartCoords?: boolean): BBoxObject;
+    /**
      * Check whether a given point is within the plot area.
      *
      * @function Highcharts.Chart#isInsidePlot

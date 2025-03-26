@@ -7,7 +7,7 @@ import type HTMLAttributes from './Renderer/HTML/HTMLAttributes';
 import type Series from './Series/Series';
 import type SVGAttributes from './Renderer/SVG/SVGAttributes';
 import type Time from './Time';
-import type { TypedArray } from './Series/SeriesOptions';
+import type Types from '../Shared/Types';
 type NonArray<T> = T extends Array<unknown> ? never : T;
 type NonFunction<T> = T extends Function ? never : T;
 type NullType = (null | undefined);
@@ -472,7 +472,7 @@ declare function stableSort<T>(arr: Array<T>, sortFunction: (a: T, b: T) => numb
  * @return {number}
  *         The lowest number.
  */
-declare function arrayMin(data: Array<any> | TypedArray): number;
+declare function arrayMin(data: Array<any> | Types.TypedArray): number;
 /**
  * Non-recursive method to find the lowest member of an array. `Math.max` raises
  * a maximum call stack size exceeded error in Chrome when trying to apply more
@@ -486,7 +486,7 @@ declare function arrayMin(data: Array<any> | TypedArray): number;
  * @return {number}
  *         The highest number.
  */
-declare function arrayMax(data: Array<any> | TypedArray): number;
+declare function arrayMax(data: Array<any> | Types.TypedArray): number;
 /**
  * Utility method that destroys any SVGElement instances that are properties on
  * the given object. It loops all properties and invokes destroy if there is a
@@ -536,7 +536,7 @@ declare function correctFloat(num: number, prec?: number): number;
  * @return {number | undefined}
  *          The closest distance between values
  */
-declare function getClosestDistance(arrays: (number[] | TypedArray)[], onError?: Function): (number | undefined);
+declare function getClosestDistance(arrays: (number[] | Types.TypedArray)[], onError?: Function): (number | undefined);
 /**
  * Returns the value of a property path on a given object.
  *

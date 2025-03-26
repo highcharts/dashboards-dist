@@ -7,7 +7,7 @@
  * License: www.highcharts.com/license
  */
 import type { Highcharts as H } from '../Dashboards/Plugins/HighchartsTypes';
-import type { DataGridNamespace as D } from '../Dashboards/Plugins/DataGridTypes';
+import type { GridNamespace as D } from '../Dashboards/Plugins/DataGridTypes';
 import '../Dashboards/Components/HTMLComponent/HTMLComponent.js';
 import '../Data/Connectors/CSVConnector.js';
 import '../Data/Connectors/GoogleSheetsConnector.js';
@@ -28,7 +28,7 @@ import DataConverter from '../Data/Converters/DataConverter.js';
 import DataModifier from '../Data/Modifiers/DataModifier.js';
 import DataTable from '../Data/DataTable.js';
 import Globals from '../Dashboards/Globals.js';
-import DataGridPlugin from '../Dashboards/Plugins/DataGridPlugin.js';
+import GridPlugin from '../Dashboards/Plugins/DataGridPlugin.js';
 import HighchartsPlugin from '../Dashboards/Plugins/HighchartsPlugin.js';
 import PluginHandler from '../Dashboards/PluginHandler.js';
 import Sync from '../Dashboards/Components/Sync/Sync.js';
@@ -53,7 +53,9 @@ declare global {
         DataModifier: typeof DataModifier;
         DataPool: typeof DataPool;
         DataTable: typeof DataTable;
-        DataGridPlugin: typeof DataGridPlugin;
+        /** @deprecated DataGrid will be removed in behalf of Grid in the next major version. */
+        DataGridPlugin: typeof GridPlugin;
+        GridPlugin: typeof GridPlugin;
         HighchartsPlugin: typeof HighchartsPlugin;
         PluginHandler: typeof PluginHandler;
         Sync: typeof Sync;
@@ -61,7 +63,9 @@ declare global {
     interface Window {
         Dashboards: Dashboards;
         Highcharts?: H;
+        /** @deprecated DataGrid will be removed in behalf of Grid in the next major version. */
         DataGrid?: D;
+        Grid?: D;
     }
     let Dashboards: Dashboards;
 }

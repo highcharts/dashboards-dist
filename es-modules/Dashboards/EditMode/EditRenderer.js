@@ -230,6 +230,12 @@ function renderToggle(parentElement, options) {
         return;
     }
     const lang = options.lang, value = options.value, title = options.title || options.name, langKey = options.langKey;
+    if (options.isNested) {
+        const labeledToggleWrapper = createElement('div', {
+            className: EditGlobals.classNames.labeledToggleWrapper
+        }, {}, parentElement);
+        parentElement = labeledToggleWrapper;
+    }
     const toggleContainer = createElement('button', {
         className: EditGlobals.classNames.toggleContainer,
         type: 'button',
@@ -238,7 +244,7 @@ function renderToggle(parentElement, options) {
         ariaLabel: langKey ? lang.accessibility[langKey][options.name] : ''
     }, {}, parentElement);
     if (title) {
-        renderText(toggleContainer, { title });
+        renderText(options.isNested ? parentElement : toggleContainer, { title });
     }
     if (options.enabledOnOffLabels) {
         renderText(toggleContainer, {

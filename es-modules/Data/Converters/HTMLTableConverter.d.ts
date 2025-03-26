@@ -90,4 +90,9 @@ declare namespace HTMLTableConverter {
      */
     type UserOptions = Partial<Options>;
 }
+declare module './DataConverterType' {
+    interface DataConverterTypes {
+        HTMLTable: typeof HTMLTableConverter;
+    }
+}
 export default HTMLTableConverter;

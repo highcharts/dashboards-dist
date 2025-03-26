@@ -44,6 +44,10 @@ declare class CellHTML extends GUIElement {
 }
 declare namespace CellHTML {
     /**
+     * Checks if a valid cell HTML instance.
+     */
+    function isCellHTML(cellHTML: unknown): cellHTML is CellHTML;
+    /**
      * Options for each cell.
      **/
     interface Options {

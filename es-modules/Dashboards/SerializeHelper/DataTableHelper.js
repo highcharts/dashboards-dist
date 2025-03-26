@@ -55,7 +55,7 @@ function jsonSupportFor(obj) {
 function toJSON(obj) {
     const json = {
         $class: 'Data.DataTable',
-        columns: obj.getColumns()
+        columns: obj.getColumns(void 0, false, true)
     };
     // Custom ID
     if (!obj.autoId) {

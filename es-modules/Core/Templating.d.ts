@@ -1,4 +1,6 @@
 import type Chart from './Chart/Chart';
+import type TimeBase from '../Shared/TimeBase';
+import type { LangOptionsCore } from '../Shared/LangOptionsCore';
 /**
  * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970) into a
  * human readable date string. The format is a subset of the formats for PHP's
@@ -67,13 +69,13 @@ declare function dateFormat(format: string, timestamp: number, upperCaseFirst?: 
  *        The context, a collection of key-value pairs where each key is
  *        replaced by its value.
  *
- * @param {Highcharts.Chart} [chart]
- *        A `Chart` instance used to get numberFormatter and time.
+ * @param {Highcharts.Chart} [owner]
+ *        A `Chart` or `DataGrid` instance used to get numberFormatter and time.
  *
  * @return {string}
  *         The formatted string.
  */
-declare function format(str: string | undefined, ctx: any, chart?: Chart): string;
+declare function format(str: string | undefined, ctx: any, owner?: Templating.Owner): string;
 /**
  * Format a number and return a string based on input settings.
  *
@@ -110,6 +112,14 @@ declare const Templating: {
 declare namespace Templating {
     interface FormatterCallback<T> {
         (this: T): string;
+    }
+    interface OwnerOptions {
+        lang?: LangOptionsCore;
+    }
+    interface Owner {
+        options?: OwnerOptions;
+        time?: TimeBase;
+        numberFormatter?: Function;
     }
 }
 export default Templating;

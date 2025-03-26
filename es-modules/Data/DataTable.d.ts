@@ -1,6 +1,7 @@
 import type DataEvent from './DataEvent';
 import type DataModifier from './Modifiers/DataModifier';
 import type DataTableOptions from './DataTableOptions';
+import type Types from '../Shared/Types';
 import DataTableCore from './DataTableCore.js';
 /**
  * Class to manage columns and rows in a table structure. It provides methods
@@ -197,6 +198,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
     getColumnNames(): Array<string>;
     getColumns(columnNames?: Array<string>, asReference?: boolean): DataTable.ColumnCollection;
     getColumns(columnNames: (Array<string> | undefined), asReference: true): Record<string, DataTable.Column>;
+    getColumns(columnNames: (Array<string> | undefined), asReference: false, asBasicColumns: true): Record<string, DataTable.BasicColumn>;
     /**
      * Takes the original row index and returns the local row index in the
      * modified table for which this function is called.
@@ -426,10 +428,16 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @param {Highcharts.DataTableEventDetail} [eventDetail]
      * Custom information for pending events.
      *
+     * @param {boolean} [typeAsOriginal=false]
+     * Determines whether the original column retains its type when data
+     * replaced. If `true`, the original column keeps its type. If not
+     * (default), the original column will adopt the type of the replacement
+     * column.
+     *
      * @emits #setColumns
      * @emits #afterSetColumns
      */
-    setColumns(columns: DataTable.ColumnCollection, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
+    setColumns(columns: DataTable.ColumnCollection, rowIndex?: number, eventDetail?: DataEvent.Detail, typeAsOriginal?: boolean): void;
     /**
      * Sets or unsets the modifier for the table.
      *
@@ -511,37 +519,41 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
  */
 declare namespace DataTable {
     /**
-     * Event object for cell-related events.
-     */
-    interface CellEvent extends DataEvent {
-        readonly type: ('setCell' | 'afterSetCell');
-        readonly cellValue: CellType;
-        readonly columnName: string;
-        readonly rowIndex: number;
-    }
-    /**
      * Possible value types for a table cell.
      */
     type CellType = (boolean | number | null | string | undefined);
     /**
-     * Event object for clone-related events.
+     * Conventional array of table cells typed as `CellType`.
      */
-    interface CloneEvent extends DataEvent {
-        readonly type: ('cloneTable' | 'afterCloneTable');
-        readonly tableClone?: DataTable;
+    interface BasicColumn extends Array<DataTable.CellType> {
+        [index: number]: CellType;
     }
     /**
      * Array of table cells in vertical expansion.
      */
-    interface Column extends Array<DataTable.CellType> {
-        [index: number]: CellType;
-    }
+    type Column = BasicColumn | Types.TypedArray;
     /**
      * Collection of columns, where the key is the column name and
      * the value is an array of column values.
      */
     interface ColumnCollection {
         [columnName: string]: Column;
+    }
+    /**
+     * Event object for cell-related events.
+     */
+    interface CellEvent extends DataEvent {
+        readonly type: ('setCell' | 'afterSetCell');
+        readonly cellValue: DataTable.CellType;
+        readonly columnName: string;
+        readonly rowIndex: number;
+    }
+    /**
+     * Event object for clone-related events.
+     */
+    interface CloneEvent extends DataEvent {
+        readonly type: ('cloneTable' | 'afterCloneTable');
+        readonly tableClone?: DataTable;
     }
     /**
      * Event object for column-related events.
@@ -577,7 +589,7 @@ declare namespace DataTable {
         readonly type: ('deleteRows' | 'afterDeleteRows' | 'setRows' | 'afterSetRows');
         readonly rowCount: number;
         readonly rowIndex: number;
-        readonly rows?: Array<(Row | RowObject)>;
+        readonly rows?: Array<Row | RowObject>;
     }
     /**
      * Object of row values, where the keys are the column names.

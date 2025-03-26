@@ -231,8 +231,14 @@ class HighchartsComponent extends Component {
     async update(options, shouldRerender = true) {
         await super.update(options, false);
         this.setOptions();
-        if (this.chart) {
-            this.chart.update(merge(this.options.chartOptions) || {});
+        if (this.options.chartConstructor !== this.chartConstructor) {
+            this.chartConstructor = this.options.chartConstructor || 'chart';
+            this.chartOptions = this.options.chartOptions || {};
+            this.chart?.destroy();
+            delete this.chart;
+        }
+        else {
+            this.chart?.update(merge(this.options.chartOptions) || {});
         }
         this.emit({ type: 'afterUpdate' });
         shouldRerender && this.render();
@@ -538,7 +544,7 @@ class HighchartsComponent extends Component {
     /**
      * Get the HighchartsComponent component's options.
      * @returns
-     * The JSON of HighchartsComponent component's options.
+     * HighchartsComponent component's options.
      *
      * @internal
      *

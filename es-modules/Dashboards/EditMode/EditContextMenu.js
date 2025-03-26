@@ -85,6 +85,11 @@ class EditContextMenu extends Menu {
                 contextButtonElement.setAttribute('aria-expanded', 'false');
             }
         }
+        // Set editMode toggle state
+        const toggleEditMode = this.activeItems.find((item) => item.options.langKey === 'editMode');
+        if (toggleEditMode) {
+            toggleEditMode.options.setValue(toggleEditMode, this.editMode.isActive());
+        }
     }
     updatePosition(ctxButton, x, y) {
         const contextMenu = this, width = contextMenu.options.width || 0, left = (ctxButton ?
@@ -117,6 +122,12 @@ EditContextMenu.items = merge(Menu.items, {
         type: 'toggle',
         getValue: function (item) {
             return item.menu.editMode.isActive();
+        },
+        setValue: function (item, value) {
+            const inputElem = item.innerElement?.querySelector('input');
+            if (inputElem) {
+                inputElem.checked = value;
+            }
         },
         langKey: 'editMode',
         events: {

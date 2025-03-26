@@ -35,7 +35,7 @@ export interface Options extends Component.Options {
      * html: `
      *      <div>
      *          <h1>Custom HTML</h1>
-     *          <span id="custom-html-div">Custom HTML added as string </span>
+     *          <span id="custom-html-div">Custom HTML added as string</span>
      *      </div>
      * `
      * ```

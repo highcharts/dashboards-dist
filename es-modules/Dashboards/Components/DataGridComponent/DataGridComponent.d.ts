@@ -1,45 +1,57 @@
 import type Board from '../../Board';
 import type Cell from '../../Layout/Cell';
-import type { DataGrid, DataGridNamespace } from '../../Plugins/DataGridTypes';
+import type { Grid, GridNamespace } from '../../Plugins/DataGridTypes';
 import type Options from './DataGridComponentOptions';
 import Component from '../Component.js';
 import SidebarPopup from '../../EditMode/SidebarPopup';
 /**
- * DataGrid component for Highcharts Dashboards.
+ * Grid Component for Highcharts Dashboards.
  * @private
  */
 declare class DataGridComponent extends Component {
     /**
-     * Predefined sync config for the DataGrid component.
+     * Predefined sync config for the Grid Component.
      */
     static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
     /**
-     * The namespace of the DataGrid component.
+     * The namespace of the Grid Component.
+     * @deprecated
+     * DataGrid will be removed in behalf of Grid in the next major version.
      */
-    static DataGridNamespace?: DataGridNamespace;
+    static get DataGridNamespace(): GridNamespace | undefined;
     /**
-     * The default options for the DataGrid component.
+     * The namespace of the Grid Component.
+     */
+    static GridNamespace?: GridNamespace;
+    /**
+     * The default options for the Grid Component.
      */
     static defaultOptions: Partial<Component.Options> & import("../../Globals").default.DeepPartial<Options>;
     /**
-     * Function to create a DataGrid component from JSON.
+     * Function to create a Grid Component from JSON.
      *
      * @param json
-     * The JSON to create the DataGrid component from.
+     * The JSON to create the Grid Component from.
      *
      * @param cell
-     * The cell to create the DataGrid component in.
+     * The cell to create the Grid Component in.
      *
      * @returns
-     * The DataGrid component created from the JSON.
+     * The Grid Component created from the JSON.
      */
     static fromJSON(json: DataGridComponent.ClassJSON, cell: Cell): DataGridComponent;
     /**
-     * The DataGrid that is rendered in the DataGrid component.
+     * The Grid that is rendered in the Grid Component.
+     * @deprecated
+     * DataGrid will be removed in behalf of Grid in the next major version.
      */
-    dataGrid?: DataGrid;
+    get dataGrid(): Grid | undefined;
     /**
-     * The options of the DataGrid component.
+     * The Grid that is rendered in the Grid Component.
+     */
+    grid?: Grid;
+    /**
+     * The options of the Grid Component.
      */
     options: Options;
     constructor(cell: Cell, options: Partial<Options>, board?: Board);
@@ -50,10 +62,10 @@ declare class DataGridComponent extends Component {
     getEditableOptions(): Options;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
     /**
-     * Get the DataGrid component's options.
+     * Get the Grid Component's options.
      *
      * @returns
-     * The JSON of DataGrid component's options.
+     * Grid Component's options.
      *
      * @internal
      */
@@ -67,11 +79,11 @@ declare class DataGridComponent extends Component {
      */
     private setOptions;
     /**
-     * Function to create the DataGrid.
+     * Function to create the Grid.
      *
-     * @returns The DataGrid.
+     * @returns The Grid.
      */
-    private constructDataGrid;
+    private constructGrid;
 }
 declare namespace DataGridComponent {
     /** @private */
@@ -85,8 +97,18 @@ declare namespace DataGridComponent {
     /** @private */
     interface ComponentJSONOptions extends Component.ComponentOptionsJSON {
         /** @private */
-        dataGridOptions?: string;
+        gridOptions?: string;
         /** @private */
+        gridClassName?: string;
+        /**
+         * @private
+         * @deprecated
+         **/
+        dataGridOptions?: string;
+        /**
+         * @private
+         * @deprecated
+         **/
         dataGridClassName?: string;
         /** @private */
         chartID?: string;

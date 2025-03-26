@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Layout 3.1.0 (2024-12-04)
+ * @license Highcharts Dashboards Layout 3.2.0 (2025-03-26)
  * @module dashboards/modules/layout
  * @requires dashboards
  *
@@ -26,7 +26,7 @@ import Fullscreen from '../../Dashboards/EditMode/Fullscreen.js';
  * */
 const G = Globals;
 G.EditMode = EditMode;
-G.FullScreen = Fullscreen;
+G.Fullscreen = Fullscreen;
 /* *
  *
  *  Default Export

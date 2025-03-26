@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.1.0 (2024-12-04)
+ * @license Highcharts Dashboards v3.2.0 (2025-03-26)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,12 +62,10 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.1.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.2.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
-            Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
-                Globals.doc.createElementNS &&
-                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
+            Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
                 'plotTop',
                 'marginRight',
                 'marginBottom',
@@ -495,10 +493,10 @@
          *         True if the argument is a class.
          */
         function isClass(obj) {
-            const c = obj && obj.constructor;
+            const c = obj?.constructor;
             return !!(isObject(obj, true) &&
                 !isDOMElement(obj) &&
-                (c && c.name && c.name !== 'Object'));
+                (c?.name && c.name !== 'Object'));
         }
         /**
          * Utility function to check if an item is a number and it is finite (not NaN,
@@ -1136,9 +1134,7 @@
          *        The HTML node to discard.
          */
         function discardElement(element) {
-            if (element && element.parentElement) {
-                element.parentElement.removeChild(element);
-            }
+            element?.parentElement?.removeChild(element);
         }
         /**
          * Fix JS round off float errors.
@@ -1262,7 +1258,7 @@
                     }
                     return thisProp ?? parent;
                 }
-                const child = parent[pathElement];
+                const child = parent[pathElement.replace(/[\\'"]/g, '')];
                 // Filter on the child
                 if (!defined(child) ||
                     typeof child === 'function' ||
@@ -1301,8 +1297,7 @@
                 let offsetWidth = Math.min(el.offsetWidth, el.scrollWidth);
                 // In flex boxes, we need to use getBoundingClientRect and floor it,
                 // because scrollWidth doesn't support subpixel precision (#6427) ...
-                const boundingClientRectWidth = el.getBoundingClientRect &&
-                    el.getBoundingClientRect().width;
+                const boundingClientRectWidth = el.getBoundingClientRect?.().width;
                 // ...unless if the containing div or its parents are transform-scaled
                 // down, in which case the boundingClientRect can't be used as it is
                 // also scaled down (#9871, #10498).
@@ -1584,7 +1579,7 @@
         function fireEvent(el, type, eventArguments, defaultFunction) {
             /* eslint-enable valid-jsdoc */
             eventArguments = eventArguments || {};
-            if (doc.createEvent &&
+            if (doc?.createEvent &&
                 (el.dispatchEvent ||
                     (el.fireEvent &&
                         // Enable firing events on Highcharts instance.
@@ -2897,9 +2892,6 @@
          *
          * */
         const PREFIX = DG.classNamePrefix + 'edit-';
-        /**
-         * @internal
-         */
         const EditGlobals = {
             classNames: {
                 resizeSnap: PREFIX + 'resize-snap',
@@ -2945,6 +2937,7 @@
                 toggleSlider: PREFIX + 'toggle-slider',
                 toggleWrapperColored: PREFIX + 'toggle-wrapper-colored',
                 toggleLabels: PREFIX + 'toggle-labels',
+                labeledToggleWrapper: PREFIX + 'labeled-toggle-wrapper',
                 button: PREFIX + 'button',
                 sidebarNavButton: PREFIX + 'sidebar-button-nav',
                 labelText: PREFIX + 'label-text',
@@ -3306,6 +3299,20 @@
                 }
             }
         }
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        (function (CellHTML) {
+            /**
+             * Checks if a valid cell HTML instance.
+             */
+            function isCellHTML(cellHTML) {
+                return cellHTML instanceof CellHTML;
+            }
+            CellHTML.isCellHTML = isCellHTML;
+        })(CellHTML || (CellHTML = {}));
         /* *
          *
          *  Default Export
@@ -3870,6 +3877,20 @@
         }
         /* *
          *
+         *  Namespace
+         *
+         * */
+        (function (Cell) {
+            /**
+             * Checks if a valid cell instance.
+             */
+            function isCell(cell) {
+                return cell instanceof Cell;
+            }
+            Cell.isCell = isCell;
+        })(Cell || (Cell = {}));
+        /* *
+         *
          *  Default Export
          *
          * */
@@ -3971,7 +3992,7 @@
                 if (connectorId &&
                     (this.connectorId !== connectorId ||
                         dataPool.isNewConnector(connectorId))) {
-                    if (component.cell instanceof Cell) {
+                    if (Cell.isCell(component.cell)) {
                         component.cell.setLoadingState();
                     }
                     const connector = await dataPool.getConnector(connectorId);
@@ -4019,6 +4040,7 @@
                         }
                     }
                 }
+                this.addConnectorAssignment();
                 return this.component;
             }
             /**
@@ -4059,7 +4081,7 @@
             clearTableListeners() {
                 const connector = this.connector;
                 const tableEvents = this.tableEvents;
-                this.destroy();
+                this.removeTableEvents();
                 if (connector) {
                     tableEvents.push(connector.table.on('afterSetModifier', (e) => {
                         if (e.type === 'afterSetModifier') {
@@ -4076,12 +4098,73 @@
                     }));
                 }
             }
+            /**
+             * Adds the component to the provided connector.
+             * Starts the connector polling if inactive and one component is provided.
+             */
+            addConnectorAssignment() {
+                const { connector } = this;
+                if (!connector) {
+                    return;
+                }
+                if (!connector.components) {
+                    connector.components = [];
+                }
+                if (!connector.components.includes(this.component)) {
+                    const options = connector.options;
+                    // Add the component assignment.
+                    connector.components.push(this.component);
+                    // Start the connector polling.
+                    if ('enablePolling' in options &&
+                        options.enablePolling &&
+                        !connector.polling &&
+                        connector.components.length === 1 &&
+                        'dataRefreshRate' in options) {
+                        connector.startPolling(Math.max(options.dataRefreshRate || 0, 1) * 1000);
+                    }
+                }
+            }
+            /**
+             * Removes the component instance from the provided connector.
+             * Stops the connector polling if the last element is removed.
+             */
+            removeConnectorAssignment() {
+                const { connector } = this;
+                if (!connector?.components) {
+                    return;
+                }
+                const index = connector.components.indexOf(this.component);
+                if (index > -1) {
+                    connector.components.splice(index, 1);
+                    if (!connector.components.length) {
+                        connector.stopPolling();
+                        delete connector.components;
+                    }
+                }
+            }
+            /**
+             * Clears all event listeners in the table.
+             */
+            removeTableEvents() {
+                this.tableEvents.forEach((clearEvent) => clearEvent());
+                this.tableEvents.length = 0;
+            }
+            /**
+             * Updates the options for the connector handler.
+             *
+             * @param newOptions
+             * The new options to update.
+             */
             updateOptions(newOptions) {
                 this.options = newOptions;
             }
+            /**
+             * Destroys the connector handler.
+             * @internal
+             */
             destroy() {
-                this.tableEvents.forEach((clearEvent) => clearEvent());
-                this.tableEvents.length = 0;
+                this.removeConnectorAssignment();
+                this.removeTableEvents();
             }
         }
 
@@ -4115,7 +4198,7 @@
                 }
                 for (let i = 0, iEnd = options.length; i < iEnd; i++) {
                     const option = options[i];
-                    if (option.name === 'connectorName') {
+                    if (option.propertyPath?.some((path) => path === 'connector')) {
                         const board = this.component.board;
                         const selectOptions = !board ?
                             [] :
@@ -4893,7 +4976,7 @@
         function fireEvent(el, type, eventArguments, defaultFunction) {
             /* eslint-enable valid-jsdoc */
             eventArguments = eventArguments || {};
-            if (doc.createEvent &&
+            if (doc?.createEvent &&
                 (el.dispatchEvent ||
                     (el.fireEvent &&
                         // Enable firing events on Highcharts instance.
@@ -5071,7 +5154,7 @@
          *
          * */
         const { classNamePrefix } = Globals;
-        const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, diffObjects } = U;
+        const { createElement, isArray, merge, fireEvent, addEvent, objectEach, isFunction, getStyle, diffObjects, removeEvent } = U;
         const { getMargins, getPaddings } = CU;
         const { deepClone, uniqueKey } = DU;
         /* *
@@ -5210,12 +5293,12 @@
                 if (cell) {
                     this.attachCellListeners();
                     this.on('update', () => {
-                        if (this.cell instanceof Cell) {
+                        if (Cell.isCell(this.cell)) {
                             this.cell.setLoadingState();
                         }
                     });
                     this.on('afterRender', () => {
-                        if (this.cell instanceof Cell) {
+                        if (Cell.isCell(this.cell)) {
                             this.cell.setLoadingState(false);
                         }
                     });
@@ -5257,7 +5340,7 @@
                     }
                 }
                 if (this.cell &&
-                    this.cell instanceof Cell &&
+                    Cell.isCell(this.cell) &&
                     Object.keys(this.cell).length) {
                     const board = this.cell.row.layout.board;
                     this.cellListeners.push(
@@ -5594,6 +5677,8 @@
                 for (const connectorHandler of this.connectorHandlers) {
                     connectorHandler.destroy();
                 }
+                // Used to removed the onTableChanged event.
+                removeEvent(this);
                 this.element.remove();
             }
             /** @internal */
@@ -6027,7 +6112,7 @@
             /**
              * Get the HTML component's options.
              * @returns
-             * The JSON of HTML component's options.
+             * HTML component's options.
              *
              * @internal
              *
@@ -6138,7 +6223,123 @@
 
         return HTMLComponent;
     });
-    _registerModule(_modules, 'Data/DataTableCore.js', [_modules['Core/Utilities.js']], function (U) {
+    _registerModule(_modules, 'Data/ColumnUtils.js', [], function () {
+        /* *
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /**
+         * Utility functions for columns that can be either arrays or typed arrays.
+         * @private
+         */
+        var ColumnUtils;
+        (function (ColumnUtils) {
+            /* *
+            *
+            *  Declarations
+            *
+            * */
+            /* *
+            *
+            * Functions
+            *
+            * */
+            /**
+             * Sets the length of the column array.
+             *
+             * @param {DataTable.Column} column
+             * Column to be modified.
+             *
+             * @param {number} length
+             * New length of the column.
+             *
+             * @param {boolean} asSubarray
+             * If column is a typed array, return a subarray instead of a new array. It
+             * is faster `O(1)`, but the entire buffer will be kept in memory until all
+             * views to it are destroyed. Default is `false`.
+             *
+             * @return {DataTable.Column}
+             * Modified column.
+             *
+             * @private
+             */
+            function setLength(column, length, asSubarray) {
+                if (Array.isArray(column)) {
+                    column.length = length;
+                    return column;
+                }
+                return column[asSubarray ? 'subarray' : 'slice'](0, length);
+            }
+            ColumnUtils.setLength = setLength;
+            /**
+             * Splices a column array.
+             *
+             * @param {DataTable.Column} column
+             * Column to be modified.
+             *
+             * @param {number} start
+             * Index at which to start changing the array.
+             *
+             * @param {number} deleteCount
+             * An integer indicating the number of old array elements to remove.
+             *
+             * @param {boolean} removedAsSubarray
+             * If column is a typed array, return a subarray instead of a new array. It
+             * is faster `O(1)`, but the entire buffer will be kept in memory until all
+             * views to it are destroyed. Default is `true`.
+             *
+             * @param {Array<number>|TypedArray} items
+             * The elements to add to the array, beginning at the start index. If you
+             * don't specify any elements, `splice()` will only remove elements from the
+             * array.
+             *
+             * @return {SpliceResult}
+             * Object containing removed elements and the modified column.
+             *
+             * @private
+             */
+            function splice(column, start, deleteCount, removedAsSubarray, items = []) {
+                if (Array.isArray(column)) {
+                    if (!Array.isArray(items)) {
+                        items = Array.from(items);
+                    }
+                    return {
+                        removed: column.splice(start, deleteCount, ...items),
+                        array: column
+                    };
+                }
+                const Constructor = Object.getPrototypeOf(column)
+                    .constructor;
+                const removed = column[removedAsSubarray ? 'subarray' : 'slice'](start, start + deleteCount);
+                const newLength = column.length - deleteCount + items.length;
+                const result = new Constructor(newLength);
+                result.set(column.subarray(0, start), 0);
+                result.set(items, start);
+                result.set(column.subarray(start + deleteCount), start + items.length);
+                return {
+                    removed: removed,
+                    array: result
+                };
+            }
+            ColumnUtils.splice = splice;
+        })(ColumnUtils || (ColumnUtils = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return ColumnUtils;
+    });
+    _registerModule(_modules, 'Data/DataTableCore.js', [_modules['Data/ColumnUtils.js'], _modules['Core/Utilities.js']], function (ColumnUtils, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -6153,7 +6354,8 @@
          *  - Torstein Hønsi
          *
          * */
-        const { fireEvent, isArray, objectEach, uniqueKey } = U;
+        const { setLength, splice } = ColumnUtils;
+        const { fireEvent, objectEach, uniqueKey } = U;
         /* *
          *
          *  Class
@@ -6197,7 +6399,7 @@
                 this.autoId = !options.id;
                 this.columns = {};
                 /**
-                 * ID of the table for indentification purposes.
+                 * ID of the table for identification purposes.
                  *
                  * @name Highcharts.DataTable#id
                  * @type {string}
@@ -6227,11 +6429,38 @@
              */
             applyRowCount(rowCount) {
                 this.rowCount = rowCount;
-                objectEach(this.columns, (column) => {
-                    if (isArray(column)) { // Not on typed array
-                        column.length = rowCount;
+                objectEach(this.columns, (column, columnName) => {
+                    if (column.length !== rowCount) {
+                        this.columns[columnName] = setLength(column, rowCount);
                     }
                 });
+            }
+            /**
+             * Delete rows. Simplified version of the full
+             * `DataTable.deleteRows` method.
+             *
+             * @param {number} rowIndex
+             * The start row index
+             *
+             * @param {number} [rowCount=1]
+             * The number of rows to delete
+             *
+             * @return {void}
+             *
+             * @emits #afterDeleteRows
+             */
+            deleteRows(rowIndex, rowCount = 1) {
+                if (rowCount > 0 && rowIndex < this.rowCount) {
+                    let length = 0;
+                    objectEach(this.columns, (column, columnName) => {
+                        this.columns[columnName] =
+                            splice(column, rowIndex, rowCount).array;
+                        length = column.length;
+                    });
+                    this.rowCount = length;
+                }
+                fireEvent(this, 'afterDeleteRows', { rowIndex, rowCount });
+                this.versionTag = uniqueKey();
             }
             /**
              * Fetches the given column by the canonical column name. Simplified version
@@ -6291,7 +6520,7 @@
              * @param {Highcharts.DataTableColumn} [column]
              * Values to set in the column.
              *
-             * @param {number} [rowIndex=0]
+             * @param {number} [rowIndex]
              * Index of the first row to change. (Default: 0)
              *
              * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
@@ -6304,15 +6533,16 @@
                 this.setColumns({ [columnName]: column }, rowIndex, eventDetail);
             }
             /**
-             * * Sets cell values for multiple columns. Will insert new columns, if not
-             * found. Simplified version of the full `DataTable.setColumns`, limited to
-             * full replacement of the columns (undefined `rowIndex`).
+             * Sets cell values for multiple columns. Will insert new columns, if not
+             * found. Simplified version of the full `DataTableCore.setColumns`, limited
+             * to full replacement of the columns (undefined `rowIndex`).
              *
              * @param {Highcharts.DataTableColumnCollection} columns
              * Columns as a collection, where the keys are the column names.
              *
              * @param {number} [rowIndex]
-             * Index of the first row to change. Keep undefined to reset.
+             * Index of the first row to change. Ignored in the `DataTableCore`, as it
+             * always replaces the full column.
              *
              * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
              * Custom information for pending events.
@@ -6341,7 +6571,7 @@
              * Cell values to set.
              *
              * @param {number} [rowIndex]
-             * Index of the row to set. Leave `undefind` to add as a new row.
+             * Index of the row to set. Leave `undefined` to add as a new row.
              *
              * @param {boolean} [insert]
              * Whether to insert the row at the given index, or to overwrite the row.
@@ -6354,11 +6584,11 @@
             setRow(row, rowIndex = this.rowCount, insert, eventDetail) {
                 const { columns } = this, indexRowCount = insert ? this.rowCount + 1 : rowIndex + 1;
                 objectEach(row, (cellValue, columnName) => {
-                    const column = columns[columnName] ||
+                    let column = columns[columnName] ||
                         eventDetail?.addColumns !== false && new Array(indexRowCount);
                     if (column) {
                         if (insert) {
-                            column.splice(rowIndex, 0, cellValue);
+                            column = splice(column, rowIndex, 0, true, [cellValue]).array;
                         }
                         else {
                             column[rowIndex] = cellValue;
@@ -6386,8 +6616,11 @@
          *
          * */
         /**
+         * A typed array.
+         * @typedef {Int8Array|Uint8Array|Uint8ClampedArray|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array} Highcharts.TypedArray
+         * //**
          * A column of values in a data table.
-         * @typedef {Array<boolean|null|number|string|undefined>} Highcharts.DataTableColumn
+         * @typedef {Array<boolean|null|number|string|undefined>|Highcharts.TypedArray} Highcharts.DataTableColumn
          */ /**
         * A collection of data table columns defined by a object where the key is the
         * column name and the value is an array of the column values.
@@ -6413,7 +6646,7 @@
 
         return DataTableCore;
     });
-    _registerModule(_modules, 'Data/DataTable.js', [_modules['Data/DataTableCore.js'], _modules['Core/Utilities.js']], function (DataTableCore, U) {
+    _registerModule(_modules, 'Data/DataTable.js', [_modules['Data/ColumnUtils.js'], _modules['Data/DataTableCore.js'], _modules['Core/Utilities.js']], function (CU, DataTableCore, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -6429,7 +6662,7 @@
          *  - Dawid Dragula
          *
          * */
-        const { addEvent, defined, fireEvent, extend, uniqueKey } = U;
+        const { addEvent, defined, extend, fireEvent, isNumber, uniqueKey } = U;
         /* *
          *
          *  Class
@@ -6652,9 +6885,12 @@
                 }
                 if (rowCount > 0 && rowIndex < table.rowCount) {
                     const columns = table.columns, columnNames = Object.keys(columns);
-                    for (let i = 0, iEnd = columnNames.length, column, deletedCells; i < iEnd; ++i) {
-                        column = columns[columnNames[i]];
-                        deletedCells = column.splice(rowIndex, rowCount);
+                    for (let i = 0, iEnd = columnNames.length, column, deletedCells, columnName; i < iEnd; ++i) {
+                        columnName = columnNames[i];
+                        column = columns[columnName];
+                        const result = CU.splice(column, rowIndex, rowCount);
+                        deletedCells = result.removed;
+                        columns[columnName] = column = result.array;
                         if (!i) {
                             table.rowCount = column.length;
                         }
@@ -6812,6 +7048,8 @@
              * type number or `null`. Otherwise it will convert all cells to number
              * type, except `null`.
              *
+             * @deprecated
+             *
              * @function Highcharts.DataTable#getColumnAsNumbers
              *
              * @param {string} columnName
@@ -6875,18 +7113,29 @@
              * @param {boolean} [asReference]
              * Whether to return columns as a readonly reference.
              *
+             * @param {boolean} [asBasicColumns]
+             * Whether to transform all typed array columns to normal arrays.
+             *
              * @return {Highcharts.DataTableColumnCollection}
              * Collection of columns. If a requested column was not found, it is
              * `undefined`.
              */
-            getColumns(columnNames, asReference) {
+            getColumns(columnNames, asReference, asBasicColumns) {
                 const table = this, tableColumns = table.columns, columns = {};
                 columnNames = (columnNames || Object.keys(tableColumns));
                 for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
                     columnName = columnNames[i];
                     column = tableColumns[columnName];
                     if (column) {
-                        columns[columnName] = (asReference ? column : column.slice());
+                        if (asReference) {
+                            columns[columnName] = column;
+                        }
+                        else if (asBasicColumns && !Array.isArray(column)) {
+                            columns[columnName] = Array.from(column);
+                        }
+                        else {
+                            columns[columnName] = column.slice();
+                        }
                     }
                 }
                 return columns;
@@ -6986,7 +7235,15 @@
                 const table = this;
                 const column = table.columns[columnName];
                 if (column) {
-                    const rowIndex = column.indexOf(cellValue, rowIndexOffset);
+                    let rowIndex = -1;
+                    if (Array.isArray(column)) {
+                        // Normal array
+                        rowIndex = column.indexOf(cellValue, rowIndexOffset);
+                    }
+                    else if (isNumber(cellValue)) {
+                        // Typed array
+                        rowIndex = column.indexOf(cellValue, rowIndexOffset);
+                    }
                     if (rowIndex !== -1) {
                         return rowIndex;
                     }
@@ -7117,8 +7374,13 @@
             hasRowWith(columnName, cellValue) {
                 const table = this;
                 const column = table.columns[columnName];
-                if (column) {
+                // Normal array
+                if (Array.isArray(column)) {
                     return (column.indexOf(cellValue) !== -1);
+                }
+                // Typed array
+                if (defined(cellValue) && Number.isFinite(cellValue)) {
+                    return (column.indexOf(+cellValue) !== -1);
                 }
                 return false;
             }
@@ -7232,10 +7494,16 @@
              * @param {Highcharts.DataTableEventDetail} [eventDetail]
              * Custom information for pending events.
              *
+             * @param {boolean} [typeAsOriginal=false]
+             * Determines whether the original column retains its type when data
+             * replaced. If `true`, the original column keeps its type. If not
+             * (default), the original column will adopt the type of the replacement
+             * column.
+             *
              * @emits #setColumns
              * @emits #afterSetColumns
              */
-            setColumns(columns, rowIndex, eventDetail) {
+            setColumns(columns, rowIndex, eventDetail, typeAsOriginal) {
                 const table = this, tableColumns = table.columns, tableModifier = table.modifier, columnNames = Object.keys(columns);
                 let rowCount = table.rowCount;
                 table.emit({
@@ -7245,20 +7513,33 @@
                     detail: eventDetail,
                     rowIndex
                 });
-                if (typeof rowIndex === 'undefined') {
+                if (!defined(rowIndex) && !typeAsOriginal) {
                     super.setColumns(columns, rowIndex, extend(eventDetail, { silent: true }));
                 }
                 else {
-                    for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
+                    for (let i = 0, iEnd = columnNames.length, column, tableColumn, columnName, ArrayConstructor; i < iEnd; ++i) {
                         columnName = columnNames[i];
                         column = columns[columnName];
-                        const tableColumn = (tableColumns[columnName] ?
-                            tableColumns[columnName] :
-                            tableColumns[columnName] = new Array(table.rowCount));
+                        tableColumn = tableColumns[columnName];
+                        ArrayConstructor = Object.getPrototypeOf((tableColumn && typeAsOriginal) ? tableColumn : column).constructor;
+                        if (!tableColumn) {
+                            tableColumn = new ArrayConstructor(rowCount);
+                        }
+                        else if (ArrayConstructor === Array) {
+                            if (!Array.isArray(tableColumn)) {
+                                tableColumn = Array.from(tableColumn);
+                            }
+                        }
+                        else if (tableColumn.length < rowCount) {
+                            tableColumn =
+                                new ArrayConstructor(rowCount);
+                            tableColumn.set(tableColumns[columnName]);
+                        }
+                        tableColumns[columnName] = tableColumn;
                         for (let i = (rowIndex || 0), iEnd = column.length; i < iEnd; ++i) {
                             tableColumn[i] = column[i];
                         }
-                        rowCount = Math.max(rowCount, tableColumn.length);
+                        rowCount = Math.max(rowCount, column.length);
                     }
                     this.applyRowCount(rowCount);
                 }
@@ -7409,11 +7690,12 @@
                     row = rows[i];
                     if (row === DataTable.NULL) {
                         for (let j = 0, jEnd = columnNames.length; j < jEnd; ++j) {
+                            const column = columns[columnNames[j]];
                             if (insert) {
-                                columns[columnNames[j]].splice(i2, 0, null);
+                                columns[columnNames[j]] = CU.splice(column, i2, 0, true, [null]).array;
                             }
                             else {
-                                columns[columnNames[j]][i2] = null;
+                                column[i2] = null;
                             }
                         }
                     }
@@ -7432,7 +7714,8 @@
                 if (indexRowCount > table.rowCount) {
                     table.rowCount = indexRowCount;
                     for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
-                        columns[columnNames[i]].length = indexRowCount;
+                        const columnName = columnNames[i];
+                        columns[columnName] = CU.setLength(columns[columnName], indexRowCount);
                     }
                 }
                 if (modifier) {
@@ -7494,6 +7777,7 @@
          *  - Gøran Slettemark
          *  - Torstein Hønsi
          *  - Wojciech Chmiel
+         *  - Jomar Hønsi
          *
          * */
         const { addEvent, fireEvent, isNumber, merge } = U;
@@ -8041,9 +8325,39 @@
              * */
             /* *
              *
+             *  Constants
+             *
+             * */
+            /**
+             * Registry as a record object with connector names and their class.
+             */
+            DataConverter.types = {};
+            /* *
+             *
              *  Functions
              *
              * */
+            /**
+             * Adds a converter class to the registry.
+             *
+             * @private
+             *
+             * @param {string} key
+             * Registry key of the converter class.
+             *
+             * @param {DataConverterTypes} DataConverterClass
+             * Connector class (aka class constructor) to register.
+             *
+             * @return {boolean}
+             * Returns true, if the registration was successful. False is returned, if
+             * their is already a converter registered with this key.
+             */
+            function registerType(key, DataConverterClass) {
+                return (!!key &&
+                    !DataConverter.types[key] &&
+                    !!(DataConverter.types[key] = DataConverterClass));
+            }
+            DataConverter.registerType = registerType;
             /**
              * Converts an array of columns to a table instance. Second dimension of the
              * array are the row cells.
@@ -8506,6 +8820,7 @@
             ...DataConverter.defaultOptions,
             lineDelimiter: '\n'
         };
+        DataConverter.registerType('CSV', CSVConverter);
         /* *
          *
          *  Default Export
@@ -8842,7 +9157,7 @@
              * Poll timer ID, if active.
              */
             get polling() {
-                return !!this.polling;
+                return !!this._polling;
             }
             /* *
              *
@@ -9327,6 +9642,7 @@
         GoogleSheetsConverter.defaultOptions = {
             ...DataConverter.defaultOptions
         };
+        DataConverter.registerType('GoogleSheets', GoogleSheetsConverter);
         /* *
          *
          *  Default Export
@@ -9640,7 +9956,14 @@
                     // of each column is a subcategory
                     if (useMultiLevelHeaders) {
                         for (const name of columnNames) {
-                            const subhead = (columns[name].shift() || '').toString();
+                            let column = columns[name];
+                            if (!Array.isArray(column)) {
+                                // Convert to conventional array from typed array
+                                // if needed
+                                column = Array.from(column);
+                            }
+                            const subhead = (column.shift() || '').toString();
+                            columns[name] = column;
                             subcategories.push(subhead);
                         }
                         tableHead = this.getTableHeaderHTML(columnNames, subcategories, options);
@@ -9890,6 +10213,7 @@
             useRowspanHeaders: true,
             useMultiLevelHeaders: true
         };
+        DataConverter.registerType('HTMLTable', HTMLTableConverter);
         /* *
          *
          *  Default Export
@@ -10188,6 +10512,7 @@
             data: [],
             orientation: 'rows'
         };
+        DataConverter.registerType('JSON', JSONConverter);
         /* *
          *
          *  Default Export
@@ -10265,7 +10590,15 @@
                 });
                 return Promise
                     .resolve(dataUrl ?
-                    fetch(dataUrl).then((json) => json.json()) :
+                    fetch(dataUrl).then((response) => response.json())['catch']((error) => {
+                        connector.emit({
+                            type: 'loadError',
+                            detail: eventDetail,
+                            error,
+                            table
+                        });
+                        console.warn(`Unable to fetch data from ${dataUrl}.`); // eslint-disable-line no-console
+                    }) :
                     data || [])
                     .then((data) => {
                     if (data) {
@@ -10832,8 +11165,11 @@
                 modifier.emit({ type: 'modify', detail: eventDetail, table });
                 const modified = table.modified;
                 if (table.hasColumns(['columnNames'])) { // Inverted table
-                    const columnNames = ((table.deleteColumns(['columnNames']) || {})
-                        .columnNames || []).map((column) => `${column}`), columns = {};
+                    const columnNamesColumn = ((table.deleteColumns(['columnNames']) || {})
+                        .columnNames || []), columns = {}, columnNames = [];
+                    for (let i = 0, iEnd = columnNamesColumn.length; i < iEnd; ++i) {
+                        columnNames.push('' + columnNamesColumn[i]);
+                    }
                     for (let i = 0, iEnd = table.getRowCount(), row; i < iEnd; ++i) {
                         row = table.getRow(i);
                         if (row) {
@@ -12060,7 +12396,7 @@
              * @param {string} connectorId
              * ID of the connector.
              *
-             * @return {Promise<Data.DataConnector>}
+             * @return {Promise<Data.DataConnectorType>}
              * Returns the connector.
              */
             getConnector(connectorId) {
@@ -12168,7 +12504,7 @@
              * @param {Data.DataPoolConnectorOptions} options
              * Options of connector.
              *
-             * @return {Promise<Data.DataConnector>}
+             * @return {Promise<Data.DataConnectorType>}
              * Returns the connector.
              */
             loadConnector(options) {
@@ -12891,7 +13227,7 @@
             /**
              * Get the layout's options.
              * @returns
-             * The JSON of layout's options.
+             * Layout's options.
              *
              * @internal
              *
@@ -13189,7 +13525,7 @@
              * not support converting functions or events into JSON object.
              *
              * @returns
-             * The JSON of boards's options.
+             * Dashboards options.
              */
             getOptions() {
                 const board = this, options = {
@@ -13334,7 +13670,8 @@
         const syncPair = {
             emitter: void 0,
             handler: function () {
-                if (this.type !== 'DataGrid') {
+                if (this.type !== 'DataGrid' && // To be removed in v4
+                    this.type !== 'Grid') {
                     return;
                 }
                 const component = this;
@@ -13412,7 +13749,8 @@
         };
         const syncPair = {
             emitter: function () {
-                if (this.type !== 'DataGrid') {
+                if (this.type !== 'DataGrid' && // To be removed in v4
+                    this.type !== 'Grid') {
                     return;
                 }
                 const component = this;
@@ -13454,7 +13792,8 @@
                 };
             },
             handler: function () {
-                if (this.type !== 'DataGrid') {
+                if (this.type !== 'DataGrid' && // To be removed in v4
+                    this.type !== 'Grid') {
                     return;
                 }
                 const component = this;
@@ -13483,14 +13822,14 @@
                     if (highlightOptions.autoScroll) {
                         viewport.scrollToRow(rowIndex);
                     }
-                    dataGrid.hoverRow(rowIndex);
-                    dataGrid.hoverColumn(column);
+                    dataGrid.syncRow(rowIndex);
+                    dataGrid.syncColumn(column);
                 };
                 const handleCursorOut = () => {
                     const { dataGrid } = component;
                     if (dataGrid) {
-                        dataGrid.hoverColumn();
-                        dataGrid.hoverRow();
+                        dataGrid.syncColumn();
+                        dataGrid.syncRow();
                     }
                 };
                 const registerCursorListeners = () => {
@@ -13550,7 +13889,8 @@
         const syncPair = {
             emitter: void 0,
             handler: function () {
-                if (this.type !== 'DataGrid') {
+                if (this.type !== 'DataGrid' && // To be removed in v4
+                    this.type !== 'Grid') {
                     return;
                 }
                 const component = this;
@@ -13660,9 +14000,9 @@
          *
          * */
         const DataGridComponentDefaults = {
-            dataGridClassName: 'dataGrid-container',
-            dataGridID: 'dataGrid-' + uniqueKey(),
-            dataGridOptions: {},
+            gridClassName: 'dataGrid-container',
+            gridID: 'dataGrid-' + uniqueKey(),
+            gridOptions: {},
             editableOptions: [
                 {
                     name: 'connectorName',
@@ -13677,19 +14017,19 @@
                     propertyPath: ['caption'],
                     type: 'input'
                 }, {
-                    name: 'DataGrid options',
+                    name: 'Grid options',
                     type: 'nested',
                     nestedOptions: [{
                             name: 'General',
                             options: [
                                 {
                                     name: 'Caption/title',
-                                    propertyPath: ['dataGridOptions', 'caption', 'text'],
+                                    propertyPath: ['gridOptions', 'caption', 'text'],
                                     type: 'input'
                                 }, {
                                     name: 'Columns distribution',
                                     propertyPath: [
-                                        'dataGridOptions',
+                                        'gridOptions',
                                         'rendering',
                                         'columns',
                                         'distribution'
@@ -13701,9 +14041,9 @@
                                             name: 'fixed'
                                         }]
                                 }, {
-                                    name: 'Editable DataGrid',
+                                    name: 'Editable Grid',
                                     propertyPath: [
-                                        'dataGridOptions',
+                                        'gridOptions',
                                         'columnDefaults',
                                         'cells',
                                         'editable'
@@ -13712,7 +14052,7 @@
                                 }, {
                                     name: 'Resizable columns',
                                     propertyPath: [
-                                        'dataGridOptions',
+                                        'gridOptions',
                                         'columnDefaults',
                                         'resizing'
                                     ],
@@ -13720,7 +14060,7 @@
                                 }, {
                                     name: 'Sortable columns',
                                     propertyPath: [
-                                        'dataGridOptions',
+                                        'gridOptions',
                                         'columnDefaults',
                                         'sorting',
                                         'sortable'
@@ -13729,7 +14069,7 @@
                                 }, {
                                     name: 'Cell text truncation',
                                     propertyPath: [
-                                        'dataGridOptions',
+                                        'gridOptions',
                                         'rendering',
                                         'rows',
                                         'strictHeights'
@@ -13739,12 +14079,12 @@
                             ]
                         }]
                 }, {
-                    name: 'DataGrid class name',
-                    propertyPath: ['dataGridClassName'],
+                    name: 'Grid class name',
+                    propertyPath: ['gridClassName'],
                     type: 'input'
                 }, {
-                    name: 'DataGrid ID',
-                    propertyPath: ['dataGridID'],
+                    name: 'Grid ID',
+                    propertyPath: ['gridID'],
                     type: 'input'
                 }
             ],
@@ -13785,7 +14125,7 @@
 
         return DataGridComponentDefaults;
     });
-    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridSyncs.js'], _modules['Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Utilities.js']], function (Component, DataGridSyncs, DataGridComponentDefaults, U, DU) {
+    _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridSyncs.js'], _modules['Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Utilities.js']], function (Component, DataGridSyncs, GridComponentDefaults, U, DU) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -13799,7 +14139,7 @@
          *  - Dawid Dragula
          *
          * */
-        const { merge, diffObjects } = U;
+        const { merge, diffObjects, getStyle } = U;
         const { deepClone } = DU;
         /* *
          *
@@ -13807,36 +14147,57 @@
          *
          * */
         /**
-         * DataGrid component for Highcharts Dashboards.
+         * Grid Component for Highcharts Dashboards.
          * @private
          */
         class DataGridComponent extends Component {
+            /**
+             * The namespace of the Grid Component.
+             * @deprecated
+             * DataGrid will be removed in behalf of Grid in the next major version.
+             */
+            static get DataGridNamespace() {
+                return DataGridComponent.GridNamespace;
+            }
             /* *
              *
              *  Static Functions
              *
              * */
             /**
-             * Function to create a DataGrid component from JSON.
+             * Function to create a Grid Component from JSON.
              *
              * @param json
-             * The JSON to create the DataGrid component from.
+             * The JSON to create the Grid Component from.
              *
              * @param cell
-             * The cell to create the DataGrid component in.
+             * The cell to create the Grid Component in.
              *
              * @returns
-             * The DataGrid component created from the JSON.
+             * The Grid Component created from the JSON.
              */
             static fromJSON(json, cell) {
                 const options = json.options;
-                const dataGridOptions = JSON.parse(json.options.dataGridOptions || '');
-                const component = new DataGridComponent(cell, merge(options, { dataGridOptions }));
+                const gridOptions = JSON.parse((options.gridOptions || options.dataGridOptions) ?? '');
+                const component = new DataGridComponent(cell, merge(options, { gridOptions }));
                 component.emit({
                     type: 'fromJSON',
                     json
                 });
                 return component;
+            }
+            /* *
+             *
+             *  Properties
+             *
+             * */
+            /**
+             * The Grid that is rendered in the Grid Component.
+             * @deprecated
+             * DataGrid will be removed in behalf of Grid in the next major version.
+             */
+            get dataGrid() {
+                return this.grid;
             }
             /* *
              *
@@ -13847,7 +14208,7 @@
                 options = merge(DataGridComponent.defaultOptions, options);
                 super(cell, options, board);
                 this.options = options;
-                this.type = 'DataGrid';
+                this.type = 'Grid';
                 this.setOptions();
             }
             /* *
@@ -13858,26 +14219,28 @@
             async update(options) {
                 await super.update(options);
                 this.setOptions();
-                if (this.dataGrid) {
-                    this.dataGrid.update(this.options.dataGridOptions ?? {}, false);
-                    if (this.dataGrid?.viewport?.dataTable?.id !==
+                if (this.grid) {
+                    this.grid.update(merge({}, options.gridOptions, options.dataGridOptions), false);
+                    if (this.grid?.viewport?.dataTable?.id !==
                         this.getFirstConnector()?.table?.id) {
-                        this.dataGrid.update({
+                        this.grid.update({
                             dataTable: this.getFirstConnector()?.table?.modified
                         }, false);
                     }
-                    this.dataGrid.renderViewport();
+                    this.grid.renderViewport();
                 }
                 this.emit({ type: 'afterUpdate' });
             }
             render() {
                 super.render();
-                if (!this.dataGrid) {
-                    this.dataGrid = this.constructDataGrid();
+                if (!this.grid) {
+                    this.grid = this.constructGrid();
                 }
                 else {
-                    this.dataGrid.renderViewport();
+                    this.grid.renderViewport();
                 }
+                this.grid.initialContainerHeight =
+                    getStyle(this.parentElement, 'height', true) || 0;
                 this.sync.start();
                 this.emit({ type: 'afterRender' });
                 return this;
@@ -13890,25 +14253,25 @@
                     this.contentElement.style.removeProperty('min-height');
                 }
                 this.resizeDynamicContent(width, height);
-                this.dataGrid?.viewport?.reflow();
+                this.grid?.viewport?.reflow();
             }
             onTableChanged() {
-                this.dataGrid?.update({
+                this.grid?.update({
                     dataTable: this.getFirstConnector()?.table?.modified
                 });
             }
             getEditableOptions() {
                 const componentOptions = this.options;
-                const dataGridOptions = this.dataGrid?.options;
+                const gridOptions = this.grid?.options;
                 return deepClone(merge({
-                    dataGridOptions: dataGridOptions
+                    gridOptions: gridOptions
                 }, componentOptions), ['editableOptions', 'dataTable']);
             }
             getOptionsOnDrop(sidebar) {
                 const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
                 let options = {
                     cell: '',
-                    type: 'DataGrid'
+                    type: 'Grid'
                 };
                 if (connectorsIds.length) {
                     options = {
@@ -13921,10 +14284,10 @@
                 return options;
             }
             /**
-             * Get the DataGrid component's options.
+             * Get the Grid Component's options.
              *
              * @returns
-             * The JSON of DataGrid component's options.
+             * Grid Component's options.
              *
              * @internal
              */
@@ -13932,16 +14295,16 @@
                 // Remove the table from the options copy if the connector is set.
                 const optionsCopy = merge(this.options);
                 if (optionsCopy.connector?.id) {
-                    delete optionsCopy.dataGridOptions?.dataTable;
+                    delete optionsCopy.gridOptions?.dataTable;
                 }
-                else if (optionsCopy.dataGridOptions?.dataTable?.id) {
-                    optionsCopy.dataGridOptions.dataTable = {
-                        columns: optionsCopy.dataGridOptions.dataTable.columns
+                else if (optionsCopy.gridOptions?.dataTable?.id) {
+                    optionsCopy.gridOptions.dataTable = {
+                        columns: optionsCopy.gridOptions.dataTable.columns
                     };
                 }
                 return {
                     ...diffObjects(optionsCopy, DataGridComponent.defaultOptions),
-                    type: 'DataGrid'
+                    type: 'Grid'
                 };
             }
             /**
@@ -13949,39 +14312,39 @@
              */
             destroy() {
                 this.sync.stop();
-                this.dataGrid?.destroy();
+                this.grid?.destroy();
                 super.destroy();
             }
             /**
              * Sets the options for the data grid component content container.
              */
             setOptions() {
-                if (this.options.dataGridClassName) {
+                const options = this.options, gridClassName = options.gridClassName || options.dataGridClassName, gridID = options.gridID || options.dataGridID;
+                if (gridClassName) {
                     this.contentElement.classList.value =
-                        DataGridComponentDefaults.className + ' ' +
-                            this.options.dataGridClassName;
+                        GridComponentDefaults.className + ' ' +
+                            gridClassName;
                 }
-                if (this.options.dataGridID) {
-                    this.contentElement.id = this.options.dataGridID;
+                if (gridID) {
+                    this.contentElement.id = gridID;
                 }
             }
             /**
-             * Function to create the DataGrid.
+             * Function to create the Grid.
              *
-             * @returns The DataGrid.
+             * @returns The Grid.
              */
-            constructDataGrid() {
-                const DGN = DataGridComponent.DataGridNamespace;
+            constructGrid() {
+                const DGN = DataGridComponent.GridNamespace;
                 if (!DGN) {
-                    throw new Error('DataGrid not connected.');
+                    throw new Error('Grid not connected.');
                 }
-                const dataTable = this.getFirstConnector()?.table;
-                const dataGridOptions = this.options.dataGridOptions ?? {};
+                const dataTable = this.getFirstConnector()?.table, options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
                 if (dataTable) {
-                    dataGridOptions.dataTable = dataTable.modified;
+                    gridOptions.dataTable = dataTable.modified;
                 }
-                const dataGridInstance = new DGN.DataGrid(this.contentElement, dataGridOptions);
-                this.options.dataGridOptions = dataGridInstance.options;
+                const dataGridInstance = new DGN.Grid(this.contentElement, gridOptions);
+                this.options.gridOptions = dataGridInstance.options;
                 return dataGridInstance;
             }
         }
@@ -13991,13 +14354,13 @@
          *
          * */
         /**
-         * Predefined sync config for the DataGrid component.
+         * Predefined sync config for the Grid Component.
          */
         DataGridComponent.predefinedSyncConfig = DataGridSyncs;
         /**
-         * The default options for the DataGrid component.
+         * The default options for the Grid Component.
          */
-        DataGridComponent.defaultOptions = merge(Component.defaultOptions, DataGridComponentDefaults);
+        DataGridComponent.defaultOptions = merge(Component.defaultOptions, GridComponentDefaults);
         /* *
          *
          *  Default Export
@@ -14006,7 +14369,7 @@
 
         return DataGridComponent;
     });
-    _registerModule(_modules, 'Dashboards/Plugins/DataGridPlugin.js', [_modules['Dashboards/Components/DataGridComponent/DataGridComponent.js']], function (DataGridComponent) {
+    _registerModule(_modules, 'Dashboards/Plugins/DataGridPlugin.js', [_modules['Dashboards/Components/DataGridComponent/DataGridComponent.js']], function (GridComponent) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -14017,6 +14380,7 @@
          *
          *  Authors:
          *  - Karol Kolodziej
+         *  - Dawid Dragula
          *
          * */
         /* *
@@ -14027,10 +14391,23 @@
         /**
          * Connects DataGrid with the Dashboard plugin.
          *
-         * @param {Dashboards.DataGrid} dataGrid DataGrid core to connect.
+         * @param DataGridNS
+         * DataGrid core to connect.
+         *
+         * @deprecated
+         * DataGrid will be removed in behalf of Grid in the next major version.
          */
         function connectDataGrid(DataGridNS) {
-            DataGridComponent.DataGridNamespace = DataGridNS;
+            connectGrid(DataGridNS);
+        }
+        /**
+         * Connects DataGrid with the Dashboard plugin.
+         *
+         * @param GridNS
+         * Grid core to connect.
+         */
+        function connectGrid(GridNS) {
+            GridComponent.GridNamespace = GridNS;
         }
         /**
          * Callback function of the Dashboard plugin.
@@ -14040,7 +14417,8 @@
          */
         function onRegister(e) {
             const { ComponentRegistry } = e;
-            ComponentRegistry.registerComponent('DataGrid', DataGridComponent);
+            ComponentRegistry.registerComponent('DataGrid', GridComponent);
+            ComponentRegistry.registerComponent('Grid', GridComponent);
         }
         /**
          * Callback function of the Dashboard plugin.
@@ -14056,7 +14434,8 @@
          *
          * */
         const DataGridCustom = {
-            connectDataGrid
+            connectDataGrid,
+            connectGrid
         };
         const DataGridPlugin = {
             custom: DataGridCustom,
@@ -15237,8 +15616,14 @@
             async update(options, shouldRerender = true) {
                 await super.update(options, false);
                 this.setOptions();
-                if (this.chart) {
-                    this.chart.update(merge(this.options.chartOptions) || {});
+                if (this.options.chartConstructor !== this.chartConstructor) {
+                    this.chartConstructor = this.options.chartConstructor || 'chart';
+                    this.chartOptions = this.options.chartOptions || {};
+                    this.chart?.destroy();
+                    delete this.chart;
+                }
+                else {
+                    this.chart?.update(merge(this.options.chartOptions) || {});
                 }
                 this.emit({ type: 'afterUpdate' });
                 shouldRerender && this.render();
@@ -15544,7 +15929,7 @@
             /**
              * Get the HighchartsComponent component's options.
              * @returns
-             * The JSON of HighchartsComponent component's options.
+             * HighchartsComponent component's options.
              *
              * @internal
              *
@@ -15776,6 +16161,1116 @@
          * */
 
         return KPIComponentDefaults;
+    });
+    _registerModule(_modules, 'Data/Formula/FormulaTypes.js', [], function () {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        /**
+         * Array of all possible operators.
+         * @private
+         */
+        const operators = ['+', '-', '*', '/', '^', '=', '<', '<=', '>', '>='];
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Tests an item for a Formula array.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaItem} item
+         * Item to test.
+         *
+         * @return {boolean}
+         * `true`, if the item is a formula (or argument) array.
+         */
+        function isFormula(item) {
+            return item instanceof Array;
+        }
+        /**
+         * Tests an item for a Function structure.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaItem} item
+         * Item to test.
+         *
+         * @return {boolean}
+         * `true`, if the item is a formula function.
+         */
+        function isFunction(item) {
+            return (typeof item === 'object' &&
+                !(item instanceof Array) &&
+                item.type === 'function');
+        }
+        /**
+         * Tests an item for an Operator string.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaItem} item
+         * Item to test.
+         *
+         * @return {boolean}
+         * `true`, if the item is an operator string.
+         */
+        function isOperator(item) {
+            return (typeof item === 'string' &&
+                operators.indexOf(item) >= 0);
+        }
+        /**
+         * Tests an item for a Range structure.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaItem} item
+         * Item to test.
+         *
+         * @return {boolean}
+         * `true`, if the item is a range.
+         */
+        function isRange(item) {
+            return (typeof item === 'object' &&
+                !(item instanceof Array) &&
+                item.type === 'range');
+        }
+        /**
+         * Tests an item for a Reference structure.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaItem} item
+         * Item to test.
+         *
+         * @return {boolean}
+         * `true`, if the item is a reference.
+         */
+        function isReference(item) {
+            return (typeof item === 'object' &&
+                !(item instanceof Array) &&
+                item.type === 'reference');
+        }
+        /**
+         * Tests an item for a Value structure.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaItem|null|undefined} item
+         * Item to test.
+         *
+         * @return {boolean}
+         * `true`, if the item is a value.
+         */
+        function isValue(item) {
+            return (typeof item === 'boolean' ||
+                typeof item === 'number' ||
+                typeof item === 'string');
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+        const MathFormula = {
+            isFormula,
+            isFunction,
+            isOperator,
+            isRange,
+            isReference,
+            isValue
+        };
+
+        return MathFormula;
+    });
+    _registerModule(_modules, 'Data/Formula/FormulaProcessor.js', [_modules['Data/Formula/FormulaTypes.js']], function (FormulaTypes) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        const { isFormula, isFunction, isOperator, isRange, isReference, isValue } = FormulaTypes;
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        const asLogicalStringRegExp = / */;
+        const MAX_FALSE = Number.MAX_VALUE / 1.000000000001;
+        const MAX_STRING = Number.MAX_VALUE / 1.000000000002;
+        const MAX_TRUE = Number.MAX_VALUE;
+        const operatorPriority = {
+            '^': 3,
+            '*': 2,
+            '/': 2,
+            '+': 1,
+            '-': 1,
+            '=': 0,
+            '<': 0,
+            '<=': 0,
+            '>': 0,
+            '>=': 0
+        };
+        const processorFunctions = {};
+        const processorFunctionNameRegExp = /^[A-Z][A-Z\.]*$/;
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Converts non-number types to logical numbers.
+         *
+         * @param {Highcharts.FormulaValue} value
+         * Value to convert.
+         *
+         * @return {number}
+         * Logical number value. `NaN` if not convertable.
+         */
+        function asLogicalNumber(value) {
+            switch (typeof value) {
+                case 'boolean':
+                    return value ? MAX_TRUE : MAX_FALSE;
+                case 'string':
+                    return MAX_STRING;
+                case 'number':
+                    return value;
+                default:
+                    return NaN;
+            }
+        }
+        /**
+         * Converts strings to logical strings, while other types get passed through. In
+         * logical strings the space character is the lowest value and letters are case
+         * insensitive.
+         *
+         * @param {Highcharts.FormulaValue} value
+         * Value to convert.
+         *
+         * @return {Highcharts.FormulaValue}
+         * Logical string value or passed through value.
+         */
+        function asLogicalString(value) {
+            if (typeof value === 'string') {
+                return value.toLowerCase().replace(asLogicalStringRegExp, '\0');
+            }
+            return value;
+        }
+        /**
+         * Converts non-number types to a logic number.
+         *
+         * @param {Highcharts.FormulaValue} value
+         * Value to convert.
+         *
+         * @return {number}
+         * Number value. `NaN` if not convertable.
+         */
+        function asNumber(value) {
+            switch (typeof value) {
+                case 'boolean':
+                    return value ? 1 : 0;
+                case 'string':
+                    return parseFloat(value.replace(',', '.'));
+                case 'number':
+                    return value;
+                default:
+                    return NaN;
+            }
+        }
+        /**
+         * Process a basic operation of two given values.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaOperator} operator
+         * Operator between values.
+         *
+         * @param {Highcharts.FormulaValue} x
+         * First value for operation.
+         *
+         * @param {Highcharts.FormulaValue} y
+         * Second value for operation.
+         *
+         * @return {Highcharts.FormulaValue}
+         * Operation result. `NaN` if operation is not support.
+         */
+        function basicOperation(operator, x, y) {
+            switch (operator) {
+                case '=':
+                    return asLogicalString(x) === asLogicalString(y);
+                case '<':
+                    if (typeof x === typeof y) {
+                        return asLogicalString(x) < asLogicalString(y);
+                    }
+                    return asLogicalNumber(x) < asLogicalNumber(y);
+                case '<=':
+                    if (typeof x === typeof y) {
+                        return asLogicalString(x) <= asLogicalString(y);
+                    }
+                    return asLogicalNumber(x) <= asLogicalNumber(y);
+                case '>':
+                    if (typeof x === typeof y) {
+                        return asLogicalString(x) > asLogicalString(y);
+                    }
+                    return asLogicalNumber(x) > asLogicalNumber(y);
+                case '>=':
+                    if (typeof x === typeof y) {
+                        return asLogicalString(x) >= asLogicalString(y);
+                    }
+                    return asLogicalNumber(x) >= asLogicalNumber(y);
+            }
+            x = asNumber(x);
+            y = asNumber(y);
+            let result;
+            switch (operator) {
+                case '+':
+                    result = x + y;
+                    break;
+                case '-':
+                    result = x - y;
+                    break;
+                case '*':
+                    result = x * y;
+                    break;
+                case '/':
+                    result = x / y;
+                    break;
+                case '^':
+                    result = Math.pow(x, y);
+                    break;
+                default:
+                    return NaN;
+            }
+            // Limit decimal to 9 digits
+            return (result % 1 ?
+                Math.round(result * 1000000000) / 1000000000 :
+                result);
+        }
+        /**
+         * Converts an argument to Value and in case of a range to an array of Values.
+         *
+         * @function Highcharts.Formula.getArgumentValue
+         *
+         * @param {Highcharts.FormulaRange|Highcharts.FormulaTerm} arg
+         * Formula range or term to convert.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @return {Highcharts.FormulaValue|Array<Highcharts.FormulaValue>}
+         * Converted value.
+         */
+        function getArgumentValue(arg, table) {
+            // Add value
+            if (isValue(arg)) {
+                return arg;
+            }
+            // Add values of a range
+            if (isRange(arg)) {
+                return (table && getRangeValues(arg, table) || []);
+            }
+            // Add values of a function
+            if (isFunction(arg)) {
+                return processFunction(arg, table);
+            }
+            // Process functions, operations, references with formula processor
+            return processFormula((isFormula(arg) ? arg : [arg]), table);
+        }
+        /**
+         * Converts all arguments to Values and in case of ranges to arrays of Values.
+         *
+         * @function Highcharts.Formula.getArgumentsValues
+         *
+         * @param {Highcharts.FormulaArguments} args
+         * Formula arguments to convert.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @return {Array<(Highcharts.FormulaValue|Array<Highcharts.FormulaValue>)>}
+         * Converted values.
+         */
+        function getArgumentsValues(args, table) {
+            const values = [];
+            for (let i = 0, iEnd = args.length; i < iEnd; ++i) {
+                values.push(getArgumentValue(args[i], table));
+            }
+            return values;
+        }
+        /**
+         * Extracts cell values from a table for a given range.
+         *
+         * @function Highcharts.Formula.getRangeValues
+         *
+         * @param {Highcharts.FormulaRange} range
+         * Formula range to use.
+         *
+         * @param {Highcharts.DataTable} table
+         * Table to extract from.
+         *
+         * @return {Array<Highcharts.FormulaValue>}
+         * Extracted values.
+         */
+        function getRangeValues(range, table) {
+            const columnNames = table
+                .getColumnNames()
+                .slice(range.beginColumn, range.endColumn + 1), values = [];
+            for (let i = 0, iEnd = columnNames.length, cell; i < iEnd; ++i) {
+                const cells = table.getColumn(columnNames[i], true) || [];
+                for (let j = range.beginRow, jEnd = range.endRow + 1; j < jEnd; ++j) {
+                    cell = cells[j];
+                    if (typeof cell === 'string' &&
+                        cell[0] === '=' &&
+                        table !== table.modified) {
+                        // Look in the modified table for formula result
+                        cell = table.modified.getCell(columnNames[i], j);
+                    }
+                    values.push(isValue(cell) ? cell : NaN);
+                }
+            }
+            return values;
+        }
+        /**
+         * Extracts the cell value from a table for a given reference.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaReference} reference
+         * Formula reference to use.
+         *
+         * @param {Highcharts.DataTable} table
+         * Table to extract from.
+         *
+         * @return {Highcharts.FormulaValue}
+         * Extracted value. 'undefined' might also indicate that the cell was not found.
+         */
+        function getReferenceValue(reference, table) {
+            const columnName = table.getColumnNames()[reference.column];
+            if (columnName) {
+                const cell = table.getCell(columnName, reference.row);
+                if (typeof cell === 'string' &&
+                    cell[0] === '=' &&
+                    table !== table.modified) {
+                    // Look in the modified table for formula result
+                    const result = table.modified.getCell(columnName, reference.row);
+                    return isValue(result) ? result : NaN;
+                }
+                return isValue(cell) ? cell : NaN;
+            }
+            return NaN;
+        }
+        /**
+         * Processes a formula array on the given table. If the formula does not contain
+         * references or ranges, then no table has to be provided.
+         *
+         * @private
+         * @function Highcharts.processFormula
+         *
+         * @param {Highcharts.Formula} formula
+         * Formula array to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @return {Highcharts.FormulaValue}
+         * Result value of the process. `NaN` indicates an error.
+         */
+        function processFormula(formula, table) {
+            let x;
+            for (let i = 0, iEnd = formula.length, item, operator, result, y; i < iEnd; ++i) {
+                item = formula[i];
+                // Remember operator for operation on next item
+                if (isOperator(item)) {
+                    operator = item;
+                    continue;
+                }
+                // Next item is a value
+                if (isValue(item)) {
+                    y = item;
+                    // Next item is a formula and needs to get processed first
+                }
+                else if (isFormula(item)) {
+                    y = processFormula(formula, table);
+                    // Next item is a function call and needs to get processed first
+                }
+                else if (isFunction(item)) {
+                    result = processFunction(item, table);
+                    y = (isValue(result) ? result : NaN); // Arrays are not allowed here
+                    // Next item is a reference and needs to get resolved
+                }
+                else if (isReference(item)) {
+                    y = (table && getReferenceValue(item, table));
+                }
+                // If we have a next value, lets do the operation
+                if (typeof y !== 'undefined') {
+                    // Next value is our first value
+                    if (typeof x === 'undefined') {
+                        if (operator) {
+                            x = basicOperation(operator, 0, y);
+                        }
+                        else {
+                            x = y;
+                        }
+                        // Fail fast if no operator available
+                    }
+                    else if (!operator) {
+                        return NaN;
+                        // Regular next value
+                    }
+                    else {
+                        const operator2 = formula[i + 1];
+                        if (isOperator(operator2) &&
+                            operatorPriority[operator2] > operatorPriority[operator]) {
+                            y = basicOperation(operator2, y, processFormula(formula.slice(i + 2)));
+                            i = iEnd;
+                        }
+                        x = basicOperation(operator, x, y);
+                    }
+                    operator = void 0;
+                    y = void 0;
+                }
+            }
+            return isValue(x) ? x : NaN;
+        }
+        /**
+         * Process a function on the given table. If the arguments do not contain
+         * references or ranges, then no table has to be provided.
+         *
+         * @private
+         *
+         * @param {Highcharts.FormulaFunction} formulaFunction
+         * Formula function to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @param {Highcharts.FormulaReference} [reference]
+         * Table cell reference to use for relative references and ranges.
+         *
+         * @return {Highcharts.FormulaValue|Array<Highcharts.FormulaValue>}
+         * Result value (or values) of the process. `NaN` indicates an error.
+         */
+        function processFunction(formulaFunction, table, 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        reference // @todo
+        ) {
+            const processor = processorFunctions[formulaFunction.name];
+            if (processor) {
+                try {
+                    return processor(formulaFunction.args, table);
+                }
+                catch {
+                    return NaN;
+                }
+            }
+            const error = new Error(`Function "${formulaFunction.name}" not found.`);
+            error.name = 'FormulaProcessError';
+            throw error;
+        }
+        /**
+         * Registers a function for the FormulaProcessor.
+         *
+         * @param {string} name
+         * Name of the function in spreadsheets notation with upper case.
+         *
+         * @param {Highcharts.FormulaFunction} processorFunction
+         * ProcessorFunction for the FormulaProcessor. This is an object so that it
+         * can take additional parameter for future validation routines.
+         *
+         * @return {boolean}
+         * Return true, if the ProcessorFunction has been registered.
+         */
+        function registerProcessorFunction(name, processorFunction) {
+            return (processorFunctionNameRegExp.test(name) &&
+                !processorFunctions[name] &&
+                !!(processorFunctions[name] = processorFunction));
+        }
+        /**
+         * Translates relative references and ranges in-place.
+         *
+         * @param {Highcharts.Formula} formula
+         * Formula to translate references and ranges in.
+         *
+         * @param {number} [columnDelta=0]
+         * Column delta to translate to. Negative translate back.
+         *
+         * @param {number} [rowDelta=0]
+         * Row delta to translate to. Negative numbers translate back.
+         *
+         * @return {Highcharts.Formula}
+         * Formula with translated reference and ranges. This formula is equal to the
+         * first argument.
+         */
+        function translateReferences(formula, columnDelta = 0, rowDelta = 0) {
+            for (let i = 0, iEnd = formula.length, item; i < iEnd; ++i) {
+                item = formula[i];
+                if (item instanceof Array) {
+                    translateReferences(item, columnDelta, rowDelta);
+                }
+                else if (isFunction(item)) {
+                    translateReferences(item.args, columnDelta, rowDelta);
+                }
+                else if (isRange(item)) {
+                    if (item.beginColumnRelative) {
+                        item.beginColumn += columnDelta;
+                    }
+                    if (item.beginRowRelative) {
+                        item.beginRow += rowDelta;
+                    }
+                    if (item.endColumnRelative) {
+                        item.endColumn += columnDelta;
+                    }
+                    if (item.endRowRelative) {
+                        item.endRow += rowDelta;
+                    }
+                }
+                else if (isReference(item)) {
+                    if (item.columnRelative) {
+                        item.column += columnDelta;
+                    }
+                    if (item.rowRelative) {
+                        item.row += rowDelta;
+                    }
+                }
+            }
+            return formula;
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+        const FormulaProcessor = {
+            asNumber,
+            getArgumentValue,
+            getArgumentsValues,
+            getRangeValues,
+            getReferenceValue,
+            processFormula,
+            processorFunctions,
+            registerProcessorFunction,
+            translateReferences
+        };
+
+        return FormulaProcessor;
+    });
+    _registerModule(_modules, 'Data/Formula/Functions/SUM.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Processor for the `SUM(...values)` implementation. Calculates the sum of the
+         * given values.
+         *
+         * @private
+         * @function Formula.processorFunctions.SUM
+         *
+         * @param {Highcharts.FormulaArguments} args
+         * Arguments to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to process.
+         *
+         * @return {number}
+         * Result value of the process.
+         */
+        function SUM(args, table) {
+            const values = FormulaProcessor.getArgumentsValues(args, table);
+            let result = 0;
+            for (let i = 0, iEnd = values.length, value; i < iEnd; ++i) {
+                value = values[i];
+                switch (typeof value) {
+                    case 'number':
+                        if (!isNaN(value)) {
+                            result += value;
+                        }
+                        break;
+                    case 'object':
+                        result += SUM(value, table);
+                        break;
+                }
+            }
+            return result;
+        }
+        /* *
+         *
+         *  Registry
+         *
+         * */
+        FormulaProcessor.registerProcessorFunction('SUM', SUM); // 🐝
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return SUM;
+    });
+    _registerModule(_modules, 'Data/Formula/Functions/AVERAGE.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        const { getArgumentsValues } = FormulaProcessor;
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Processor for the `AVERAGE(...values)` implementation. Calculates the average
+         * of the given values that are numbers.
+         *
+         * @private
+         * @function Formula.processorFunctions.AVERAGE
+         *
+         * @param {Highcharts.FormulaArguments} args
+         * Arguments to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @return {number}
+         * Result value of the process.
+         */
+        function AVERAGE(args, table) {
+            const values = getArgumentsValues(args, table);
+            let count = 0, result = 0;
+            for (let i = 0, iEnd = values.length, value; i < iEnd; ++i) {
+                value = values[i];
+                switch (typeof value) {
+                    case 'number':
+                        if (!isNaN(value)) {
+                            ++count;
+                            result += value;
+                        }
+                        break;
+                    case 'object':
+                        for (let j = 0, jEnd = value.length, value2; j < jEnd; ++j) {
+                            value2 = value[j];
+                            if (typeof value2 === 'number' &&
+                                !isNaN(value2)) {
+                                ++count;
+                                result += value2;
+                            }
+                        }
+                        break;
+                }
+            }
+            return (count ? (result / count) : 0);
+        }
+        /* *
+         *
+         *  Registry
+         *
+         * */
+        FormulaProcessor.registerProcessorFunction('AVERAGE', AVERAGE);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return AVERAGE;
+    });
+    _registerModule(_modules, 'Data/Formula/Functions/MEDIAN.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Processor for the `MEDIAN(...values)` implementation. Calculates the median
+         * average of the given values.
+         *
+         * @private
+         * @function Formula.processorFunctions.MEDIAN
+         *
+         * @param {Highcharts.FormulaArguments} args
+         * Arguments to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to process.
+         *
+         * @return {number}
+         * Result value of the process.
+         */
+        function MEDIAN(args, table) {
+            const median = [], values = FormulaProcessor.getArgumentsValues(args, table);
+            for (let i = 0, iEnd = values.length, value; i < iEnd; ++i) {
+                value = values[i];
+                switch (typeof value) {
+                    case 'number':
+                        if (!isNaN(value)) {
+                            median.push(value);
+                        }
+                        break;
+                    case 'object':
+                        for (let j = 0, jEnd = value.length, value2; j < jEnd; ++j) {
+                            value2 = value[j];
+                            if (typeof value2 === 'number' &&
+                                !isNaN(value2)) {
+                                median.push(value2);
+                            }
+                        }
+                        break;
+                }
+            }
+            const count = median.length;
+            if (!count) {
+                return NaN;
+            }
+            const half = Math.floor(count / 2); // Floor because index starts at 0
+            return (count % 2 ?
+                median[half] : // Odd
+                (median[half - 1] + median[half]) / 2 // Even
+            );
+        }
+        /* *
+         *
+         *  Registry
+         *
+         * */
+        FormulaProcessor.registerProcessorFunction('MEDIAN', MEDIAN);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return MEDIAN;
+    });
+    _registerModule(_modules, 'Data/Formula/Functions/MAX.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        const { getArgumentsValues } = FormulaProcessor;
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Processor for the `MAX(...values)` implementation. Calculates the largest
+         * of the given values that are numbers.
+         *
+         * @private
+         * @function Formula.processorFunctions.MAX
+         *
+         * @param {Highcharts.FormulaArguments} args
+         * Arguments to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @return {number}
+         * Result value of the process.
+         */
+        function MAX(args, table) {
+            const values = getArgumentsValues(args, table);
+            let result = Number.NEGATIVE_INFINITY;
+            for (let i = 0, iEnd = values.length, value; i < iEnd; ++i) {
+                value = values[i];
+                switch (typeof value) {
+                    case 'number':
+                        if (value > result) {
+                            result = value;
+                        }
+                        break;
+                    case 'object':
+                        value = MAX(value);
+                        if (value > result) {
+                            result = value;
+                        }
+                        break;
+                }
+            }
+            return isFinite(result) ? result : 0;
+        }
+        /* *
+         *
+         *  Registry
+         *
+         * */
+        FormulaProcessor.registerProcessorFunction('MAX', MAX);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return MAX;
+    });
+    _registerModule(_modules, 'Data/Formula/Functions/MIN.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        const { getArgumentsValues } = FormulaProcessor;
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Processor for the `MIN(...values)` implementation. Calculates the lowest
+         * of the given values that are numbers.
+         *
+         * @private
+         * @function Formula.processorFunctions.MIN
+         *
+         * @param {Highcharts.FormulaArguments} args
+         * Arguments to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @return {number}
+         * Result value of the process.
+         */
+        function MIN(args, table) {
+            const values = getArgumentsValues(args, table);
+            let result = Number.POSITIVE_INFINITY;
+            for (let i = 0, iEnd = values.length, value; i < iEnd; ++i) {
+                value = values[i];
+                switch (typeof value) {
+                    case 'number':
+                        if (value < result) {
+                            result = value;
+                        }
+                        break;
+                    case 'object':
+                        value = MIN(value);
+                        if (value < result) {
+                            result = value;
+                        }
+                        break;
+                }
+            }
+            return isFinite(result) ? result : 0;
+        }
+        /* *
+         *
+         *  Registry
+         *
+         * */
+        FormulaProcessor.registerProcessorFunction('MIN', MIN);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return MIN;
+    });
+    _registerModule(_modules, 'Data/Formula/Functions/COUNT.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Processor for the `COUNT(...values)` implementation. Returns the count of
+         * given values that are numbers.
+         *
+         * @private
+         * @function Formula.processorFunctions.COUNT
+         *
+         * @param {Highcharts.FormulaArguments} args
+         * Arguments to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @return {number}
+         * Result value of the process.
+         */
+        function COUNT(args, table) {
+            const values = FormulaProcessor.getArgumentsValues(args, table);
+            let count = 0;
+            for (let i = 0, iEnd = values.length, value; i < iEnd; ++i) {
+                value = values[i];
+                switch (typeof value) {
+                    case 'number':
+                        if (!isNaN(value)) {
+                            ++count;
+                        }
+                        break;
+                    case 'object':
+                        count += COUNT(value, table);
+                        break;
+                }
+            }
+            return count;
+        }
+        /* *
+         *
+         *  Registry
+         *
+         * */
+        FormulaProcessor.registerProcessorFunction('COUNT', COUNT);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return COUNT;
+    });
+    _registerModule(_modules, 'Data/Formula/Functions/PRODUCT.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        const { getArgumentsValues } = FormulaProcessor;
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Processor for the `PRODUCT(...values)` implementation. Calculates the product
+         * of the given values.
+         *
+         * @private
+         * @function Formula.processorFunctions.PRODUCT
+         *
+         * @param {Highcharts.FormulaArguments} args
+         * Arguments to process.
+         *
+         * @param {Highcharts.DataTable} [table]
+         * Table to use for references and ranges.
+         *
+         * @return {number}
+         * Result value of the process.
+         */
+        function PRODUCT(args, table) {
+            const values = getArgumentsValues(args, table);
+            let result = 1, calculated = false;
+            for (let i = 0, iEnd = values.length, value; i < iEnd; ++i) {
+                value = values[i];
+                switch (typeof value) {
+                    case 'number':
+                        if (!isNaN(value)) {
+                            calculated = true;
+                            result *= value;
+                        }
+                        break;
+                    case 'object':
+                        calculated = true;
+                        result *= PRODUCT(value, table);
+                        break;
+                }
+            }
+            return (calculated ? result : 0);
+        }
+        /* *
+         *
+         *  Registry
+         *
+         * */
+        FormulaProcessor.registerProcessorFunction('PRODUCT', PRODUCT);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return PRODUCT;
     });
     _registerModule(_modules, 'Core/Chart/ChartDefaults.js', [], function () {
         /* *
@@ -17070,9 +18565,10 @@
         return ChartDefaults;
     });
     _registerModule(_modules, 'Core/Color/Palettes.js', [], function () {
-        /*
+        /**
          * Series palettes for Highcharts. Series colors are defined in highcharts.css.
          * **Do not edit this file!** This file is generated using the 'gulp palette' task.
+         * @private
          */
         const SeriesPalettes = {
             /**
@@ -17094,7 +18590,7 @@
 
         return SeriesPalettes;
     });
-    _registerModule(_modules, 'Core/Time.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
+    _registerModule(_modules, 'Shared/TimeBase.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
          *
          *  (c) 2010-2024 Torstein Honsi
@@ -17104,7 +18600,7 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        const { win } = H;
+        const { pageLang, win } = H;
         const { defined, error, extend, isNumber, isObject, isString, merge, objectEach, pad, splat, timeUnits, ucfirst } = U;
         /* *
          *
@@ -17116,9 +18612,6 @@
             win.Intl &&
             !win.Intl.DateTimeFormat.prototype.formatRange;
         const isDateTimeFormatOptions = (obj) => obj.main === void 0;
-        // We use the Spanish locale for internal weekday handling because it uses
-        // unique letters for narrow weekdays
-        const spanishWeekdayIndex = (weekday) => ['D', 'L', 'M', 'X', 'J', 'V', 'S'].indexOf(weekday);
         /* *
          *
          *  Class
@@ -17130,9 +18623,17 @@
          * `Highcharts.setOptions`, or individually for each Chart item through the
          * [time](https://api.highcharts.com/highcharts/time) options set.
          *
-         * The Time object is available from {@link Highcharts.Chart#time},
-         * which refers to  `Highcharts.time` if no individual time settings are
-         * applied.
+         * The Time object is available from {@link Highcharts.Chart#time}, which refers
+         * to  `Highcharts.time` unless individual time settings are applied for each
+         * chart.
+         *
+         * When configuring time settings for individual chart instances, be aware that
+         * using `Highcharts.dateFormat` or `Highcharts.time.dateFormat` within
+         * formatter callbacks relies on the global time object, which applies the
+         * global language and time zone settings. To ensure charts with local time
+         * settings function correctly, use `chart.time.dateFormat? instead. However,
+         * the recommended best practice is to use `setOptions` to define global time
+         * settings unless specific configurations are needed for each chart.
          *
          * @example
          * // Apply time settings globally
@@ -17170,25 +18671,28 @@
          * @class
          * @name Highcharts.Time
          *
-         * @param {Highcharts.TimeOptions} [options]
-         * Time options as defined in [chart.options.time](/highcharts/time).
+         * @param {Highcharts.TimeOptions} [options] Time options as defined in
+         * [chart.options.time](/highcharts/time).
          */
-        class Time {
+        class TimeBase {
             /* *
              *
              *  Constructors
              *
              * */
-            constructor(options) {
+            constructor(options, lang) {
                 /* *
                  *
                  *  Properties
                  *
                  * */
-                this.options = {};
+                this.options = {
+                    timezone: 'UTC'
+                };
                 this.variableTimezone = false;
                 this.Date = win.Date;
                 this.update(options);
+                this.lang = lang;
             }
             /* *
              *
@@ -17207,12 +18711,13 @@
              *
              */
             update(options = {}) {
-                let timezone = options.timezone ?? 'UTC';
                 this.dTLCache = {};
                 this.options = options = merge(true, this.options, options);
                 const { timezoneOffset, useUTC } = options;
                 // Allow using a different Date class
                 this.Date = options.Date || win.Date || Date;
+                // Assign the time zone. Handle the legacy, deprecated `useUTC` option.
+                let timezone = options.timezone;
                 if (defined(useUTC)) {
                     timezone = useUTC ? 'UTC' : void 0;
                 }
@@ -17230,7 +18735,9 @@
                 this.timezone = timezone;
                 // Assign default time formats from locale strings
                 ['months', 'shortMonths', 'weekdays', 'shortWeekdays'].forEach((name) => {
-                    const isMonth = /months/i.test(name), isShort = /short/.test(name), options = { timeZone: 'UTC' };
+                    const isMonth = /months/i.test(name), isShort = /short/.test(name), options = {
+                        timeZone: 'UTC'
+                    };
                     options[isMonth ? 'month' : 'weekday'] = isShort ? 'short' : 'long';
                     this[name] = (isMonth ?
                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] :
@@ -17271,7 +18778,12 @@
                     minute: 'numeric',
                     second: 'numeric'
                 }, timestamp, 'es')
-                    .split(/(?:, |\/|:)/g);
+                    // The ', ' splitter is for all modern browsers:
+                    //      L, 6/3/2023, 14:30:00
+                    // The ' ' splitter is for legacy Safari with no comma between date
+                    // and time (#22445):
+                    //      L, 6/3/2023 14:30:00
+                    .split(/(?:, | |\/|:)/g);
                 return [
                     year,
                     +month - 1,
@@ -17281,14 +18793,14 @@
                     seconds,
                     // Milliseconds
                     Math.floor(Number(timestamp) || 0) % 1000,
-                    // Weekday index
-                    spanishWeekdayIndex(weekday)
+                    // Spanish weekday index
+                    'DLMXJVS'.indexOf(weekday)
                 ].map(Number);
             }
             /**
              * Shorthand to get a cached `Intl.DateTimeFormat` instance.
              */
-            dateTimeFormat(options, timestamp, locale = this.options.locale) {
+            dateTimeFormat(options, timestamp, locale = this.options.locale || pageLang) {
                 const cacheKey = JSON.stringify(options) + locale;
                 if (isString(options)) {
                     options = this.str2dtf(options);
@@ -17424,7 +18936,9 @@
                 // .replace(/([+-][0-9]{2})$/, '$1:00');
                 // Check if the string has time zone information
                 const hasTimezone = s.indexOf('Z') > -1 ||
-                    /([+-][0-9]{2}):?[0-9]{2}$/.test(s), isYYYYMMDD = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s);
+                    /([+-][0-9]{2}):?[0-9]{2}$/.test(s), 
+                // YYYY-MM-DD and YYYY-MM are always UTC
+                isYYYYMMDD = /^[0-9]{4}-[0-9]{2}(-[0-9]{2}|)$/.test(s);
                 if (!hasTimezone && !isYYYYMMDD) {
                     s += 'Z';
                 }
@@ -17492,6 +19006,7 @@
              * | `%d` | Two digit day of the month, 01 to 31         |       |
              * | `%e` | Day of the month, 1 through 31               |       |
              * | `%w` | Day of the week, 0 through 6                 | N/A   |
+             * | `%v` | The prefix "week from", read from `lang.weekFrom` | N/A |
              * | `%b` | Short month, like 'Jan'                      |       |
              * | `%B` | Long month, like 'January'                   |       |
              * | `%m` | Two digit month number, 01 through 12        |       |
@@ -17573,7 +19088,7 @@
              *         The formatted date.
              */
             dateFormat(format, timestamp, upperCaseFirst) {
-                const lang = H.defaultOptions?.lang;
+                const lang = this.lang;
                 if (!defined(timestamp) || isNaN(timestamp)) {
                     return lang?.invalidDate || '';
                 }
@@ -17583,7 +19098,7 @@
                     const localeAwareRegex = /%\[([a-zA-Z]+)\]/g;
                     let match;
                     while ((match = localeAwareRegex.exec(format))) {
-                        format = format.replace(match[0], this.dateTimeFormat(match[1], timestamp));
+                        format = format.replace(match[0], this.dateTimeFormat(match[1], timestamp, lang?.locale));
                     }
                 }
                 // Then, replace static formats like %Y, %m, %d etc.
@@ -17607,6 +19122,7 @@
                         w: weekday,
                         // Week (none implemented)
                         // 'W': weekNumber(),
+                        v: lang?.weekFrom ?? '',
                         // Month
                         // Short month, like 'Jan'
                         b: shortMonths[month],
@@ -17655,7 +19171,7 @@
                 }
                 else if (isObject(format)) {
                     const tzHours = (this.getTimezoneOffset(timestamp) || 0) /
-                        (60000 * 60), timeZone = this.options.timezone || ('Etc/GMT' + (tzHours >= 0 ? '+' : '') + tzHours), { prefix = '', suffix = '' } = format;
+                        (60000 * 60), timeZone = this.timezone || ('Etc/GMT' + (tzHours >= 0 ? '+' : '') + tzHours), { prefix = '', suffix = '' } = format;
                     format = prefix + this.dateTimeFormat(extend({ timeZone }, format), timestamp) + suffix;
                 }
                 // Optionally sentence-case the string and return
@@ -17684,150 +19200,6 @@
                     return { main: f };
                 }
                 return f;
-            }
-            /**
-             * Return an array with time positions distributed on round time values
-             * right and right after min and max. Used in datetime axes as well as for
-             * grouping data on a datetime axis.
-             *
-             * @function Highcharts.Time#getTimeTicks
-             *
-             * @param {Highcharts.TimeNormalizedObject} normalizedInterval
-             *        The interval in axis values (ms) and the count
-             *
-             * @param {number} [min]
-             *        The minimum in axis values
-             *
-             * @param {number} [max]
-             *        The maximum in axis values
-             *
-             * @param {number} [startOfWeek=1]
-             *
-             * @return {Highcharts.AxisTickPositionsArray}
-             * Time positions
-             */
-            getTimeTicks(normalizedInterval, min, max, startOfWeek) {
-                const time = this, tickPositions = [], higherRanks = {}, { count = 1, unitRange } = normalizedInterval;
-                let [year, month, dayOfMonth, hours, minutes, seconds] = time.toParts(min), milliseconds = (min || 0) % 1000, variableDayLength;
-                startOfWeek ?? (startOfWeek = 1);
-                if (defined(min)) { // #1300
-                    milliseconds = unitRange >= timeUnits.second ?
-                        0 : // #3935
-                        count * Math.floor(milliseconds / count);
-                    if (unitRange >= timeUnits.second) { // Second
-                        seconds = unitRange >= timeUnits.minute ?
-                            0 : // #3935
-                            count * Math.floor(seconds / count);
-                    }
-                    if (unitRange >= timeUnits.minute) { // Minute
-                        minutes = unitRange >= timeUnits.hour ?
-                            0 :
-                            count * Math.floor(minutes / count);
-                    }
-                    if (unitRange >= timeUnits.hour) { // Hour
-                        hours = unitRange >= timeUnits.day ?
-                            0 :
-                            count * Math.floor(hours / count);
-                    }
-                    if (unitRange >= timeUnits.day) { // Day
-                        dayOfMonth = unitRange >= timeUnits.month ?
-                            1 :
-                            Math.max(1, count * Math.floor(dayOfMonth / count));
-                    }
-                    if (unitRange >= timeUnits.month) { // Month
-                        month = unitRange >= timeUnits.year ? 0 :
-                            count * Math.floor(month / count);
-                    }
-                    if (unitRange >= timeUnits.year) { // Year
-                        year -= year % count;
-                    }
-                    // Week is a special case that runs outside the hierarchy
-                    if (unitRange === timeUnits.week) {
-                        if (count) {
-                            min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
-                        }
-                        // Get start of current week, independent of count
-                        const weekday = this.dateTimeFormat({
-                            timeZone: this.timezone,
-                            weekday: 'narrow'
-                        }, min, 'es'), weekdayNo = spanishWeekdayIndex(weekday);
-                        dayOfMonth += -weekdayNo + startOfWeek +
-                            // We don't want to skip days that are before
-                            // startOfWeek (#7051)
-                            (weekdayNo < startOfWeek ? -7 : 0);
-                    }
-                    min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
-                    // Handle local timezone offset
-                    if (time.variableTimezone && defined(max)) {
-                        // Detect whether we need to take the DST crossover into
-                        // consideration. If we're crossing over DST, the day length may
-                        // be 23h or 25h and we need to compute the exact clock time for
-                        // each tick instead of just adding hours. This comes at a cost,
-                        // so first we find out if it is needed (#4951).
-                        variableDayLength = (
-                        // Long range, assume we're crossing over.
-                        max - min > 4 * timeUnits.month ||
-                            // Short range, check if min and max are in different time
-                            // zones.
-                            time.getTimezoneOffset(min) !==
-                                time.getTimezoneOffset(max));
-                    }
-                    // Iterate and add tick positions at appropriate values
-                    let t = min, i = 1;
-                    while (t < max) {
-                        tickPositions.push(t);
-                        // Increase the years
-                        if (unitRange === timeUnits.year) {
-                            t = time.makeTime(year + i * count, 0);
-                            // Increase the months
-                        }
-                        else if (unitRange === timeUnits.month) {
-                            t = time.makeTime(year, month + i * count);
-                            // If we're using local time, the interval is not fixed as it
-                            // jumps one hour at the DST crossover
-                        }
-                        else if (variableDayLength && (unitRange === timeUnits.day ||
-                            unitRange === timeUnits.week)) {
-                            t = time.makeTime(year, month, dayOfMonth +
-                                i * count * (unitRange === timeUnits.day ? 1 : 7));
-                        }
-                        else if (variableDayLength &&
-                            unitRange === timeUnits.hour &&
-                            count > 1) {
-                            // Make sure higher ranks are preserved across DST (#6797,
-                            // #7621)
-                            t = time.makeTime(year, month, dayOfMonth, hours + i * count);
-                            // Else, the interval is fixed and we use simple addition
-                        }
-                        else {
-                            t += unitRange * count;
-                        }
-                        i++;
-                    }
-                    // Push the last time
-                    tickPositions.push(t);
-                    // Handle higher ranks. Mark new days if the time is on midnight
-                    // (#950, #1649, #1760, #3349). Use a reasonable dropout threshold
-                    // to prevent looping over dense data grouping (#6156).
-                    if (unitRange <= timeUnits.hour && tickPositions.length < 10000) {
-                        tickPositions.forEach((t) => {
-                            if (
-                            // Speed optimization, no need to run dateFormat unless
-                            // we're on a full or half hour
-                            t % 1800000 === 0 &&
-                                // Check for local or global midnight
-                                time.dateFormat('%H%M%S%L', t) === '000000000') {
-                                higherRanks[t] = 'day';
-                            }
-                        });
-                    }
-                }
-                // Record information on the chosen unit - for dynamic label formatter
-                tickPositions.info = extend(normalizedInterval, {
-                    higherRanks,
-                    totalRange: unitRange * count
-                });
-                return tickPositions;
             }
             /**
              * Get the optimal date format for a point, based on a range.
@@ -17865,14 +19237,15 @@
                 for (n in timeUnits) { // eslint-disable-line guard-for-in
                     // If the range is exactly one week and we're looking at a
                     // Sunday/Monday, go for the week format
-                    if (range === timeUnits.week &&
+                    if (range &&
+                        range === timeUnits.week &&
                         +this.dateFormat('%w', timestamp) === startOfWeek &&
                         dateStr.substr(6) === blank.substr(6)) {
                         n = 'week';
                         break;
                     }
                     // The first format that is too great for the range
-                    if (timeUnits[n] > range) {
+                    if (range && timeUnits[n] > range) {
                         n = lastN;
                         break;
                     }
@@ -18041,6 +19414,178 @@
         */
         ''; // Keeps doclets above in JS file
 
+        return TimeBase;
+    });
+    _registerModule(_modules, 'Core/Time.js', [_modules['Shared/TimeBase.js'], _modules['Core/Utilities.js']], function (TimeBase, U) {
+        /* *
+         *
+         *  (c) 2010-2024 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        const { defined, extend, timeUnits } = U;
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        class Time extends TimeBase {
+            /**
+             * Return an array with time positions distributed on round time values
+             * right and right after min and max. Used in datetime axes as well as for
+             * grouping data on a datetime axis.
+             *
+             * @function Highcharts.Time#getTimeTicks
+             *
+             * @param {Highcharts.TimeNormalizedObject} normalizedInterval
+             *        The interval in axis values (ms) and the count
+             *
+             * @param {number} [min]
+             *        The minimum in axis values
+             *
+             * @param {number} [max]
+             *        The maximum in axis values
+             *
+             * @param {number} [startOfWeek=1]
+             *
+             * @return {Highcharts.AxisTickPositionsArray}
+             * Time positions
+             */
+            getTimeTicks(normalizedInterval, min, max, startOfWeek) {
+                const time = this, tickPositions = [], higherRanks = {}, { count = 1, unitRange } = normalizedInterval;
+                let [year, month, dayOfMonth, hours, minutes, seconds] = time.toParts(min), milliseconds = (min || 0) % 1000, variableDayLength;
+                startOfWeek ?? (startOfWeek = 1);
+                if (defined(min)) { // #1300
+                    milliseconds = unitRange >= timeUnits.second ?
+                        0 : // #3935
+                        count * Math.floor(milliseconds / count);
+                    if (unitRange >= timeUnits.second) { // Second
+                        seconds = unitRange >= timeUnits.minute ?
+                            0 : // #3935
+                            count * Math.floor(seconds / count);
+                    }
+                    if (unitRange >= timeUnits.minute) { // Minute
+                        minutes = unitRange >= timeUnits.hour ?
+                            0 :
+                            count * Math.floor(minutes / count);
+                    }
+                    if (unitRange >= timeUnits.hour) { // Hour
+                        hours = unitRange >= timeUnits.day ?
+                            0 :
+                            count * Math.floor(hours / count);
+                    }
+                    if (unitRange >= timeUnits.day) { // Day
+                        dayOfMonth = unitRange >= timeUnits.month ?
+                            1 :
+                            Math.max(1, count * Math.floor(dayOfMonth / count));
+                    }
+                    if (unitRange >= timeUnits.month) { // Month
+                        month = unitRange >= timeUnits.year ? 0 :
+                            count * Math.floor(month / count);
+                    }
+                    if (unitRange >= timeUnits.year) { // Year
+                        year -= year % count;
+                    }
+                    // Week is a special case that runs outside the hierarchy
+                    if (unitRange === timeUnits.week) {
+                        if (count) {
+                            min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
+                        }
+                        // Get start of current week, independent of count
+                        const weekday = this.dateTimeFormat({
+                            timeZone: this.timezone,
+                            weekday: 'narrow'
+                        }, min, 'es'), 
+                        // Spanish weekday index
+                        weekdayNo = 'DLMXJVS'.indexOf(weekday);
+                        dayOfMonth += -weekdayNo + startOfWeek +
+                            // We don't want to skip days that are before
+                            // startOfWeek (#7051)
+                            (weekdayNo < startOfWeek ? -7 : 0);
+                    }
+                    min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
+                    // Handle local timezone offset
+                    if (time.variableTimezone && defined(max)) {
+                        // Detect whether we need to take the DST crossover into
+                        // consideration. If we're crossing over DST, the day length may
+                        // be 23h or 25h and we need to compute the exact clock time for
+                        // each tick instead of just adding hours. This comes at a cost,
+                        // so first we find out if it is needed (#4951).
+                        variableDayLength = (
+                        // Long range, assume we're crossing over.
+                        max - min > 4 * timeUnits.month ||
+                            // Short range, check if min and max are in different time
+                            // zones.
+                            time.getTimezoneOffset(min) !==
+                                time.getTimezoneOffset(max));
+                    }
+                    // Iterate and add tick positions at appropriate values
+                    let t = min, i = 1;
+                    while (t < max) {
+                        tickPositions.push(t);
+                        // Increase the years
+                        if (unitRange === timeUnits.year) {
+                            t = time.makeTime(year + i * count, 0);
+                            // Increase the months
+                        }
+                        else if (unitRange === timeUnits.month) {
+                            t = time.makeTime(year, month + i * count);
+                            // If we're using local time, the interval is not fixed as it
+                            // jumps one hour at the DST crossover
+                        }
+                        else if (variableDayLength && (unitRange === timeUnits.day ||
+                            unitRange === timeUnits.week)) {
+                            t = time.makeTime(year, month, dayOfMonth +
+                                i * count * (unitRange === timeUnits.day ? 1 : 7));
+                        }
+                        else if (variableDayLength &&
+                            unitRange === timeUnits.hour &&
+                            count > 1) {
+                            // Make sure higher ranks are preserved across DST (#6797,
+                            // #7621)
+                            t = time.makeTime(year, month, dayOfMonth, hours + i * count);
+                            // Else, the interval is fixed and we use simple addition
+                        }
+                        else {
+                            t += unitRange * count;
+                        }
+                        i++;
+                    }
+                    // Push the last time
+                    tickPositions.push(t);
+                    // Handle higher ranks. Mark new days if the time is on midnight
+                    // (#950, #1649, #1760, #3349). Use a reasonable dropout threshold
+                    // to prevent looping over dense data grouping (#6156).
+                    if (unitRange <= timeUnits.hour && tickPositions.length < 10000) {
+                        tickPositions.forEach((t) => {
+                            if (
+                            // Speed optimization, no need to run dateFormat unless
+                            // we're on a full or half hour
+                            t % 1800000 === 0 &&
+                                // Check for local or global midnight
+                                time.dateFormat('%H%M%S%L', t) === '000000000') {
+                                higherRanks[t] = 'day';
+                            }
+                        });
+                    }
+                }
+                // Record information on the chosen unit - for dynamic label formatter
+                tickPositions.info = extend(normalizedInterval, {
+                    higherRanks,
+                    totalRange: unitRange * count
+                });
+                return tickPositions;
+            }
+        }
+        /* *
+         *
+         * Default export
+         *
+         * */
+
         return Time;
     });
     _registerModule(_modules, 'Core/Defaults.js', [_modules['Core/Chart/ChartDefaults.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palettes.js'], _modules['Core/Time.js'], _modules['Core/Utilities.js']], function (ChartDefaults, H, Palettes, Time, U) {
@@ -18128,8 +19673,17 @@
              *     }
              * });
              * ```
+             *
+             * @optionparent lang
              */
             lang: {
+                weekFrom: 'week from',
+                /**
+                 * The default chart title.
+                 *
+                 * @since next
+                 */
+                chartTitle: 'Chart title',
                 /**
                  * The browser locale to use for date and number formatting. The actual
                  * locale used for each chart is determined in three steps:
@@ -18166,6 +19720,12 @@
                  * @type    {Array<string>}
                  */
                 months: void 0,
+                /**
+                 * [Format string](https://www.highcharts.com/docs/chart-concepts/templating) for the default series name.
+                 *
+                 * @since next
+                 */
+                seriesName: 'Series {add index 1}',
                 /**
                  * An array containing the months names in abbreviated form. Corresponds
                  * to the `%b` format in `Highcharts.dateFormat()`. Defaults to
@@ -18249,6 +19809,11 @@
                  */
                 numericSymbols: ['k', 'M', 'G', 'T', 'P', 'E'],
                 /**
+                 * The default name for a pie slice (point).
+                 * @since next
+                 */
+                pieSliceName: 'Slice',
+                /**
                  * The magnitude of [numericSymbols](#lang.numericSymbol) replacements.
                  * Use 10000 for Japanese, Korean and various Chinese locales, which
                  * use symbols for 10^4, 10^8 and 10^12.
@@ -18282,12 +19847,17 @@
                  *
                  * @since 1.2.4
                  */
+                /**
+                 * The default title of the Y axis
+                 *
+                 * @since next
+                 */
+                yAxisTitle: 'Values',
                 resetZoomTitle: 'Reset zoom level 1:1'
             },
             /**
-             * Global options that don't apply to each chart. These options, like
-             * the `lang` options, must be set using the `Highcharts.setOptions`
-             * method.
+             * Global options that don't apply to each chart. These options must be set
+             * using the `Highcharts.setOptions` method.
              *
              * ```js
              * Highcharts.setOptions({
@@ -18691,6 +20261,24 @@
              */
             subtitle: {
                 /**
+                 * The horizontal alignment of the subtitle. Can be one of "left",
+                 * "center" and "right". Since v12, it defaults to `undefined`, meaning
+                 * the actual alignment is inherited from the alignment of the main
+                 * title.
+                 *
+                 * @sample {highcharts} highcharts/title/align-auto/
+                 *         Default title and subtitle alignment, dynamic
+                 * @sample {highcharts} highcharts/subtitle/align/
+                 *         Footnote at right of plot area
+                 * @sample {highstock} stock/chart/subtitle-footnote
+                 *         Footnote at bottom right of plot area
+                 *
+                 * @type  {Highcharts.AlignValue}
+                 * @default undefined
+                 * @since 2.0
+                 * @apioption subtitle.align
+                 */
+                /**
                  * When the subtitle is floating, the plot area will not move to make
                  * space for it.
                  *
@@ -18812,24 +20400,6 @@
                  *         Formatted and linked text.
                  */
                 text: ''
-                /**
-                 * The horizontal alignment of the subtitle. Can be one of "left",
-                 * "center" and "right". Since v12, it defaults to `undefined`, meaning
-                 * the actual alignment is inherited from the alignment of the main
-                 * title.
-                 *
-                 * @sample {highcharts} highcharts/title/align-auto/
-                 *         Default title and subtitle alignment, dynamic
-                 * @sample {highcharts} highcharts/subtitle/align/
-                 *         Footnote at right of plot area
-                 * @sample {highstock} stock/chart/subtitle-footnote
-                 *         Footnote at bottom right of plot area
-                 *
-                 * @type  {Highcharts.AlignValue}
-                 * @default undefined
-                 * @since 2.0
-                 * @apioption subtitle.align
-                 */
             },
             /**
              * The chart's caption, which will render below the chart and will be part
@@ -19900,6 +21470,24 @@
                  * @apioption tooltip.distance
                  */
                 /**
+                 * Whether the tooltip should be fixed to one position in the chart, or
+                 * located next to the point or mouse. When the tooltip is fixed, the
+                 * position can be further specified with the
+                 * [tooltip.position](#tooltip.position) options set.
+                 *
+                 * @sample    highcharts/tooltip/fixed/
+                 *            Fixed tooltip and position options
+                 * @sample    {highstock} stock/tooltip/fixed/
+                 *            Stock chart with fixed tooltip
+                 * @sample    {highmaps} maps/tooltip/fixed/
+                 *            Map with fixed tooltip
+                 *
+                 * @type      {boolean}
+                 * @default   false
+                 * @since     next
+                 * @apioption tooltip.fixed
+                 */
+                /**
                  * Whether the tooltip should follow the mouse as it moves across
                  * columns, pie slices and other point types with an extent.
                  * By default it behaves this way for pie, polygon, map, sankey
@@ -20077,6 +21665,10 @@
                  * xAxis header. xAxis header is not a point, instead `point` argument
                  * contains info: `{ plotX: Number, plotY: Number, isHeader: Boolean }`
                  *
+                 * Since v12.2, the [tooltip.fixed](#tooltip.fixed) option combined with
+                 * [tooltip.position](#tooltip.position) covers most of the use cases
+                 * for custom tooltip positioning.
+                 *
                  * The return should be an object containing x and y values, for example
                  * `{ x: 100, y: 100 }`.
                  *
@@ -20090,6 +21682,8 @@
                  *         Split tooltip with fixed positions
                  * @sample {highstock} stock/tooltip/positioner-scrollable-plotarea/
                  *         Scrollable plot area combined with tooltip positioner
+                 *
+                 * @see [position](#tooltip.position)
                  *
                  * @type      {Highcharts.TooltipPositionerCallbackFunction}
                  * @since     2.2.4
@@ -20270,7 +21864,7 @@
                     /** @internal */
                     day: '%[AebY]',
                     /** @internal */
-                    week: 'Week from %[AebY]',
+                    week: '%v %[AebY]',
                     /** @internal */
                     month: '%[BY]',
                     /** @internal */
@@ -20320,6 +21914,85 @@
                  */
                 padding: 8,
                 /**
+                 * Positioning options for fixed tooltip, taking effect only when
+                 * [tooltip.fixed](#tooltip.fixed) is `true`.
+                 *
+                 * @sample {highcharts} highcharts/tooltip/fixed/
+                 *         Fixed tooltip and position options
+                 * @sample {highstock} stock/tooltip/fixed/
+                 *         Stock chart with fixed tooltip
+                 * @sample {highmaps} maps/tooltip/fixed/
+                 *         Map with fixed tooltip
+                 *
+                 * @since next
+                 */
+                position: {
+                    /**
+                     * The horizontal alignment of the fixed tooltip.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     *
+                     * @type {Highcharts.AlignValue}
+                     * @default left
+                     * @apioption tooltip.position.align
+                     */
+                    /**
+                     * The vertical alignment of the fixed tooltip.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     *
+                     * @type {Highcharts.VerticalAlignValue}
+                     * @default top
+                     * @apioption tooltip.position.verticalAlign
+                     */
+                    /**
+                     * What the fixed tooltip alignment should be relative to.
+                     *
+                     * The default, `pane`, means that it is aligned within the plot
+                     * area for that given series. If the tooltip is split (as default
+                     * in Stock charts), each partial tooltip is aligned within the
+                     * series' pane.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     *
+                     * @type {string}
+                     * @default pane
+                     * @validvalue ["pane", "chart", "plotBox", "spacingBox"]
+                     * @apioption tooltip.position.relativeTo
+                     */
+                    /**
+                     * X pixel offset from the given position. Can be used to shy away
+                     * from axis lines, grid lines etc to avoid the tooltip overlapping
+                     * other elements.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     */
+                    x: 0,
+                    /**
+                     * Y pixel offset from the given position. Can be used to shy away
+                     * from axis lines, grid lines etc to avoid the tooltip overlapping
+                     * other elements.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     */
+                    y: 3
+                },
+                /**
                  * The name of a symbol to use for the border around the tooltip. Can
                  * be one of: `"callout"`, `"circle"` or `"rect"`. When
                  * [tooltip.split](#tooltip.split)
@@ -20331,10 +22004,14 @@
                  * `Highcharts.SVGRenderer.prototype.symbols` the same way as for
                  * [series.marker.symbol](plotOptions.line.marker.symbol).
                  *
+                 * Defaults to `callout` for floating tooltip, `rect` for
+                 * [fixed](#tooltip.fixed) tooltip.
+                 *
                  * @type  {Highcharts.TooltipShapeValue}
                  * @since 4.0
+                 * @default undefined
+                 * @apioption tooltip.shape
                  */
-                shape: 'callout',
                 /**
                  * Shows information in the tooltip for all points with the same X
                  * value. When the tooltip is shared, the entire plot area will capture
@@ -20406,8 +22083,10 @@
                  * The HTML of the null point's line in the tooltip. Works analogously
                  * to [pointFormat](#tooltip.pointFormat).
                  *
+                 * @sample {highcharts} highcharts/series/null-interaction
+                 *         Line chart with null interaction
                  * @sample {highcharts} highcharts/plotoptions/series-nullformat
-                 *         Format data label and tooltip for null point.
+                 *         Heatmap with null interaction
                  *
                  * @type      {string}
                  * @apioption tooltip.nullFormat
@@ -20463,7 +22142,7 @@
                 backgroundColor: "#ffffff" /* Palette.backgroundColor */,
                 /**
                  * The pixel width of the tooltip border. Defaults to 0 for single
-                 * tooltips and 1 for split tooltips.
+                 * tooltips and fixed tooltips, otherwise 1 for split tooltips.
                  *
                  * In styled mode, the stroke width is set in the
                  * `.highcharts-tooltip-box` class.
@@ -20487,7 +22166,8 @@
                  */
                 borderWidth: void 0,
                 /**
-                 * Whether to apply a drop shadow to the tooltip.
+                 * Whether to apply a drop shadow to the tooltip. Defaults to true,
+                 * unless the tooltip is [fixed](#tooltip.fixed).
                  *
                  * @sample {highcharts} highcharts/tooltip/bordercolor-default/
                  *         True by default
@@ -20497,8 +22177,9 @@
                  *         Fixed tooltip position, border and shadow disabled
                  *
                  * @type {boolean|Highcharts.ShadowOptionsObject}
+                 * @default undefined
+                 * @apioption tooltip.shadow
                  */
-                shadow: true,
                 /**
                  * Prevents the tooltip from switching or closing when touched or
                  * pointed.
@@ -20661,12 +22342,7 @@
                 text: 'Highcharts.com'
             }
         };
-        /* eslint-disable spaced-comment */
-
-        defaultOptions.chart.styledMode = false;
-
-        '';
-        const defaultTime = new Time(defaultOptions.time);
+        const defaultTime = new Time(defaultOptions.time, defaultOptions.lang);
         /**
          * Get the updated default options. Until 3.0.7, merely exposing defaultOptions
          * for outside modules wasn't enough because the setOptions method created a new
@@ -20706,6 +22382,12 @@
                 defaultTime.update({
                     locale: options.lang.locale
                 });
+            }
+            if (options.lang?.chartTitle) {
+                defaultOptions.title = {
+                    ...defaultOptions.title,
+                    text: options.lang.chartTitle
+                };
             }
             return defaultOptions;
         }
@@ -20872,8 +22554,8 @@
          *
          * */
         const { defaultOptions, defaultTime } = D;
-        const { doc } = G;
-        const { extend, getNestedProperty, isArray, isNumber, isObject, pick, ucfirst } = U;
+        const { pageLang } = G;
+        const { extend, getNestedProperty, isArray, isNumber, isObject, isString, pick, ucfirst } = U;
         const helpers = {
             // Built-in helpers
             add: (a, b) => a + b,
@@ -20908,6 +22590,8 @@
          *  Functions
          *
          * */
+        // Internal convenience function
+        const isQuotedString = (str) => /^["'].+["']$/.test(str);
         /**
          * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970) into a
          * human readable date string. The format is a subset of the formats for PHP's
@@ -20978,18 +22662,19 @@
          *        The context, a collection of key-value pairs where each key is
          *        replaced by its value.
          *
-         * @param {Highcharts.Chart} [chart]
-         *        A `Chart` instance used to get numberFormatter and time.
+         * @param {Highcharts.Chart} [owner]
+         *        A `Chart` or `DataGrid` instance used to get numberFormatter and time.
          *
          * @return {string}
          *         The formatted string.
          */
-        function format(str = '', ctx, chart) {
-            const regex = /\{([\p{L}\d:\.,;\-\/<>\[\]%_@"'’= #\(\)]+)\}/gu, 
+        function format(str = '', ctx, owner) {
+            // Notice: using u flag will require a refactor for ES5 (#22450).
+            const regex = /\{([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'’= #\(\)]+)\}/g, // eslint-disable-line max-len
             // The sub expression regex is the same as the top expression regex,
             // but except parens and block helpers (#), and surrounded by parens
             // instead of curly brackets.
-            subRegex = /\(([\p{L}\d:\.,;\-\/<>\[\]%_@"'= ]+)\)/gu, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = chart?.options.lang || defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
+            subRegex = /\(([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || defaultOptions.lang, time = owner?.time || defaultTime, numberFormatter = owner?.numberFormatter || numberFormat;
             /*
              * Get a literal or variable value inside a template expression. May be
              * extended with other types like string or null if needed, but keep it
@@ -21007,7 +22692,7 @@
                 if ((n = Number(key)).toString() === key) {
                     return n;
                 }
-                if (/^["'].+["']$/.test(key)) {
+                if (isQuotedString(key)) {
                     return key.slice(1, -1);
                 }
                 // Variables and constants
@@ -21023,7 +22708,7 @@
                     match = subMatch;
                     hasSub = true;
                 }
-                if (!currentMatch || !currentMatch.isBlock) {
+                if (!currentMatch?.isBlock) {
                     currentMatch = {
                         ctx,
                         expression: match[1],
@@ -21115,12 +22800,13 @@
                     // Block helpers may return true or false. They may also return a
                     // string, like the `each` helper.
                     if (match.isBlock && typeof replacement === 'boolean') {
-                        replacement = format(replacement ? body : elseBody, ctx, chart);
+                        replacement = format(replacement ? body : elseBody, ctx, owner);
                     }
                     // Simple variable replacement
                 }
                 else {
-                    const valueAndFormat = expression.split(':');
+                    const valueAndFormat = isQuotedString(expression) ?
+                        [expression] : expression.split(':');
                     replacement = resolveProperty(valueAndFormat.shift() || '');
                     // Format the replacement
                     if (valueAndFormat.length && typeof replacement === 'number') {
@@ -21133,17 +22819,18 @@
                         }
                         else {
                             replacement = time.dateFormat(segment, replacement);
-                            // Use string literal in order to be preserved in the outer
-                            // expression
-                            if (hasSub) {
-                                replacement = `"${replacement}"`;
-                            }
                         }
+                    }
+                    // Use string literal in order to be preserved in the outer
+                    // expression
+                    subRegex.lastIndex = 0;
+                    if (subRegex.test(match.find) && isString(replacement)) {
+                        replacement = `"${replacement}"`;
                     }
                 }
                 str = str.replace(match.find, pick(replacement, ''));
             });
-            return hasSub ? format(str, ctx, chart) : str;
+            return hasSub ? format(str, ctx, owner) : str;
         }
         /**
          * Format a number and return a string based on input settings.
@@ -21220,16 +22907,16 @@
             }
             const hasSeparators = thousandsSep || decimalPoint, locale = hasSeparators ?
                 'en' :
-                (this?.locale ||
-                    lang.locale ||
-                    doc.body.closest('[lang]')?.lang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
+                (this?.locale || lang.locale || pageLang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
             ret = nf.format(number);
             // If thousandsSep or decimalPoint are set, fall back to using English
             // format with string replacement for the separators.
             if (hasSeparators) {
                 ret = ret
-                    .replace(/\,/g, thousandsSep ?? ',')
-                    .replace('.', decimalPoint ?? '.');
+                    // Preliminary step to avoid re-swapping (#22402)
+                    .replace(/([,\.])/g, '_$1')
+                    .replace(/_\,/g, thousandsSep ?? ',')
+                    .replace('_.', decimalPoint ?? '.');
             }
             if (
             // Remove signed zero (#20564)
@@ -21257,7 +22944,7 @@
 
         return Templating;
     });
-    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/KPIComponent/KPISyncs/KPISyncs.js'], _modules['Dashboards/Components/KPIComponent/KPIComponentDefaults.js'], _modules['Core/Templating.js'], _modules['Core/Utilities.js']], function (AST, Component, KPISyncs, KPIComponentDefaults, Templating, U) {
+    _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/KPIComponent/KPISyncs/KPISyncs.js'], _modules['Dashboards/Components/KPIComponent/KPIComponentDefaults.js'], _modules['Data/Formula/Functions/SUM.js'], _modules['Data/Formula/Functions/AVERAGE.js'], _modules['Data/Formula/Functions/MEDIAN.js'], _modules['Data/Formula/Functions/MAX.js'], _modules['Data/Formula/Functions/MIN.js'], _modules['Data/Formula/Functions/COUNT.js'], _modules['Data/Formula/Functions/PRODUCT.js'], _modules['Core/Templating.js'], _modules['Core/Utilities.js']], function (AST, Component, KPISyncs, KPIComponentDefaults, SUM, AVERAGE, MEDIAN, MAX, MIN, COUNT, PRODUCT, Templating, U) {
         /* *
          *
          *  (c) 2009-2024 Highsoft AS
@@ -21274,7 +22961,7 @@
          *
          * */
         const { format } = Templating;
-        const { createElement, css, defined, diffObjects, isArray, isNumber, merge } = U;
+        const { createElement, css, defined, diffObjects, isArray, isNumber, merge, isFunction } = U;
         /* *
          *
          *  Class
@@ -21416,6 +23103,44 @@
                 super.destroy();
             }
             /**
+             * Gets a proper value, according to the provided formula option.
+             *
+             * @returns
+             * The formula value. Can be a number internally, or a string from the
+             * callback function.
+             *
+             * @internal
+             */
+            getFormulaValue() {
+                const formula = this.options.formula;
+                const connector = this.getFirstConnector();
+                const table = connector?.table.modified;
+                const column = table?.getColumn(this.options.columnName);
+                if (!column || !formula) {
+                    return;
+                }
+                if (isFunction(formula)) {
+                    return formula.call(this, column);
+                }
+                let filteredColumn = Array.isArray(column) ?
+                    column.slice().filter(defined) : Array.from(column);
+                // Filter NaN values and empty strings since the formula functions don't
+                // handle it internally.
+                if (formula === 'MIN' || formula === 'MAX' || formula === 'MEDIAN') {
+                    filteredColumn = filteredColumn.filter((val) => val !== '' && !isNaN(Number(val)));
+                }
+                // Sort values since the formula function don't handle it internally.
+                if (formula === 'MEDIAN') {
+                    filteredColumn.sort((a, b) => Number(a) - Number(b));
+                }
+                try {
+                    return KPIComponent.formulaFunctions[formula](filteredColumn);
+                }
+                catch {
+                    console.warn('Invalid formula option provided.'); // eslint-disable-line no-console
+                }
+            }
+            /**
              * Gets the default value that should be displayed in the KPI.
              *
              * @returns
@@ -21427,6 +23152,9 @@
                 }
                 const connector = this.getFirstConnector();
                 if (connector && this.options.columnName) {
+                    if (defined(this.options.formula)) {
+                        return this.getFormulaValue();
+                    }
                     const table = connector.table.modified, column = table.getColumn(this.options.columnName), length = column?.length || 0;
                     return table.getCellAsString(this.options.columnName, length - 1);
                 }
@@ -21644,7 +23372,7 @@
             /**
              * Get the KPI component's options.
              * @returns
-             * The JSON of KPI component's options.
+             * KPI component's options.
              *
              * @internal
              *
@@ -21743,6 +23471,18 @@
                     }
                 }
             }
+        };
+        /**
+         * The formula option's default formula functions map.
+         */
+        KPIComponent.formulaFunctions = {
+            SUM,
+            AVERAGE,
+            MEDIAN,
+            MAX,
+            MIN,
+            COUNT,
+            PRODUCT
         };
         /* *
          *
@@ -22021,7 +23761,7 @@
          *
          * */
         const { Range: RangeModifier } = DataModifier.types;
-        const { addEvent, pick } = U;
+        const { addEvent, pick, defined } = U;
         /* *
          *
          *  Constants
@@ -22094,8 +23834,7 @@
                     if (typeof extremesColumn === 'string' &&
                         modifier instanceof RangeModifier) {
                         const ranges = modifier.options.ranges, min = table.getCell(extremesColumn, minIndex), max = table.getCell(extremesColumn, maxIndex);
-                        if (max !== null && typeof max !== 'undefined' &&
-                            min !== null && typeof min !== 'undefined') {
+                        if (defined(max) && defined(min)) {
                             NavigatorSyncUtils.unsetRangeOptions(ranges, extremesColumn);
                             ranges.unshift({
                                 column: extremesColumn,
@@ -22681,7 +24420,7 @@
 
         return PluginHandler;
     });
-    _registerModule(_modules, 'masters/dashboards.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Dashboards/Board.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/ComponentRegistry.js'], _modules['Data/DataPool.js'], _modules['Data/DataCursor.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Plugins/DataGridPlugin.js'], _modules['Dashboards/Plugins/HighchartsPlugin.js'], _modules['Dashboards/PluginHandler.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Utilities.js']], function (AST, DataConnector, Board, Component, ComponentRegistry, DataPool, DataCursor, DataConverter, DataModifier, DataTable, Globals, DataGridPlugin, HighchartsPlugin, PluginHandler, Sync, Utilities) {
+    _registerModule(_modules, 'masters/dashboards.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Dashboards/Board.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/ComponentRegistry.js'], _modules['Data/DataPool.js'], _modules['Data/DataCursor.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Plugins/DataGridPlugin.js'], _modules['Dashboards/Plugins/HighchartsPlugin.js'], _modules['Dashboards/PluginHandler.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Utilities.js']], function (AST, DataConnector, Board, Component, ComponentRegistry, DataPool, DataCursor, DataConverter, DataModifier, DataTable, Globals, GridPlugin, HighchartsPlugin, PluginHandler, Sync, Utilities) {
 
         // Fill registries
         /* *
@@ -22706,7 +24445,8 @@
         G.DataModifier = DataModifier;
         G.DataPool = DataPool;
         G.DataTable = DataTable;
-        G.DataGridPlugin = DataGridPlugin;
+        G.DataGridPlugin = GridPlugin;
+        G.GridPlugin = GridPlugin;
         G.HighchartsPlugin = HighchartsPlugin;
         G.PluginHandler = PluginHandler;
         G.Sync = Sync;
@@ -22718,9 +24458,9 @@
         if (!G.win.Dashboards) {
             G.win.Dashboards = G;
         }
-        if (G.win.DataGrid) {
-            DataGridPlugin.custom.connectDataGrid(G.win.DataGrid);
-            G.PluginHandler.addPlugin(DataGridPlugin);
+        if (G.win.Grid) {
+            GridPlugin.custom.connectGrid(G.win.Grid);
+            G.PluginHandler.addPlugin(GridPlugin);
         }
         if (G.win.Highcharts) {
             HighchartsPlugin.custom.connectHighcharts(G.win.Highcharts);

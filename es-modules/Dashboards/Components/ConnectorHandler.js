@@ -66,7 +66,7 @@ class ConnectorHandler {
         if (connectorId &&
             (this.connectorId !== connectorId ||
                 dataPool.isNewConnector(connectorId))) {
-            if (component.cell instanceof Cell) {
+            if (Cell.isCell(component.cell)) {
                 component.cell.setLoadingState();
             }
             const connector = await dataPool.getConnector(connectorId);
@@ -114,6 +114,7 @@ class ConnectorHandler {
                 }
             }
         }
+        this.addConnectorAssignment();
         return this.component;
     }
     /**
@@ -154,7 +155,7 @@ class ConnectorHandler {
     clearTableListeners() {
         const connector = this.connector;
         const tableEvents = this.tableEvents;
-        this.destroy();
+        this.removeTableEvents();
         if (connector) {
             tableEvents.push(connector.table.on('afterSetModifier', (e) => {
                 if (e.type === 'afterSetModifier') {
@@ -171,12 +172,73 @@ class ConnectorHandler {
             }));
         }
     }
+    /**
+     * Adds the component to the provided connector.
+     * Starts the connector polling if inactive and one component is provided.
+     */
+    addConnectorAssignment() {
+        const { connector } = this;
+        if (!connector) {
+            return;
+        }
+        if (!connector.components) {
+            connector.components = [];
+        }
+        if (!connector.components.includes(this.component)) {
+            const options = connector.options;
+            // Add the component assignment.
+            connector.components.push(this.component);
+            // Start the connector polling.
+            if ('enablePolling' in options &&
+                options.enablePolling &&
+                !connector.polling &&
+                connector.components.length === 1 &&
+                'dataRefreshRate' in options) {
+                connector.startPolling(Math.max(options.dataRefreshRate || 0, 1) * 1000);
+            }
+        }
+    }
+    /**
+     * Removes the component instance from the provided connector.
+     * Stops the connector polling if the last element is removed.
+     */
+    removeConnectorAssignment() {
+        const { connector } = this;
+        if (!connector?.components) {
+            return;
+        }
+        const index = connector.components.indexOf(this.component);
+        if (index > -1) {
+            connector.components.splice(index, 1);
+            if (!connector.components.length) {
+                connector.stopPolling();
+                delete connector.components;
+            }
+        }
+    }
+    /**
+     * Clears all event listeners in the table.
+     */
+    removeTableEvents() {
+        this.tableEvents.forEach((clearEvent) => clearEvent());
+        this.tableEvents.length = 0;
+    }
+    /**
+     * Updates the options for the connector handler.
+     *
+     * @param newOptions
+     * The new options to update.
+     */
     updateOptions(newOptions) {
         this.options = newOptions;
     }
+    /**
+     * Destroys the connector handler.
+     * @internal
+     */
     destroy() {
-        this.tableEvents.forEach((clearEvent) => clearEvent());
-        this.tableEvents.length = 0;
+        this.removeConnectorAssignment();
+        this.removeTableEvents();
     }
 }
 export default ConnectorHandler;

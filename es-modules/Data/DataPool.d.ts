@@ -1,7 +1,7 @@
 import type DataEvent from './DataEvent';
 import type { DataPoolOptions, DataPoolConnectorOptions } from './DataPoolOptions.js';
 import type DataTable from './DataTable.js';
-import DataConnector from './Connectors/DataConnector.js';
+import type DataConnectorType from './Connectors/DataConnectorType';
 /**
  * Data pool to load connectors on-demand.
  *
@@ -22,7 +22,7 @@ declare class DataPool implements DataEvent.Emitter {
      * Internal dictionary with the connectors and their IDs.
      * @private
      */
-    protected readonly connectors: Record<string, DataConnector>;
+    protected readonly connectors: Record<string, DataConnectorType>;
     /**
      * Pool options with all connectors.
      *
@@ -53,10 +53,10 @@ declare class DataPool implements DataEvent.Emitter {
      * @param {string} connectorId
      * ID of the connector.
      *
-     * @return {Promise<Data.DataConnector>}
+     * @return {Promise<Data.DataConnectorType>}
      * Returns the connector.
      */
-    getConnector(connectorId: string): Promise<DataConnector>;
+    getConnector(connectorId: string): Promise<DataConnectorType>;
     /**
      * Returns the IDs of all connectors.
      *
@@ -109,10 +109,10 @@ declare class DataPool implements DataEvent.Emitter {
      * @param {Data.DataPoolConnectorOptions} options
      * Options of connector.
      *
-     * @return {Promise<Data.DataConnector>}
+     * @return {Promise<Data.DataConnectorType>}
      * Returns the connector.
      */
-    protected loadConnector(options: DataPoolConnectorOptions): Promise<DataConnector>;
+    protected loadConnector(options: DataPoolConnectorOptions): Promise<DataConnectorType>;
     /**
      * Registers a callback for a specific event.
      *

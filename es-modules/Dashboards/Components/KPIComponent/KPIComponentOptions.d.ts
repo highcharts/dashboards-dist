@@ -1,5 +1,6 @@
 import type Component from '../Component';
 import type CSSObject from '../../../Core/Renderer/CSSObject';
+import type DataTable from '../../../Data/DataTable';
 import type TextOptions from '../TextOptions';
 import type KPIComponent from './KPIComponent';
 import type { Options as HighchartsOptions } from '../../Plugins/HighchartsTypes';
@@ -105,6 +106,18 @@ export interface Options extends Component.Options {
      *
      */
     sync?: SyncOptions;
+    /**
+     * Sets the formula method key for the KPI component value or the callback
+     * function (updates the value internally).
+     *
+     * If not declared, the KPI component displays the last column value.
+     *
+     * Try it:
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/kpi-component/formula/ | KPI value formula}
+     *
+     */
+    formula?: KPIComponent.FormulaType | FormulaCallbackFunction;
 }
 /**
  * Options for linking KPI value to the chart point.
@@ -142,6 +155,10 @@ export type SubtitleType = 'text' | 'diff' | 'diffpercent';
 /** @internal */
 export interface ValueFormatterCallbackFunction {
     (this: KPIComponent, value: (number | string)): string;
+}
+/** @internal */
+export interface FormulaCallbackFunction {
+    (this: KPIComponent, values: DataTable.Column): (string | number);
 }
 /**
  * Sync options available for the KPI component.

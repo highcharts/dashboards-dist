@@ -11,9 +11,9 @@
 import D from './Defaults.js';
 const { defaultOptions, defaultTime } = D;
 import G from './Globals.js';
-const { doc } = G;
+const { pageLang } = G;
 import U from './Utilities.js';
-const { extend, getNestedProperty, isArray, isNumber, isObject, pick, ucfirst } = U;
+const { extend, getNestedProperty, isArray, isNumber, isObject, isString, pick, ucfirst } = U;
 const helpers = {
     // Built-in helpers
     add: (a, b) => a + b,
@@ -48,6 +48,8 @@ const numberFormatCache = {};
  *  Functions
  *
  * */
+// Internal convenience function
+const isQuotedString = (str) => /^["'].+["']$/.test(str);
 /**
  * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970) into a
  * human readable date string. The format is a subset of the formats for PHP's
@@ -118,18 +120,19 @@ function dateFormat(format, timestamp, upperCaseFirst) {
  *        The context, a collection of key-value pairs where each key is
  *        replaced by its value.
  *
- * @param {Highcharts.Chart} [chart]
- *        A `Chart` instance used to get numberFormatter and time.
+ * @param {Highcharts.Chart} [owner]
+ *        A `Chart` or `DataGrid` instance used to get numberFormatter and time.
  *
  * @return {string}
  *         The formatted string.
  */
-function format(str = '', ctx, chart) {
-    const regex = /\{([\p{L}\d:\.,;\-\/<>\[\]%_@"'’= #\(\)]+)\}/gu, 
+function format(str = '', ctx, owner) {
+    // Notice: using u flag will require a refactor for ES5 (#22450).
+    const regex = /\{([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'’= #\(\)]+)\}/g, // eslint-disable-line max-len
     // The sub expression regex is the same as the top expression regex,
     // but except parens and block helpers (#), and surrounded by parens
     // instead of curly brackets.
-    subRegex = /\(([\p{L}\d:\.,;\-\/<>\[\]%_@"'= ]+)\)/gu, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = chart?.options.lang || defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
+    subRegex = /\(([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || defaultOptions.lang, time = owner?.time || defaultTime, numberFormatter = owner?.numberFormatter || numberFormat;
     /*
      * Get a literal or variable value inside a template expression. May be
      * extended with other types like string or null if needed, but keep it
@@ -147,7 +150,7 @@ function format(str = '', ctx, chart) {
         if ((n = Number(key)).toString() === key) {
             return n;
         }
-        if (/^["'].+["']$/.test(key)) {
+        if (isQuotedString(key)) {
             return key.slice(1, -1);
         }
         // Variables and constants
@@ -163,7 +166,7 @@ function format(str = '', ctx, chart) {
             match = subMatch;
             hasSub = true;
         }
-        if (!currentMatch || !currentMatch.isBlock) {
+        if (!currentMatch?.isBlock) {
             currentMatch = {
                 ctx,
                 expression: match[1],
@@ -255,12 +258,13 @@ function format(str = '', ctx, chart) {
             // Block helpers may return true or false. They may also return a
             // string, like the `each` helper.
             if (match.isBlock && typeof replacement === 'boolean') {
-                replacement = format(replacement ? body : elseBody, ctx, chart);
+                replacement = format(replacement ? body : elseBody, ctx, owner);
             }
             // Simple variable replacement
         }
         else {
-            const valueAndFormat = expression.split(':');
+            const valueAndFormat = isQuotedString(expression) ?
+                [expression] : expression.split(':');
             replacement = resolveProperty(valueAndFormat.shift() || '');
             // Format the replacement
             if (valueAndFormat.length && typeof replacement === 'number') {
@@ -273,17 +277,18 @@ function format(str = '', ctx, chart) {
                 }
                 else {
                     replacement = time.dateFormat(segment, replacement);
-                    // Use string literal in order to be preserved in the outer
-                    // expression
-                    if (hasSub) {
-                        replacement = `"${replacement}"`;
-                    }
                 }
+            }
+            // Use string literal in order to be preserved in the outer
+            // expression
+            subRegex.lastIndex = 0;
+            if (subRegex.test(match.find) && isString(replacement)) {
+                replacement = `"${replacement}"`;
             }
         }
         str = str.replace(match.find, pick(replacement, ''));
     });
-    return hasSub ? format(str, ctx, chart) : str;
+    return hasSub ? format(str, ctx, owner) : str;
 }
 /**
  * Format a number and return a string based on input settings.
@@ -360,16 +365,16 @@ function numberFormat(number, decimals, decimalPoint, thousandsSep) {
     }
     const hasSeparators = thousandsSep || decimalPoint, locale = hasSeparators ?
         'en' :
-        (this?.locale ||
-            lang.locale ||
-            doc.body.closest('[lang]')?.lang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
+        (this?.locale || lang.locale || pageLang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
     ret = nf.format(number);
     // If thousandsSep or decimalPoint are set, fall back to using English
     // format with string replacement for the separators.
     if (hasSeparators) {
         ret = ret
-            .replace(/\,/g, thousandsSep ?? ',')
-            .replace('.', decimalPoint ?? '.');
+            // Preliminary step to avoid re-swapping (#22402)
+            .replace(/([,\.])/g, '_$1')
+            .replace(/_\,/g, thousandsSep ?? ',')
+            .replace('_.', decimalPoint ?? '.');
     }
     if (
     // Remove signed zero (#20564)

@@ -1,3 +1,4 @@
+import type { DataConverterTypes } from './DataConverterType';
 import type DataEvent from '../DataEvent';
 import type DataConnector from '../Connectors/DataConnector';
 import type { ColumnNamesOptions } from '../Connectors/JSONConnectorOptions';
@@ -235,6 +236,26 @@ declare namespace DataConverter {
      * Options of the DataConverter.
      */
     type UserOptions = Partial<Options>;
+    /**
+     * Registry as a record object with connector names and their class.
+     */
+    const types: DataConverterTypes;
+    /**
+     * Adds a converter class to the registry.
+     *
+     * @private
+     *
+     * @param {string} key
+     * Registry key of the converter class.
+     *
+     * @param {DataConverterTypes} DataConverterClass
+     * Connector class (aka class constructor) to register.
+     *
+     * @return {boolean}
+     * Returns true, if the registration was successful. False is returned, if
+     * their is already a converter registered with this key.
+     */
+    function registerType<T extends keyof DataConverterTypes>(key: T, DataConverterClass: DataConverterTypes[T]): boolean;
     /**
      * Converts an array of columns to a table instance. Second dimension of the
      * array are the row cells.

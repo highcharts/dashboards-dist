@@ -18,10 +18,17 @@ import AST from '../../../Core/Renderer/HTML/AST.js';
 import Component from '../Component.js';
 import KPISyncs from './KPISyncs/KPISyncs.js';
 import KPIComponentDefaults from './KPIComponentDefaults.js';
+import SUM from '../../../Data/Formula/Functions/SUM.js';
+import AVERAGE from '../../../Data/Formula/Functions/AVERAGE.js';
+import MEDIAN from '../../../Data/Formula/Functions/MEDIAN.js';
+import MAX from '../../../Data/Formula/Functions/MAX.js';
+import MIN from '../../../Data/Formula/Functions/MIN.js';
+import COUNT from '../../../Data/Formula/Functions/COUNT.js';
+import PRODUCT from '../../../Data/Formula/Functions/PRODUCT.js';
 import Templating from '../../../Core/Templating.js';
 const { format } = Templating;
 import U from '../../../Core/Utilities.js';
-const { createElement, css, defined, diffObjects, isArray, isNumber, merge } = U;
+const { createElement, css, defined, diffObjects, isArray, isNumber, merge, isFunction } = U;
 /* *
  *
  *  Class
@@ -163,6 +170,44 @@ class KPIComponent extends Component {
         super.destroy();
     }
     /**
+     * Gets a proper value, according to the provided formula option.
+     *
+     * @returns
+     * The formula value. Can be a number internally, or a string from the
+     * callback function.
+     *
+     * @internal
+     */
+    getFormulaValue() {
+        const formula = this.options.formula;
+        const connector = this.getFirstConnector();
+        const table = connector?.table.modified;
+        const column = table?.getColumn(this.options.columnName);
+        if (!column || !formula) {
+            return;
+        }
+        if (isFunction(formula)) {
+            return formula.call(this, column);
+        }
+        let filteredColumn = Array.isArray(column) ?
+            column.slice().filter(defined) : Array.from(column);
+        // Filter NaN values and empty strings since the formula functions don't
+        // handle it internally.
+        if (formula === 'MIN' || formula === 'MAX' || formula === 'MEDIAN') {
+            filteredColumn = filteredColumn.filter((val) => val !== '' && !isNaN(Number(val)));
+        }
+        // Sort values since the formula function don't handle it internally.
+        if (formula === 'MEDIAN') {
+            filteredColumn.sort((a, b) => Number(a) - Number(b));
+        }
+        try {
+            return KPIComponent.formulaFunctions[formula](filteredColumn);
+        }
+        catch {
+            console.warn('Invalid formula option provided.'); // eslint-disable-line no-console
+        }
+    }
+    /**
      * Gets the default value that should be displayed in the KPI.
      *
      * @returns
@@ -174,6 +219,9 @@ class KPIComponent extends Component {
         }
         const connector = this.getFirstConnector();
         if (connector && this.options.columnName) {
+            if (defined(this.options.formula)) {
+                return this.getFormulaValue();
+            }
             const table = connector.table.modified, column = table.getColumn(this.options.columnName), length = column?.length || 0;
             return table.getCellAsString(this.options.columnName, length - 1);
         }
@@ -391,7 +439,7 @@ class KPIComponent extends Component {
     /**
      * Get the KPI component's options.
      * @returns
-     * The JSON of KPI component's options.
+     * KPI component's options.
      *
      * @internal
      *
@@ -490,6 +538,18 @@ KPIComponent.defaultChartOptions = {
             }
         }
     }
+};
+/**
+ * The formula option's default formula functions map.
+ */
+KPIComponent.formulaFunctions = {
+    SUM,
+    AVERAGE,
+    MEDIAN,
+    MAX,
+    MIN,
+    COUNT,
+    PRODUCT
 };
 /* *
  *

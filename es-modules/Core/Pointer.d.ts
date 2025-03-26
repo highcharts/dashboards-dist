@@ -75,7 +75,7 @@ declare class Pointer {
      * @param {Array<Highcharts.Point>} points
      * Currently hovered points
      */
-    applyInactiveState(points: Array<Point>): void;
+    applyInactiveState(points?: Array<Point>): void;
     /**
      * Destroys the Pointer object and disconnects DOM events.
      *
@@ -462,7 +462,7 @@ declare class Pointer {
     */
     /**
      * Reset the tracking by hiding the tooltip, the hover series state and the
-     * hover point
+     * hover point.
      *
      * @function Highcharts.Pointer#reset
      *
@@ -471,6 +471,7 @@ declare class Pointer {
      * possible.
      *
      * @param {number} [delay]
+     * The tooltip hide delay in ms.
      */
     reset(allowMove?: boolean, delay?: number): void;
     /**

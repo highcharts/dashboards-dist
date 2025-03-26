@@ -363,6 +363,20 @@ class Cell extends GUIElement {
 }
 /* *
  *
+ *  Namespace
+ *
+ * */
+(function (Cell) {
+    /**
+     * Checks if a valid cell instance.
+     */
+    function isCell(cell) {
+        return cell instanceof Cell;
+    }
+    Cell.isCell = isCell;
+})(Cell || (Cell = {}));
+/* *
+ *
  *  Default Export
  *
  * */

@@ -25,7 +25,7 @@ class EditableOptions {
         }
         for (let i = 0, iEnd = options.length; i < iEnd; i++) {
             const option = options[i];
-            if (option.name === 'connectorName') {
+            if (option.propertyPath?.some((path) => path === 'connector')) {
                 const board = this.component.board;
                 const selectOptions = !board ?
                     [] :

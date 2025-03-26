@@ -47,7 +47,7 @@ class DataConnector {
      * Poll timer ID, if active.
      */
     get polling() {
-        return !!this.polling;
+        return !!this._polling;
     }
     /* *
      *

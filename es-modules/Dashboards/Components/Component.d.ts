@@ -4,11 +4,11 @@ import type JSON from '../JSON';
 import type Serializable from '../Serializable';
 import type TextOptions from './TextOptions';
 import type SidebarPopup from '../EditMode/SidebarPopup';
+import type DataConnectorType from '../../Data/Connectors/DataConnectorType';
 import Cell from '../Layout/Cell.js';
 import CellHTML from '../Layout/CellHTML.js';
 import CallbackRegistry from '../CallbackRegistry.js';
 import ConnectorHandler from './ConnectorHandler.js';
-import DataConnector from '../../Data/Connectors/DataConnector.js';
 import DataTable from '../../Data/DataTable.js';
 import EditableOptions from './EditableOptions.js';
 import Sync from './Sync/Sync.js';
@@ -377,7 +377,7 @@ declare namespace Component {
          */
         className?: string;
         /**
-         * The type of component like: `HTML`, `KPI`, `Highcharts`, `DataGrid`,
+         * The type of component like: `HTML`, `KPI`, `Highcharts`, `Grid`,
          * `Navigator`.
          */
         type: keyof ComponentTypeRegistry;
@@ -485,7 +485,7 @@ declare namespace Component {
         type: keyof ComponentTypeRegistry;
     }
     /** @internal */
-    type ConnectorTypes = DataConnector;
+    type ConnectorTypes = DataConnectorType;
     /**
      * Allowed types for the text.
     */

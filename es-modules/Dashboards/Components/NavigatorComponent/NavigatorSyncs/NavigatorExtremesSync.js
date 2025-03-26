@@ -15,7 +15,7 @@ import DataModifier from '../../../../Data/Modifiers/DataModifier.js';
 import NavigatorSyncUtils from './NavigatorSyncUtils.js';
 import U from '../../../../Core/Utilities.js';
 const { Range: RangeModifier } = DataModifier.types;
-const { addEvent, pick } = U;
+const { addEvent, pick, defined } = U;
 /* *
  *
  *  Constants
@@ -88,8 +88,7 @@ const syncPair = {
             if (typeof extremesColumn === 'string' &&
                 modifier instanceof RangeModifier) {
                 const ranges = modifier.options.ranges, min = table.getCell(extremesColumn, minIndex), max = table.getCell(extremesColumn, maxIndex);
-                if (max !== null && typeof max !== 'undefined' &&
-                    min !== null && typeof min !== 'undefined') {
+                if (defined(max) && defined(min)) {
                     NavigatorSyncUtils.unsetRangeOptions(ranges, extremesColumn);
                     ranges.unshift({
                         column: extremesColumn,

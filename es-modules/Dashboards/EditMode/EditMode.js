@@ -67,7 +67,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.1.0/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.2.0/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(
@@ -130,7 +130,7 @@ class EditMode {
                 className: EditGlobals.classNames.editOverlay
             }, {}, board.container);
             this.isEditOverlayActive = false;
-            board.fullscreen = new Dashboards.FullScreen(board);
+            board.fullscreen = new Dashboards.Fullscreen(board);
             if (this.customHTMLMode) {
                 board.container.classList.add(Globals.classNames.boardContainer);
             }
@@ -342,7 +342,7 @@ class EditMode {
      */
     setCellEvents(cell) {
         const editMode = this;
-        if (cell instanceof CellHTML) {
+        if (CellHTML.isCellHTML(cell)) {
             addEvent(cell.container, 'mouseenter', function () {
                 if (editMode.isContextDetectionActive) {
                     editMode.mouseCellContext = cell;
@@ -413,7 +413,7 @@ class EditMode {
         // Hide toolbars.
         editMode.hideToolbars();
         // Remove highlight from the context row if exists.
-        if (this.editCellContext && this.editCellContext instanceof Cell) {
+        if (this.editCellContext && Cell.isCell(this.editCellContext)) {
             this.editCellContext.row?.setHighlight();
         }
         // TODO all buttons should be deactivated.
@@ -625,8 +625,8 @@ class EditMode {
     setEditCellContext(editCellContext, oldEditCellContext) {
         const editMode = this;
         const oldContext = oldEditCellContext;
-        if (editCellContext instanceof CellHTML ||
-            oldContext instanceof CellHTML) {
+        if (CellHTML.isCellHTML(editCellContext) ||
+            CellHTML.isCellHTML(oldContext)) {
             editMode.editCellContext = editCellContext;
             editMode.cellToolbar?.showToolbar(editCellContext);
         }

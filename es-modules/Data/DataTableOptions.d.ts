@@ -1,3 +1,4 @@
+import type Types from '../Shared/Types';
 /**
  * Options to initialize a new DataTable instance.
  */
@@ -5,7 +6,7 @@ export interface DataTableOptions {
     /**
      * Initial columns with their values.
      */
-    columns?: Record<string, Array<DataTableValue>>;
+    columns?: Record<string, Array<DataTableValue> | Types.TypedArray>;
     /**
      * Custom ID to identify the new DataTable instance.
      */

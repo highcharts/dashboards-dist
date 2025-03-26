@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.1.0 (2024-12-04)
+ * @license Highcharts Dashboards v3.2.0 (2025-03-26)
  *
  * (c) 2009-2024 Highsoft AS
  *
@@ -62,12 +62,10 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.1.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.2.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
-            Globals.doc = Globals.win.document, Globals.svg = (Globals.doc &&
-                Globals.doc.createElementNS &&
-                !!Globals.doc.createElementNS(Globals.SVG_NS, 'svg').createSVGRect), Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
+            Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
                 'plotTop',
                 'marginRight',
                 'marginBottom',
@@ -495,10 +493,10 @@
          *         True if the argument is a class.
          */
         function isClass(obj) {
-            const c = obj && obj.constructor;
+            const c = obj?.constructor;
             return !!(isObject(obj, true) &&
                 !isDOMElement(obj) &&
-                (c && c.name && c.name !== 'Object'));
+                (c?.name && c.name !== 'Object'));
         }
         /**
          * Utility function to check if an item is a number and it is finite (not NaN,
@@ -1136,9 +1134,7 @@
          *        The HTML node to discard.
          */
         function discardElement(element) {
-            if (element && element.parentElement) {
-                element.parentElement.removeChild(element);
-            }
+            element?.parentElement?.removeChild(element);
         }
         /**
          * Fix JS round off float errors.
@@ -1262,7 +1258,7 @@
                     }
                     return thisProp ?? parent;
                 }
-                const child = parent[pathElement];
+                const child = parent[pathElement.replace(/[\\'"]/g, '')];
                 // Filter on the child
                 if (!defined(child) ||
                     typeof child === 'function' ||
@@ -1301,8 +1297,7 @@
                 let offsetWidth = Math.min(el.offsetWidth, el.scrollWidth);
                 // In flex boxes, we need to use getBoundingClientRect and floor it,
                 // because scrollWidth doesn't support subpixel precision (#6427) ...
-                const boundingClientRectWidth = el.getBoundingClientRect &&
-                    el.getBoundingClientRect().width;
+                const boundingClientRectWidth = el.getBoundingClientRect?.().width;
                 // ...unless if the containing div or its parents are transform-scaled
                 // down, in which case the boundingClientRect can't be used as it is
                 // also scaled down (#9871, #10498).
@@ -1584,7 +1579,7 @@
         function fireEvent(el, type, eventArguments, defaultFunction) {
             /* eslint-enable valid-jsdoc */
             eventArguments = eventArguments || {};
-            if (doc.createEvent &&
+            if (doc?.createEvent &&
                 (el.dispatchEvent ||
                     (el.fireEvent &&
                         // Enable firing events on Highcharts instance.
@@ -2721,3524 +2716,6 @@
         (''); // Keeps doclets above in file
 
         return AST;
-    });
-    _registerModule(_modules, 'Data/Modifiers/DataModifier.js', [_modules['Core/Utilities.js']], function (U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Gøran Slettemark
-         *
-         * */
-        const { addEvent, fireEvent, merge } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Abstract class to provide an interface for modifying a table.
-         *
-         */
-        class DataModifier {
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Runs a timed execution of the modifier on the given datatable.
-             * Can be configured to run multiple times.
-             *
-             * @param {DataTable} dataTable
-             * The datatable to execute
-             *
-             * @param {DataModifier.BenchmarkOptions} options
-             * Options. Currently supports `iterations` for number of iterations.
-             *
-             * @return {Array<number>}
-             * An array of times in milliseconds
-             *
-             */
-            benchmark(dataTable, options) {
-                const results = [];
-                const modifier = this;
-                const execute = () => {
-                    modifier.modifyTable(dataTable);
-                    modifier.emit({
-                        type: 'afterBenchmarkIteration'
-                    });
-                };
-                const defaultOptions = {
-                    iterations: 1
-                };
-                const { iterations } = merge(defaultOptions, options);
-                modifier.on('afterBenchmarkIteration', () => {
-                    if (results.length === iterations) {
-                        modifier.emit({
-                            type: 'afterBenchmark',
-                            results
-                        });
-                        return;
-                    }
-                    // Run again
-                    execute();
-                });
-                const times = {
-                    startTime: 0,
-                    endTime: 0
-                };
-                // Add timers
-                modifier.on('modify', () => {
-                    times.startTime = window.performance.now();
-                });
-                modifier.on('afterModify', () => {
-                    times.endTime = window.performance.now();
-                    results.push(times.endTime - times.startTime);
-                });
-                // Initial run
-                execute();
-                return results;
-            }
-            /**
-             * Emits an event on the modifier to all registered callbacks of this event.
-             *
-             * @param {DataModifier.Event} [e]
-             * Event object containing additonal event information.
-             */
-            emit(e) {
-                fireEvent(this, e.type, e);
-            }
-            /**
-             * Returns a modified copy of the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Table to modify.
-             *
-             * @param {DataEvent.Detail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Promise<Highcharts.DataTable>}
-             * Table with `modified` property as a reference.
-             */
-            modify(table, eventDetail) {
-                const modifier = this;
-                return new Promise((resolve, reject) => {
-                    if (table.modified === table) {
-                        table.modified = table.clone(false, eventDetail);
-                    }
-                    try {
-                        resolve(modifier.modifyTable(table, eventDetail));
-                    }
-                    catch (e) {
-                        modifier.emit({
-                            type: 'error',
-                            detail: eventDetail,
-                            table
-                        });
-                        reject(e);
-                    }
-                });
-            }
-            /**
-             * Applies partial modifications of a cell change to the property `modified`
-             * of the given modified table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {string} columnName
-             * Column name of changed cell.
-             *
-             * @param {number|undefined} rowIndex
-             * Row index of changed cell.
-             *
-             * @param {Highcharts.DataTableCellType} cellValue
-             * Changed cell value.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyCell(table, 
-            /* eslint-disable @typescript-eslint/no-unused-vars */
-            columnName, rowIndex, cellValue, eventDetail
-            /* eslint-enable @typescript-eslint/no-unused-vars */
-            ) {
-                return this.modifyTable(table);
-            }
-            /**
-             * Applies partial modifications of column changes to the property
-             * `modified` of the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {Highcharts.DataTableColumnCollection} columns
-             * Changed columns as a collection, where the keys are the column names.
-             *
-             * @param {number} [rowIndex=0]
-             * Index of the first changed row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyColumns(table, 
-            /* eslint-disable @typescript-eslint/no-unused-vars */
-            columns, rowIndex, eventDetail
-            /* eslint-enable @typescript-eslint/no-unused-vars */
-            ) {
-                return this.modifyTable(table);
-            }
-            /**
-             * Applies partial modifications of row changes to the property `modified`
-             * of the given table.
-             *
-             * @param {Highcharts.DataTable} table
-             * Modified table.
-             *
-             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
-             * Changed rows.
-             *
-             * @param {number} [rowIndex]
-             * Index of the first changed row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Table with `modified` property as a reference.
-             */
-            modifyRows(table, 
-            /* eslint-disable @typescript-eslint/no-unused-vars */
-            rows, rowIndex, eventDetail
-            /* eslint-enable @typescript-eslint/no-unused-vars */
-            ) {
-                return this.modifyTable(table);
-            }
-            /**
-             * Registers a callback for a specific modifier event.
-             *
-             * @param {string} type
-             * Event type as a string.
-             *
-             * @param {DataEventEmitter.Callback} callback
-             * Function to register for an modifier callback.
-             *
-             * @return {Function}
-             * Function to unregister callback from the modifier event.
-             */
-            on(type, callback) {
-                return addEvent(this, type, callback);
-            }
-        }
-        /* *
-         *
-         *  Class Namespace
-         *
-         * */
-        /**
-         * Additionally provided types for modifier events and options.
-         */
-        (function (DataModifier) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            /**
-             * Registry as a record object with modifier names and their class
-             * constructor.
-             */
-            DataModifier.types = {};
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Adds a modifier class to the registry. The modifier class has to provide
-             * the `DataModifier.options` property and the `DataModifier.modifyTable`
-             * method to modify the table.
-             *
-             * @private
-             *
-             * @param {string} key
-             * Registry key of the modifier class.
-             *
-             * @param {DataModifierType} DataModifierClass
-             * Modifier class (aka class constructor) to register.
-             *
-             * @return {boolean}
-             * Returns true, if the registration was successful. False is returned, if
-             * their is already a modifier registered with this key.
-             */
-            function registerType(key, DataModifierClass) {
-                return (!!key &&
-                    !DataModifier.types[key] &&
-                    !!(DataModifier.types[key] = DataModifierClass));
-            }
-            DataModifier.registerType = registerType;
-        })(DataModifier || (DataModifier = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataModifier;
-    });
-    _registerModule(_modules, 'Data/DataTableCore.js', [_modules['Core/Utilities.js']], function (U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Gøran Slettemark
-         *  - Torstein Hønsi
-         *
-         * */
-        const { fireEvent, isArray, objectEach, uniqueKey } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Class to manage columns and rows in a table structure. It provides methods
-         * to add, remove, and manipulate columns and rows, as well as to retrieve data
-         * from specific cells.
-         *
-         * @class
-         * @name Highcharts.DataTable
-         *
-         * @param {Highcharts.DataTableOptions} [options]
-         * Options to initialize the new DataTable instance.
-         */
-        class DataTableCore {
-            /**
-             * Constructs an instance of the DataTable class.
-             *
-             * @example
-             * const dataTable = new Highcharts.DataTableCore({
-             *   columns: {
-             *     year: [2020, 2021, 2022, 2023],
-             *     cost: [11, 13, 12, 14],
-             *     revenue: [12, 15, 14, 18]
-             *   }
-             * });
-
-             *
-             * @param {Highcharts.DataTableOptions} [options]
-             * Options to initialize the new DataTable instance.
-             */
-            constructor(options = {}) {
-                /**
-                 * Whether the ID was automatic generated or given in the constructor.
-                 *
-                 * @name Highcharts.DataTable#autoId
-                 * @type {boolean}
-                 */
-                this.autoId = !options.id;
-                this.columns = {};
-                /**
-                 * ID of the table for indentification purposes.
-                 *
-                 * @name Highcharts.DataTable#id
-                 * @type {string}
-                 */
-                this.id = (options.id || uniqueKey());
-                this.modified = this;
-                this.rowCount = 0;
-                this.versionTag = uniqueKey();
-                let rowCount = 0;
-                objectEach(options.columns || {}, (column, columnName) => {
-                    this.columns[columnName] = column.slice();
-                    rowCount = Math.max(rowCount, column.length);
-                });
-                this.applyRowCount(rowCount);
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Applies a row count to the table by setting the `rowCount` property and
-             * adjusting the length of all columns.
-             *
-             * @private
-             * @param {number} rowCount The new row count.
-             */
-            applyRowCount(rowCount) {
-                this.rowCount = rowCount;
-                objectEach(this.columns, (column) => {
-                    if (isArray(column)) { // Not on typed array
-                        column.length = rowCount;
-                    }
-                });
-            }
-            /**
-             * Fetches the given column by the canonical column name. Simplified version
-             * of the full `DataTable.getRow` method, always returning by reference.
-             *
-             * @param {string} columnName
-             * Name of the column to get.
-             *
-             * @return {Highcharts.DataTableColumn|undefined}
-             * A copy of the column, or `undefined` if not found.
-             */
-            getColumn(columnName, 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            asReference) {
-                return this.columns[columnName];
-            }
-            /**
-             * Retrieves all or the given columns. Simplified version of the full
-             * `DataTable.getColumns` method, always returning by reference.
-             *
-             * @param {Array<string>} [columnNames]
-             * Column names to retrieve.
-             *
-             * @return {Highcharts.DataTableColumnCollection}
-             * Collection of columns. If a requested column was not found, it is
-             * `undefined`.
-             */
-            getColumns(columnNames, 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            asReference) {
-                return (columnNames || Object.keys(this.columns)).reduce((columns, columnName) => {
-                    columns[columnName] = this.columns[columnName];
-                    return columns;
-                }, {});
-            }
-            /**
-             * Retrieves the row at a given index.
-             *
-             * @param {number} rowIndex
-             * Row index to retrieve. First row has index 0.
-             *
-             * @param {Array<string>} [columnNames]
-             * Column names to retrieve.
-             *
-             * @return {Record<string, number|string|undefined>|undefined}
-             * Returns the row values, or `undefined` if not found.
-             */
-            getRow(rowIndex, columnNames) {
-                return (columnNames || Object.keys(this.columns)).map((key) => this.columns[key]?.[rowIndex]);
-            }
-            /**
-             * Sets cell values for a column. Will insert a new column, if not found.
-             *
-             * @param {string} columnName
-             * Column name to set.
-             *
-             * @param {Highcharts.DataTableColumn} [column]
-             * Values to set in the column.
-             *
-             * @param {number} [rowIndex=0]
-             * Index of the first row to change. (Default: 0)
-             *
-             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @emits #setColumns
-             * @emits #afterSetColumns
-             */
-            setColumn(columnName, column = [], rowIndex = 0, eventDetail) {
-                this.setColumns({ [columnName]: column }, rowIndex, eventDetail);
-            }
-            /**
-             * * Sets cell values for multiple columns. Will insert new columns, if not
-             * found. Simplified version of the full `DataTable.setColumns`, limited to
-             * full replacement of the columns (undefined `rowIndex`).
-             *
-             * @param {Highcharts.DataTableColumnCollection} columns
-             * Columns as a collection, where the keys are the column names.
-             *
-             * @param {number} [rowIndex]
-             * Index of the first row to change. Keep undefined to reset.
-             *
-             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @emits #setColumns
-             * @emits #afterSetColumns
-             */
-            setColumns(columns, rowIndex, eventDetail) {
-                let rowCount = this.rowCount;
-                objectEach(columns, (column, columnName) => {
-                    this.columns[columnName] = column.slice();
-                    rowCount = column.length;
-                });
-                this.applyRowCount(rowCount);
-                if (!eventDetail?.silent) {
-                    fireEvent(this, 'afterSetColumns');
-                    this.versionTag = uniqueKey();
-                }
-            }
-            /**
-             * Sets cell values of a row. Will insert a new row if no index was
-             * provided, or if the index is higher than the total number of table rows.
-             * A simplified version of the full `DateTable.setRow`, limited to objects.
-             *
-             * @param {Record<string, number|string|undefined>} row
-             * Cell values to set.
-             *
-             * @param {number} [rowIndex]
-             * Index of the row to set. Leave `undefind` to add as a new row.
-             *
-             * @param {boolean} [insert]
-             * Whether to insert the row at the given index, or to overwrite the row.
-             *
-             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @emits #afterSetRows
-             */
-            setRow(row, rowIndex = this.rowCount, insert, eventDetail) {
-                const { columns } = this, indexRowCount = insert ? this.rowCount + 1 : rowIndex + 1;
-                objectEach(row, (cellValue, columnName) => {
-                    const column = columns[columnName] ||
-                        eventDetail?.addColumns !== false && new Array(indexRowCount);
-                    if (column) {
-                        if (insert) {
-                            column.splice(rowIndex, 0, cellValue);
-                        }
-                        else {
-                            column[rowIndex] = cellValue;
-                        }
-                        columns[columnName] = column;
-                    }
-                });
-                if (indexRowCount > this.rowCount) {
-                    this.applyRowCount(indexRowCount);
-                }
-                if (!eventDetail?.silent) {
-                    fireEvent(this, 'afterSetRows');
-                    this.versionTag = uniqueKey();
-                }
-            }
-        }
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-        /* *
-         *
-         *  API Declarations
-         *
-         * */
-        /**
-         * A column of values in a data table.
-         * @typedef {Array<boolean|null|number|string|undefined>} Highcharts.DataTableColumn
-         */ /**
-        * A collection of data table columns defined by a object where the key is the
-        * column name and the value is an array of the column values.
-        * @typedef {Record<string, Highcharts.DataTableColumn>} Highcharts.DataTableColumnCollection
-        */
-        /**
-         * Options for the `DataTable` or `DataTableCore` classes.
-         * @interface Highcharts.DataTableOptions
-         */ /**
-        * The column options for the data table. The columns are defined by an object
-        * where the key is the column ID and the value is an array of the column
-        * values.
-        *
-        * @name Highcharts.DataTableOptions.columns
-        * @type {Highcharts.DataTableColumnCollection|undefined}
-        */ /**
-        * Custom ID to identify the new DataTable instance.
-        *
-        * @name Highcharts.DataTableOptions.id
-        * @type {string|undefined}
-        */
-        (''); // Keeps doclets above in JS file
-
-        return DataTableCore;
-    });
-    _registerModule(_modules, 'Data/DataTable.js', [_modules['Data/DataTableCore.js'], _modules['Core/Utilities.js']], function (DataTableCore, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Gøran Slettemark
-         *  - Jomar Hønsi
-         *  - Dawid Dragula
-         *
-         * */
-        const { addEvent, defined, fireEvent, extend, uniqueKey } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Class to manage columns and rows in a table structure. It provides methods
-         * to add, remove, and manipulate columns and rows, as well as to retrieve data
-         * from specific cells.
-         *
-         * @class
-         * @name Highcharts.DataTable
-         *
-         * @param {Highcharts.DataTableOptions} [options]
-         * Options to initialize the new DataTable instance.
-         */
-        class DataTable extends DataTableCore {
-            /* *
-             *
-             *  Static Functions
-             *
-             * */
-            /**
-             * Tests whether a row contains only `null` values or is equal to
-             * DataTable.NULL. If all columns have `null` values, the function returns
-             * `true`. Otherwise, it returns `false` to indicate that the row contains
-             * at least one non-null value.
-             *
-             * @function Highcharts.DataTable.isNull
-             *
-             * @param {Highcharts.DataTableRow|Highcharts.DataTableRowObject} row
-             * Row to test.
-             *
-             * @return {boolean}
-             * Returns `true`, if the row contains only null, otherwise `false`.
-             *
-             * @example
-             * if (DataTable.isNull(row)) {
-             *   // handle null row
-             * }
-             */
-            static isNull(row) {
-                if (row === DataTable.NULL) {
-                    return true;
-                }
-                if (row instanceof Array) {
-                    if (!row.length) {
-                        return false;
-                    }
-                    for (let i = 0, iEnd = row.length; i < iEnd; ++i) {
-                        if (row[i] !== null) {
-                            return false;
-                        }
-                    }
-                }
-                else {
-                    const columnNames = Object.keys(row);
-                    if (!columnNames.length) {
-                        return false;
-                    }
-                    for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
-                        if (row[columnNames[i]] !== null) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            constructor(options = {}) {
-                super(options);
-                this.modified = this;
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Returns a clone of this table. The cloned table is completely independent
-             * of the original, and any changes made to the clone will not affect
-             * the original table.
-             *
-             * @function Highcharts.DataTable#clone
-             *
-             * @param {boolean} [skipColumns]
-             * Whether to clone columns or not.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTable}
-             * Clone of this data table.
-             *
-             * @emits #cloneTable
-             * @emits #afterCloneTable
-             */
-            clone(skipColumns, eventDetail) {
-                const table = this, tableOptions = {};
-                table.emit({ type: 'cloneTable', detail: eventDetail });
-                if (!skipColumns) {
-                    tableOptions.columns = table.columns;
-                }
-                if (!table.autoId) {
-                    tableOptions.id = table.id;
-                }
-                const tableClone = new DataTable(tableOptions);
-                if (!skipColumns) {
-                    tableClone.versionTag = table.versionTag;
-                    tableClone.originalRowIndexes = table.originalRowIndexes;
-                    tableClone.localRowIndexes = table.localRowIndexes;
-                }
-                table.emit({
-                    type: 'afterCloneTable',
-                    detail: eventDetail,
-                    tableClone
-                });
-                return tableClone;
-            }
-            /**
-             * Deletes columns from the table.
-             *
-             * @function Highcharts.DataTable#deleteColumns
-             *
-             * @param {Array<string>} [columnNames]
-             * Names of columns to delete. If no array is provided, all
-             * columns will be deleted.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Highcharts.DataTableColumnCollection|undefined}
-             * Returns the deleted columns, if found.
-             *
-             * @emits #deleteColumns
-             * @emits #afterDeleteColumns
-             */
-            deleteColumns(columnNames, eventDetail) {
-                const table = this, columns = table.columns, deletedColumns = {}, modifiedColumns = {}, modifier = table.modifier, rowCount = table.rowCount;
-                columnNames = (columnNames || Object.keys(columns));
-                if (columnNames.length) {
-                    table.emit({
-                        type: 'deleteColumns',
-                        columnNames,
-                        detail: eventDetail
-                    });
-                    for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
-                        columnName = columnNames[i];
-                        column = columns[columnName];
-                        if (column) {
-                            deletedColumns[columnName] = column;
-                            modifiedColumns[columnName] = new Array(rowCount);
-                        }
-                        delete columns[columnName];
-                    }
-                    if (!Object.keys(columns).length) {
-                        table.rowCount = 0;
-                        this.deleteRowIndexReferences();
-                    }
-                    if (modifier) {
-                        modifier.modifyColumns(table, modifiedColumns, 0, eventDetail);
-                    }
-                    table.emit({
-                        type: 'afterDeleteColumns',
-                        columns: deletedColumns,
-                        columnNames,
-                        detail: eventDetail
-                    });
-                    return deletedColumns;
-                }
-            }
-            /**
-             * Deletes the row index references. This is useful when the original table
-             * is deleted, and the references are no longer needed. This table is
-             * then considered an original table or a table that has the same row's
-             * order as the original table.
-             */
-            deleteRowIndexReferences() {
-                delete this.originalRowIndexes;
-                delete this.localRowIndexes;
-                // Here, in case of future need, can be implemented updating of the
-                // modified tables' row indexes references.
-            }
-            /**
-             * Deletes rows in this table.
-             *
-             * @function Highcharts.DataTable#deleteRows
-             *
-             * @param {number} [rowIndex]
-             * Index to start delete of rows. If not specified, all rows will be
-             * deleted.
-             *
-             * @param {number} [rowCount=1]
-             * Number of rows to delete.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Array<Highcharts.DataTableRow>}
-             * Returns the deleted rows, if found.
-             *
-             * @emits #deleteRows
-             * @emits #afterDeleteRows
-             */
-            deleteRows(rowIndex, rowCount = 1, eventDetail) {
-                const table = this, deletedRows = [], modifiedRows = [], modifier = table.modifier;
-                table.emit({
-                    type: 'deleteRows',
-                    detail: eventDetail,
-                    rowCount,
-                    rowIndex: (rowIndex || 0)
-                });
-                if (typeof rowIndex === 'undefined') {
-                    rowIndex = 0;
-                    rowCount = table.rowCount;
-                }
-                if (rowCount > 0 && rowIndex < table.rowCount) {
-                    const columns = table.columns, columnNames = Object.keys(columns);
-                    for (let i = 0, iEnd = columnNames.length, column, deletedCells; i < iEnd; ++i) {
-                        column = columns[columnNames[i]];
-                        deletedCells = column.splice(rowIndex, rowCount);
-                        if (!i) {
-                            table.rowCount = column.length;
-                        }
-                        for (let j = 0, jEnd = deletedCells.length; j < jEnd; ++j) {
-                            deletedRows[j] = (deletedRows[j] || []);
-                            deletedRows[j][i] = deletedCells[j];
-                        }
-                        modifiedRows.push(new Array(iEnd));
-                    }
-                }
-                if (modifier) {
-                    modifier.modifyRows(table, modifiedRows, (rowIndex || 0), eventDetail);
-                }
-                table.emit({
-                    type: 'afterDeleteRows',
-                    detail: eventDetail,
-                    rowCount,
-                    rowIndex: (rowIndex || 0),
-                    rows: deletedRows
-                });
-                return deletedRows;
-            }
-            /**
-             * Emits an event on this table to all registered callbacks of the given
-             * event.
-             * @private
-             *
-             * @param {DataTable.Event} e
-             * Event object with event information.
-             */
-            emit(e) {
-                if ([
-                    'afterDeleteColumns',
-                    'afterDeleteRows',
-                    'afterSetCell',
-                    'afterSetColumns',
-                    'afterSetRows'
-                ].includes(e.type)) {
-                    this.versionTag = uniqueKey();
-                }
-                fireEvent(this, e.type, e);
-            }
-            /**
-             * Fetches a single cell value.
-             *
-             * @function Highcharts.DataTable#getCell
-             *
-             * @param {string} columnName
-             * Column name of the cell to retrieve.
-             *
-             * @param {number} rowIndex
-             * Row index of the cell to retrieve.
-             *
-             * @return {Highcharts.DataTableCellType|undefined}
-             * Returns the cell value or `undefined`.
-             */
-            getCell(columnName, rowIndex) {
-                const table = this;
-                const column = table.columns[columnName];
-                if (column) {
-                    return column[rowIndex];
-                }
-            }
-            /**
-             * Fetches a cell value for the given row as a boolean.
-             *
-             * @function Highcharts.DataTable#getCellAsBoolean
-             *
-             * @param {string} columnName
-             * Column name to fetch.
-             *
-             * @param {number} rowIndex
-             * Row index to fetch.
-             *
-             * @return {boolean}
-             * Returns the cell value of the row as a boolean.
-             */
-            getCellAsBoolean(columnName, rowIndex) {
-                const table = this;
-                const column = table.columns[columnName];
-                return !!(column && column[rowIndex]);
-            }
-            /**
-             * Fetches a cell value for the given row as a number.
-             *
-             * @function Highcharts.DataTable#getCellAsNumber
-             *
-             * @param {string} columnName
-             * Column name or to fetch.
-             *
-             * @param {number} rowIndex
-             * Row index to fetch.
-             *
-             * @param {boolean} [useNaN]
-             * Whether to return NaN instead of `null` and `undefined`.
-             *
-             * @return {number|null}
-             * Returns the cell value of the row as a number.
-             */
-            getCellAsNumber(columnName, rowIndex, useNaN) {
-                const table = this;
-                const column = table.columns[columnName];
-                let cellValue = (column && column[rowIndex]);
-                switch (typeof cellValue) {
-                    case 'boolean':
-                        return (cellValue ? 1 : 0);
-                    case 'number':
-                        return (isNaN(cellValue) && !useNaN ? null : cellValue);
-                }
-                cellValue = parseFloat(`${cellValue ?? ''}`);
-                return (isNaN(cellValue) && !useNaN ? null : cellValue);
-            }
-            /**
-             * Fetches a cell value for the given row as a string.
-             *
-             * @function Highcharts.DataTable#getCellAsString
-             *
-             * @param {string} columnName
-             * Column name to fetch.
-             *
-             * @param {number} rowIndex
-             * Row index to fetch.
-             *
-             * @return {string}
-             * Returns the cell value of the row as a string.
-             */
-            getCellAsString(columnName, rowIndex) {
-                const table = this;
-                const column = table.columns[columnName];
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                return `${(column && column[rowIndex])}`;
-            }
-            /**
-             * Fetches the given column by the canonical column name.
-             * This function is a simplified wrap of {@link getColumns}.
-             *
-             * @function Highcharts.DataTable#getColumn
-             *
-             * @param {string} columnName
-             * Name of the column to get.
-             *
-             * @param {boolean} [asReference]
-             * Whether to return the column as a readonly reference.
-             *
-             * @return {Highcharts.DataTableColumn|undefined}
-             * A copy of the column, or `undefined` if not found.
-             */
-            getColumn(columnName, asReference) {
-                return this.getColumns([columnName], asReference)[columnName];
-            }
-            /**
-             * Fetches the given column by the canonical column name, and
-             * validates the type of the first few cells. If the first defined cell is
-             * of type number, it assumes for performance reasons, that all cells are of
-             * type number or `null`. Otherwise it will convert all cells to number
-             * type, except `null`.
-             *
-             * @function Highcharts.DataTable#getColumnAsNumbers
-             *
-             * @param {string} columnName
-             * Name of the column to get.
-             *
-             * @param {boolean} [useNaN]
-             * Whether to use NaN instead of `null` and `undefined`.
-             *
-             * @return {Array<(number|null)>}
-             * A copy of the column, or an empty array if not found.
-             */
-            getColumnAsNumbers(columnName, useNaN) {
-                const table = this, columns = table.columns;
-                const column = columns[columnName], columnAsNumber = [];
-                if (column) {
-                    const columnLength = column.length;
-                    if (useNaN) {
-                        for (let i = 0; i < columnLength; ++i) {
-                            columnAsNumber.push(table.getCellAsNumber(columnName, i, true));
-                        }
-                    }
-                    else {
-                        for (let i = 0, cellValue; i < columnLength; ++i) {
-                            cellValue = column[i];
-                            if (typeof cellValue === 'number') {
-                                // Assume unmixed data for performance reasons
-                                return column.slice();
-                            }
-                            if (cellValue !== null &&
-                                typeof cellValue !== 'undefined') {
-                                break;
-                            }
-                        }
-                        for (let i = 0; i < columnLength; ++i) {
-                            columnAsNumber.push(table.getCellAsNumber(columnName, i));
-                        }
-                    }
-                }
-                return columnAsNumber;
-            }
-            /**
-             * Fetches all column names.
-             *
-             * @function Highcharts.DataTable#getColumnNames
-             *
-             * @return {Array<string>}
-             * Returns all column names.
-             */
-            getColumnNames() {
-                const table = this, columnNames = Object.keys(table.columns);
-                return columnNames;
-            }
-            /**
-             * Retrieves all or the given columns.
-             *
-             * @function Highcharts.DataTable#getColumns
-             *
-             * @param {Array<string>} [columnNames]
-             * Column names to retrieve.
-             *
-             * @param {boolean} [asReference]
-             * Whether to return columns as a readonly reference.
-             *
-             * @return {Highcharts.DataTableColumnCollection}
-             * Collection of columns. If a requested column was not found, it is
-             * `undefined`.
-             */
-            getColumns(columnNames, asReference) {
-                const table = this, tableColumns = table.columns, columns = {};
-                columnNames = (columnNames || Object.keys(tableColumns));
-                for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
-                    columnName = columnNames[i];
-                    column = tableColumns[columnName];
-                    if (column) {
-                        columns[columnName] = (asReference ? column : column.slice());
-                    }
-                }
-                return columns;
-            }
-            /**
-             * Takes the original row index and returns the local row index in the
-             * modified table for which this function is called.
-             *
-             * @param {number} originalRowIndex
-             * Original row index to get the local row index for.
-             *
-             * @return {number|undefined}
-             * Returns the local row index or `undefined` if not found.
-             */
-            getLocalRowIndex(originalRowIndex) {
-                const { localRowIndexes } = this;
-                if (localRowIndexes) {
-                    return localRowIndexes[originalRowIndex];
-                }
-                return originalRowIndex;
-            }
-            /**
-             * Retrieves the modifier for the table.
-             * @private
-             *
-             * @return {Highcharts.DataModifier|undefined}
-             * Returns the modifier or `undefined`.
-             */
-            getModifier() {
-                return this.modifier;
-            }
-            /**
-             * Takes the local row index and returns the index of the corresponding row
-             * in the original table.
-             *
-             * @param {number} rowIndex
-             * Local row index to get the original row index for.
-             *
-             * @return {number|undefined}
-             * Returns the original row index or `undefined` if not found.
-             */
-            getOriginalRowIndex(rowIndex) {
-                const { originalRowIndexes } = this;
-                if (originalRowIndexes) {
-                    return originalRowIndexes[rowIndex];
-                }
-                return rowIndex;
-            }
-            /**
-             * Retrieves the row at a given index. This function is a simplified wrap of
-             * {@link getRows}.
-             *
-             * @function Highcharts.DataTable#getRow
-             *
-             * @param {number} rowIndex
-             * Row index to retrieve. First row has index 0.
-             *
-             * @param {Array<string>} [columnNames]
-             * Column names in order to retrieve.
-             *
-             * @return {Highcharts.DataTableRow}
-             * Returns the row values, or `undefined` if not found.
-             */
-            getRow(rowIndex, columnNames) {
-                return this.getRows(rowIndex, 1, columnNames)[0];
-            }
-            /**
-             * Returns the number of rows in this table.
-             *
-             * @function Highcharts.DataTable#getRowCount
-             *
-             * @return {number}
-             * Number of rows in this table.
-             */
-            getRowCount() {
-                // @todo Implement via property getter `.length` browsers supported
-                return this.rowCount;
-            }
-            /**
-             * Retrieves the index of the first row matching a specific cell value.
-             *
-             * @function Highcharts.DataTable#getRowIndexBy
-             *
-             * @param {string} columnName
-             * Column to search in.
-             *
-             * @param {Highcharts.DataTableCellType} cellValue
-             * Cell value to search for. `NaN` and `undefined` are not supported.
-             *
-             * @param {number} [rowIndexOffset]
-             * Index offset to start searching.
-             *
-             * @return {number|undefined}
-             * Index of the first row matching the cell value.
-             */
-            getRowIndexBy(columnName, cellValue, rowIndexOffset) {
-                const table = this;
-                const column = table.columns[columnName];
-                if (column) {
-                    const rowIndex = column.indexOf(cellValue, rowIndexOffset);
-                    if (rowIndex !== -1) {
-                        return rowIndex;
-                    }
-                }
-            }
-            /**
-             * Retrieves the row at a given index. This function is a simplified wrap of
-             * {@link getRowObjects}.
-             *
-             * @function Highcharts.DataTable#getRowObject
-             *
-             * @param {number} rowIndex
-             * Row index.
-             *
-             * @param {Array<string>} [columnNames]
-             * Column names and their order to retrieve.
-             *
-             * @return {Highcharts.DataTableRowObject}
-             * Returns the row values, or `undefined` if not found.
-             */
-            getRowObject(rowIndex, columnNames) {
-                return this.getRowObjects(rowIndex, 1, columnNames)[0];
-            }
-            /**
-             * Fetches all or a number of rows.
-             *
-             * @function Highcharts.DataTable#getRowObjects
-             *
-             * @param {number} [rowIndex]
-             * Index of the first row to fetch. Defaults to first row at index `0`.
-             *
-             * @param {number} [rowCount]
-             * Number of rows to fetch. Defaults to maximal number of rows.
-             *
-             * @param {Array<string>} [columnNames]
-             * Column names and their order to retrieve.
-             *
-             * @return {Highcharts.DataTableRowObject}
-             * Returns retrieved rows.
-             */
-            getRowObjects(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNames) {
-                const table = this, columns = table.columns, rows = new Array(rowCount);
-                columnNames = (columnNames || Object.keys(columns));
-                for (let i = rowIndex, i2 = 0, iEnd = Math.min(table.rowCount, (rowIndex + rowCount)), column, row; i < iEnd; ++i, ++i2) {
-                    row = rows[i2] = {};
-                    for (const columnName of columnNames) {
-                        column = columns[columnName];
-                        row[columnName] = (column ? column[i] : void 0);
-                    }
-                }
-                return rows;
-            }
-            /**
-             * Fetches all or a number of rows.
-             *
-             * @function Highcharts.DataTable#getRows
-             *
-             * @param {number} [rowIndex]
-             * Index of the first row to fetch. Defaults to first row at index `0`.
-             *
-             * @param {number} [rowCount]
-             * Number of rows to fetch. Defaults to maximal number of rows.
-             *
-             * @param {Array<string>} [columnNames]
-             * Column names and their order to retrieve.
-             *
-             * @return {Highcharts.DataTableRow}
-             * Returns retrieved rows.
-             */
-            getRows(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNames) {
-                const table = this, columns = table.columns, rows = new Array(rowCount);
-                columnNames = (columnNames || Object.keys(columns));
-                for (let i = rowIndex, i2 = 0, iEnd = Math.min(table.rowCount, (rowIndex + rowCount)), column, row; i < iEnd; ++i, ++i2) {
-                    row = rows[i2] = [];
-                    for (const columnName of columnNames) {
-                        column = columns[columnName];
-                        row.push(column ? column[i] : void 0);
-                    }
-                }
-                return rows;
-            }
-            /**
-             * Returns the unique version tag of the current state of the table.
-             *
-             * @function Highcharts.DataTable#getVersionTag
-             *
-             * @return {string}
-             * Unique version tag.
-             */
-            getVersionTag() {
-                return this.versionTag;
-            }
-            /**
-             * Checks for given column names.
-             *
-             * @function Highcharts.DataTable#hasColumns
-             *
-             * @param {Array<string>} columnNames
-             * Column names to check.
-             *
-             * @return {boolean}
-             * Returns `true` if all columns have been found, otherwise `false`.
-             */
-            hasColumns(columnNames) {
-                const table = this, columns = table.columns;
-                for (let i = 0, iEnd = columnNames.length, columnName; i < iEnd; ++i) {
-                    columnName = columnNames[i];
-                    if (!columns[columnName]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            /**
-             * Searches for a specific cell value.
-             *
-             * @function Highcharts.DataTable#hasRowWith
-             *
-             * @param {string} columnName
-             * Column to search in.
-             *
-             * @param {Highcharts.DataTableCellType} cellValue
-             * Cell value to search for. `NaN` and `undefined` are not supported.
-             *
-             * @return {boolean}
-             * True, if a row has been found, otherwise false.
-             */
-            hasRowWith(columnName, cellValue) {
-                const table = this;
-                const column = table.columns[columnName];
-                if (column) {
-                    return (column.indexOf(cellValue) !== -1);
-                }
-                return false;
-            }
-            /**
-             * Registers a callback for a specific event.
-             *
-             * @function Highcharts.DataTable#on
-             *
-             * @param {string} type
-             * Event type as a string.
-             *
-             * @param {Highcharts.EventCallbackFunction<Highcharts.DataTable>} callback
-             * Function to register for an event callback.
-             *
-             * @return {Function}
-             * Function to unregister callback from the event.
-             */
-            on(type, callback) {
-                return addEvent(this, type, callback);
-            }
-            /**
-             * Renames a column of cell values.
-             *
-             * @function Highcharts.DataTable#renameColumn
-             *
-             * @param {string} columnName
-             * Name of the column to be renamed.
-             *
-             * @param {string} newColumnName
-             * New name of the column. An existing column with the same name will be
-             * replaced.
-             *
-             * @return {boolean}
-             * Returns `true` if successful, `false` if the column was not found.
-             */
-            renameColumn(columnName, newColumnName) {
-                const table = this, columns = table.columns;
-                if (columns[columnName]) {
-                    if (columnName !== newColumnName) {
-                        columns[newColumnName] = columns[columnName];
-                        delete columns[columnName];
-                    }
-                    return true;
-                }
-                return false;
-            }
-            /**
-             * Sets a cell value based on the row index and column.  Will
-             * insert a new column, if not found.
-             *
-             * @function Highcharts.DataTable#setCell
-             *
-             * @param {string} columnName
-             * Column name to set.
-             *
-             * @param {number|undefined} rowIndex
-             * Row index to set.
-             *
-             * @param {Highcharts.DataTableCellType} cellValue
-             * Cell value to set.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @emits #setCell
-             * @emits #afterSetCell
-             */
-            setCell(columnName, rowIndex, cellValue, eventDetail) {
-                const table = this, columns = table.columns, modifier = table.modifier;
-                let column = columns[columnName];
-                if (column && column[rowIndex] === cellValue) {
-                    return;
-                }
-                table.emit({
-                    type: 'setCell',
-                    cellValue,
-                    columnName: columnName,
-                    detail: eventDetail,
-                    rowIndex
-                });
-                if (!column) {
-                    column = columns[columnName] = new Array(table.rowCount);
-                }
-                if (rowIndex >= table.rowCount) {
-                    table.rowCount = (rowIndex + 1);
-                }
-                column[rowIndex] = cellValue;
-                if (modifier) {
-                    modifier.modifyCell(table, columnName, rowIndex, cellValue);
-                }
-                table.emit({
-                    type: 'afterSetCell',
-                    cellValue,
-                    columnName: columnName,
-                    detail: eventDetail,
-                    rowIndex
-                });
-            }
-            /**
-             * Sets cell values for multiple columns. Will insert new columns, if not
-             * found.
-             *
-             * @function Highcharts.DataTable#setColumns
-             *
-             * @param {Highcharts.DataTableColumnCollection} columns
-             * Columns as a collection, where the keys are the column names.
-             *
-             * @param {number} [rowIndex]
-             * Index of the first row to change. Keep undefined to reset.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @emits #setColumns
-             * @emits #afterSetColumns
-             */
-            setColumns(columns, rowIndex, eventDetail) {
-                const table = this, tableColumns = table.columns, tableModifier = table.modifier, columnNames = Object.keys(columns);
-                let rowCount = table.rowCount;
-                table.emit({
-                    type: 'setColumns',
-                    columns,
-                    columnNames,
-                    detail: eventDetail,
-                    rowIndex
-                });
-                if (typeof rowIndex === 'undefined') {
-                    super.setColumns(columns, rowIndex, extend(eventDetail, { silent: true }));
-                }
-                else {
-                    for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
-                        columnName = columnNames[i];
-                        column = columns[columnName];
-                        const tableColumn = (tableColumns[columnName] ?
-                            tableColumns[columnName] :
-                            tableColumns[columnName] = new Array(table.rowCount));
-                        for (let i = (rowIndex || 0), iEnd = column.length; i < iEnd; ++i) {
-                            tableColumn[i] = column[i];
-                        }
-                        rowCount = Math.max(rowCount, tableColumn.length);
-                    }
-                    this.applyRowCount(rowCount);
-                }
-                if (tableModifier) {
-                    tableModifier.modifyColumns(table, columns, rowIndex || 0);
-                }
-                table.emit({
-                    type: 'afterSetColumns',
-                    columns,
-                    columnNames,
-                    detail: eventDetail,
-                    rowIndex
-                });
-            }
-            /**
-             * Sets or unsets the modifier for the table.
-             *
-             * @param {Highcharts.DataModifier} [modifier]
-             * Modifier to set, or `undefined` to unset.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @return {Promise<Highcharts.DataTable>}
-             * Resolves to this table if successful, or rejects on failure.
-             *
-             * @emits #setModifier
-             * @emits #afterSetModifier
-             */
-            setModifier(modifier, eventDetail) {
-                const table = this;
-                let promise;
-                table.emit({
-                    type: 'setModifier',
-                    detail: eventDetail,
-                    modifier,
-                    modified: table.modified
-                });
-                table.modified = table;
-                table.modifier = modifier;
-                if (modifier) {
-                    promise = modifier.modify(table);
-                }
-                else {
-                    promise = Promise.resolve(table);
-                }
-                return promise
-                    .then((table) => {
-                    table.emit({
-                        type: 'afterSetModifier',
-                        detail: eventDetail,
-                        modifier,
-                        modified: table.modified
-                    });
-                    return table;
-                })['catch']((error) => {
-                    table.emit({
-                        type: 'setModifierError',
-                        error,
-                        modifier,
-                        modified: table.modified
-                    });
-                    throw error;
-                });
-            }
-            /**
-             * Sets the original row indexes for the table. It is used to keep the
-             * reference to the original rows when modifying the table.
-             *
-             * @param {Array<number|undefined>} originalRowIndexes
-             * Original row indexes array.
-             *
-             * @param {boolean} omitLocalRowIndexes
-             * Whether to omit the local row indexes calculation. Defaults to `false`.
-             */
-            setOriginalRowIndexes(originalRowIndexes, omitLocalRowIndexes = false) {
-                this.originalRowIndexes = originalRowIndexes;
-                if (omitLocalRowIndexes) {
-                    return;
-                }
-                const modifiedIndexes = this.localRowIndexes = [];
-                for (let i = 0, iEnd = originalRowIndexes.length, originalIndex; i < iEnd; ++i) {
-                    originalIndex = originalRowIndexes[i];
-                    if (defined(originalIndex)) {
-                        modifiedIndexes[originalIndex] = i;
-                    }
-                }
-            }
-            /**
-             * Sets cell values of a row. Will insert a new row, if no index was
-             * provided, or if the index is higher than the total number of table rows.
-             *
-             * Note: This function is just a simplified wrap of
-             * {@link Highcharts.DataTable#setRows}.
-             *
-             * @function Highcharts.DataTable#setRow
-             *
-             * @param {Highcharts.DataTableRow|Highcharts.DataTableRowObject} row
-             * Cell values to set.
-             *
-             * @param {number} [rowIndex]
-             * Index of the row to set. Leave `undefind` to add as a new row.
-             *
-             * @param {boolean} [insert]
-             * Whether to insert the row at the given index, or to overwrite the row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @emits #setRows
-             * @emits #afterSetRows
-             */
-            setRow(row, rowIndex, insert, eventDetail) {
-                this.setRows([row], rowIndex, insert, eventDetail);
-            }
-            /**
-             * Sets cell values for multiple rows. Will insert new rows, if no index was
-             * was provided, or if the index is higher than the total number of table
-             * rows.
-             *
-             * @function Highcharts.DataTable#setRows
-             *
-             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
-             * Row values to set.
-             *
-             * @param {number} [rowIndex]
-             * Index of the first row to set. Leave `undefined` to add as new rows.
-             *
-             * @param {boolean} [insert]
-             * Whether to insert the row at the given index, or to overwrite the row.
-             *
-             * @param {Highcharts.DataTableEventDetail} [eventDetail]
-             * Custom information for pending events.
-             *
-             * @emits #setRows
-             * @emits #afterSetRows
-             */
-            setRows(rows, rowIndex = this.rowCount, insert, eventDetail) {
-                const table = this, columns = table.columns, columnNames = Object.keys(columns), modifier = table.modifier, rowCount = rows.length;
-                table.emit({
-                    type: 'setRows',
-                    detail: eventDetail,
-                    rowCount,
-                    rowIndex,
-                    rows
-                });
-                for (let i = 0, i2 = rowIndex, row; i < rowCount; ++i, ++i2) {
-                    row = rows[i];
-                    if (row === DataTable.NULL) {
-                        for (let j = 0, jEnd = columnNames.length; j < jEnd; ++j) {
-                            if (insert) {
-                                columns[columnNames[j]].splice(i2, 0, null);
-                            }
-                            else {
-                                columns[columnNames[j]][i2] = null;
-                            }
-                        }
-                    }
-                    else if (row instanceof Array) {
-                        for (let j = 0, jEnd = columnNames.length; j < jEnd; ++j) {
-                            columns[columnNames[j]][i2] = row[j];
-                        }
-                    }
-                    else {
-                        super.setRow(row, i2, void 0, { silent: true });
-                    }
-                }
-                const indexRowCount = insert ?
-                    rowCount + rows.length :
-                    rowIndex + rowCount;
-                if (indexRowCount > table.rowCount) {
-                    table.rowCount = indexRowCount;
-                    for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
-                        columns[columnNames[i]].length = indexRowCount;
-                    }
-                }
-                if (modifier) {
-                    modifier.modifyRows(table, rows, rowIndex);
-                }
-                table.emit({
-                    type: 'afterSetRows',
-                    detail: eventDetail,
-                    rowCount,
-                    rowIndex,
-                    rows
-                });
-            }
-        }
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        /**
-         * Null state for a row record. In some cases, a row in a table may not
-         * contain any data or may be invalid. In these cases, a null state can be
-         * used to indicate that the row record is empty or invalid.
-         *
-         * @name Highcharts.DataTable.NULL
-         * @type {Highcharts.DataTableRowObject}
-         *
-         * @see {@link Highcharts.DataTable.isNull} for a null test.
-         *
-         * @example
-         * table.setRows([DataTable.NULL, DataTable.NULL], 10);
-         */
-        DataTable.NULL = {};
-        /**
-         * Semantic version string of the DataTable class.
-         * @internal
-         */
-        DataTable.version = '1.0.0';
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataTable;
-    });
-    _registerModule(_modules, 'Data/Connectors/DataConnector.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataModifier, DataTable, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *
-         * */
-        const { addEvent, fireEvent, merge, pick } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Abstract class providing an interface for managing a DataConnector.
-         *
-         * @private
-         */
-        class DataConnector {
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            /**
-             * Constructor for the connector class.
-             *
-             * @param {DataConnector.UserOptions} [options]
-             * Options to use in the connector.
-             */
-            constructor(options = {}) {
-                this.table = new DataTable(options.dataTable);
-                this.metadata = options.metadata || { columns: {} };
-            }
-            /**
-             * Poll timer ID, if active.
-             */
-            get polling() {
-                return !!this.polling;
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Method for adding metadata for a single column.
-             *
-             * @param {string} name
-             * The name of the column to be described.
-             *
-             * @param {DataConnector.MetaColumn} columnMeta
-             * The metadata to apply to the column.
-             */
-            describeColumn(name, columnMeta) {
-                const connector = this, columns = connector.metadata.columns;
-                columns[name] = merge(columns[name] || {}, columnMeta);
-            }
-            /**
-             * Method for applying columns meta information to the whole DataConnector.
-             *
-             * @param {Highcharts.Dictionary<DataConnector.MetaColumn>} columns
-             * Pairs of column names and MetaColumn objects.
-             */
-            describeColumns(columns) {
-                const connector = this, columnNames = Object.keys(columns);
-                let columnName;
-                while (typeof (columnName = columnNames.pop()) === 'string') {
-                    connector.describeColumn(columnName, columns[columnName]);
-                }
-            }
-            /**
-             * Emits an event on the connector to all registered callbacks of this
-             * event.
-             *
-             * @param {DataConnector.Event} [e]
-             * Event object containing additional event information.
-             */
-            emit(e) {
-                fireEvent(this, e.type, e);
-            }
-            /**
-             * Returns the order of columns.
-             *
-             * @param {boolean} [usePresentationState]
-             * Whether to use the column order of the presentation state of the table.
-             *
-             * @return {Array<string>|undefined}
-             * Order of columns.
-             */
-            getColumnOrder(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            usePresentationState) {
-                const connector = this, columns = connector.metadata.columns, names = Object.keys(columns || {});
-                if (names.length) {
-                    return names.sort((a, b) => (pick(columns[a].index, 0) - pick(columns[b].index, 0)));
-                }
-            }
-            /**
-             * Retrieves the columns of the dataTable,
-             * applies column order from meta.
-             *
-             * @param {boolean} [usePresentationOrder]
-             * Whether to use the column order of the presentation state of the table.
-             *
-             * @return {Highcharts.DataTableColumnCollection}
-             * An object with the properties `columnNames` and `columnValues`
-             */
-            getSortedColumns(usePresentationOrder) {
-                return this.table.getColumns(this.getColumnOrder(usePresentationOrder));
-            }
-            /**
-             * The default load method, which fires the `afterLoad` event
-             *
-             * @return {Promise<DataConnector>}
-             * The loaded connector.
-             *
-             * @emits DataConnector#afterLoad
-             */
-            load() {
-                fireEvent(this, 'afterLoad', { table: this.table });
-                return Promise.resolve(this);
-            }
-            /**
-             * Registers a callback for a specific connector event.
-             *
-             * @param {string} type
-             * Event type as a string.
-             *
-             * @param {DataEventEmitter.Callback} callback
-             * Function to register for the connector callback.
-             *
-             * @return {Function}
-             * Function to unregister callback from the connector event.
-             */
-            on(type, callback) {
-                return addEvent(this, type, callback);
-            }
-            /**
-             * The default save method, which fires the `afterSave` event.
-             *
-             * @return {Promise<DataConnector>}
-             * The saved connector.
-             *
-             * @emits DataConnector#afterSave
-             * @emits DataConnector#saveError
-             */
-            save() {
-                fireEvent(this, 'saveError', { table: this.table });
-                return Promise.reject(new Error('Not implemented'));
-            }
-            /**
-             * Sets the index and order of columns.
-             *
-             * @param {Array<string>} columnNames
-             * Order of columns.
-             */
-            setColumnOrder(columnNames) {
-                const connector = this;
-                for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
-                    connector.describeColumn(columnNames[i], { index: i });
-                }
-            }
-            setModifierOptions(modifierOptions) {
-                const ModifierClass = (modifierOptions &&
-                    DataModifier.types[modifierOptions.type]);
-                return this.table
-                    .setModifier(ModifierClass ?
-                    new ModifierClass(modifierOptions) :
-                    void 0)
-                    .then(() => this);
-            }
-            /**
-             * Starts polling new data after the specific time span in milliseconds.
-             *
-             * @param {number} refreshTime
-             * Refresh time in milliseconds between polls.
-             */
-            startPolling(refreshTime = 1000) {
-                const connector = this;
-                window.clearTimeout(connector._polling);
-                connector._polling = window.setTimeout(() => connector
-                    .load()['catch']((error) => connector.emit({
-                    type: 'loadError',
-                    error,
-                    table: connector.table
-                }))
-                    .then(() => {
-                    if (connector._polling) {
-                        connector.startPolling(refreshTime);
-                    }
-                }), refreshTime);
-            }
-            /**
-             * Stops polling data.
-             */
-            stopPolling() {
-                const connector = this;
-                window.clearTimeout(connector._polling);
-                delete connector._polling;
-            }
-            /**
-             * Retrieves metadata from a single column.
-             *
-             * @param {string} name
-             * The identifier for the column that should be described
-             *
-             * @return {DataConnector.MetaColumn|undefined}
-             * Returns a MetaColumn object if found.
-             */
-            whatIs(name) {
-                return this.metadata.columns[name];
-            }
-        }
-        /* *
-         *
-         *  Class Namespace
-         *
-         * */
-        (function (DataConnector) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            /**
-             * Registry as a record object with connector names and their class.
-             */
-            DataConnector.types = {};
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Adds a connector class to the registry. The connector has to provide the
-             * `DataConnector.options` property and the `DataConnector.load` method to
-             * modify the table.
-             *
-             * @private
-             *
-             * @param {string} key
-             * Registry key of the connector class.
-             *
-             * @param {DataConnectorType} DataConnectorClass
-             * Connector class (aka class constructor) to register.
-             *
-             * @return {boolean}
-             * Returns true, if the registration was successful. False is returned, if
-             * their is already a connector registered with this key.
-             */
-            function registerType(key, DataConnectorClass) {
-                return (!!key &&
-                    !DataConnector.types[key] &&
-                    !!(DataConnector.types[key] = DataConnectorClass));
-            }
-            DataConnector.registerType = registerType;
-        })(DataConnector || (DataConnector = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataConnector;
-    });
-    _registerModule(_modules, 'Data/Converters/DataConverter.js', [_modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataTable, U) {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *  - Sebastian Bochan
-         *  - Gøran Slettemark
-         *  - Torstein Hønsi
-         *  - Wojciech Chmiel
-         *
-         * */
-        const { addEvent, fireEvent, isNumber, merge } = U;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * Base class providing an interface and basic methods for a DataConverter
-         *
-         * @private
-         */
-        class DataConverter {
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            /**
-             * Constructs an instance of the DataConverter.
-             *
-             * @param {DataConverter.UserOptions} [options]
-             * Options for the DataConverter.
-             */
-            constructor(options) {
-                /* *
-                 *
-                 *  Properties
-                 *
-                 * */
-                /**
-                 * A collection of available date formats.
-                 */
-                this.dateFormats = {
-                    'YYYY/mm/dd': {
-                        regex: /^(\d{4})([\-\.\/])(\d{1,2})\2(\d{1,2})$/,
-                        parser: function (match) {
-                            return (match ?
-                                Date.UTC(+match[1], match[3] - 1, +match[4]) :
-                                NaN);
-                        }
-                    },
-                    'dd/mm/YYYY': {
-                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
-                        parser: function (match) {
-                            return (match ?
-                                Date.UTC(+match[4], match[3] - 1, +match[1]) :
-                                NaN);
-                        },
-                        alternative: 'mm/dd/YYYY' // Different format with the same regex
-                    },
-                    'mm/dd/YYYY': {
-                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
-                        parser: function (match) {
-                            return (match ?
-                                Date.UTC(+match[4], match[1] - 1, +match[3]) :
-                                NaN);
-                        }
-                    },
-                    'dd/mm/YY': {
-                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
-                        parser: function (match) {
-                            const d = new Date();
-                            if (!match) {
-                                return NaN;
-                            }
-                            let year = +match[4];
-                            if (year > (d.getFullYear() - 2000)) {
-                                year += 1900;
-                            }
-                            else {
-                                year += 2000;
-                            }
-                            return Date.UTC(year, match[3] - 1, +match[1]);
-                        },
-                        alternative: 'mm/dd/YY' // Different format with the same regex
-                    },
-                    'mm/dd/YY': {
-                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
-                        parser: function (match) {
-                            return (match ?
-                                Date.UTC(+match[4] + 2000, match[1] - 1, +match[3]) :
-                                NaN);
-                        }
-                    }
-                };
-                const mergedOptions = merge(DataConverter.defaultOptions, options);
-                let regExpPoint = mergedOptions.decimalPoint;
-                if (regExpPoint === '.' || regExpPoint === ',') {
-                    regExpPoint = regExpPoint === '.' ? '\\.' : ',';
-                    this.decimalRegExp =
-                        new RegExp('^(-?[0-9]+)' + regExpPoint + '([0-9]+)$');
-                }
-                this.options = mergedOptions;
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Converts a value to a boolean.
-             *
-             * @param {DataConverter.Type} value
-             * Value to convert.
-             *
-             * @return {boolean}
-             * Converted value as a boolean.
-             */
-            asBoolean(value) {
-                if (typeof value === 'boolean') {
-                    return value;
-                }
-                if (typeof value === 'string') {
-                    return value !== '' && value !== '0' && value !== 'false';
-                }
-                return !!this.asNumber(value);
-            }
-            /**
-             * Converts a value to a Date.
-             *
-             * @param {DataConverter.Type} value
-             * Value to convert.
-             *
-             * @return {globalThis.Date}
-             * Converted value as a Date.
-             */
-            asDate(value) {
-                let timestamp;
-                if (typeof value === 'string') {
-                    timestamp = this.parseDate(value);
-                }
-                else if (typeof value === 'number') {
-                    timestamp = value;
-                }
-                else if (value instanceof Date) {
-                    return value;
-                }
-                else {
-                    timestamp = this.parseDate(this.asString(value));
-                }
-                return new Date(timestamp);
-            }
-            /**
-             * Casts a string value to it's guessed type
-             *
-             * @param {*} value
-             * The value to examine.
-             *
-             * @return {number|string|Date}
-             * The converted value.
-             */
-            asGuessedType(value) {
-                const converter = this, typeMap = {
-                    'number': converter.asNumber,
-                    'Date': converter.asDate,
-                    'string': converter.asString
-                };
-                return typeMap[converter.guessType(value)].call(converter, value);
-            }
-            /**
-             * Converts a value to a number.
-             *
-             * @param {DataConverter.Type} value
-             * Value to convert.
-             *
-             * @return {number}
-             * Converted value as a number.
-             */
-            asNumber(value) {
-                if (typeof value === 'number') {
-                    return value;
-                }
-                if (typeof value === 'boolean') {
-                    return value ? 1 : 0;
-                }
-                if (typeof value === 'string') {
-                    const decimalRegex = this.decimalRegExp;
-                    if (value.indexOf(' ') > -1) {
-                        value = value.replace(/\s+/g, '');
-                    }
-                    if (decimalRegex) {
-                        if (!decimalRegex.test(value)) {
-                            return NaN;
-                        }
-                        value = value.replace(decimalRegex, '$1.$2');
-                    }
-                    return parseFloat(value);
-                }
-                if (value instanceof Date) {
-                    return value.getDate();
-                }
-                if (value) {
-                    return value.getRowCount();
-                }
-                return NaN;
-            }
-            /**
-             * Converts a value to a string.
-             *
-             * @param {DataConverter.Type} value
-             * Value to convert.
-             *
-             * @return {string}
-             * Converted value as a string.
-             */
-            asString(value) {
-                return '' + value;
-            }
-            /**
-             * Tries to guess the date format
-             *  - Check if either month candidate exceeds 12
-             *  - Check if year is missing (use current year)
-             *  - Check if a shortened year format is used (e.g. 1/1/99)
-             *  - If no guess can be made, the user must be prompted
-             * data is the data to deduce a format based on
-             * @private
-             *
-             * @param {Array<string>} data
-             * Data to check the format.
-             *
-             * @param {number} limit
-             * Max data to check the format.
-             *
-             * @param {boolean} save
-             * Whether to save the date format in the converter options.
-             */
-            deduceDateFormat(data, limit, save) {
-                const parser = this, stable = [], max = [];
-                let format = 'YYYY/mm/dd', thing, guessedFormat = [], i = 0, madeDeduction = false, 
-                /// candidates = {},
-                elem, j;
-                if (!limit || limit > data.length) {
-                    limit = data.length;
-                }
-                for (; i < limit; i++) {
-                    if (typeof data[i] !== 'undefined' &&
-                        data[i] && data[i].length) {
-                        thing = data[i]
-                            .trim()
-                            .replace(/[\-\.\/]/g, ' ')
-                            .split(' ');
-                        guessedFormat = [
-                            '',
-                            '',
-                            ''
-                        ];
-                        for (j = 0; j < thing.length; j++) {
-                            if (j < guessedFormat.length) {
-                                elem = parseInt(thing[j], 10);
-                                if (elem) {
-                                    max[j] = (!max[j] || max[j] < elem) ? elem : max[j];
-                                    if (typeof stable[j] !== 'undefined') {
-                                        if (stable[j] !== elem) {
-                                            stable[j] = false;
-                                        }
-                                    }
-                                    else {
-                                        stable[j] = elem;
-                                    }
-                                    if (elem > 31) {
-                                        if (elem < 100) {
-                                            guessedFormat[j] = 'YY';
-                                        }
-                                        else {
-                                            guessedFormat[j] = 'YYYY';
-                                        }
-                                        /// madeDeduction = true;
-                                    }
-                                    else if (elem > 12 &&
-                                        elem <= 31) {
-                                        guessedFormat[j] = 'dd';
-                                        madeDeduction = true;
-                                    }
-                                    else if (!guessedFormat[j].length) {
-                                        guessedFormat[j] = 'mm';
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (madeDeduction) {
-                    // This handles a few edge cases with hard to guess dates
-                    for (j = 0; j < stable.length; j++) {
-                        if (stable[j] !== false) {
-                            if (max[j] > 12 &&
-                                guessedFormat[j] !== 'YY' &&
-                                guessedFormat[j] !== 'YYYY') {
-                                guessedFormat[j] = 'YY';
-                            }
-                        }
-                        else if (max[j] > 12 && guessedFormat[j] === 'mm') {
-                            guessedFormat[j] = 'dd';
-                        }
-                    }
-                    // If the middle one is dd, and the last one is dd,
-                    // the last should likely be year.
-                    if (guessedFormat.length === 3 &&
-                        guessedFormat[1] === 'dd' &&
-                        guessedFormat[2] === 'dd') {
-                        guessedFormat[2] = 'YY';
-                    }
-                    format = guessedFormat.join('/');
-                    // If the caculated format is not valid, we need to present an
-                    // error.
-                }
-                // Save the deduced format in the converter options.
-                if (save) {
-                    parser.options.dateFormat = format;
-                }
-                return format;
-            }
-            /**
-             * Emits an event on the DataConverter instance.
-             *
-             * @param {DataConverter.Event} [e]
-             * Event object containing additional event data
-             */
-            emit(e) {
-                fireEvent(this, e.type, e);
-            }
-            /**
-             * Initiates the data exporting. Should emit `exportError` on failure.
-             *
-             * @param {DataConnector} connector
-             * Connector to export from.
-             *
-             * @param {DataConverter.Options} [options]
-             * Options for the export.
-             */
-            export(
-            /* eslint-disable @typescript-eslint/no-unused-vars */
-            connector, options
-            /* eslint-enable @typescript-eslint/no-unused-vars */
-            ) {
-                this.emit({
-                    type: 'exportError',
-                    columns: [],
-                    headers: []
-                });
-                throw new Error('Not implemented');
-            }
-            /**
-             * Getter for the data table.
-             *
-             * @return {DataTable}
-             * Table of parsed data.
-             */
-            getTable() {
-                throw new Error('Not implemented');
-            }
-            /**
-             * Guesses the potential type of a string value for parsing CSV etc.
-             *
-             * @param {*} value
-             * The value to examine.
-             *
-             * @return {'number'|'string'|'Date'}
-             * Type string, either `string`, `Date`, or `number`.
-             */
-            guessType(value) {
-                const converter = this;
-                let result = 'string';
-                if (typeof value === 'string') {
-                    const trimedValue = converter.trim(`${value}`), decimalRegExp = converter.decimalRegExp;
-                    let innerTrimedValue = converter.trim(trimedValue, true);
-                    if (decimalRegExp) {
-                        innerTrimedValue = (decimalRegExp.test(innerTrimedValue) ?
-                            innerTrimedValue.replace(decimalRegExp, '$1.$2') :
-                            '');
-                    }
-                    const floatValue = parseFloat(innerTrimedValue);
-                    if (+innerTrimedValue === floatValue) {
-                        // String is numeric
-                        value = floatValue;
-                    }
-                    else {
-                        // Determine if a date string
-                        const dateValue = converter.parseDate(value);
-                        result = isNumber(dateValue) ? 'Date' : 'string';
-                    }
-                }
-                if (typeof value === 'number') {
-                    // Greater than milliseconds in a year assumed timestamp
-                    result = value > 365 * 24 * 3600 * 1000 ? 'Date' : 'number';
-                }
-                return result;
-            }
-            /**
-             * Registers a callback for a specific event.
-             *
-             * @param {string} type
-             * Event type as a string.
-             *
-             * @param {DataEventEmitter.Callback} callback
-             * Function to register for an modifier callback.
-             *
-             * @return {Function}
-             * Function to unregister callback from the modifier event.
-             */
-            on(type, callback) {
-                return addEvent(this, type, callback);
-            }
-            /**
-             * Initiates the data parsing. Should emit `parseError` on failure.
-             *
-             * @param {DataConverter.UserOptions} options
-             * Options of the DataConverter.
-             */
-            parse(
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            options) {
-                this.emit({
-                    type: 'parseError',
-                    columns: [],
-                    headers: []
-                });
-                throw new Error('Not implemented');
-            }
-            /**
-             * Parse a date and return it as a number.
-             *
-             * @param {string} value
-             * Value to parse.
-             *
-             * @param {string} dateFormatProp
-             * Which of the predefined date formats
-             * to use to parse date values.
-             */
-            parseDate(value, dateFormatProp) {
-                const converter = this, options = converter.options;
-                let dateFormat = dateFormatProp || options.dateFormat, result = NaN, key, format, match;
-                if (options.parseDate) {
-                    result = options.parseDate(value);
-                }
-                else {
-                    // Auto-detect the date format the first time
-                    if (!dateFormat) {
-                        for (key in converter.dateFormats) { // eslint-disable-line guard-for-in
-                            format = converter.dateFormats[key];
-                            match = value.match(format.regex);
-                            if (match) {
-                                // `converter.options.dateFormat` = dateFormat = key;
-                                dateFormat = key;
-                                // `converter.options.alternativeFormat` =
-                                // format.alternative || '';
-                                result = format.parser(match);
-                                break;
-                            }
-                        }
-                        // Next time, use the one previously found
-                    }
-                    else {
-                        format = converter.dateFormats[dateFormat];
-                        if (!format) {
-                            // The selected format is invalid
-                            format = converter.dateFormats['YYYY/mm/dd'];
-                        }
-                        match = value.match(format.regex);
-                        if (match) {
-                            result = format.parser(match);
-                        }
-                    }
-                    // Fall back to Date.parse
-                    if (!match) {
-                        match = Date.parse(value);
-                        // External tools like Date.js and MooTools extend Date object
-                        // and returns a date.
-                        if (typeof match === 'object' &&
-                            match !== null &&
-                            match.getTime) {
-                            result = (match.getTime() -
-                                match.getTimezoneOffset() *
-                                    60000);
-                            // Timestamp
-                        }
-                        else if (isNumber(match)) {
-                            result = match - (new Date(match)).getTimezoneOffset() * 60000;
-                            if ( // Reset dates without year in Chrome
-                            value.indexOf('2001') === -1 &&
-                                (new Date(result)).getFullYear() === 2001) {
-                                result = NaN;
-                            }
-                        }
-                    }
-                }
-                return result;
-            }
-            /**
-             * Trim a string from whitespaces.
-             *
-             * @param {string} str
-             * String to trim.
-             *
-             * @param {boolean} [inside=false]
-             * Remove all spaces between numbers.
-             *
-             * @return {string}
-             * Trimed string
-             */
-            trim(str, inside) {
-                if (typeof str === 'string') {
-                    str = str.replace(/^\s+|\s+$/g, '');
-                    // Clear white space insdie the string, like thousands separators
-                    if (inside && /^[\d\s]+$/.test(str)) {
-                        str = str.replace(/\s/g, '');
-                    }
-                }
-                return str;
-            }
-        }
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        /**
-         * Default options
-         */
-        DataConverter.defaultOptions = {
-            dateFormat: '',
-            alternativeFormat: '',
-            startColumn: 0,
-            endColumn: Number.MAX_VALUE,
-            startRow: 0,
-            endRow: Number.MAX_VALUE,
-            firstRowAsNames: true,
-            switchRowsAndColumns: false
-        };
-        /* *
-         *
-         *  Class Namespace
-         *
-         * */
-        /**
-         * Additionally provided types for events and conversion.
-         */
-        (function (DataConverter) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Converts an array of columns to a table instance. Second dimension of the
-             * array are the row cells.
-             *
-             * @param {Array<DataTable.Column>} [columns]
-             * Array to convert.
-             *
-             * @param {Array<string>} [headers]
-             * Column names to use.
-             *
-             * @return {DataTable}
-             * Table instance from the arrays.
-             */
-            function getTableFromColumns(columns = [], headers = []) {
-                const table = new DataTable();
-                for (let i = 0, iEnd = Math.max(headers.length, columns.length); i < iEnd; ++i) {
-                    table.setColumn(headers[i] || `${i}`, columns[i]);
-                }
-                return table;
-            }
-            DataConverter.getTableFromColumns = getTableFromColumns;
-        })(DataConverter || (DataConverter = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataConverter;
-    });
-    _registerModule(_modules, 'Data/DataCursor.js', [], function () {
-        /* *
-         *
-         *  (c) 2020-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *
-         * */
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * This class manages state cursors pointing on {@link Data.DataTable}. It
-         * creates a relation between states of the user interface and the table cells,
-         * columns, or rows.
-         *
-         * @class
-         * @name Data.DataCursor
-         */
-        class DataCursor {
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            constructor(stateMap = {}) {
-                this.emittingRegister = [];
-                this.listenerMap = {};
-                this.stateMap = stateMap;
-            }
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * This function registers a listener for a specific state and table.
-             *
-             * @example
-             * ```TypeScript
-             * dataCursor.addListener(myTable.id, 'hover', (e: DataCursor.Event) => {
-             *     if (e.cursor.type === 'position') {
-             *         console.log(`Hover over row #${e.cursor.row}.`);
-             *     }
-             * });
-             * ```
-             *
-             * @function #addListener
-             *
-             * @param {Data.DataCursor.TableId} tableId
-             * The ID of the table to listen to.
-             *
-             * @param {Data.DataCursor.State} state
-             * The state on the table to listen to.
-             *
-             * @param {Data.DataCursor.Listener} listener
-             * The listener to register.
-             *
-             * @return {Data.DataCursor}
-             * Returns the DataCursor instance for a call chain.
-             */
-            addListener(tableId, state, listener) {
-                const listenerMap = this.listenerMap[tableId] = (this.listenerMap[tableId] ||
-                    {});
-                const listeners = listenerMap[state] = (listenerMap[state] ||
-                    []);
-                listeners.push(listener);
-                return this;
-            }
-            /**
-             * @private
-             */
-            buildEmittingTag(e) {
-                return (e.cursor.type === 'position' ?
-                    [
-                        e.table.id,
-                        e.cursor.column,
-                        e.cursor.row,
-                        e.cursor.state,
-                        e.cursor.type
-                    ] :
-                    [
-                        e.table.id,
-                        e.cursor.columns,
-                        e.cursor.firstRow,
-                        e.cursor.lastRow,
-                        e.cursor.state,
-                        e.cursor.type
-                    ]).join('\0');
-            }
-            /**
-             * This function emits a state cursor related to a table. It will provide
-             * lasting state cursors of the table to listeners.
-             *
-             * @example
-             * ```ts
-             * dataCursor.emit(myTable, {
-             *     type: 'position',
-             *     column: 'city',
-             *     row: 4,
-             *     state: 'hover',
-             * });
-             * ```
-             *
-             * @param {Data.DataTable} table
-             * The related table of the cursor.
-             *
-             * @param {Data.DataCursor.Type} cursor
-             * The state cursor to emit.
-             *
-             * @param {Event} [event]
-             * Optional event information from a related source.
-             *
-             * @param {boolean} [lasting]
-             * Whether this state cursor should be kept until it is cleared with
-             * {@link DataCursor#remitCursor}.
-             *
-             * @return {Data.DataCursor}
-             * Returns the DataCursor instance for a call chain.
-             */
-            emitCursor(table, cursor, event, lasting) {
-                const tableId = table.id, state = cursor.state, listeners = (this.listenerMap[tableId] &&
-                    this.listenerMap[tableId][state]);
-                if (listeners) {
-                    const stateMap = this.stateMap[tableId] = (this.stateMap[tableId] ?? {});
-                    const cursors = stateMap[cursor.state] || [];
-                    if (lasting) {
-                        if (!cursors.length) {
-                            stateMap[cursor.state] = cursors;
-                        }
-                        if (DataCursor.getIndex(cursor, cursors) === -1) {
-                            cursors.push(cursor);
-                        }
-                    }
-                    const e = {
-                        cursor,
-                        cursors,
-                        table
-                    };
-                    if (event) {
-                        e.event = event;
-                    }
-                    const emittingRegister = this.emittingRegister, emittingTag = this.buildEmittingTag(e);
-                    if (emittingRegister.indexOf(emittingTag) >= 0) {
-                        // Break call stack loops
-                        return this;
-                    }
-                    try {
-                        this.emittingRegister.push(emittingTag);
-                        for (let i = 0, iEnd = listeners.length; i < iEnd; ++i) {
-                            listeners[i].call(this, e);
-                        }
-                    }
-                    finally {
-                        const index = this.emittingRegister.indexOf(emittingTag);
-                        if (index >= 0) {
-                            this.emittingRegister.splice(index, 1);
-                        }
-                    }
-                }
-                return this;
-            }
-            /**
-             * Removes a lasting state cursor.
-             *
-             * @function #remitCursor
-             *
-             * @param {string} tableId
-             * ID of the related cursor table.
-             *
-             * @param {Data.DataCursor.Type} cursor
-             * Copy or reference of the cursor.
-             *
-             * @return {Data.DataCursor}
-             * Returns the DataCursor instance for a call chain.
-             */
-            remitCursor(tableId, cursor) {
-                const cursors = (this.stateMap[tableId] &&
-                    this.stateMap[tableId][cursor.state]);
-                if (cursors) {
-                    const index = DataCursor.getIndex(cursor, cursors);
-                    if (index >= 0) {
-                        cursors.splice(index, 1);
-                    }
-                }
-                return this;
-            }
-            /**
-             * This function removes a listener.
-             *
-             * @function #addListener
-             *
-             * @param {Data.DataCursor.TableId} tableId
-             * The ID of the table the listener is connected to.
-             *
-             * @param {Data.DataCursor.State} state
-             * The state on the table the listener is listening to.
-             *
-             * @param {Data.DataCursor.Listener} listener
-             * The listener to deregister.
-             *
-             * @return {Data.DataCursor}
-             * Returns the DataCursor instance for a call chain.
-             */
-            removeListener(tableId, state, listener) {
-                const listeners = (this.listenerMap[tableId] &&
-                    this.listenerMap[tableId][state]);
-                if (listeners) {
-                    const index = listeners.indexOf(listener);
-                    if (index >= 0) {
-                        listeners.splice(index, 1);
-                    }
-                }
-                return this;
-            }
-        }
-        /* *
-         *
-         *  Static Properties
-         *
-         * */
-        /**
-         * Semantic version string of the DataCursor class.
-         * @internal
-         */
-        DataCursor.version = '1.0.0';
-        /* *
-         *
-         *  Class Namespace
-         *
-         * */
-        /**
-         * @class Data.DataCursor
-         */
-        (function (DataCursor) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Finds the index of an cursor in an array.
-             * @private
-             */
-            function getIndex(needle, cursors) {
-                if (needle.type === 'position') {
-                    for (let cursor, i = 0, iEnd = cursors.length; i < iEnd; ++i) {
-                        cursor = cursors[i];
-                        if (cursor.type === 'position' &&
-                            cursor.state === needle.state &&
-                            cursor.column === needle.column &&
-                            cursor.row === needle.row) {
-                            return i;
-                        }
-                    }
-                }
-                else {
-                    const columnNeedle = JSON.stringify(needle.columns);
-                    for (let cursor, i = 0, iEnd = cursors.length; i < iEnd; ++i) {
-                        cursor = cursors[i];
-                        if (cursor.type === 'range' &&
-                            cursor.state === needle.state &&
-                            cursor.firstRow === needle.firstRow &&
-                            cursor.lastRow === needle.lastRow &&
-                            JSON.stringify(cursor.columns) === columnNeedle) {
-                            return i;
-                        }
-                    }
-                }
-                return -1;
-            }
-            DataCursor.getIndex = getIndex;
-            /**
-             * Checks whether two cursor share the same properties.
-             * @private
-             */
-            function isEqual(cursorA, cursorB) {
-                if (cursorA.type === 'position' && cursorB.type === 'position') {
-                    return (cursorA.column === cursorB.column &&
-                        cursorA.row === cursorB.row &&
-                        cursorA.state === cursorB.state);
-                }
-                if (cursorA.type === 'range' && cursorB.type === 'range') {
-                    return (cursorA.firstRow === cursorB.firstRow &&
-                        cursorA.lastRow === cursorB.lastRow &&
-                        (JSON.stringify(cursorA.columns) ===
-                            JSON.stringify(cursorB.columns)));
-                }
-                return false;
-            }
-            DataCursor.isEqual = isEqual;
-            /**
-             * Checks whether a cursor is in a range.
-             * @private
-             */
-            function isInRange(needle, range) {
-                if (range.type === 'position') {
-                    range = toRange(range);
-                }
-                if (needle.type === 'position') {
-                    needle = toRange(needle, range);
-                }
-                const needleColumns = needle.columns;
-                const rangeColumns = range.columns;
-                return (needle.firstRow >= range.firstRow &&
-                    needle.lastRow <= range.lastRow &&
-                    (!needleColumns ||
-                        !rangeColumns ||
-                        needleColumns.every((column) => rangeColumns.indexOf(column) >= 0)));
-            }
-            DataCursor.isInRange = isInRange;
-            /**
-             * @private
-             */
-            function toPositions(cursor) {
-                if (cursor.type === 'position') {
-                    return [cursor];
-                }
-                const columns = (cursor.columns || []);
-                const positions = [];
-                const state = cursor.state;
-                for (let row = cursor.firstRow, rowEnd = cursor.lastRow; row < rowEnd; ++row) {
-                    if (!columns.length) {
-                        positions.push({
-                            type: 'position',
-                            row,
-                            state
-                        });
-                        continue;
-                    }
-                    for (let column = 0, columnEnd = columns.length; column < columnEnd; ++column) {
-                        positions.push({
-                            type: 'position',
-                            column: columns[column],
-                            row,
-                            state
-                        });
-                    }
-                }
-                return positions;
-            }
-            DataCursor.toPositions = toPositions;
-            /**
-             * @private
-             */
-            function toRange(cursor, defaultRange) {
-                if (cursor.type === 'range') {
-                    return cursor;
-                }
-                const range = {
-                    type: 'range',
-                    firstRow: (cursor.row ??
-                        (defaultRange && defaultRange.firstRow) ??
-                        0),
-                    lastRow: (cursor.row ??
-                        (defaultRange && defaultRange.lastRow) ??
-                        Number.MAX_VALUE),
-                    state: cursor.state
-                };
-                if (typeof cursor.column !== 'undefined') {
-                    range.columns = [cursor.column];
-                }
-                return range;
-            }
-            DataCursor.toRange = toRange;
-        })(DataCursor || (DataCursor = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataCursor;
-    });
-    _registerModule(_modules, 'DataGrid/Globals.js', [], function () {
-        /* *
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Dawid Dragula
-         *  - Sebastian Bochan
-         *
-         * */
-        /* *
-         *
-         *  Imports
-         *
-         * */
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        /**
-         * Global DataGrid namespace.
-         *
-         * @namespace DataGrid
-         */
-        var Globals;
-        (function (Globals) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            Globals.classNamePrefix = 'highcharts-datagrid-';
-            Globals.classNames = {
-                container: Globals.classNamePrefix + 'container',
-                tableElement: Globals.classNamePrefix + 'table',
-                captionElement: Globals.classNamePrefix + 'caption',
-                theadElement: Globals.classNamePrefix + 'thead',
-                tbodyElement: Globals.classNamePrefix + 'tbody',
-                rowElement: Globals.classNamePrefix + 'row',
-                rowEven: Globals.classNamePrefix + 'row-even',
-                rowOdd: Globals.classNamePrefix + 'row-odd',
-                hoveredRow: Globals.classNamePrefix + 'hovered-row',
-                columnElement: Globals.classNamePrefix + 'column',
-                hoveredCell: Globals.classNamePrefix + 'hovered-cell',
-                hoveredColumn: Globals.classNamePrefix + 'hovered-column',
-                editedCell: Globals.classNamePrefix + 'edited-cell',
-                rowsContentNowrap: Globals.classNamePrefix + 'rows-content-nowrap',
-                headerCell: Globals.classNamePrefix + 'header-cell',
-                headerCellContent: Globals.classNamePrefix + 'header-cell-content',
-                headerRow: Globals.classNamePrefix + 'head-row-content',
-                noData: Globals.classNamePrefix + 'no-data',
-                columnFirst: Globals.classNamePrefix + 'column-first',
-                columnSortable: Globals.classNamePrefix + 'column-sortable',
-                columnSortableIcon: Globals.classNamePrefix + 'column-sortable-icon',
-                columnSortedAsc: Globals.classNamePrefix + 'column-sorted-asc',
-                columnSortedDesc: Globals.classNamePrefix + 'column-sorted-desc',
-                resizerHandles: Globals.classNamePrefix + 'column-resizer',
-                resizedColumn: Globals.classNamePrefix + 'column-resized',
-                creditsContainer: Globals.classNamePrefix + 'credits-container',
-                creditsText: Globals.classNamePrefix + 'credits',
-                visuallyHidden: Globals.classNamePrefix + 'visually-hidden'
-            };
-            Globals.win = window;
-            Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '';
-            Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1;
-            Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1;
-        })(Globals || (Globals = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Globals;
-    });
-    _registerModule(_modules, 'DataGrid/Utils.js', [], function () {
-        /* *
-         *
-         *  DataGrid utilities
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Dawid Dragula
-         *
-         * */
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        var DataGridUtils;
-        (function (DataGridUtils) {
-            /* *
-            *
-            *  Functions
-            *
-            * */
-            /* *
-            *
-            *  Functions
-            *
-            * */
-            /**
-             * Creates a HTML element with the provided options.
-             *
-             * @param tagName
-             * The tag name of the element.
-             *
-             * @param params
-             * The parameters of the element.
-             *
-             * @param parent
-             * The parent element.
-             */
-            function makeHTMLElement(tagName, params, parent) {
-                const element = document.createElement(tagName);
-                if (params) {
-                    const paramsKeys = Object.keys(params);
-                    for (let i = 0; i < paramsKeys.length; i++) {
-                        const key = paramsKeys[i];
-                        const value = params[key];
-                        if (value !== void 0) {
-                            if (key === 'style') {
-                                Object.assign(element.style, value);
-                            }
-                            else {
-                                element[key] = value;
-                            }
-                        }
-                    }
-                }
-                if (parent) {
-                    parent.appendChild(element);
-                }
-                return element;
-            }
-            DataGridUtils.makeHTMLElement = makeHTMLElement;
-            /**
-             * Creates a div element with the provided class name and id.
-             *
-             * @param className
-             * The class name of the div.
-             *
-             * @param id
-             * The id of the element.
-             */
-            function makeDiv(className, id) {
-                return makeHTMLElement('div', { className, id });
-            }
-            DataGridUtils.makeDiv = makeDiv;
-            /**
-             * Gets the translateY value of an element.
-             *
-             * @param element
-             * The element to get the translateY value from.
-             *
-             * @returns The translateY value of the element.
-             */
-            function getTranslateY(element) {
-                const transform = element.style.transform;
-                if (transform) {
-                    const match = transform.match(/translateY\(([^)]+)\)/);
-                    if (match) {
-                        return parseFloat(match[1]);
-                    }
-                }
-                return 0;
-            }
-            DataGridUtils.getTranslateY = getTranslateY;
-            /**
-             * Check if there's a possibility that the given string is an HTML
-             * (contains '<').
-             *
-             * @param str
-             * Text to verify.
-             */
-            function isHTML(str) {
-                return str.indexOf('<') !== -1;
-            }
-            DataGridUtils.isHTML = isHTML;
-            /**
-             * Returns a string containing plain text format by removing HTML tags
-             *
-             * @param text
-             * String to be sanitized
-             *
-             * @returns
-             * Sanitized plain text string
-            */
-            function sanitizeText(text) {
-                try {
-                    return new DOMParser().parseFromString(text, 'text/html')
-                        .body.textContent || '';
-                }
-                catch (error) {
-                    return '';
-                }
-            }
-            DataGridUtils.sanitizeText = sanitizeText;
-        })(DataGridUtils || (DataGridUtils = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataGridUtils;
-    });
-    _registerModule(_modules, 'DataGrid/Accessibility/Accessibility.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/Utils.js']], function (Globals, DGUtils) {
-        /* *
-         *
-         *  DataGrid Accessibility class
-         *
-         *  (c) 2020-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Dawid Dragula
-         *  - Sebastian Bochan
-         *
-         * */
-        const { makeHTMLElement } = DGUtils;
-        /**
-         *  Representing the accessibility functionalities for the Data Grid.
-         */
-        class Accessibility {
-            /* *
-            *
-            *  Constructor
-            *
-            * */
-            /**
-             * Construct the accessibility object.
-             *
-             * @param dataGrid
-             * The DataGrid Table instance which the accessibility controller belong to.
-             */
-            constructor(dataGrid) {
-                this.dataGrid = dataGrid;
-                this.element = document.createElement('div');
-                this.element.classList.add(Globals.classNames.visuallyHidden);
-                this.dataGrid.container?.prepend(this.element);
-                this.announcerElement = document.createElement('p');
-                this.announcerElement.setAttribute('aria-atomic', 'true');
-                this.announcerElement.setAttribute('aria-hidden', 'false');
-            }
-            /* *
-            *
-            *  Methods
-            *
-            * */
-            /**
-             * Add the 'editable' hint span element for the editable cell.
-             *
-             * @param cellElement
-             * The cell element to add the description to.
-             */
-            addEditableCellHint(cellElement) {
-                const editableLang = this.dataGrid.options?.lang?.accessibility?.cellEditing?.editable;
-                if (!editableLang) {
-                    return;
-                }
-                makeHTMLElement('span', {
-                    className: Globals.classNames.visuallyHidden,
-                    innerText: ', ' + editableLang
-                }, cellElement);
-            }
-            /**
-             * Add the description to the header cell.
-             *
-             * @param thElement
-             * The header cell element to add the description to.
-             *
-             * @param description
-             * The description to be added.
-             */
-            addHeaderCellDescription(thElement, description) {
-                if (description) {
-                    thElement.setAttribute('aria-description', description);
-                }
-            }
-            /**
-             * Announce the message to the screen reader.
-             *
-             * @param msg
-             * The message to be announced.
-             *
-             * @param assertive
-             * Whether the message should be assertive. Default is false.
-             */
-            announce(msg, assertive = false) {
-                if (this.announcerTimeout) {
-                    clearTimeout(this.announcerTimeout);
-                }
-                this.announcerElement.remove();
-                this.announcerElement.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-                this.element.appendChild(this.announcerElement);
-                this.announcerElement.textContent = msg;
-                this.announcerTimeout = setTimeout(() => {
-                    this.announcerElement.remove();
-                }, 3000);
-            }
-            /**
-             * Announce the message to the screen reader that the user sorted the
-             * column.
-             *
-             * @param order
-             * The order of the sorting.
-             */
-            userSortedColumn(order) {
-                const { options } = this.dataGrid;
-                const announcementsLang = options?.lang
-                    ?.accessibility?.sorting?.announcements;
-                if (!options?.accessibility?.announcements?.sorting) {
-                    return;
-                }
-                let msg;
-                switch (order) {
-                    case 'asc':
-                        msg = announcementsLang?.ascending;
-                        break;
-                    case 'desc':
-                        msg = announcementsLang?.descending;
-                        break;
-                    default:
-                        msg = announcementsLang?.none;
-                }
-                if (!msg) {
-                    return;
-                }
-                this.announce(msg, true);
-            }
-            /**
-             * Announce the message to the screen reader that the user edited the cell.
-             *
-             * @param msgType
-             * The type of the edit message.
-             */
-            userEditedCell(msgType) {
-                const { options } = this.dataGrid;
-                const announcementsLang = options?.lang
-                    ?.accessibility?.cellEditing?.announcements;
-                if (!options?.accessibility?.announcements?.cellEditing) {
-                    return;
-                }
-                const msg = announcementsLang?.[msgType];
-                if (!msg) {
-                    return;
-                }
-                this.announce(msg);
-            }
-            /**
-             * Set the aria sort state of the column header cell element.
-             *
-             * @param thElement
-             * The header cell element to set the `aria-sort` state to.
-             *
-             * @param state
-             * The sort state to be set for the column header cell.
-             */
-            setColumnSortState(thElement, state) {
-                thElement?.setAttribute('aria-sort', state);
-            }
-            /**
-             * Set the row index attribute for the row element.
-             *
-             * @param el
-             * The row element to set the index to.
-             *
-             * @param idx
-             * The index of the row in the data table.
-             */
-            setRowIndex(el, idx) {
-                el.setAttribute('aria-rowindex', idx);
-            }
-        }
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Accessibility;
-    });
-    _registerModule(_modules, 'DataGrid/Credits.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/Utils.js']], function (Globals, DGUtils) {
-        /* *
-         *
-         *  DataGrid Credits class
-         *
-         *  (c) 2020-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Dawid Dragula
-         *
-         * */
-        const { makeHTMLElement } = DGUtils;
-        /* *
-         *
-         *  Abstract Class of Row
-         *
-         * */
-        /**
-         * Represents a credits in the data grid.
-         */
-        class Credits {
-            /* *
-            *
-            *  Constructor
-            *
-            * */
-            /**
-             * Construct the credits.
-             *
-             * @param dataGrid
-             * The DataGrid Table instance which the credits belong to.
-             */
-            constructor(dataGrid) {
-                this.dataGrid = dataGrid;
-                this.options = dataGrid.options?.credits ?? {};
-                this.containerElement = makeHTMLElement('div', {
-                    className: Globals.classNames.creditsContainer
-                });
-                this.textElement = makeHTMLElement('a', {
-                    className: Globals.classNames.creditsText
-                }, this.containerElement);
-                this.textElement.setAttribute('target', '_top');
-                this.render();
-            }
-            /* *
-            *
-            *  Methods
-            *
-            * */
-            /**
-             * Set the content of the credits.
-             */
-            setContent() {
-                const { text, href } = this.options;
-                this.textElement.innerText = text || '';
-                this.textElement.setAttribute('href', href || '');
-            }
-            /**
-             * Append the credits to the container. The position of the credits is
-             * determined by the `position` option.
-             */
-            appendToContainer() {
-                const { position } = this.options;
-                if (position === 'top') {
-                    // Append the credits to the top of the table.
-                    this.dataGrid.contentWrapper?.prepend(this.containerElement);
-                    return;
-                }
-                // Append the credits to the bottom of the table.
-                this.dataGrid.contentWrapper?.appendChild(this.containerElement);
-            }
-            /**
-             * Update the credits with new options.
-             *
-             * @param options
-             * The new options for the credits.
-             *
-             * @param render
-             * Whether to render the credits after the update.
-             */
-            update(options, render = true) {
-                if (options) {
-                    this.dataGrid.update({
-                        credits: options
-                    }, false);
-                    this.options = this.dataGrid.options?.credits ?? {};
-                }
-                if (render) {
-                    this.render();
-                }
-            }
-            /**
-             * Render the credits. If the credits are disabled, they will be removed
-             * from the container. If also reflows the viewport dimensions.
-             */
-            render() {
-                const enabled = this.options.enabled ?? false;
-                this.containerElement.remove();
-                if (enabled) {
-                    this.setContent();
-                    this.appendToContainer();
-                }
-                else {
-                    this.destroy();
-                }
-                this.dataGrid.viewport?.reflow();
-            }
-            /**
-             * Get the height of the credits container.
-             */
-            getHeight() {
-                return this.containerElement.offsetHeight;
-            }
-            /**
-             * Destroy the credits. The credits will be removed from the container and
-             * the reference to the credits will be deleted from the DataGrid instance
-             * it belongs to.
-             */
-            destroy() {
-                this.containerElement.remove();
-                delete this.dataGrid.credits;
-            }
-        }
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Credits;
-    });
-    _registerModule(_modules, 'DataGrid/Defaults.js', [_modules['Core/Utilities.js']], function (Utils) {
-        /* *
-         *
-         *  DataGrid default options
-         *
-         *  (c) 2009-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-        *  Authors:
-         *  - Dawid Dragula
-         *  - Sebastian Bochan
-         *
-         * */
-        const { merge } = Utils;
-        /**
-         * Namespace for default options.
-         */
-        var Defaults;
-        (function (Defaults) {
-            /**
-             * Default options for the DataGrid.
-             */
-            Defaults.defaultOptions = {
-                accessibility: {
-                    enabled: true,
-                    announcements: {
-                        cellEditing: true,
-                        sorting: true
-                    }
-                },
-                lang: {
-                    accessibility: {
-                        cellEditing: {
-                            editable: 'Editable.',
-                            announcements: {
-                                started: 'Entered cell editing mode.',
-                                edited: 'Edited cell value.',
-                                cancelled: 'Editing canceled.'
-                            }
-                        },
-                        sorting: {
-                            announcements: {
-                                ascending: 'Sorted ascending.',
-                                descending: 'Sorted descending.',
-                                none: 'Not sorted.'
-                            }
-                        }
-                    },
-                    noData: 'No data to display'
-                },
-                rendering: {
-                    columns: {
-                        distribution: 'full'
-                    },
-                    rows: {
-                        bufferSize: 10,
-                        strictHeights: false
-                    },
-                    header: {
-                        enabled: true
-                    }
-                },
-                credits: {
-                    enabled: true,
-                    text: 'Highcharts.com',
-                    href: 'https://www.highcharts.com?credits',
-                    position: 'bottom'
-                },
-                columnDefaults: {
-                    sorting: {
-                        sortable: true
-                    },
-                    resizing: true
-                }
-            };
-            /**
-             * Merge the default options with custom options. Commonly used for defining
-             * reusable templates.
-             *
-             * @param options
-             * The new custom chart options.
-             */
-            function setOptions(options) {
-                merge(true, Defaults.defaultOptions, options);
-            }
-            Defaults.setOptions = setOptions;
-        })(Defaults || (Defaults = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Defaults;
     });
     _registerModule(_modules, 'Core/Chart/ChartDefaults.js', [], function () {
         /* *
@@ -7533,9 +4010,10 @@
         return ChartDefaults;
     });
     _registerModule(_modules, 'Core/Color/Palettes.js', [], function () {
-        /*
+        /**
          * Series palettes for Highcharts. Series colors are defined in highcharts.css.
          * **Do not edit this file!** This file is generated using the 'gulp palette' task.
+         * @private
          */
         const SeriesPalettes = {
             /**
@@ -7557,7 +4035,7 @@
 
         return SeriesPalettes;
     });
-    _registerModule(_modules, 'Core/Time.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
+    _registerModule(_modules, 'Shared/TimeBase.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
          *
          *  (c) 2010-2024 Torstein Honsi
@@ -7567,7 +4045,7 @@
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
          * */
-        const { win } = H;
+        const { pageLang, win } = H;
         const { defined, error, extend, isNumber, isObject, isString, merge, objectEach, pad, splat, timeUnits, ucfirst } = U;
         /* *
          *
@@ -7579,9 +4057,6 @@
             win.Intl &&
             !win.Intl.DateTimeFormat.prototype.formatRange;
         const isDateTimeFormatOptions = (obj) => obj.main === void 0;
-        // We use the Spanish locale for internal weekday handling because it uses
-        // unique letters for narrow weekdays
-        const spanishWeekdayIndex = (weekday) => ['D', 'L', 'M', 'X', 'J', 'V', 'S'].indexOf(weekday);
         /* *
          *
          *  Class
@@ -7593,9 +4068,17 @@
          * `Highcharts.setOptions`, or individually for each Chart item through the
          * [time](https://api.highcharts.com/highcharts/time) options set.
          *
-         * The Time object is available from {@link Highcharts.Chart#time},
-         * which refers to  `Highcharts.time` if no individual time settings are
-         * applied.
+         * The Time object is available from {@link Highcharts.Chart#time}, which refers
+         * to  `Highcharts.time` unless individual time settings are applied for each
+         * chart.
+         *
+         * When configuring time settings for individual chart instances, be aware that
+         * using `Highcharts.dateFormat` or `Highcharts.time.dateFormat` within
+         * formatter callbacks relies on the global time object, which applies the
+         * global language and time zone settings. To ensure charts with local time
+         * settings function correctly, use `chart.time.dateFormat? instead. However,
+         * the recommended best practice is to use `setOptions` to define global time
+         * settings unless specific configurations are needed for each chart.
          *
          * @example
          * // Apply time settings globally
@@ -7633,25 +4116,28 @@
          * @class
          * @name Highcharts.Time
          *
-         * @param {Highcharts.TimeOptions} [options]
-         * Time options as defined in [chart.options.time](/highcharts/time).
+         * @param {Highcharts.TimeOptions} [options] Time options as defined in
+         * [chart.options.time](/highcharts/time).
          */
-        class Time {
+        class TimeBase {
             /* *
              *
              *  Constructors
              *
              * */
-            constructor(options) {
+            constructor(options, lang) {
                 /* *
                  *
                  *  Properties
                  *
                  * */
-                this.options = {};
+                this.options = {
+                    timezone: 'UTC'
+                };
                 this.variableTimezone = false;
                 this.Date = win.Date;
                 this.update(options);
+                this.lang = lang;
             }
             /* *
              *
@@ -7670,12 +4156,13 @@
              *
              */
             update(options = {}) {
-                let timezone = options.timezone ?? 'UTC';
                 this.dTLCache = {};
                 this.options = options = merge(true, this.options, options);
                 const { timezoneOffset, useUTC } = options;
                 // Allow using a different Date class
                 this.Date = options.Date || win.Date || Date;
+                // Assign the time zone. Handle the legacy, deprecated `useUTC` option.
+                let timezone = options.timezone;
                 if (defined(useUTC)) {
                     timezone = useUTC ? 'UTC' : void 0;
                 }
@@ -7693,7 +4180,9 @@
                 this.timezone = timezone;
                 // Assign default time formats from locale strings
                 ['months', 'shortMonths', 'weekdays', 'shortWeekdays'].forEach((name) => {
-                    const isMonth = /months/i.test(name), isShort = /short/.test(name), options = { timeZone: 'UTC' };
+                    const isMonth = /months/i.test(name), isShort = /short/.test(name), options = {
+                        timeZone: 'UTC'
+                    };
                     options[isMonth ? 'month' : 'weekday'] = isShort ? 'short' : 'long';
                     this[name] = (isMonth ?
                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] :
@@ -7734,7 +4223,12 @@
                     minute: 'numeric',
                     second: 'numeric'
                 }, timestamp, 'es')
-                    .split(/(?:, |\/|:)/g);
+                    // The ', ' splitter is for all modern browsers:
+                    //      L, 6/3/2023, 14:30:00
+                    // The ' ' splitter is for legacy Safari with no comma between date
+                    // and time (#22445):
+                    //      L, 6/3/2023 14:30:00
+                    .split(/(?:, | |\/|:)/g);
                 return [
                     year,
                     +month - 1,
@@ -7744,14 +4238,14 @@
                     seconds,
                     // Milliseconds
                     Math.floor(Number(timestamp) || 0) % 1000,
-                    // Weekday index
-                    spanishWeekdayIndex(weekday)
+                    // Spanish weekday index
+                    'DLMXJVS'.indexOf(weekday)
                 ].map(Number);
             }
             /**
              * Shorthand to get a cached `Intl.DateTimeFormat` instance.
              */
-            dateTimeFormat(options, timestamp, locale = this.options.locale) {
+            dateTimeFormat(options, timestamp, locale = this.options.locale || pageLang) {
                 const cacheKey = JSON.stringify(options) + locale;
                 if (isString(options)) {
                     options = this.str2dtf(options);
@@ -7887,7 +4381,9 @@
                 // .replace(/([+-][0-9]{2})$/, '$1:00');
                 // Check if the string has time zone information
                 const hasTimezone = s.indexOf('Z') > -1 ||
-                    /([+-][0-9]{2}):?[0-9]{2}$/.test(s), isYYYYMMDD = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s);
+                    /([+-][0-9]{2}):?[0-9]{2}$/.test(s), 
+                // YYYY-MM-DD and YYYY-MM are always UTC
+                isYYYYMMDD = /^[0-9]{4}-[0-9]{2}(-[0-9]{2}|)$/.test(s);
                 if (!hasTimezone && !isYYYYMMDD) {
                     s += 'Z';
                 }
@@ -7955,6 +4451,7 @@
              * | `%d` | Two digit day of the month, 01 to 31         |       |
              * | `%e` | Day of the month, 1 through 31               |       |
              * | `%w` | Day of the week, 0 through 6                 | N/A   |
+             * | `%v` | The prefix "week from", read from `lang.weekFrom` | N/A |
              * | `%b` | Short month, like 'Jan'                      |       |
              * | `%B` | Long month, like 'January'                   |       |
              * | `%m` | Two digit month number, 01 through 12        |       |
@@ -8036,7 +4533,7 @@
              *         The formatted date.
              */
             dateFormat(format, timestamp, upperCaseFirst) {
-                const lang = H.defaultOptions?.lang;
+                const lang = this.lang;
                 if (!defined(timestamp) || isNaN(timestamp)) {
                     return lang?.invalidDate || '';
                 }
@@ -8046,7 +4543,7 @@
                     const localeAwareRegex = /%\[([a-zA-Z]+)\]/g;
                     let match;
                     while ((match = localeAwareRegex.exec(format))) {
-                        format = format.replace(match[0], this.dateTimeFormat(match[1], timestamp));
+                        format = format.replace(match[0], this.dateTimeFormat(match[1], timestamp, lang?.locale));
                     }
                 }
                 // Then, replace static formats like %Y, %m, %d etc.
@@ -8070,6 +4567,7 @@
                         w: weekday,
                         // Week (none implemented)
                         // 'W': weekNumber(),
+                        v: lang?.weekFrom ?? '',
                         // Month
                         // Short month, like 'Jan'
                         b: shortMonths[month],
@@ -8118,7 +4616,7 @@
                 }
                 else if (isObject(format)) {
                     const tzHours = (this.getTimezoneOffset(timestamp) || 0) /
-                        (60000 * 60), timeZone = this.options.timezone || ('Etc/GMT' + (tzHours >= 0 ? '+' : '') + tzHours), { prefix = '', suffix = '' } = format;
+                        (60000 * 60), timeZone = this.timezone || ('Etc/GMT' + (tzHours >= 0 ? '+' : '') + tzHours), { prefix = '', suffix = '' } = format;
                     format = prefix + this.dateTimeFormat(extend({ timeZone }, format), timestamp) + suffix;
                 }
                 // Optionally sentence-case the string and return
@@ -8147,150 +4645,6 @@
                     return { main: f };
                 }
                 return f;
-            }
-            /**
-             * Return an array with time positions distributed on round time values
-             * right and right after min and max. Used in datetime axes as well as for
-             * grouping data on a datetime axis.
-             *
-             * @function Highcharts.Time#getTimeTicks
-             *
-             * @param {Highcharts.TimeNormalizedObject} normalizedInterval
-             *        The interval in axis values (ms) and the count
-             *
-             * @param {number} [min]
-             *        The minimum in axis values
-             *
-             * @param {number} [max]
-             *        The maximum in axis values
-             *
-             * @param {number} [startOfWeek=1]
-             *
-             * @return {Highcharts.AxisTickPositionsArray}
-             * Time positions
-             */
-            getTimeTicks(normalizedInterval, min, max, startOfWeek) {
-                const time = this, tickPositions = [], higherRanks = {}, { count = 1, unitRange } = normalizedInterval;
-                let [year, month, dayOfMonth, hours, minutes, seconds] = time.toParts(min), milliseconds = (min || 0) % 1000, variableDayLength;
-                startOfWeek ?? (startOfWeek = 1);
-                if (defined(min)) { // #1300
-                    milliseconds = unitRange >= timeUnits.second ?
-                        0 : // #3935
-                        count * Math.floor(milliseconds / count);
-                    if (unitRange >= timeUnits.second) { // Second
-                        seconds = unitRange >= timeUnits.minute ?
-                            0 : // #3935
-                            count * Math.floor(seconds / count);
-                    }
-                    if (unitRange >= timeUnits.minute) { // Minute
-                        minutes = unitRange >= timeUnits.hour ?
-                            0 :
-                            count * Math.floor(minutes / count);
-                    }
-                    if (unitRange >= timeUnits.hour) { // Hour
-                        hours = unitRange >= timeUnits.day ?
-                            0 :
-                            count * Math.floor(hours / count);
-                    }
-                    if (unitRange >= timeUnits.day) { // Day
-                        dayOfMonth = unitRange >= timeUnits.month ?
-                            1 :
-                            Math.max(1, count * Math.floor(dayOfMonth / count));
-                    }
-                    if (unitRange >= timeUnits.month) { // Month
-                        month = unitRange >= timeUnits.year ? 0 :
-                            count * Math.floor(month / count);
-                    }
-                    if (unitRange >= timeUnits.year) { // Year
-                        year -= year % count;
-                    }
-                    // Week is a special case that runs outside the hierarchy
-                    if (unitRange === timeUnits.week) {
-                        if (count) {
-                            min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
-                        }
-                        // Get start of current week, independent of count
-                        const weekday = this.dateTimeFormat({
-                            timeZone: this.timezone,
-                            weekday: 'narrow'
-                        }, min, 'es'), weekdayNo = spanishWeekdayIndex(weekday);
-                        dayOfMonth += -weekdayNo + startOfWeek +
-                            // We don't want to skip days that are before
-                            // startOfWeek (#7051)
-                            (weekdayNo < startOfWeek ? -7 : 0);
-                    }
-                    min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
-                    // Handle local timezone offset
-                    if (time.variableTimezone && defined(max)) {
-                        // Detect whether we need to take the DST crossover into
-                        // consideration. If we're crossing over DST, the day length may
-                        // be 23h or 25h and we need to compute the exact clock time for
-                        // each tick instead of just adding hours. This comes at a cost,
-                        // so first we find out if it is needed (#4951).
-                        variableDayLength = (
-                        // Long range, assume we're crossing over.
-                        max - min > 4 * timeUnits.month ||
-                            // Short range, check if min and max are in different time
-                            // zones.
-                            time.getTimezoneOffset(min) !==
-                                time.getTimezoneOffset(max));
-                    }
-                    // Iterate and add tick positions at appropriate values
-                    let t = min, i = 1;
-                    while (t < max) {
-                        tickPositions.push(t);
-                        // Increase the years
-                        if (unitRange === timeUnits.year) {
-                            t = time.makeTime(year + i * count, 0);
-                            // Increase the months
-                        }
-                        else if (unitRange === timeUnits.month) {
-                            t = time.makeTime(year, month + i * count);
-                            // If we're using local time, the interval is not fixed as it
-                            // jumps one hour at the DST crossover
-                        }
-                        else if (variableDayLength && (unitRange === timeUnits.day ||
-                            unitRange === timeUnits.week)) {
-                            t = time.makeTime(year, month, dayOfMonth +
-                                i * count * (unitRange === timeUnits.day ? 1 : 7));
-                        }
-                        else if (variableDayLength &&
-                            unitRange === timeUnits.hour &&
-                            count > 1) {
-                            // Make sure higher ranks are preserved across DST (#6797,
-                            // #7621)
-                            t = time.makeTime(year, month, dayOfMonth, hours + i * count);
-                            // Else, the interval is fixed and we use simple addition
-                        }
-                        else {
-                            t += unitRange * count;
-                        }
-                        i++;
-                    }
-                    // Push the last time
-                    tickPositions.push(t);
-                    // Handle higher ranks. Mark new days if the time is on midnight
-                    // (#950, #1649, #1760, #3349). Use a reasonable dropout threshold
-                    // to prevent looping over dense data grouping (#6156).
-                    if (unitRange <= timeUnits.hour && tickPositions.length < 10000) {
-                        tickPositions.forEach((t) => {
-                            if (
-                            // Speed optimization, no need to run dateFormat unless
-                            // we're on a full or half hour
-                            t % 1800000 === 0 &&
-                                // Check for local or global midnight
-                                time.dateFormat('%H%M%S%L', t) === '000000000') {
-                                higherRanks[t] = 'day';
-                            }
-                        });
-                    }
-                }
-                // Record information on the chosen unit - for dynamic label formatter
-                tickPositions.info = extend(normalizedInterval, {
-                    higherRanks,
-                    totalRange: unitRange * count
-                });
-                return tickPositions;
             }
             /**
              * Get the optimal date format for a point, based on a range.
@@ -8328,14 +4682,15 @@
                 for (n in timeUnits) { // eslint-disable-line guard-for-in
                     // If the range is exactly one week and we're looking at a
                     // Sunday/Monday, go for the week format
-                    if (range === timeUnits.week &&
+                    if (range &&
+                        range === timeUnits.week &&
                         +this.dateFormat('%w', timestamp) === startOfWeek &&
                         dateStr.substr(6) === blank.substr(6)) {
                         n = 'week';
                         break;
                     }
                     // The first format that is too great for the range
-                    if (timeUnits[n] > range) {
+                    if (range && timeUnits[n] > range) {
                         n = lastN;
                         break;
                     }
@@ -8504,6 +4859,178 @@
         */
         ''; // Keeps doclets above in JS file
 
+        return TimeBase;
+    });
+    _registerModule(_modules, 'Core/Time.js', [_modules['Shared/TimeBase.js'], _modules['Core/Utilities.js']], function (TimeBase, U) {
+        /* *
+         *
+         *  (c) 2010-2024 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        const { defined, extend, timeUnits } = U;
+        /* *
+         *
+         *  Constants
+         *
+         * */
+        class Time extends TimeBase {
+            /**
+             * Return an array with time positions distributed on round time values
+             * right and right after min and max. Used in datetime axes as well as for
+             * grouping data on a datetime axis.
+             *
+             * @function Highcharts.Time#getTimeTicks
+             *
+             * @param {Highcharts.TimeNormalizedObject} normalizedInterval
+             *        The interval in axis values (ms) and the count
+             *
+             * @param {number} [min]
+             *        The minimum in axis values
+             *
+             * @param {number} [max]
+             *        The maximum in axis values
+             *
+             * @param {number} [startOfWeek=1]
+             *
+             * @return {Highcharts.AxisTickPositionsArray}
+             * Time positions
+             */
+            getTimeTicks(normalizedInterval, min, max, startOfWeek) {
+                const time = this, tickPositions = [], higherRanks = {}, { count = 1, unitRange } = normalizedInterval;
+                let [year, month, dayOfMonth, hours, minutes, seconds] = time.toParts(min), milliseconds = (min || 0) % 1000, variableDayLength;
+                startOfWeek ?? (startOfWeek = 1);
+                if (defined(min)) { // #1300
+                    milliseconds = unitRange >= timeUnits.second ?
+                        0 : // #3935
+                        count * Math.floor(milliseconds / count);
+                    if (unitRange >= timeUnits.second) { // Second
+                        seconds = unitRange >= timeUnits.minute ?
+                            0 : // #3935
+                            count * Math.floor(seconds / count);
+                    }
+                    if (unitRange >= timeUnits.minute) { // Minute
+                        minutes = unitRange >= timeUnits.hour ?
+                            0 :
+                            count * Math.floor(minutes / count);
+                    }
+                    if (unitRange >= timeUnits.hour) { // Hour
+                        hours = unitRange >= timeUnits.day ?
+                            0 :
+                            count * Math.floor(hours / count);
+                    }
+                    if (unitRange >= timeUnits.day) { // Day
+                        dayOfMonth = unitRange >= timeUnits.month ?
+                            1 :
+                            Math.max(1, count * Math.floor(dayOfMonth / count));
+                    }
+                    if (unitRange >= timeUnits.month) { // Month
+                        month = unitRange >= timeUnits.year ? 0 :
+                            count * Math.floor(month / count);
+                    }
+                    if (unitRange >= timeUnits.year) { // Year
+                        year -= year % count;
+                    }
+                    // Week is a special case that runs outside the hierarchy
+                    if (unitRange === timeUnits.week) {
+                        if (count) {
+                            min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
+                        }
+                        // Get start of current week, independent of count
+                        const weekday = this.dateTimeFormat({
+                            timeZone: this.timezone,
+                            weekday: 'narrow'
+                        }, min, 'es'), 
+                        // Spanish weekday index
+                        weekdayNo = 'DLMXJVS'.indexOf(weekday);
+                        dayOfMonth += -weekdayNo + startOfWeek +
+                            // We don't want to skip days that are before
+                            // startOfWeek (#7051)
+                            (weekdayNo < startOfWeek ? -7 : 0);
+                    }
+                    min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
+                    // Handle local timezone offset
+                    if (time.variableTimezone && defined(max)) {
+                        // Detect whether we need to take the DST crossover into
+                        // consideration. If we're crossing over DST, the day length may
+                        // be 23h or 25h and we need to compute the exact clock time for
+                        // each tick instead of just adding hours. This comes at a cost,
+                        // so first we find out if it is needed (#4951).
+                        variableDayLength = (
+                        // Long range, assume we're crossing over.
+                        max - min > 4 * timeUnits.month ||
+                            // Short range, check if min and max are in different time
+                            // zones.
+                            time.getTimezoneOffset(min) !==
+                                time.getTimezoneOffset(max));
+                    }
+                    // Iterate and add tick positions at appropriate values
+                    let t = min, i = 1;
+                    while (t < max) {
+                        tickPositions.push(t);
+                        // Increase the years
+                        if (unitRange === timeUnits.year) {
+                            t = time.makeTime(year + i * count, 0);
+                            // Increase the months
+                        }
+                        else if (unitRange === timeUnits.month) {
+                            t = time.makeTime(year, month + i * count);
+                            // If we're using local time, the interval is not fixed as it
+                            // jumps one hour at the DST crossover
+                        }
+                        else if (variableDayLength && (unitRange === timeUnits.day ||
+                            unitRange === timeUnits.week)) {
+                            t = time.makeTime(year, month, dayOfMonth +
+                                i * count * (unitRange === timeUnits.day ? 1 : 7));
+                        }
+                        else if (variableDayLength &&
+                            unitRange === timeUnits.hour &&
+                            count > 1) {
+                            // Make sure higher ranks are preserved across DST (#6797,
+                            // #7621)
+                            t = time.makeTime(year, month, dayOfMonth, hours + i * count);
+                            // Else, the interval is fixed and we use simple addition
+                        }
+                        else {
+                            t += unitRange * count;
+                        }
+                        i++;
+                    }
+                    // Push the last time
+                    tickPositions.push(t);
+                    // Handle higher ranks. Mark new days if the time is on midnight
+                    // (#950, #1649, #1760, #3349). Use a reasonable dropout threshold
+                    // to prevent looping over dense data grouping (#6156).
+                    if (unitRange <= timeUnits.hour && tickPositions.length < 10000) {
+                        tickPositions.forEach((t) => {
+                            if (
+                            // Speed optimization, no need to run dateFormat unless
+                            // we're on a full or half hour
+                            t % 1800000 === 0 &&
+                                // Check for local or global midnight
+                                time.dateFormat('%H%M%S%L', t) === '000000000') {
+                                higherRanks[t] = 'day';
+                            }
+                        });
+                    }
+                }
+                // Record information on the chosen unit - for dynamic label formatter
+                tickPositions.info = extend(normalizedInterval, {
+                    higherRanks,
+                    totalRange: unitRange * count
+                });
+                return tickPositions;
+            }
+        }
+        /* *
+         *
+         * Default export
+         *
+         * */
+
         return Time;
     });
     _registerModule(_modules, 'Core/Defaults.js', [_modules['Core/Chart/ChartDefaults.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palettes.js'], _modules['Core/Time.js'], _modules['Core/Utilities.js']], function (ChartDefaults, H, Palettes, Time, U) {
@@ -8591,8 +5118,17 @@
              *     }
              * });
              * ```
+             *
+             * @optionparent lang
              */
             lang: {
+                weekFrom: 'week from',
+                /**
+                 * The default chart title.
+                 *
+                 * @since next
+                 */
+                chartTitle: 'Chart title',
                 /**
                  * The browser locale to use for date and number formatting. The actual
                  * locale used for each chart is determined in three steps:
@@ -8629,6 +5165,12 @@
                  * @type    {Array<string>}
                  */
                 months: void 0,
+                /**
+                 * [Format string](https://www.highcharts.com/docs/chart-concepts/templating) for the default series name.
+                 *
+                 * @since next
+                 */
+                seriesName: 'Series {add index 1}',
                 /**
                  * An array containing the months names in abbreviated form. Corresponds
                  * to the `%b` format in `Highcharts.dateFormat()`. Defaults to
@@ -8712,6 +5254,11 @@
                  */
                 numericSymbols: ['k', 'M', 'G', 'T', 'P', 'E'],
                 /**
+                 * The default name for a pie slice (point).
+                 * @since next
+                 */
+                pieSliceName: 'Slice',
+                /**
                  * The magnitude of [numericSymbols](#lang.numericSymbol) replacements.
                  * Use 10000 for Japanese, Korean and various Chinese locales, which
                  * use symbols for 10^4, 10^8 and 10^12.
@@ -8745,12 +5292,17 @@
                  *
                  * @since 1.2.4
                  */
+                /**
+                 * The default title of the Y axis
+                 *
+                 * @since next
+                 */
+                yAxisTitle: 'Values',
                 resetZoomTitle: 'Reset zoom level 1:1'
             },
             /**
-             * Global options that don't apply to each chart. These options, like
-             * the `lang` options, must be set using the `Highcharts.setOptions`
-             * method.
+             * Global options that don't apply to each chart. These options must be set
+             * using the `Highcharts.setOptions` method.
              *
              * ```js
              * Highcharts.setOptions({
@@ -9154,6 +5706,24 @@
              */
             subtitle: {
                 /**
+                 * The horizontal alignment of the subtitle. Can be one of "left",
+                 * "center" and "right". Since v12, it defaults to `undefined`, meaning
+                 * the actual alignment is inherited from the alignment of the main
+                 * title.
+                 *
+                 * @sample {highcharts} highcharts/title/align-auto/
+                 *         Default title and subtitle alignment, dynamic
+                 * @sample {highcharts} highcharts/subtitle/align/
+                 *         Footnote at right of plot area
+                 * @sample {highstock} stock/chart/subtitle-footnote
+                 *         Footnote at bottom right of plot area
+                 *
+                 * @type  {Highcharts.AlignValue}
+                 * @default undefined
+                 * @since 2.0
+                 * @apioption subtitle.align
+                 */
+                /**
                  * When the subtitle is floating, the plot area will not move to make
                  * space for it.
                  *
@@ -9275,24 +5845,6 @@
                  *         Formatted and linked text.
                  */
                 text: ''
-                /**
-                 * The horizontal alignment of the subtitle. Can be one of "left",
-                 * "center" and "right". Since v12, it defaults to `undefined`, meaning
-                 * the actual alignment is inherited from the alignment of the main
-                 * title.
-                 *
-                 * @sample {highcharts} highcharts/title/align-auto/
-                 *         Default title and subtitle alignment, dynamic
-                 * @sample {highcharts} highcharts/subtitle/align/
-                 *         Footnote at right of plot area
-                 * @sample {highstock} stock/chart/subtitle-footnote
-                 *         Footnote at bottom right of plot area
-                 *
-                 * @type  {Highcharts.AlignValue}
-                 * @default undefined
-                 * @since 2.0
-                 * @apioption subtitle.align
-                 */
             },
             /**
              * The chart's caption, which will render below the chart and will be part
@@ -10363,6 +6915,24 @@
                  * @apioption tooltip.distance
                  */
                 /**
+                 * Whether the tooltip should be fixed to one position in the chart, or
+                 * located next to the point or mouse. When the tooltip is fixed, the
+                 * position can be further specified with the
+                 * [tooltip.position](#tooltip.position) options set.
+                 *
+                 * @sample    highcharts/tooltip/fixed/
+                 *            Fixed tooltip and position options
+                 * @sample    {highstock} stock/tooltip/fixed/
+                 *            Stock chart with fixed tooltip
+                 * @sample    {highmaps} maps/tooltip/fixed/
+                 *            Map with fixed tooltip
+                 *
+                 * @type      {boolean}
+                 * @default   false
+                 * @since     next
+                 * @apioption tooltip.fixed
+                 */
+                /**
                  * Whether the tooltip should follow the mouse as it moves across
                  * columns, pie slices and other point types with an extent.
                  * By default it behaves this way for pie, polygon, map, sankey
@@ -10540,6 +7110,10 @@
                  * xAxis header. xAxis header is not a point, instead `point` argument
                  * contains info: `{ plotX: Number, plotY: Number, isHeader: Boolean }`
                  *
+                 * Since v12.2, the [tooltip.fixed](#tooltip.fixed) option combined with
+                 * [tooltip.position](#tooltip.position) covers most of the use cases
+                 * for custom tooltip positioning.
+                 *
                  * The return should be an object containing x and y values, for example
                  * `{ x: 100, y: 100 }`.
                  *
@@ -10553,6 +7127,8 @@
                  *         Split tooltip with fixed positions
                  * @sample {highstock} stock/tooltip/positioner-scrollable-plotarea/
                  *         Scrollable plot area combined with tooltip positioner
+                 *
+                 * @see [position](#tooltip.position)
                  *
                  * @type      {Highcharts.TooltipPositionerCallbackFunction}
                  * @since     2.2.4
@@ -10733,7 +7309,7 @@
                     /** @internal */
                     day: '%[AebY]',
                     /** @internal */
-                    week: 'Week from %[AebY]',
+                    week: '%v %[AebY]',
                     /** @internal */
                     month: '%[BY]',
                     /** @internal */
@@ -10783,6 +7359,85 @@
                  */
                 padding: 8,
                 /**
+                 * Positioning options for fixed tooltip, taking effect only when
+                 * [tooltip.fixed](#tooltip.fixed) is `true`.
+                 *
+                 * @sample {highcharts} highcharts/tooltip/fixed/
+                 *         Fixed tooltip and position options
+                 * @sample {highstock} stock/tooltip/fixed/
+                 *         Stock chart with fixed tooltip
+                 * @sample {highmaps} maps/tooltip/fixed/
+                 *         Map with fixed tooltip
+                 *
+                 * @since next
+                 */
+                position: {
+                    /**
+                     * The horizontal alignment of the fixed tooltip.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     *
+                     * @type {Highcharts.AlignValue}
+                     * @default left
+                     * @apioption tooltip.position.align
+                     */
+                    /**
+                     * The vertical alignment of the fixed tooltip.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     *
+                     * @type {Highcharts.VerticalAlignValue}
+                     * @default top
+                     * @apioption tooltip.position.verticalAlign
+                     */
+                    /**
+                     * What the fixed tooltip alignment should be relative to.
+                     *
+                     * The default, `pane`, means that it is aligned within the plot
+                     * area for that given series. If the tooltip is split (as default
+                     * in Stock charts), each partial tooltip is aligned within the
+                     * series' pane.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     *
+                     * @type {string}
+                     * @default pane
+                     * @validvalue ["pane", "chart", "plotBox", "spacingBox"]
+                     * @apioption tooltip.position.relativeTo
+                     */
+                    /**
+                     * X pixel offset from the given position. Can be used to shy away
+                     * from axis lines, grid lines etc to avoid the tooltip overlapping
+                     * other elements.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     */
+                    x: 0,
+                    /**
+                     * Y pixel offset from the given position. Can be used to shy away
+                     * from axis lines, grid lines etc to avoid the tooltip overlapping
+                     * other elements.
+                     *
+                     * @sample highcharts/tooltip/fixed/
+                     *         Fixed tooltip
+                     * @sample {highstock} stock/tooltip/fixed/
+                     *         Stock chart with fixed tooltip
+                     */
+                    y: 3
+                },
+                /**
                  * The name of a symbol to use for the border around the tooltip. Can
                  * be one of: `"callout"`, `"circle"` or `"rect"`. When
                  * [tooltip.split](#tooltip.split)
@@ -10794,10 +7449,14 @@
                  * `Highcharts.SVGRenderer.prototype.symbols` the same way as for
                  * [series.marker.symbol](plotOptions.line.marker.symbol).
                  *
+                 * Defaults to `callout` for floating tooltip, `rect` for
+                 * [fixed](#tooltip.fixed) tooltip.
+                 *
                  * @type  {Highcharts.TooltipShapeValue}
                  * @since 4.0
+                 * @default undefined
+                 * @apioption tooltip.shape
                  */
-                shape: 'callout',
                 /**
                  * Shows information in the tooltip for all points with the same X
                  * value. When the tooltip is shared, the entire plot area will capture
@@ -10869,8 +7528,10 @@
                  * The HTML of the null point's line in the tooltip. Works analogously
                  * to [pointFormat](#tooltip.pointFormat).
                  *
+                 * @sample {highcharts} highcharts/series/null-interaction
+                 *         Line chart with null interaction
                  * @sample {highcharts} highcharts/plotoptions/series-nullformat
-                 *         Format data label and tooltip for null point.
+                 *         Heatmap with null interaction
                  *
                  * @type      {string}
                  * @apioption tooltip.nullFormat
@@ -10926,7 +7587,7 @@
                 backgroundColor: "#ffffff" /* Palette.backgroundColor */,
                 /**
                  * The pixel width of the tooltip border. Defaults to 0 for single
-                 * tooltips and 1 for split tooltips.
+                 * tooltips and fixed tooltips, otherwise 1 for split tooltips.
                  *
                  * In styled mode, the stroke width is set in the
                  * `.highcharts-tooltip-box` class.
@@ -10950,7 +7611,8 @@
                  */
                 borderWidth: void 0,
                 /**
-                 * Whether to apply a drop shadow to the tooltip.
+                 * Whether to apply a drop shadow to the tooltip. Defaults to true,
+                 * unless the tooltip is [fixed](#tooltip.fixed).
                  *
                  * @sample {highcharts} highcharts/tooltip/bordercolor-default/
                  *         True by default
@@ -10960,8 +7622,9 @@
                  *         Fixed tooltip position, border and shadow disabled
                  *
                  * @type {boolean|Highcharts.ShadowOptionsObject}
+                 * @default undefined
+                 * @apioption tooltip.shadow
                  */
-                shadow: true,
                 /**
                  * Prevents the tooltip from switching or closing when touched or
                  * pointed.
@@ -11124,12 +7787,7 @@
                 text: 'Highcharts.com'
             }
         };
-        /* eslint-disable spaced-comment */
-
-        defaultOptions.chart.styledMode = false;
-
-        '';
-        const defaultTime = new Time(defaultOptions.time);
+        const defaultTime = new Time(defaultOptions.time, defaultOptions.lang);
         /**
          * Get the updated default options. Until 3.0.7, merely exposing defaultOptions
          * for outside modules wasn't enough because the setOptions method created a new
@@ -11169,6 +7827,12 @@
                 defaultTime.update({
                     locale: options.lang.locale
                 });
+            }
+            if (options.lang?.chartTitle) {
+                defaultOptions.title = {
+                    ...defaultOptions.title,
+                    text: options.lang.chartTitle
+                };
             }
             return defaultOptions;
         }
@@ -11335,8 +7999,8 @@
          *
          * */
         const { defaultOptions, defaultTime } = D;
-        const { doc } = G;
-        const { extend, getNestedProperty, isArray, isNumber, isObject, pick, ucfirst } = U;
+        const { pageLang } = G;
+        const { extend, getNestedProperty, isArray, isNumber, isObject, isString, pick, ucfirst } = U;
         const helpers = {
             // Built-in helpers
             add: (a, b) => a + b,
@@ -11371,6 +8035,8 @@
          *  Functions
          *
          * */
+        // Internal convenience function
+        const isQuotedString = (str) => /^["'].+["']$/.test(str);
         /**
          * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970) into a
          * human readable date string. The format is a subset of the formats for PHP's
@@ -11441,18 +8107,19 @@
          *        The context, a collection of key-value pairs where each key is
          *        replaced by its value.
          *
-         * @param {Highcharts.Chart} [chart]
-         *        A `Chart` instance used to get numberFormatter and time.
+         * @param {Highcharts.Chart} [owner]
+         *        A `Chart` or `DataGrid` instance used to get numberFormatter and time.
          *
          * @return {string}
          *         The formatted string.
          */
-        function format(str = '', ctx, chart) {
-            const regex = /\{([\p{L}\d:\.,;\-\/<>\[\]%_@"'’= #\(\)]+)\}/gu, 
+        function format(str = '', ctx, owner) {
+            // Notice: using u flag will require a refactor for ES5 (#22450).
+            const regex = /\{([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'’= #\(\)]+)\}/g, // eslint-disable-line max-len
             // The sub expression regex is the same as the top expression regex,
             // but except parens and block helpers (#), and surrounded by parens
             // instead of curly brackets.
-            subRegex = /\(([\p{L}\d:\.,;\-\/<>\[\]%_@"'= ]+)\)/gu, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = chart?.options.lang || defaultOptions.lang, time = chart && chart.time || defaultTime, numberFormatter = chart && chart.numberFormatter || numberFormat;
+            subRegex = /\(([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || defaultOptions.lang, time = owner?.time || defaultTime, numberFormatter = owner?.numberFormatter || numberFormat;
             /*
              * Get a literal or variable value inside a template expression. May be
              * extended with other types like string or null if needed, but keep it
@@ -11470,7 +8137,7 @@
                 if ((n = Number(key)).toString() === key) {
                     return n;
                 }
-                if (/^["'].+["']$/.test(key)) {
+                if (isQuotedString(key)) {
                     return key.slice(1, -1);
                 }
                 // Variables and constants
@@ -11486,7 +8153,7 @@
                     match = subMatch;
                     hasSub = true;
                 }
-                if (!currentMatch || !currentMatch.isBlock) {
+                if (!currentMatch?.isBlock) {
                     currentMatch = {
                         ctx,
                         expression: match[1],
@@ -11578,12 +8245,13 @@
                     // Block helpers may return true or false. They may also return a
                     // string, like the `each` helper.
                     if (match.isBlock && typeof replacement === 'boolean') {
-                        replacement = format(replacement ? body : elseBody, ctx, chart);
+                        replacement = format(replacement ? body : elseBody, ctx, owner);
                     }
                     // Simple variable replacement
                 }
                 else {
-                    const valueAndFormat = expression.split(':');
+                    const valueAndFormat = isQuotedString(expression) ?
+                        [expression] : expression.split(':');
                     replacement = resolveProperty(valueAndFormat.shift() || '');
                     // Format the replacement
                     if (valueAndFormat.length && typeof replacement === 'number') {
@@ -11596,17 +8264,18 @@
                         }
                         else {
                             replacement = time.dateFormat(segment, replacement);
-                            // Use string literal in order to be preserved in the outer
-                            // expression
-                            if (hasSub) {
-                                replacement = `"${replacement}"`;
-                            }
                         }
+                    }
+                    // Use string literal in order to be preserved in the outer
+                    // expression
+                    subRegex.lastIndex = 0;
+                    if (subRegex.test(match.find) && isString(replacement)) {
+                        replacement = `"${replacement}"`;
                     }
                 }
                 str = str.replace(match.find, pick(replacement, ''));
             });
-            return hasSub ? format(str, ctx, chart) : str;
+            return hasSub ? format(str, ctx, owner) : str;
         }
         /**
          * Format a number and return a string based on input settings.
@@ -11683,16 +8352,16 @@
             }
             const hasSeparators = thousandsSep || decimalPoint, locale = hasSeparators ?
                 'en' :
-                (this?.locale ||
-                    lang.locale ||
-                    doc.body.closest('[lang]')?.lang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
+                (this?.locale || lang.locale || pageLang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
             ret = nf.format(number);
             // If thousandsSep or decimalPoint are set, fall back to using English
             // format with string replacement for the separators.
             if (hasSeparators) {
                 ret = ret
-                    .replace(/\,/g, thousandsSep ?? ',')
-                    .replace('.', decimalPoint ?? '.');
+                    // Preliminary step to avoid re-swapping (#22402)
+                    .replace(/([,\.])/g, '_$1')
+                    .replace(/_\,/g, thousandsSep ?? ',')
+                    .replace('_.', decimalPoint ?? '.');
             }
             if (
             // Remove signed zero (#20564)
@@ -11720,10 +8389,3749 @@
 
         return Templating;
     });
-    _registerModule(_modules, 'DataGrid/Table/Column.js', [_modules['DataGrid/Globals.js'], _modules['Core/Utilities.js'], _modules['DataGrid/Utils.js'], _modules['Core/Templating.js']], function (Globals, Utils, DGUtils, Templating) {
+    _registerModule(_modules, 'Data/Modifiers/DataModifier.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  DataGrid class
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Gøran Slettemark
+         *
+         * */
+        const { addEvent, fireEvent, merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Abstract class to provide an interface for modifying a table.
+         *
+         */
+        class DataModifier {
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Runs a timed execution of the modifier on the given datatable.
+             * Can be configured to run multiple times.
+             *
+             * @param {DataTable} dataTable
+             * The datatable to execute
+             *
+             * @param {DataModifier.BenchmarkOptions} options
+             * Options. Currently supports `iterations` for number of iterations.
+             *
+             * @return {Array<number>}
+             * An array of times in milliseconds
+             *
+             */
+            benchmark(dataTable, options) {
+                const results = [];
+                const modifier = this;
+                const execute = () => {
+                    modifier.modifyTable(dataTable);
+                    modifier.emit({
+                        type: 'afterBenchmarkIteration'
+                    });
+                };
+                const defaultOptions = {
+                    iterations: 1
+                };
+                const { iterations } = merge(defaultOptions, options);
+                modifier.on('afterBenchmarkIteration', () => {
+                    if (results.length === iterations) {
+                        modifier.emit({
+                            type: 'afterBenchmark',
+                            results
+                        });
+                        return;
+                    }
+                    // Run again
+                    execute();
+                });
+                const times = {
+                    startTime: 0,
+                    endTime: 0
+                };
+                // Add timers
+                modifier.on('modify', () => {
+                    times.startTime = window.performance.now();
+                });
+                modifier.on('afterModify', () => {
+                    times.endTime = window.performance.now();
+                    results.push(times.endTime - times.startTime);
+                });
+                // Initial run
+                execute();
+                return results;
+            }
+            /**
+             * Emits an event on the modifier to all registered callbacks of this event.
+             *
+             * @param {DataModifier.Event} [e]
+             * Event object containing additonal event information.
+             */
+            emit(e) {
+                fireEvent(this, e.type, e);
+            }
+            /**
+             * Returns a modified copy of the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Table to modify.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Promise<Highcharts.DataTable>}
+             * Table with `modified` property as a reference.
+             */
+            modify(table, eventDetail) {
+                const modifier = this;
+                return new Promise((resolve, reject) => {
+                    if (table.modified === table) {
+                        table.modified = table.clone(false, eventDetail);
+                    }
+                    try {
+                        resolve(modifier.modifyTable(table, eventDetail));
+                    }
+                    catch (e) {
+                        modifier.emit({
+                            type: 'error',
+                            detail: eventDetail,
+                            table
+                        });
+                        reject(e);
+                    }
+                });
+            }
+            /**
+             * Applies partial modifications of a cell change to the property `modified`
+             * of the given modified table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {string} columnName
+             * Column name of changed cell.
+             *
+             * @param {number|undefined} rowIndex
+             * Row index of changed cell.
+             *
+             * @param {Highcharts.DataTableCellType} cellValue
+             * Changed cell value.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyCell(table, 
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            columnName, rowIndex, cellValue, eventDetail
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
+                return this.modifyTable(table);
+            }
+            /**
+             * Applies partial modifications of column changes to the property
+             * `modified` of the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {Highcharts.DataTableColumnCollection} columns
+             * Changed columns as a collection, where the keys are the column names.
+             *
+             * @param {number} [rowIndex=0]
+             * Index of the first changed row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyColumns(table, 
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            columns, rowIndex, eventDetail
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
+                return this.modifyTable(table);
+            }
+            /**
+             * Applies partial modifications of row changes to the property `modified`
+             * of the given table.
+             *
+             * @param {Highcharts.DataTable} table
+             * Modified table.
+             *
+             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
+             * Changed rows.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first changed row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyRows(table, 
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            rows, rowIndex, eventDetail
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
+                return this.modifyTable(table);
+            }
+            /**
+             * Registers a callback for a specific modifier event.
+             *
+             * @param {string} type
+             * Event type as a string.
+             *
+             * @param {DataEventEmitter.Callback} callback
+             * Function to register for an modifier callback.
+             *
+             * @return {Function}
+             * Function to unregister callback from the modifier event.
+             */
+            on(type, callback) {
+                return addEvent(this, type, callback);
+            }
+        }
+        /* *
+         *
+         *  Class Namespace
+         *
+         * */
+        /**
+         * Additionally provided types for modifier events and options.
+         */
+        (function (DataModifier) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             * Registry as a record object with modifier names and their class
+             * constructor.
+             */
+            DataModifier.types = {};
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Adds a modifier class to the registry. The modifier class has to provide
+             * the `DataModifier.options` property and the `DataModifier.modifyTable`
+             * method to modify the table.
+             *
+             * @private
+             *
+             * @param {string} key
+             * Registry key of the modifier class.
+             *
+             * @param {DataModifierType} DataModifierClass
+             * Modifier class (aka class constructor) to register.
+             *
+             * @return {boolean}
+             * Returns true, if the registration was successful. False is returned, if
+             * their is already a modifier registered with this key.
+             */
+            function registerType(key, DataModifierClass) {
+                return (!!key &&
+                    !DataModifier.types[key] &&
+                    !!(DataModifier.types[key] = DataModifierClass));
+            }
+            DataModifier.registerType = registerType;
+        })(DataModifier || (DataModifier = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataModifier;
+    });
+    _registerModule(_modules, 'Data/ColumnUtils.js', [], function () {
+        /* *
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /**
+         * Utility functions for columns that can be either arrays or typed arrays.
+         * @private
+         */
+        var ColumnUtils;
+        (function (ColumnUtils) {
+            /* *
+            *
+            *  Declarations
+            *
+            * */
+            /* *
+            *
+            * Functions
+            *
+            * */
+            /**
+             * Sets the length of the column array.
+             *
+             * @param {DataTable.Column} column
+             * Column to be modified.
+             *
+             * @param {number} length
+             * New length of the column.
+             *
+             * @param {boolean} asSubarray
+             * If column is a typed array, return a subarray instead of a new array. It
+             * is faster `O(1)`, but the entire buffer will be kept in memory until all
+             * views to it are destroyed. Default is `false`.
+             *
+             * @return {DataTable.Column}
+             * Modified column.
+             *
+             * @private
+             */
+            function setLength(column, length, asSubarray) {
+                if (Array.isArray(column)) {
+                    column.length = length;
+                    return column;
+                }
+                return column[asSubarray ? 'subarray' : 'slice'](0, length);
+            }
+            ColumnUtils.setLength = setLength;
+            /**
+             * Splices a column array.
+             *
+             * @param {DataTable.Column} column
+             * Column to be modified.
+             *
+             * @param {number} start
+             * Index at which to start changing the array.
+             *
+             * @param {number} deleteCount
+             * An integer indicating the number of old array elements to remove.
+             *
+             * @param {boolean} removedAsSubarray
+             * If column is a typed array, return a subarray instead of a new array. It
+             * is faster `O(1)`, but the entire buffer will be kept in memory until all
+             * views to it are destroyed. Default is `true`.
+             *
+             * @param {Array<number>|TypedArray} items
+             * The elements to add to the array, beginning at the start index. If you
+             * don't specify any elements, `splice()` will only remove elements from the
+             * array.
+             *
+             * @return {SpliceResult}
+             * Object containing removed elements and the modified column.
+             *
+             * @private
+             */
+            function splice(column, start, deleteCount, removedAsSubarray, items = []) {
+                if (Array.isArray(column)) {
+                    if (!Array.isArray(items)) {
+                        items = Array.from(items);
+                    }
+                    return {
+                        removed: column.splice(start, deleteCount, ...items),
+                        array: column
+                    };
+                }
+                const Constructor = Object.getPrototypeOf(column)
+                    .constructor;
+                const removed = column[removedAsSubarray ? 'subarray' : 'slice'](start, start + deleteCount);
+                const newLength = column.length - deleteCount + items.length;
+                const result = new Constructor(newLength);
+                result.set(column.subarray(0, start), 0);
+                result.set(items, start);
+                result.set(column.subarray(start + deleteCount), start + items.length);
+                return {
+                    removed: removed,
+                    array: result
+                };
+            }
+            ColumnUtils.splice = splice;
+        })(ColumnUtils || (ColumnUtils = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return ColumnUtils;
+    });
+    _registerModule(_modules, 'Data/DataTableCore.js', [_modules['Data/ColumnUtils.js'], _modules['Core/Utilities.js']], function (ColumnUtils, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Gøran Slettemark
+         *  - Torstein Hønsi
+         *
+         * */
+        const { setLength, splice } = ColumnUtils;
+        const { fireEvent, objectEach, uniqueKey } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Class to manage columns and rows in a table structure. It provides methods
+         * to add, remove, and manipulate columns and rows, as well as to retrieve data
+         * from specific cells.
+         *
+         * @class
+         * @name Highcharts.DataTable
+         *
+         * @param {Highcharts.DataTableOptions} [options]
+         * Options to initialize the new DataTable instance.
+         */
+        class DataTableCore {
+            /**
+             * Constructs an instance of the DataTable class.
+             *
+             * @example
+             * const dataTable = new Highcharts.DataTableCore({
+             *   columns: {
+             *     year: [2020, 2021, 2022, 2023],
+             *     cost: [11, 13, 12, 14],
+             *     revenue: [12, 15, 14, 18]
+             *   }
+             * });
+
+             *
+             * @param {Highcharts.DataTableOptions} [options]
+             * Options to initialize the new DataTable instance.
+             */
+            constructor(options = {}) {
+                /**
+                 * Whether the ID was automatic generated or given in the constructor.
+                 *
+                 * @name Highcharts.DataTable#autoId
+                 * @type {boolean}
+                 */
+                this.autoId = !options.id;
+                this.columns = {};
+                /**
+                 * ID of the table for identification purposes.
+                 *
+                 * @name Highcharts.DataTable#id
+                 * @type {string}
+                 */
+                this.id = (options.id || uniqueKey());
+                this.modified = this;
+                this.rowCount = 0;
+                this.versionTag = uniqueKey();
+                let rowCount = 0;
+                objectEach(options.columns || {}, (column, columnName) => {
+                    this.columns[columnName] = column.slice();
+                    rowCount = Math.max(rowCount, column.length);
+                });
+                this.applyRowCount(rowCount);
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Applies a row count to the table by setting the `rowCount` property and
+             * adjusting the length of all columns.
+             *
+             * @private
+             * @param {number} rowCount The new row count.
+             */
+            applyRowCount(rowCount) {
+                this.rowCount = rowCount;
+                objectEach(this.columns, (column, columnName) => {
+                    if (column.length !== rowCount) {
+                        this.columns[columnName] = setLength(column, rowCount);
+                    }
+                });
+            }
+            /**
+             * Delete rows. Simplified version of the full
+             * `DataTable.deleteRows` method.
+             *
+             * @param {number} rowIndex
+             * The start row index
+             *
+             * @param {number} [rowCount=1]
+             * The number of rows to delete
+             *
+             * @return {void}
+             *
+             * @emits #afterDeleteRows
+             */
+            deleteRows(rowIndex, rowCount = 1) {
+                if (rowCount > 0 && rowIndex < this.rowCount) {
+                    let length = 0;
+                    objectEach(this.columns, (column, columnName) => {
+                        this.columns[columnName] =
+                            splice(column, rowIndex, rowCount).array;
+                        length = column.length;
+                    });
+                    this.rowCount = length;
+                }
+                fireEvent(this, 'afterDeleteRows', { rowIndex, rowCount });
+                this.versionTag = uniqueKey();
+            }
+            /**
+             * Fetches the given column by the canonical column name. Simplified version
+             * of the full `DataTable.getRow` method, always returning by reference.
+             *
+             * @param {string} columnName
+             * Name of the column to get.
+             *
+             * @return {Highcharts.DataTableColumn|undefined}
+             * A copy of the column, or `undefined` if not found.
+             */
+            getColumn(columnName, 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            asReference) {
+                return this.columns[columnName];
+            }
+            /**
+             * Retrieves all or the given columns. Simplified version of the full
+             * `DataTable.getColumns` method, always returning by reference.
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names to retrieve.
+             *
+             * @return {Highcharts.DataTableColumnCollection}
+             * Collection of columns. If a requested column was not found, it is
+             * `undefined`.
+             */
+            getColumns(columnNames, 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            asReference) {
+                return (columnNames || Object.keys(this.columns)).reduce((columns, columnName) => {
+                    columns[columnName] = this.columns[columnName];
+                    return columns;
+                }, {});
+            }
+            /**
+             * Retrieves the row at a given index.
+             *
+             * @param {number} rowIndex
+             * Row index to retrieve. First row has index 0.
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names to retrieve.
+             *
+             * @return {Record<string, number|string|undefined>|undefined}
+             * Returns the row values, or `undefined` if not found.
+             */
+            getRow(rowIndex, columnNames) {
+                return (columnNames || Object.keys(this.columns)).map((key) => this.columns[key]?.[rowIndex]);
+            }
+            /**
+             * Sets cell values for a column. Will insert a new column, if not found.
+             *
+             * @param {string} columnName
+             * Column name to set.
+             *
+             * @param {Highcharts.DataTableColumn} [column]
+             * Values to set in the column.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first row to change. (Default: 0)
+             *
+             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #setColumns
+             * @emits #afterSetColumns
+             */
+            setColumn(columnName, column = [], rowIndex = 0, eventDetail) {
+                this.setColumns({ [columnName]: column }, rowIndex, eventDetail);
+            }
+            /**
+             * Sets cell values for multiple columns. Will insert new columns, if not
+             * found. Simplified version of the full `DataTableCore.setColumns`, limited
+             * to full replacement of the columns (undefined `rowIndex`).
+             *
+             * @param {Highcharts.DataTableColumnCollection} columns
+             * Columns as a collection, where the keys are the column names.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first row to change. Ignored in the `DataTableCore`, as it
+             * always replaces the full column.
+             *
+             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #setColumns
+             * @emits #afterSetColumns
+             */
+            setColumns(columns, rowIndex, eventDetail) {
+                let rowCount = this.rowCount;
+                objectEach(columns, (column, columnName) => {
+                    this.columns[columnName] = column.slice();
+                    rowCount = column.length;
+                });
+                this.applyRowCount(rowCount);
+                if (!eventDetail?.silent) {
+                    fireEvent(this, 'afterSetColumns');
+                    this.versionTag = uniqueKey();
+                }
+            }
+            /**
+             * Sets cell values of a row. Will insert a new row if no index was
+             * provided, or if the index is higher than the total number of table rows.
+             * A simplified version of the full `DateTable.setRow`, limited to objects.
+             *
+             * @param {Record<string, number|string|undefined>} row
+             * Cell values to set.
+             *
+             * @param {number} [rowIndex]
+             * Index of the row to set. Leave `undefined` to add as a new row.
+             *
+             * @param {boolean} [insert]
+             * Whether to insert the row at the given index, or to overwrite the row.
+             *
+             * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #afterSetRows
+             */
+            setRow(row, rowIndex = this.rowCount, insert, eventDetail) {
+                const { columns } = this, indexRowCount = insert ? this.rowCount + 1 : rowIndex + 1;
+                objectEach(row, (cellValue, columnName) => {
+                    let column = columns[columnName] ||
+                        eventDetail?.addColumns !== false && new Array(indexRowCount);
+                    if (column) {
+                        if (insert) {
+                            column = splice(column, rowIndex, 0, true, [cellValue]).array;
+                        }
+                        else {
+                            column[rowIndex] = cellValue;
+                        }
+                        columns[columnName] = column;
+                    }
+                });
+                if (indexRowCount > this.rowCount) {
+                    this.applyRowCount(indexRowCount);
+                }
+                if (!eventDetail?.silent) {
+                    fireEvent(this, 'afterSetRows');
+                    this.versionTag = uniqueKey();
+                }
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+        /* *
+         *
+         *  API Declarations
+         *
+         * */
+        /**
+         * A typed array.
+         * @typedef {Int8Array|Uint8Array|Uint8ClampedArray|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array} Highcharts.TypedArray
+         * //**
+         * A column of values in a data table.
+         * @typedef {Array<boolean|null|number|string|undefined>|Highcharts.TypedArray} Highcharts.DataTableColumn
+         */ /**
+        * A collection of data table columns defined by a object where the key is the
+        * column name and the value is an array of the column values.
+        * @typedef {Record<string, Highcharts.DataTableColumn>} Highcharts.DataTableColumnCollection
+        */
+        /**
+         * Options for the `DataTable` or `DataTableCore` classes.
+         * @interface Highcharts.DataTableOptions
+         */ /**
+        * The column options for the data table. The columns are defined by an object
+        * where the key is the column ID and the value is an array of the column
+        * values.
+        *
+        * @name Highcharts.DataTableOptions.columns
+        * @type {Highcharts.DataTableColumnCollection|undefined}
+        */ /**
+        * Custom ID to identify the new DataTable instance.
+        *
+        * @name Highcharts.DataTableOptions.id
+        * @type {string|undefined}
+        */
+        (''); // Keeps doclets above in JS file
+
+        return DataTableCore;
+    });
+    _registerModule(_modules, 'Data/DataTable.js', [_modules['Data/ColumnUtils.js'], _modules['Data/DataTableCore.js'], _modules['Core/Utilities.js']], function (CU, DataTableCore, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Gøran Slettemark
+         *  - Jomar Hønsi
+         *  - Dawid Dragula
+         *
+         * */
+        const { addEvent, defined, extend, fireEvent, isNumber, uniqueKey } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Class to manage columns and rows in a table structure. It provides methods
+         * to add, remove, and manipulate columns and rows, as well as to retrieve data
+         * from specific cells.
+         *
+         * @class
+         * @name Highcharts.DataTable
+         *
+         * @param {Highcharts.DataTableOptions} [options]
+         * Options to initialize the new DataTable instance.
+         */
+        class DataTable extends DataTableCore {
+            /* *
+             *
+             *  Static Functions
+             *
+             * */
+            /**
+             * Tests whether a row contains only `null` values or is equal to
+             * DataTable.NULL. If all columns have `null` values, the function returns
+             * `true`. Otherwise, it returns `false` to indicate that the row contains
+             * at least one non-null value.
+             *
+             * @function Highcharts.DataTable.isNull
+             *
+             * @param {Highcharts.DataTableRow|Highcharts.DataTableRowObject} row
+             * Row to test.
+             *
+             * @return {boolean}
+             * Returns `true`, if the row contains only null, otherwise `false`.
+             *
+             * @example
+             * if (DataTable.isNull(row)) {
+             *   // handle null row
+             * }
+             */
+            static isNull(row) {
+                if (row === DataTable.NULL) {
+                    return true;
+                }
+                if (row instanceof Array) {
+                    if (!row.length) {
+                        return false;
+                    }
+                    for (let i = 0, iEnd = row.length; i < iEnd; ++i) {
+                        if (row[i] !== null) {
+                            return false;
+                        }
+                    }
+                }
+                else {
+                    const columnNames = Object.keys(row);
+                    if (!columnNames.length) {
+                        return false;
+                    }
+                    for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
+                        if (row[columnNames[i]] !== null) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(options = {}) {
+                super(options);
+                this.modified = this;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Returns a clone of this table. The cloned table is completely independent
+             * of the original, and any changes made to the clone will not affect
+             * the original table.
+             *
+             * @function Highcharts.DataTable#clone
+             *
+             * @param {boolean} [skipColumns]
+             * Whether to clone columns or not.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTable}
+             * Clone of this data table.
+             *
+             * @emits #cloneTable
+             * @emits #afterCloneTable
+             */
+            clone(skipColumns, eventDetail) {
+                const table = this, tableOptions = {};
+                table.emit({ type: 'cloneTable', detail: eventDetail });
+                if (!skipColumns) {
+                    tableOptions.columns = table.columns;
+                }
+                if (!table.autoId) {
+                    tableOptions.id = table.id;
+                }
+                const tableClone = new DataTable(tableOptions);
+                if (!skipColumns) {
+                    tableClone.versionTag = table.versionTag;
+                    tableClone.originalRowIndexes = table.originalRowIndexes;
+                    tableClone.localRowIndexes = table.localRowIndexes;
+                }
+                table.emit({
+                    type: 'afterCloneTable',
+                    detail: eventDetail,
+                    tableClone
+                });
+                return tableClone;
+            }
+            /**
+             * Deletes columns from the table.
+             *
+             * @function Highcharts.DataTable#deleteColumns
+             *
+             * @param {Array<string>} [columnNames]
+             * Names of columns to delete. If no array is provided, all
+             * columns will be deleted.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Highcharts.DataTableColumnCollection|undefined}
+             * Returns the deleted columns, if found.
+             *
+             * @emits #deleteColumns
+             * @emits #afterDeleteColumns
+             */
+            deleteColumns(columnNames, eventDetail) {
+                const table = this, columns = table.columns, deletedColumns = {}, modifiedColumns = {}, modifier = table.modifier, rowCount = table.rowCount;
+                columnNames = (columnNames || Object.keys(columns));
+                if (columnNames.length) {
+                    table.emit({
+                        type: 'deleteColumns',
+                        columnNames,
+                        detail: eventDetail
+                    });
+                    for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
+                        columnName = columnNames[i];
+                        column = columns[columnName];
+                        if (column) {
+                            deletedColumns[columnName] = column;
+                            modifiedColumns[columnName] = new Array(rowCount);
+                        }
+                        delete columns[columnName];
+                    }
+                    if (!Object.keys(columns).length) {
+                        table.rowCount = 0;
+                        this.deleteRowIndexReferences();
+                    }
+                    if (modifier) {
+                        modifier.modifyColumns(table, modifiedColumns, 0, eventDetail);
+                    }
+                    table.emit({
+                        type: 'afterDeleteColumns',
+                        columns: deletedColumns,
+                        columnNames,
+                        detail: eventDetail
+                    });
+                    return deletedColumns;
+                }
+            }
+            /**
+             * Deletes the row index references. This is useful when the original table
+             * is deleted, and the references are no longer needed. This table is
+             * then considered an original table or a table that has the same row's
+             * order as the original table.
+             */
+            deleteRowIndexReferences() {
+                delete this.originalRowIndexes;
+                delete this.localRowIndexes;
+                // Here, in case of future need, can be implemented updating of the
+                // modified tables' row indexes references.
+            }
+            /**
+             * Deletes rows in this table.
+             *
+             * @function Highcharts.DataTable#deleteRows
+             *
+             * @param {number} [rowIndex]
+             * Index to start delete of rows. If not specified, all rows will be
+             * deleted.
+             *
+             * @param {number} [rowCount=1]
+             * Number of rows to delete.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Array<Highcharts.DataTableRow>}
+             * Returns the deleted rows, if found.
+             *
+             * @emits #deleteRows
+             * @emits #afterDeleteRows
+             */
+            deleteRows(rowIndex, rowCount = 1, eventDetail) {
+                const table = this, deletedRows = [], modifiedRows = [], modifier = table.modifier;
+                table.emit({
+                    type: 'deleteRows',
+                    detail: eventDetail,
+                    rowCount,
+                    rowIndex: (rowIndex || 0)
+                });
+                if (typeof rowIndex === 'undefined') {
+                    rowIndex = 0;
+                    rowCount = table.rowCount;
+                }
+                if (rowCount > 0 && rowIndex < table.rowCount) {
+                    const columns = table.columns, columnNames = Object.keys(columns);
+                    for (let i = 0, iEnd = columnNames.length, column, deletedCells, columnName; i < iEnd; ++i) {
+                        columnName = columnNames[i];
+                        column = columns[columnName];
+                        const result = CU.splice(column, rowIndex, rowCount);
+                        deletedCells = result.removed;
+                        columns[columnName] = column = result.array;
+                        if (!i) {
+                            table.rowCount = column.length;
+                        }
+                        for (let j = 0, jEnd = deletedCells.length; j < jEnd; ++j) {
+                            deletedRows[j] = (deletedRows[j] || []);
+                            deletedRows[j][i] = deletedCells[j];
+                        }
+                        modifiedRows.push(new Array(iEnd));
+                    }
+                }
+                if (modifier) {
+                    modifier.modifyRows(table, modifiedRows, (rowIndex || 0), eventDetail);
+                }
+                table.emit({
+                    type: 'afterDeleteRows',
+                    detail: eventDetail,
+                    rowCount,
+                    rowIndex: (rowIndex || 0),
+                    rows: deletedRows
+                });
+                return deletedRows;
+            }
+            /**
+             * Emits an event on this table to all registered callbacks of the given
+             * event.
+             * @private
+             *
+             * @param {DataTable.Event} e
+             * Event object with event information.
+             */
+            emit(e) {
+                if ([
+                    'afterDeleteColumns',
+                    'afterDeleteRows',
+                    'afterSetCell',
+                    'afterSetColumns',
+                    'afterSetRows'
+                ].includes(e.type)) {
+                    this.versionTag = uniqueKey();
+                }
+                fireEvent(this, e.type, e);
+            }
+            /**
+             * Fetches a single cell value.
+             *
+             * @function Highcharts.DataTable#getCell
+             *
+             * @param {string} columnName
+             * Column name of the cell to retrieve.
+             *
+             * @param {number} rowIndex
+             * Row index of the cell to retrieve.
+             *
+             * @return {Highcharts.DataTableCellType|undefined}
+             * Returns the cell value or `undefined`.
+             */
+            getCell(columnName, rowIndex) {
+                const table = this;
+                const column = table.columns[columnName];
+                if (column) {
+                    return column[rowIndex];
+                }
+            }
+            /**
+             * Fetches a cell value for the given row as a boolean.
+             *
+             * @function Highcharts.DataTable#getCellAsBoolean
+             *
+             * @param {string} columnName
+             * Column name to fetch.
+             *
+             * @param {number} rowIndex
+             * Row index to fetch.
+             *
+             * @return {boolean}
+             * Returns the cell value of the row as a boolean.
+             */
+            getCellAsBoolean(columnName, rowIndex) {
+                const table = this;
+                const column = table.columns[columnName];
+                return !!(column && column[rowIndex]);
+            }
+            /**
+             * Fetches a cell value for the given row as a number.
+             *
+             * @function Highcharts.DataTable#getCellAsNumber
+             *
+             * @param {string} columnName
+             * Column name or to fetch.
+             *
+             * @param {number} rowIndex
+             * Row index to fetch.
+             *
+             * @param {boolean} [useNaN]
+             * Whether to return NaN instead of `null` and `undefined`.
+             *
+             * @return {number|null}
+             * Returns the cell value of the row as a number.
+             */
+            getCellAsNumber(columnName, rowIndex, useNaN) {
+                const table = this;
+                const column = table.columns[columnName];
+                let cellValue = (column && column[rowIndex]);
+                switch (typeof cellValue) {
+                    case 'boolean':
+                        return (cellValue ? 1 : 0);
+                    case 'number':
+                        return (isNaN(cellValue) && !useNaN ? null : cellValue);
+                }
+                cellValue = parseFloat(`${cellValue ?? ''}`);
+                return (isNaN(cellValue) && !useNaN ? null : cellValue);
+            }
+            /**
+             * Fetches a cell value for the given row as a string.
+             *
+             * @function Highcharts.DataTable#getCellAsString
+             *
+             * @param {string} columnName
+             * Column name to fetch.
+             *
+             * @param {number} rowIndex
+             * Row index to fetch.
+             *
+             * @return {string}
+             * Returns the cell value of the row as a string.
+             */
+            getCellAsString(columnName, rowIndex) {
+                const table = this;
+                const column = table.columns[columnName];
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                return `${(column && column[rowIndex])}`;
+            }
+            /**
+             * Fetches the given column by the canonical column name.
+             * This function is a simplified wrap of {@link getColumns}.
+             *
+             * @function Highcharts.DataTable#getColumn
+             *
+             * @param {string} columnName
+             * Name of the column to get.
+             *
+             * @param {boolean} [asReference]
+             * Whether to return the column as a readonly reference.
+             *
+             * @return {Highcharts.DataTableColumn|undefined}
+             * A copy of the column, or `undefined` if not found.
+             */
+            getColumn(columnName, asReference) {
+                return this.getColumns([columnName], asReference)[columnName];
+            }
+            /**
+             * Fetches the given column by the canonical column name, and
+             * validates the type of the first few cells. If the first defined cell is
+             * of type number, it assumes for performance reasons, that all cells are of
+             * type number or `null`. Otherwise it will convert all cells to number
+             * type, except `null`.
+             *
+             * @deprecated
+             *
+             * @function Highcharts.DataTable#getColumnAsNumbers
+             *
+             * @param {string} columnName
+             * Name of the column to get.
+             *
+             * @param {boolean} [useNaN]
+             * Whether to use NaN instead of `null` and `undefined`.
+             *
+             * @return {Array<(number|null)>}
+             * A copy of the column, or an empty array if not found.
+             */
+            getColumnAsNumbers(columnName, useNaN) {
+                const table = this, columns = table.columns;
+                const column = columns[columnName], columnAsNumber = [];
+                if (column) {
+                    const columnLength = column.length;
+                    if (useNaN) {
+                        for (let i = 0; i < columnLength; ++i) {
+                            columnAsNumber.push(table.getCellAsNumber(columnName, i, true));
+                        }
+                    }
+                    else {
+                        for (let i = 0, cellValue; i < columnLength; ++i) {
+                            cellValue = column[i];
+                            if (typeof cellValue === 'number') {
+                                // Assume unmixed data for performance reasons
+                                return column.slice();
+                            }
+                            if (cellValue !== null &&
+                                typeof cellValue !== 'undefined') {
+                                break;
+                            }
+                        }
+                        for (let i = 0; i < columnLength; ++i) {
+                            columnAsNumber.push(table.getCellAsNumber(columnName, i));
+                        }
+                    }
+                }
+                return columnAsNumber;
+            }
+            /**
+             * Fetches all column names.
+             *
+             * @function Highcharts.DataTable#getColumnNames
+             *
+             * @return {Array<string>}
+             * Returns all column names.
+             */
+            getColumnNames() {
+                const table = this, columnNames = Object.keys(table.columns);
+                return columnNames;
+            }
+            /**
+             * Retrieves all or the given columns.
+             *
+             * @function Highcharts.DataTable#getColumns
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names to retrieve.
+             *
+             * @param {boolean} [asReference]
+             * Whether to return columns as a readonly reference.
+             *
+             * @param {boolean} [asBasicColumns]
+             * Whether to transform all typed array columns to normal arrays.
+             *
+             * @return {Highcharts.DataTableColumnCollection}
+             * Collection of columns. If a requested column was not found, it is
+             * `undefined`.
+             */
+            getColumns(columnNames, asReference, asBasicColumns) {
+                const table = this, tableColumns = table.columns, columns = {};
+                columnNames = (columnNames || Object.keys(tableColumns));
+                for (let i = 0, iEnd = columnNames.length, column, columnName; i < iEnd; ++i) {
+                    columnName = columnNames[i];
+                    column = tableColumns[columnName];
+                    if (column) {
+                        if (asReference) {
+                            columns[columnName] = column;
+                        }
+                        else if (asBasicColumns && !Array.isArray(column)) {
+                            columns[columnName] = Array.from(column);
+                        }
+                        else {
+                            columns[columnName] = column.slice();
+                        }
+                    }
+                }
+                return columns;
+            }
+            /**
+             * Takes the original row index and returns the local row index in the
+             * modified table for which this function is called.
+             *
+             * @param {number} originalRowIndex
+             * Original row index to get the local row index for.
+             *
+             * @return {number|undefined}
+             * Returns the local row index or `undefined` if not found.
+             */
+            getLocalRowIndex(originalRowIndex) {
+                const { localRowIndexes } = this;
+                if (localRowIndexes) {
+                    return localRowIndexes[originalRowIndex];
+                }
+                return originalRowIndex;
+            }
+            /**
+             * Retrieves the modifier for the table.
+             * @private
+             *
+             * @return {Highcharts.DataModifier|undefined}
+             * Returns the modifier or `undefined`.
+             */
+            getModifier() {
+                return this.modifier;
+            }
+            /**
+             * Takes the local row index and returns the index of the corresponding row
+             * in the original table.
+             *
+             * @param {number} rowIndex
+             * Local row index to get the original row index for.
+             *
+             * @return {number|undefined}
+             * Returns the original row index or `undefined` if not found.
+             */
+            getOriginalRowIndex(rowIndex) {
+                const { originalRowIndexes } = this;
+                if (originalRowIndexes) {
+                    return originalRowIndexes[rowIndex];
+                }
+                return rowIndex;
+            }
+            /**
+             * Retrieves the row at a given index. This function is a simplified wrap of
+             * {@link getRows}.
+             *
+             * @function Highcharts.DataTable#getRow
+             *
+             * @param {number} rowIndex
+             * Row index to retrieve. First row has index 0.
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names in order to retrieve.
+             *
+             * @return {Highcharts.DataTableRow}
+             * Returns the row values, or `undefined` if not found.
+             */
+            getRow(rowIndex, columnNames) {
+                return this.getRows(rowIndex, 1, columnNames)[0];
+            }
+            /**
+             * Returns the number of rows in this table.
+             *
+             * @function Highcharts.DataTable#getRowCount
+             *
+             * @return {number}
+             * Number of rows in this table.
+             */
+            getRowCount() {
+                // @todo Implement via property getter `.length` browsers supported
+                return this.rowCount;
+            }
+            /**
+             * Retrieves the index of the first row matching a specific cell value.
+             *
+             * @function Highcharts.DataTable#getRowIndexBy
+             *
+             * @param {string} columnName
+             * Column to search in.
+             *
+             * @param {Highcharts.DataTableCellType} cellValue
+             * Cell value to search for. `NaN` and `undefined` are not supported.
+             *
+             * @param {number} [rowIndexOffset]
+             * Index offset to start searching.
+             *
+             * @return {number|undefined}
+             * Index of the first row matching the cell value.
+             */
+            getRowIndexBy(columnName, cellValue, rowIndexOffset) {
+                const table = this;
+                const column = table.columns[columnName];
+                if (column) {
+                    let rowIndex = -1;
+                    if (Array.isArray(column)) {
+                        // Normal array
+                        rowIndex = column.indexOf(cellValue, rowIndexOffset);
+                    }
+                    else if (isNumber(cellValue)) {
+                        // Typed array
+                        rowIndex = column.indexOf(cellValue, rowIndexOffset);
+                    }
+                    if (rowIndex !== -1) {
+                        return rowIndex;
+                    }
+                }
+            }
+            /**
+             * Retrieves the row at a given index. This function is a simplified wrap of
+             * {@link getRowObjects}.
+             *
+             * @function Highcharts.DataTable#getRowObject
+             *
+             * @param {number} rowIndex
+             * Row index.
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names and their order to retrieve.
+             *
+             * @return {Highcharts.DataTableRowObject}
+             * Returns the row values, or `undefined` if not found.
+             */
+            getRowObject(rowIndex, columnNames) {
+                return this.getRowObjects(rowIndex, 1, columnNames)[0];
+            }
+            /**
+             * Fetches all or a number of rows.
+             *
+             * @function Highcharts.DataTable#getRowObjects
+             *
+             * @param {number} [rowIndex]
+             * Index of the first row to fetch. Defaults to first row at index `0`.
+             *
+             * @param {number} [rowCount]
+             * Number of rows to fetch. Defaults to maximal number of rows.
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names and their order to retrieve.
+             *
+             * @return {Highcharts.DataTableRowObject}
+             * Returns retrieved rows.
+             */
+            getRowObjects(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNames) {
+                const table = this, columns = table.columns, rows = new Array(rowCount);
+                columnNames = (columnNames || Object.keys(columns));
+                for (let i = rowIndex, i2 = 0, iEnd = Math.min(table.rowCount, (rowIndex + rowCount)), column, row; i < iEnd; ++i, ++i2) {
+                    row = rows[i2] = {};
+                    for (const columnName of columnNames) {
+                        column = columns[columnName];
+                        row[columnName] = (column ? column[i] : void 0);
+                    }
+                }
+                return rows;
+            }
+            /**
+             * Fetches all or a number of rows.
+             *
+             * @function Highcharts.DataTable#getRows
+             *
+             * @param {number} [rowIndex]
+             * Index of the first row to fetch. Defaults to first row at index `0`.
+             *
+             * @param {number} [rowCount]
+             * Number of rows to fetch. Defaults to maximal number of rows.
+             *
+             * @param {Array<string>} [columnNames]
+             * Column names and their order to retrieve.
+             *
+             * @return {Highcharts.DataTableRow}
+             * Returns retrieved rows.
+             */
+            getRows(rowIndex = 0, rowCount = (this.rowCount - rowIndex), columnNames) {
+                const table = this, columns = table.columns, rows = new Array(rowCount);
+                columnNames = (columnNames || Object.keys(columns));
+                for (let i = rowIndex, i2 = 0, iEnd = Math.min(table.rowCount, (rowIndex + rowCount)), column, row; i < iEnd; ++i, ++i2) {
+                    row = rows[i2] = [];
+                    for (const columnName of columnNames) {
+                        column = columns[columnName];
+                        row.push(column ? column[i] : void 0);
+                    }
+                }
+                return rows;
+            }
+            /**
+             * Returns the unique version tag of the current state of the table.
+             *
+             * @function Highcharts.DataTable#getVersionTag
+             *
+             * @return {string}
+             * Unique version tag.
+             */
+            getVersionTag() {
+                return this.versionTag;
+            }
+            /**
+             * Checks for given column names.
+             *
+             * @function Highcharts.DataTable#hasColumns
+             *
+             * @param {Array<string>} columnNames
+             * Column names to check.
+             *
+             * @return {boolean}
+             * Returns `true` if all columns have been found, otherwise `false`.
+             */
+            hasColumns(columnNames) {
+                const table = this, columns = table.columns;
+                for (let i = 0, iEnd = columnNames.length, columnName; i < iEnd; ++i) {
+                    columnName = columnNames[i];
+                    if (!columns[columnName]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            /**
+             * Searches for a specific cell value.
+             *
+             * @function Highcharts.DataTable#hasRowWith
+             *
+             * @param {string} columnName
+             * Column to search in.
+             *
+             * @param {Highcharts.DataTableCellType} cellValue
+             * Cell value to search for. `NaN` and `undefined` are not supported.
+             *
+             * @return {boolean}
+             * True, if a row has been found, otherwise false.
+             */
+            hasRowWith(columnName, cellValue) {
+                const table = this;
+                const column = table.columns[columnName];
+                // Normal array
+                if (Array.isArray(column)) {
+                    return (column.indexOf(cellValue) !== -1);
+                }
+                // Typed array
+                if (defined(cellValue) && Number.isFinite(cellValue)) {
+                    return (column.indexOf(+cellValue) !== -1);
+                }
+                return false;
+            }
+            /**
+             * Registers a callback for a specific event.
+             *
+             * @function Highcharts.DataTable#on
+             *
+             * @param {string} type
+             * Event type as a string.
+             *
+             * @param {Highcharts.EventCallbackFunction<Highcharts.DataTable>} callback
+             * Function to register for an event callback.
+             *
+             * @return {Function}
+             * Function to unregister callback from the event.
+             */
+            on(type, callback) {
+                return addEvent(this, type, callback);
+            }
+            /**
+             * Renames a column of cell values.
+             *
+             * @function Highcharts.DataTable#renameColumn
+             *
+             * @param {string} columnName
+             * Name of the column to be renamed.
+             *
+             * @param {string} newColumnName
+             * New name of the column. An existing column with the same name will be
+             * replaced.
+             *
+             * @return {boolean}
+             * Returns `true` if successful, `false` if the column was not found.
+             */
+            renameColumn(columnName, newColumnName) {
+                const table = this, columns = table.columns;
+                if (columns[columnName]) {
+                    if (columnName !== newColumnName) {
+                        columns[newColumnName] = columns[columnName];
+                        delete columns[columnName];
+                    }
+                    return true;
+                }
+                return false;
+            }
+            /**
+             * Sets a cell value based on the row index and column.  Will
+             * insert a new column, if not found.
+             *
+             * @function Highcharts.DataTable#setCell
+             *
+             * @param {string} columnName
+             * Column name to set.
+             *
+             * @param {number|undefined} rowIndex
+             * Row index to set.
+             *
+             * @param {Highcharts.DataTableCellType} cellValue
+             * Cell value to set.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #setCell
+             * @emits #afterSetCell
+             */
+            setCell(columnName, rowIndex, cellValue, eventDetail) {
+                const table = this, columns = table.columns, modifier = table.modifier;
+                let column = columns[columnName];
+                if (column && column[rowIndex] === cellValue) {
+                    return;
+                }
+                table.emit({
+                    type: 'setCell',
+                    cellValue,
+                    columnName: columnName,
+                    detail: eventDetail,
+                    rowIndex
+                });
+                if (!column) {
+                    column = columns[columnName] = new Array(table.rowCount);
+                }
+                if (rowIndex >= table.rowCount) {
+                    table.rowCount = (rowIndex + 1);
+                }
+                column[rowIndex] = cellValue;
+                if (modifier) {
+                    modifier.modifyCell(table, columnName, rowIndex, cellValue);
+                }
+                table.emit({
+                    type: 'afterSetCell',
+                    cellValue,
+                    columnName: columnName,
+                    detail: eventDetail,
+                    rowIndex
+                });
+            }
+            /**
+             * Sets cell values for multiple columns. Will insert new columns, if not
+             * found.
+             *
+             * @function Highcharts.DataTable#setColumns
+             *
+             * @param {Highcharts.DataTableColumnCollection} columns
+             * Columns as a collection, where the keys are the column names.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first row to change. Keep undefined to reset.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @param {boolean} [typeAsOriginal=false]
+             * Determines whether the original column retains its type when data
+             * replaced. If `true`, the original column keeps its type. If not
+             * (default), the original column will adopt the type of the replacement
+             * column.
+             *
+             * @emits #setColumns
+             * @emits #afterSetColumns
+             */
+            setColumns(columns, rowIndex, eventDetail, typeAsOriginal) {
+                const table = this, tableColumns = table.columns, tableModifier = table.modifier, columnNames = Object.keys(columns);
+                let rowCount = table.rowCount;
+                table.emit({
+                    type: 'setColumns',
+                    columns,
+                    columnNames,
+                    detail: eventDetail,
+                    rowIndex
+                });
+                if (!defined(rowIndex) && !typeAsOriginal) {
+                    super.setColumns(columns, rowIndex, extend(eventDetail, { silent: true }));
+                }
+                else {
+                    for (let i = 0, iEnd = columnNames.length, column, tableColumn, columnName, ArrayConstructor; i < iEnd; ++i) {
+                        columnName = columnNames[i];
+                        column = columns[columnName];
+                        tableColumn = tableColumns[columnName];
+                        ArrayConstructor = Object.getPrototypeOf((tableColumn && typeAsOriginal) ? tableColumn : column).constructor;
+                        if (!tableColumn) {
+                            tableColumn = new ArrayConstructor(rowCount);
+                        }
+                        else if (ArrayConstructor === Array) {
+                            if (!Array.isArray(tableColumn)) {
+                                tableColumn = Array.from(tableColumn);
+                            }
+                        }
+                        else if (tableColumn.length < rowCount) {
+                            tableColumn =
+                                new ArrayConstructor(rowCount);
+                            tableColumn.set(tableColumns[columnName]);
+                        }
+                        tableColumns[columnName] = tableColumn;
+                        for (let i = (rowIndex || 0), iEnd = column.length; i < iEnd; ++i) {
+                            tableColumn[i] = column[i];
+                        }
+                        rowCount = Math.max(rowCount, column.length);
+                    }
+                    this.applyRowCount(rowCount);
+                }
+                if (tableModifier) {
+                    tableModifier.modifyColumns(table, columns, rowIndex || 0);
+                }
+                table.emit({
+                    type: 'afterSetColumns',
+                    columns,
+                    columnNames,
+                    detail: eventDetail,
+                    rowIndex
+                });
+            }
+            /**
+             * Sets or unsets the modifier for the table.
+             *
+             * @param {Highcharts.DataModifier} [modifier]
+             * Modifier to set, or `undefined` to unset.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {Promise<Highcharts.DataTable>}
+             * Resolves to this table if successful, or rejects on failure.
+             *
+             * @emits #setModifier
+             * @emits #afterSetModifier
+             */
+            setModifier(modifier, eventDetail) {
+                const table = this;
+                let promise;
+                table.emit({
+                    type: 'setModifier',
+                    detail: eventDetail,
+                    modifier,
+                    modified: table.modified
+                });
+                table.modified = table;
+                table.modifier = modifier;
+                if (modifier) {
+                    promise = modifier.modify(table);
+                }
+                else {
+                    promise = Promise.resolve(table);
+                }
+                return promise
+                    .then((table) => {
+                    table.emit({
+                        type: 'afterSetModifier',
+                        detail: eventDetail,
+                        modifier,
+                        modified: table.modified
+                    });
+                    return table;
+                })['catch']((error) => {
+                    table.emit({
+                        type: 'setModifierError',
+                        error,
+                        modifier,
+                        modified: table.modified
+                    });
+                    throw error;
+                });
+            }
+            /**
+             * Sets the original row indexes for the table. It is used to keep the
+             * reference to the original rows when modifying the table.
+             *
+             * @param {Array<number|undefined>} originalRowIndexes
+             * Original row indexes array.
+             *
+             * @param {boolean} omitLocalRowIndexes
+             * Whether to omit the local row indexes calculation. Defaults to `false`.
+             */
+            setOriginalRowIndexes(originalRowIndexes, omitLocalRowIndexes = false) {
+                this.originalRowIndexes = originalRowIndexes;
+                if (omitLocalRowIndexes) {
+                    return;
+                }
+                const modifiedIndexes = this.localRowIndexes = [];
+                for (let i = 0, iEnd = originalRowIndexes.length, originalIndex; i < iEnd; ++i) {
+                    originalIndex = originalRowIndexes[i];
+                    if (defined(originalIndex)) {
+                        modifiedIndexes[originalIndex] = i;
+                    }
+                }
+            }
+            /**
+             * Sets cell values of a row. Will insert a new row, if no index was
+             * provided, or if the index is higher than the total number of table rows.
+             *
+             * Note: This function is just a simplified wrap of
+             * {@link Highcharts.DataTable#setRows}.
+             *
+             * @function Highcharts.DataTable#setRow
+             *
+             * @param {Highcharts.DataTableRow|Highcharts.DataTableRowObject} row
+             * Cell values to set.
+             *
+             * @param {number} [rowIndex]
+             * Index of the row to set. Leave `undefind` to add as a new row.
+             *
+             * @param {boolean} [insert]
+             * Whether to insert the row at the given index, or to overwrite the row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #setRows
+             * @emits #afterSetRows
+             */
+            setRow(row, rowIndex, insert, eventDetail) {
+                this.setRows([row], rowIndex, insert, eventDetail);
+            }
+            /**
+             * Sets cell values for multiple rows. Will insert new rows, if no index was
+             * was provided, or if the index is higher than the total number of table
+             * rows.
+             *
+             * @function Highcharts.DataTable#setRows
+             *
+             * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
+             * Row values to set.
+             *
+             * @param {number} [rowIndex]
+             * Index of the first row to set. Leave `undefined` to add as new rows.
+             *
+             * @param {boolean} [insert]
+             * Whether to insert the row at the given index, or to overwrite the row.
+             *
+             * @param {Highcharts.DataTableEventDetail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @emits #setRows
+             * @emits #afterSetRows
+             */
+            setRows(rows, rowIndex = this.rowCount, insert, eventDetail) {
+                const table = this, columns = table.columns, columnNames = Object.keys(columns), modifier = table.modifier, rowCount = rows.length;
+                table.emit({
+                    type: 'setRows',
+                    detail: eventDetail,
+                    rowCount,
+                    rowIndex,
+                    rows
+                });
+                for (let i = 0, i2 = rowIndex, row; i < rowCount; ++i, ++i2) {
+                    row = rows[i];
+                    if (row === DataTable.NULL) {
+                        for (let j = 0, jEnd = columnNames.length; j < jEnd; ++j) {
+                            const column = columns[columnNames[j]];
+                            if (insert) {
+                                columns[columnNames[j]] = CU.splice(column, i2, 0, true, [null]).array;
+                            }
+                            else {
+                                column[i2] = null;
+                            }
+                        }
+                    }
+                    else if (row instanceof Array) {
+                        for (let j = 0, jEnd = columnNames.length; j < jEnd; ++j) {
+                            columns[columnNames[j]][i2] = row[j];
+                        }
+                    }
+                    else {
+                        super.setRow(row, i2, void 0, { silent: true });
+                    }
+                }
+                const indexRowCount = insert ?
+                    rowCount + rows.length :
+                    rowIndex + rowCount;
+                if (indexRowCount > table.rowCount) {
+                    table.rowCount = indexRowCount;
+                    for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
+                        const columnName = columnNames[i];
+                        columns[columnName] = CU.setLength(columns[columnName], indexRowCount);
+                    }
+                }
+                if (modifier) {
+                    modifier.modifyRows(table, rows, rowIndex);
+                }
+                table.emit({
+                    type: 'afterSetRows',
+                    detail: eventDetail,
+                    rowCount,
+                    rowIndex,
+                    rows
+                });
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Null state for a row record. In some cases, a row in a table may not
+         * contain any data or may be invalid. In these cases, a null state can be
+         * used to indicate that the row record is empty or invalid.
+         *
+         * @name Highcharts.DataTable.NULL
+         * @type {Highcharts.DataTableRowObject}
+         *
+         * @see {@link Highcharts.DataTable.isNull} for a null test.
+         *
+         * @example
+         * table.setRows([DataTable.NULL, DataTable.NULL], 10);
+         */
+        DataTable.NULL = {};
+        /**
+         * Semantic version string of the DataTable class.
+         * @internal
+         */
+        DataTable.version = '1.0.0';
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataTable;
+    });
+    _registerModule(_modules, 'Data/Connectors/DataConnector.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataModifier, DataTable, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Wojciech Chmiel
+         *  - Gøran Slettemark
+         *
+         * */
+        const { addEvent, fireEvent, merge, pick } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Abstract class providing an interface for managing a DataConnector.
+         *
+         * @private
+         */
+        class DataConnector {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructor for the connector class.
+             *
+             * @param {DataConnector.UserOptions} [options]
+             * Options to use in the connector.
+             */
+            constructor(options = {}) {
+                this.table = new DataTable(options.dataTable);
+                this.metadata = options.metadata || { columns: {} };
+            }
+            /**
+             * Poll timer ID, if active.
+             */
+            get polling() {
+                return !!this._polling;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Method for adding metadata for a single column.
+             *
+             * @param {string} name
+             * The name of the column to be described.
+             *
+             * @param {DataConnector.MetaColumn} columnMeta
+             * The metadata to apply to the column.
+             */
+            describeColumn(name, columnMeta) {
+                const connector = this, columns = connector.metadata.columns;
+                columns[name] = merge(columns[name] || {}, columnMeta);
+            }
+            /**
+             * Method for applying columns meta information to the whole DataConnector.
+             *
+             * @param {Highcharts.Dictionary<DataConnector.MetaColumn>} columns
+             * Pairs of column names and MetaColumn objects.
+             */
+            describeColumns(columns) {
+                const connector = this, columnNames = Object.keys(columns);
+                let columnName;
+                while (typeof (columnName = columnNames.pop()) === 'string') {
+                    connector.describeColumn(columnName, columns[columnName]);
+                }
+            }
+            /**
+             * Emits an event on the connector to all registered callbacks of this
+             * event.
+             *
+             * @param {DataConnector.Event} [e]
+             * Event object containing additional event information.
+             */
+            emit(e) {
+                fireEvent(this, e.type, e);
+            }
+            /**
+             * Returns the order of columns.
+             *
+             * @param {boolean} [usePresentationState]
+             * Whether to use the column order of the presentation state of the table.
+             *
+             * @return {Array<string>|undefined}
+             * Order of columns.
+             */
+            getColumnOrder(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            usePresentationState) {
+                const connector = this, columns = connector.metadata.columns, names = Object.keys(columns || {});
+                if (names.length) {
+                    return names.sort((a, b) => (pick(columns[a].index, 0) - pick(columns[b].index, 0)));
+                }
+            }
+            /**
+             * Retrieves the columns of the dataTable,
+             * applies column order from meta.
+             *
+             * @param {boolean} [usePresentationOrder]
+             * Whether to use the column order of the presentation state of the table.
+             *
+             * @return {Highcharts.DataTableColumnCollection}
+             * An object with the properties `columnNames` and `columnValues`
+             */
+            getSortedColumns(usePresentationOrder) {
+                return this.table.getColumns(this.getColumnOrder(usePresentationOrder));
+            }
+            /**
+             * The default load method, which fires the `afterLoad` event
+             *
+             * @return {Promise<DataConnector>}
+             * The loaded connector.
+             *
+             * @emits DataConnector#afterLoad
+             */
+            load() {
+                fireEvent(this, 'afterLoad', { table: this.table });
+                return Promise.resolve(this);
+            }
+            /**
+             * Registers a callback for a specific connector event.
+             *
+             * @param {string} type
+             * Event type as a string.
+             *
+             * @param {DataEventEmitter.Callback} callback
+             * Function to register for the connector callback.
+             *
+             * @return {Function}
+             * Function to unregister callback from the connector event.
+             */
+            on(type, callback) {
+                return addEvent(this, type, callback);
+            }
+            /**
+             * The default save method, which fires the `afterSave` event.
+             *
+             * @return {Promise<DataConnector>}
+             * The saved connector.
+             *
+             * @emits DataConnector#afterSave
+             * @emits DataConnector#saveError
+             */
+            save() {
+                fireEvent(this, 'saveError', { table: this.table });
+                return Promise.reject(new Error('Not implemented'));
+            }
+            /**
+             * Sets the index and order of columns.
+             *
+             * @param {Array<string>} columnNames
+             * Order of columns.
+             */
+            setColumnOrder(columnNames) {
+                const connector = this;
+                for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
+                    connector.describeColumn(columnNames[i], { index: i });
+                }
+            }
+            setModifierOptions(modifierOptions) {
+                const ModifierClass = (modifierOptions &&
+                    DataModifier.types[modifierOptions.type]);
+                return this.table
+                    .setModifier(ModifierClass ?
+                    new ModifierClass(modifierOptions) :
+                    void 0)
+                    .then(() => this);
+            }
+            /**
+             * Starts polling new data after the specific time span in milliseconds.
+             *
+             * @param {number} refreshTime
+             * Refresh time in milliseconds between polls.
+             */
+            startPolling(refreshTime = 1000) {
+                const connector = this;
+                window.clearTimeout(connector._polling);
+                connector._polling = window.setTimeout(() => connector
+                    .load()['catch']((error) => connector.emit({
+                    type: 'loadError',
+                    error,
+                    table: connector.table
+                }))
+                    .then(() => {
+                    if (connector._polling) {
+                        connector.startPolling(refreshTime);
+                    }
+                }), refreshTime);
+            }
+            /**
+             * Stops polling data.
+             */
+            stopPolling() {
+                const connector = this;
+                window.clearTimeout(connector._polling);
+                delete connector._polling;
+            }
+            /**
+             * Retrieves metadata from a single column.
+             *
+             * @param {string} name
+             * The identifier for the column that should be described
+             *
+             * @return {DataConnector.MetaColumn|undefined}
+             * Returns a MetaColumn object if found.
+             */
+            whatIs(name) {
+                return this.metadata.columns[name];
+            }
+        }
+        /* *
+         *
+         *  Class Namespace
+         *
+         * */
+        (function (DataConnector) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             * Registry as a record object with connector names and their class.
+             */
+            DataConnector.types = {};
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Adds a connector class to the registry. The connector has to provide the
+             * `DataConnector.options` property and the `DataConnector.load` method to
+             * modify the table.
+             *
+             * @private
+             *
+             * @param {string} key
+             * Registry key of the connector class.
+             *
+             * @param {DataConnectorType} DataConnectorClass
+             * Connector class (aka class constructor) to register.
+             *
+             * @return {boolean}
+             * Returns true, if the registration was successful. False is returned, if
+             * their is already a connector registered with this key.
+             */
+            function registerType(key, DataConnectorClass) {
+                return (!!key &&
+                    !DataConnector.types[key] &&
+                    !!(DataConnector.types[key] = DataConnectorClass));
+            }
+            DataConnector.registerType = registerType;
+        })(DataConnector || (DataConnector = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataConnector;
+    });
+    _registerModule(_modules, 'Data/Converters/DataConverter.js', [_modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataTable, U) {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *  - Sebastian Bochan
+         *  - Gøran Slettemark
+         *  - Torstein Hønsi
+         *  - Wojciech Chmiel
+         *  - Jomar Hønsi
+         *
+         * */
+        const { addEvent, fireEvent, isNumber, merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Base class providing an interface and basic methods for a DataConverter
+         *
+         * @private
+         */
+        class DataConverter {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the DataConverter.
+             *
+             * @param {DataConverter.UserOptions} [options]
+             * Options for the DataConverter.
+             */
+            constructor(options) {
+                /* *
+                 *
+                 *  Properties
+                 *
+                 * */
+                /**
+                 * A collection of available date formats.
+                 */
+                this.dateFormats = {
+                    'YYYY/mm/dd': {
+                        regex: /^(\d{4})([\-\.\/])(\d{1,2})\2(\d{1,2})$/,
+                        parser: function (match) {
+                            return (match ?
+                                Date.UTC(+match[1], match[3] - 1, +match[4]) :
+                                NaN);
+                        }
+                    },
+                    'dd/mm/YYYY': {
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
+                        parser: function (match) {
+                            return (match ?
+                                Date.UTC(+match[4], match[3] - 1, +match[1]) :
+                                NaN);
+                        },
+                        alternative: 'mm/dd/YYYY' // Different format with the same regex
+                    },
+                    'mm/dd/YYYY': {
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{4})$/,
+                        parser: function (match) {
+                            return (match ?
+                                Date.UTC(+match[4], match[1] - 1, +match[3]) :
+                                NaN);
+                        }
+                    },
+                    'dd/mm/YY': {
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
+                        parser: function (match) {
+                            const d = new Date();
+                            if (!match) {
+                                return NaN;
+                            }
+                            let year = +match[4];
+                            if (year > (d.getFullYear() - 2000)) {
+                                year += 1900;
+                            }
+                            else {
+                                year += 2000;
+                            }
+                            return Date.UTC(year, match[3] - 1, +match[1]);
+                        },
+                        alternative: 'mm/dd/YY' // Different format with the same regex
+                    },
+                    'mm/dd/YY': {
+                        regex: /^(\d{1,2})([\-\.\/])(\d{1,2})\2(\d{2})$/,
+                        parser: function (match) {
+                            return (match ?
+                                Date.UTC(+match[4] + 2000, match[1] - 1, +match[3]) :
+                                NaN);
+                        }
+                    }
+                };
+                const mergedOptions = merge(DataConverter.defaultOptions, options);
+                let regExpPoint = mergedOptions.decimalPoint;
+                if (regExpPoint === '.' || regExpPoint === ',') {
+                    regExpPoint = regExpPoint === '.' ? '\\.' : ',';
+                    this.decimalRegExp =
+                        new RegExp('^(-?[0-9]+)' + regExpPoint + '([0-9]+)$');
+                }
+                this.options = mergedOptions;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Converts a value to a boolean.
+             *
+             * @param {DataConverter.Type} value
+             * Value to convert.
+             *
+             * @return {boolean}
+             * Converted value as a boolean.
+             */
+            asBoolean(value) {
+                if (typeof value === 'boolean') {
+                    return value;
+                }
+                if (typeof value === 'string') {
+                    return value !== '' && value !== '0' && value !== 'false';
+                }
+                return !!this.asNumber(value);
+            }
+            /**
+             * Converts a value to a Date.
+             *
+             * @param {DataConverter.Type} value
+             * Value to convert.
+             *
+             * @return {globalThis.Date}
+             * Converted value as a Date.
+             */
+            asDate(value) {
+                let timestamp;
+                if (typeof value === 'string') {
+                    timestamp = this.parseDate(value);
+                }
+                else if (typeof value === 'number') {
+                    timestamp = value;
+                }
+                else if (value instanceof Date) {
+                    return value;
+                }
+                else {
+                    timestamp = this.parseDate(this.asString(value));
+                }
+                return new Date(timestamp);
+            }
+            /**
+             * Casts a string value to it's guessed type
+             *
+             * @param {*} value
+             * The value to examine.
+             *
+             * @return {number|string|Date}
+             * The converted value.
+             */
+            asGuessedType(value) {
+                const converter = this, typeMap = {
+                    'number': converter.asNumber,
+                    'Date': converter.asDate,
+                    'string': converter.asString
+                };
+                return typeMap[converter.guessType(value)].call(converter, value);
+            }
+            /**
+             * Converts a value to a number.
+             *
+             * @param {DataConverter.Type} value
+             * Value to convert.
+             *
+             * @return {number}
+             * Converted value as a number.
+             */
+            asNumber(value) {
+                if (typeof value === 'number') {
+                    return value;
+                }
+                if (typeof value === 'boolean') {
+                    return value ? 1 : 0;
+                }
+                if (typeof value === 'string') {
+                    const decimalRegex = this.decimalRegExp;
+                    if (value.indexOf(' ') > -1) {
+                        value = value.replace(/\s+/g, '');
+                    }
+                    if (decimalRegex) {
+                        if (!decimalRegex.test(value)) {
+                            return NaN;
+                        }
+                        value = value.replace(decimalRegex, '$1.$2');
+                    }
+                    return parseFloat(value);
+                }
+                if (value instanceof Date) {
+                    return value.getDate();
+                }
+                if (value) {
+                    return value.getRowCount();
+                }
+                return NaN;
+            }
+            /**
+             * Converts a value to a string.
+             *
+             * @param {DataConverter.Type} value
+             * Value to convert.
+             *
+             * @return {string}
+             * Converted value as a string.
+             */
+            asString(value) {
+                return '' + value;
+            }
+            /**
+             * Tries to guess the date format
+             *  - Check if either month candidate exceeds 12
+             *  - Check if year is missing (use current year)
+             *  - Check if a shortened year format is used (e.g. 1/1/99)
+             *  - If no guess can be made, the user must be prompted
+             * data is the data to deduce a format based on
+             * @private
+             *
+             * @param {Array<string>} data
+             * Data to check the format.
+             *
+             * @param {number} limit
+             * Max data to check the format.
+             *
+             * @param {boolean} save
+             * Whether to save the date format in the converter options.
+             */
+            deduceDateFormat(data, limit, save) {
+                const parser = this, stable = [], max = [];
+                let format = 'YYYY/mm/dd', thing, guessedFormat = [], i = 0, madeDeduction = false, 
+                /// candidates = {},
+                elem, j;
+                if (!limit || limit > data.length) {
+                    limit = data.length;
+                }
+                for (; i < limit; i++) {
+                    if (typeof data[i] !== 'undefined' &&
+                        data[i] && data[i].length) {
+                        thing = data[i]
+                            .trim()
+                            .replace(/[\-\.\/]/g, ' ')
+                            .split(' ');
+                        guessedFormat = [
+                            '',
+                            '',
+                            ''
+                        ];
+                        for (j = 0; j < thing.length; j++) {
+                            if (j < guessedFormat.length) {
+                                elem = parseInt(thing[j], 10);
+                                if (elem) {
+                                    max[j] = (!max[j] || max[j] < elem) ? elem : max[j];
+                                    if (typeof stable[j] !== 'undefined') {
+                                        if (stable[j] !== elem) {
+                                            stable[j] = false;
+                                        }
+                                    }
+                                    else {
+                                        stable[j] = elem;
+                                    }
+                                    if (elem > 31) {
+                                        if (elem < 100) {
+                                            guessedFormat[j] = 'YY';
+                                        }
+                                        else {
+                                            guessedFormat[j] = 'YYYY';
+                                        }
+                                        /// madeDeduction = true;
+                                    }
+                                    else if (elem > 12 &&
+                                        elem <= 31) {
+                                        guessedFormat[j] = 'dd';
+                                        madeDeduction = true;
+                                    }
+                                    else if (!guessedFormat[j].length) {
+                                        guessedFormat[j] = 'mm';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (madeDeduction) {
+                    // This handles a few edge cases with hard to guess dates
+                    for (j = 0; j < stable.length; j++) {
+                        if (stable[j] !== false) {
+                            if (max[j] > 12 &&
+                                guessedFormat[j] !== 'YY' &&
+                                guessedFormat[j] !== 'YYYY') {
+                                guessedFormat[j] = 'YY';
+                            }
+                        }
+                        else if (max[j] > 12 && guessedFormat[j] === 'mm') {
+                            guessedFormat[j] = 'dd';
+                        }
+                    }
+                    // If the middle one is dd, and the last one is dd,
+                    // the last should likely be year.
+                    if (guessedFormat.length === 3 &&
+                        guessedFormat[1] === 'dd' &&
+                        guessedFormat[2] === 'dd') {
+                        guessedFormat[2] = 'YY';
+                    }
+                    format = guessedFormat.join('/');
+                    // If the caculated format is not valid, we need to present an
+                    // error.
+                }
+                // Save the deduced format in the converter options.
+                if (save) {
+                    parser.options.dateFormat = format;
+                }
+                return format;
+            }
+            /**
+             * Emits an event on the DataConverter instance.
+             *
+             * @param {DataConverter.Event} [e]
+             * Event object containing additional event data
+             */
+            emit(e) {
+                fireEvent(this, e.type, e);
+            }
+            /**
+             * Initiates the data exporting. Should emit `exportError` on failure.
+             *
+             * @param {DataConnector} connector
+             * Connector to export from.
+             *
+             * @param {DataConverter.Options} [options]
+             * Options for the export.
+             */
+            export(
+            /* eslint-disable @typescript-eslint/no-unused-vars */
+            connector, options
+            /* eslint-enable @typescript-eslint/no-unused-vars */
+            ) {
+                this.emit({
+                    type: 'exportError',
+                    columns: [],
+                    headers: []
+                });
+                throw new Error('Not implemented');
+            }
+            /**
+             * Getter for the data table.
+             *
+             * @return {DataTable}
+             * Table of parsed data.
+             */
+            getTable() {
+                throw new Error('Not implemented');
+            }
+            /**
+             * Guesses the potential type of a string value for parsing CSV etc.
+             *
+             * @param {*} value
+             * The value to examine.
+             *
+             * @return {'number'|'string'|'Date'}
+             * Type string, either `string`, `Date`, or `number`.
+             */
+            guessType(value) {
+                const converter = this;
+                let result = 'string';
+                if (typeof value === 'string') {
+                    const trimedValue = converter.trim(`${value}`), decimalRegExp = converter.decimalRegExp;
+                    let innerTrimedValue = converter.trim(trimedValue, true);
+                    if (decimalRegExp) {
+                        innerTrimedValue = (decimalRegExp.test(innerTrimedValue) ?
+                            innerTrimedValue.replace(decimalRegExp, '$1.$2') :
+                            '');
+                    }
+                    const floatValue = parseFloat(innerTrimedValue);
+                    if (+innerTrimedValue === floatValue) {
+                        // String is numeric
+                        value = floatValue;
+                    }
+                    else {
+                        // Determine if a date string
+                        const dateValue = converter.parseDate(value);
+                        result = isNumber(dateValue) ? 'Date' : 'string';
+                    }
+                }
+                if (typeof value === 'number') {
+                    // Greater than milliseconds in a year assumed timestamp
+                    result = value > 365 * 24 * 3600 * 1000 ? 'Date' : 'number';
+                }
+                return result;
+            }
+            /**
+             * Registers a callback for a specific event.
+             *
+             * @param {string} type
+             * Event type as a string.
+             *
+             * @param {DataEventEmitter.Callback} callback
+             * Function to register for an modifier callback.
+             *
+             * @return {Function}
+             * Function to unregister callback from the modifier event.
+             */
+            on(type, callback) {
+                return addEvent(this, type, callback);
+            }
+            /**
+             * Initiates the data parsing. Should emit `parseError` on failure.
+             *
+             * @param {DataConverter.UserOptions} options
+             * Options of the DataConverter.
+             */
+            parse(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            options) {
+                this.emit({
+                    type: 'parseError',
+                    columns: [],
+                    headers: []
+                });
+                throw new Error('Not implemented');
+            }
+            /**
+             * Parse a date and return it as a number.
+             *
+             * @param {string} value
+             * Value to parse.
+             *
+             * @param {string} dateFormatProp
+             * Which of the predefined date formats
+             * to use to parse date values.
+             */
+            parseDate(value, dateFormatProp) {
+                const converter = this, options = converter.options;
+                let dateFormat = dateFormatProp || options.dateFormat, result = NaN, key, format, match;
+                if (options.parseDate) {
+                    result = options.parseDate(value);
+                }
+                else {
+                    // Auto-detect the date format the first time
+                    if (!dateFormat) {
+                        for (key in converter.dateFormats) { // eslint-disable-line guard-for-in
+                            format = converter.dateFormats[key];
+                            match = value.match(format.regex);
+                            if (match) {
+                                // `converter.options.dateFormat` = dateFormat = key;
+                                dateFormat = key;
+                                // `converter.options.alternativeFormat` =
+                                // format.alternative || '';
+                                result = format.parser(match);
+                                break;
+                            }
+                        }
+                        // Next time, use the one previously found
+                    }
+                    else {
+                        format = converter.dateFormats[dateFormat];
+                        if (!format) {
+                            // The selected format is invalid
+                            format = converter.dateFormats['YYYY/mm/dd'];
+                        }
+                        match = value.match(format.regex);
+                        if (match) {
+                            result = format.parser(match);
+                        }
+                    }
+                    // Fall back to Date.parse
+                    if (!match) {
+                        match = Date.parse(value);
+                        // External tools like Date.js and MooTools extend Date object
+                        // and returns a date.
+                        if (typeof match === 'object' &&
+                            match !== null &&
+                            match.getTime) {
+                            result = (match.getTime() -
+                                match.getTimezoneOffset() *
+                                    60000);
+                            // Timestamp
+                        }
+                        else if (isNumber(match)) {
+                            result = match - (new Date(match)).getTimezoneOffset() * 60000;
+                            if ( // Reset dates without year in Chrome
+                            value.indexOf('2001') === -1 &&
+                                (new Date(result)).getFullYear() === 2001) {
+                                result = NaN;
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
+            /**
+             * Trim a string from whitespaces.
+             *
+             * @param {string} str
+             * String to trim.
+             *
+             * @param {boolean} [inside=false]
+             * Remove all spaces between numbers.
+             *
+             * @return {string}
+             * Trimed string
+             */
+            trim(str, inside) {
+                if (typeof str === 'string') {
+                    str = str.replace(/^\s+|\s+$/g, '');
+                    // Clear white space insdie the string, like thousands separators
+                    if (inside && /^[\d\s]+$/.test(str)) {
+                        str = str.replace(/\s/g, '');
+                    }
+                }
+                return str;
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Default options
+         */
+        DataConverter.defaultOptions = {
+            dateFormat: '',
+            alternativeFormat: '',
+            startColumn: 0,
+            endColumn: Number.MAX_VALUE,
+            startRow: 0,
+            endRow: Number.MAX_VALUE,
+            firstRowAsNames: true,
+            switchRowsAndColumns: false
+        };
+        /* *
+         *
+         *  Class Namespace
+         *
+         * */
+        /**
+         * Additionally provided types for events and conversion.
+         */
+        (function (DataConverter) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             * Registry as a record object with connector names and their class.
+             */
+            DataConverter.types = {};
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Adds a converter class to the registry.
+             *
+             * @private
+             *
+             * @param {string} key
+             * Registry key of the converter class.
+             *
+             * @param {DataConverterTypes} DataConverterClass
+             * Connector class (aka class constructor) to register.
+             *
+             * @return {boolean}
+             * Returns true, if the registration was successful. False is returned, if
+             * their is already a converter registered with this key.
+             */
+            function registerType(key, DataConverterClass) {
+                return (!!key &&
+                    !DataConverter.types[key] &&
+                    !!(DataConverter.types[key] = DataConverterClass));
+            }
+            DataConverter.registerType = registerType;
+            /**
+             * Converts an array of columns to a table instance. Second dimension of the
+             * array are the row cells.
+             *
+             * @param {Array<DataTable.Column>} [columns]
+             * Array to convert.
+             *
+             * @param {Array<string>} [headers]
+             * Column names to use.
+             *
+             * @return {DataTable}
+             * Table instance from the arrays.
+             */
+            function getTableFromColumns(columns = [], headers = []) {
+                const table = new DataTable();
+                for (let i = 0, iEnd = Math.max(headers.length, columns.length); i < iEnd; ++i) {
+                    table.setColumn(headers[i] || `${i}`, columns[i]);
+                }
+                return table;
+            }
+            DataConverter.getTableFromColumns = getTableFromColumns;
+        })(DataConverter || (DataConverter = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataConverter;
+    });
+    _registerModule(_modules, 'Data/DataCursor.js', [], function () {
+        /* *
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sophie Bremer
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * This class manages state cursors pointing on {@link Data.DataTable}. It
+         * creates a relation between states of the user interface and the table cells,
+         * columns, or rows.
+         *
+         * @class
+         * @name Data.DataCursor
+         */
+        class DataCursor {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(stateMap = {}) {
+                this.emittingRegister = [];
+                this.listenerMap = {};
+                this.stateMap = stateMap;
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * This function registers a listener for a specific state and table.
+             *
+             * @example
+             * ```TypeScript
+             * dataCursor.addListener(myTable.id, 'hover', (e: DataCursor.Event) => {
+             *     if (e.cursor.type === 'position') {
+             *         console.log(`Hover over row #${e.cursor.row}.`);
+             *     }
+             * });
+             * ```
+             *
+             * @function #addListener
+             *
+             * @param {Data.DataCursor.TableId} tableId
+             * The ID of the table to listen to.
+             *
+             * @param {Data.DataCursor.State} state
+             * The state on the table to listen to.
+             *
+             * @param {Data.DataCursor.Listener} listener
+             * The listener to register.
+             *
+             * @return {Data.DataCursor}
+             * Returns the DataCursor instance for a call chain.
+             */
+            addListener(tableId, state, listener) {
+                const listenerMap = this.listenerMap[tableId] = (this.listenerMap[tableId] ||
+                    {});
+                const listeners = listenerMap[state] = (listenerMap[state] ||
+                    []);
+                listeners.push(listener);
+                return this;
+            }
+            /**
+             * @private
+             */
+            buildEmittingTag(e) {
+                return (e.cursor.type === 'position' ?
+                    [
+                        e.table.id,
+                        e.cursor.column,
+                        e.cursor.row,
+                        e.cursor.state,
+                        e.cursor.type
+                    ] :
+                    [
+                        e.table.id,
+                        e.cursor.columns,
+                        e.cursor.firstRow,
+                        e.cursor.lastRow,
+                        e.cursor.state,
+                        e.cursor.type
+                    ]).join('\0');
+            }
+            /**
+             * This function emits a state cursor related to a table. It will provide
+             * lasting state cursors of the table to listeners.
+             *
+             * @example
+             * ```ts
+             * dataCursor.emit(myTable, {
+             *     type: 'position',
+             *     column: 'city',
+             *     row: 4,
+             *     state: 'hover',
+             * });
+             * ```
+             *
+             * @param {Data.DataTable} table
+             * The related table of the cursor.
+             *
+             * @param {Data.DataCursor.Type} cursor
+             * The state cursor to emit.
+             *
+             * @param {Event} [event]
+             * Optional event information from a related source.
+             *
+             * @param {boolean} [lasting]
+             * Whether this state cursor should be kept until it is cleared with
+             * {@link DataCursor#remitCursor}.
+             *
+             * @return {Data.DataCursor}
+             * Returns the DataCursor instance for a call chain.
+             */
+            emitCursor(table, cursor, event, lasting) {
+                const tableId = table.id, state = cursor.state, listeners = (this.listenerMap[tableId] &&
+                    this.listenerMap[tableId][state]);
+                if (listeners) {
+                    const stateMap = this.stateMap[tableId] = (this.stateMap[tableId] ?? {});
+                    const cursors = stateMap[cursor.state] || [];
+                    if (lasting) {
+                        if (!cursors.length) {
+                            stateMap[cursor.state] = cursors;
+                        }
+                        if (DataCursor.getIndex(cursor, cursors) === -1) {
+                            cursors.push(cursor);
+                        }
+                    }
+                    const e = {
+                        cursor,
+                        cursors,
+                        table
+                    };
+                    if (event) {
+                        e.event = event;
+                    }
+                    const emittingRegister = this.emittingRegister, emittingTag = this.buildEmittingTag(e);
+                    if (emittingRegister.indexOf(emittingTag) >= 0) {
+                        // Break call stack loops
+                        return this;
+                    }
+                    try {
+                        this.emittingRegister.push(emittingTag);
+                        for (let i = 0, iEnd = listeners.length; i < iEnd; ++i) {
+                            listeners[i].call(this, e);
+                        }
+                    }
+                    finally {
+                        const index = this.emittingRegister.indexOf(emittingTag);
+                        if (index >= 0) {
+                            this.emittingRegister.splice(index, 1);
+                        }
+                    }
+                }
+                return this;
+            }
+            /**
+             * Removes a lasting state cursor.
+             *
+             * @function #remitCursor
+             *
+             * @param {string} tableId
+             * ID of the related cursor table.
+             *
+             * @param {Data.DataCursor.Type} cursor
+             * Copy or reference of the cursor.
+             *
+             * @return {Data.DataCursor}
+             * Returns the DataCursor instance for a call chain.
+             */
+            remitCursor(tableId, cursor) {
+                const cursors = (this.stateMap[tableId] &&
+                    this.stateMap[tableId][cursor.state]);
+                if (cursors) {
+                    const index = DataCursor.getIndex(cursor, cursors);
+                    if (index >= 0) {
+                        cursors.splice(index, 1);
+                    }
+                }
+                return this;
+            }
+            /**
+             * This function removes a listener.
+             *
+             * @function #addListener
+             *
+             * @param {Data.DataCursor.TableId} tableId
+             * The ID of the table the listener is connected to.
+             *
+             * @param {Data.DataCursor.State} state
+             * The state on the table the listener is listening to.
+             *
+             * @param {Data.DataCursor.Listener} listener
+             * The listener to deregister.
+             *
+             * @return {Data.DataCursor}
+             * Returns the DataCursor instance for a call chain.
+             */
+            removeListener(tableId, state, listener) {
+                const listeners = (this.listenerMap[tableId] &&
+                    this.listenerMap[tableId][state]);
+                if (listeners) {
+                    const index = listeners.indexOf(listener);
+                    if (index >= 0) {
+                        listeners.splice(index, 1);
+                    }
+                }
+                return this;
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Semantic version string of the DataCursor class.
+         * @internal
+         */
+        DataCursor.version = '1.0.0';
+        /* *
+         *
+         *  Class Namespace
+         *
+         * */
+        /**
+         * @class Data.DataCursor
+         */
+        (function (DataCursor) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Finds the index of an cursor in an array.
+             * @private
+             */
+            function getIndex(needle, cursors) {
+                if (needle.type === 'position') {
+                    for (let cursor, i = 0, iEnd = cursors.length; i < iEnd; ++i) {
+                        cursor = cursors[i];
+                        if (cursor.type === 'position' &&
+                            cursor.state === needle.state &&
+                            cursor.column === needle.column &&
+                            cursor.row === needle.row) {
+                            return i;
+                        }
+                    }
+                }
+                else {
+                    const columnNeedle = JSON.stringify(needle.columns);
+                    for (let cursor, i = 0, iEnd = cursors.length; i < iEnd; ++i) {
+                        cursor = cursors[i];
+                        if (cursor.type === 'range' &&
+                            cursor.state === needle.state &&
+                            cursor.firstRow === needle.firstRow &&
+                            cursor.lastRow === needle.lastRow &&
+                            JSON.stringify(cursor.columns) === columnNeedle) {
+                            return i;
+                        }
+                    }
+                }
+                return -1;
+            }
+            DataCursor.getIndex = getIndex;
+            /**
+             * Checks whether two cursor share the same properties.
+             * @private
+             */
+            function isEqual(cursorA, cursorB) {
+                if (cursorA.type === 'position' && cursorB.type === 'position') {
+                    return (cursorA.column === cursorB.column &&
+                        cursorA.row === cursorB.row &&
+                        cursorA.state === cursorB.state);
+                }
+                if (cursorA.type === 'range' && cursorB.type === 'range') {
+                    return (cursorA.firstRow === cursorB.firstRow &&
+                        cursorA.lastRow === cursorB.lastRow &&
+                        (JSON.stringify(cursorA.columns) ===
+                            JSON.stringify(cursorB.columns)));
+                }
+                return false;
+            }
+            DataCursor.isEqual = isEqual;
+            /**
+             * Checks whether a cursor is in a range.
+             * @private
+             */
+            function isInRange(needle, range) {
+                if (range.type === 'position') {
+                    range = toRange(range);
+                }
+                if (needle.type === 'position') {
+                    needle = toRange(needle, range);
+                }
+                const needleColumns = needle.columns;
+                const rangeColumns = range.columns;
+                return (needle.firstRow >= range.firstRow &&
+                    needle.lastRow <= range.lastRow &&
+                    (!needleColumns ||
+                        !rangeColumns ||
+                        needleColumns.every((column) => rangeColumns.indexOf(column) >= 0)));
+            }
+            DataCursor.isInRange = isInRange;
+            /**
+             * @private
+             */
+            function toPositions(cursor) {
+                if (cursor.type === 'position') {
+                    return [cursor];
+                }
+                const columns = (cursor.columns || []);
+                const positions = [];
+                const state = cursor.state;
+                for (let row = cursor.firstRow, rowEnd = cursor.lastRow; row < rowEnd; ++row) {
+                    if (!columns.length) {
+                        positions.push({
+                            type: 'position',
+                            row,
+                            state
+                        });
+                        continue;
+                    }
+                    for (let column = 0, columnEnd = columns.length; column < columnEnd; ++column) {
+                        positions.push({
+                            type: 'position',
+                            column: columns[column],
+                            row,
+                            state
+                        });
+                    }
+                }
+                return positions;
+            }
+            DataCursor.toPositions = toPositions;
+            /**
+             * @private
+             */
+            function toRange(cursor, defaultRange) {
+                if (cursor.type === 'range') {
+                    return cursor;
+                }
+                const range = {
+                    type: 'range',
+                    firstRow: (cursor.row ??
+                        (defaultRange && defaultRange.firstRow) ??
+                        0),
+                    lastRow: (cursor.row ??
+                        (defaultRange && defaultRange.lastRow) ??
+                        Number.MAX_VALUE),
+                    state: cursor.state
+                };
+                if (typeof cursor.column !== 'undefined') {
+                    range.columns = [cursor.column];
+                }
+                return range;
+            }
+            DataCursor.toRange = toRange;
+        })(DataCursor || (DataCursor = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DataCursor;
+    });
+    _registerModule(_modules, 'Accessibility/HighContrastMode.js', [_modules['Core/Globals.js']], function (H) {
+        /* *
+         *
+         *  (c) 2009-2024 Øystein Moseng
+         *
+         *  Handling for Windows High Contrast Mode.
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        const { doc, isMS, win } = H;
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Detect WHCM in the browser.
+         *
+         * @function Highcharts#isHighContrastModeActive
+         * @private
+         * @return {boolean} Returns true if the browser is in High Contrast mode.
+         */
+        function isHighContrastModeActive() {
+            // Use media query on Edge, but not on IE
+            const isEdge = /(Edg)/.test(win.navigator.userAgent);
+            if (win.matchMedia && isEdge) {
+                return win.matchMedia('(-ms-high-contrast: active)').matches;
+            }
+            // Test BG image for IE
+            if (isMS && win.getComputedStyle) {
+                const testDiv = doc.createElement('div');
+                const imageSrc = 'data:image/gif;base64,' +
+                    'R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+                testDiv.style.backgroundImage = `url(${imageSrc})`; // #13071
+                doc.body.appendChild(testDiv);
+                const bi = (testDiv.currentStyle ||
+                    win.getComputedStyle(testDiv)).backgroundImage;
+                doc.body.removeChild(testDiv);
+                return bi === 'none';
+            }
+            // Other browsers use the forced-colors standard
+            return win.matchMedia && win.matchMedia('(forced-colors: active)').matches;
+        }
+        /**
+         * Force high contrast theme for the chart. The default theme is defined in
+         * a separate file.
+         *
+         * @function Highcharts#setHighContrastTheme
+         * @private
+         * @param {Highcharts.AccessibilityChart} chart The chart to set the theme of.
+         * @return {void}
+         */
+        function setHighContrastTheme(chart) {
+            // We might want to add additional functionality here in the future for
+            // storing the old state so that we can reset the theme if HC mode is
+            // disabled. For now, the user will have to reload the page.
+            chart.highContrastModeActive = true;
+            // Apply theme to chart
+            const theme = (chart.options.accessibility.highContrastTheme);
+            chart.update(theme, false);
+            const hasCustomColors = theme.colors?.length > 1;
+            // Force series colors (plotOptions is not enough)
+            chart.series.forEach(function (s) {
+                const plotOpts = theme.plotOptions[s.type] || {};
+                const fillColor = hasCustomColors && s.colorIndex !== void 0 ?
+                    theme.colors[s.colorIndex] :
+                    plotOpts.color || 'window';
+                const seriesOptions = {
+                    color: plotOpts.color || 'windowText',
+                    colors: hasCustomColors ?
+                        theme.colors : [plotOpts.color || 'windowText'],
+                    borderColor: plotOpts.borderColor || 'window',
+                    fillColor
+                };
+                s.update(seriesOptions, false);
+                if (s.points) {
+                    // Force point colors if existing
+                    s.points.forEach(function (p) {
+                        if (p.options && p.options.color) {
+                            p.update({
+                                color: plotOpts.color || 'windowText',
+                                borderColor: plotOpts.borderColor || 'window'
+                            }, false);
+                        }
+                    });
+                }
+            });
+            // The redraw for each series and after is required for 3D pie
+            // (workaround)
+            chart.redraw();
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+        const whcm = {
+            isHighContrastModeActive,
+            setHighContrastTheme
+        };
+
+        return whcm;
+    });
+    _registerModule(_modules, 'Grid/Core/Globals.js', [], function () {
+        /* *
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Globals Grid namespace.
+         */
+        var Globals;
+        (function (Globals) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            Globals.classNamePrefix = 'hcg-';
+            Globals.rawClassNames = {
+                container: 'container',
+                tableElement: 'table',
+                captionElement: 'caption',
+                descriptionElement: 'description',
+                theadElement: 'thead',
+                tbodyElement: 'tbody',
+                rowElement: 'row',
+                rowEven: 'row-even',
+                rowOdd: 'row-odd',
+                hoveredRow: 'hovered-row',
+                columnElement: 'column',
+                hoveredCell: 'hovered-cell',
+                hoveredColumn: 'hovered-column',
+                syncedRow: 'synced-row',
+                syncedCell: 'synced-cell',
+                syncedColumn: 'synced-column',
+                editedCell: 'edited-cell',
+                mockedRow: 'mocked-row',
+                rowsContentNowrap: 'rows-content-nowrap',
+                virtualization: 'virtualization',
+                scrollableContent: 'scrollable-content',
+                headerCell: 'header-cell',
+                headerCellContent: 'header-cell-content',
+                headerRow: 'head-row-content',
+                noData: 'no-data',
+                columnFirst: 'column-first',
+                columnSortable: 'column-sortable',
+                columnSortableIcon: 'column-sortable-icon',
+                columnSortedAsc: 'column-sorted-asc',
+                columnSortedDesc: 'column-sorted-desc',
+                resizerWrapper: 'resizer-content',
+                resizerHandles: 'column-resizer',
+                resizedColumn: 'column-resized',
+                creditsContainer: 'credits-container',
+                creditsText: 'credits',
+                creditsPro: 'credits-pro',
+                visuallyHidden: 'visually-hidden',
+                lastHeaderCellInRow: 'last-header-cell-in-row',
+                loadingWrapper: 'loading-wrapper',
+                loadingSpinner: 'spinner',
+                loadingMessage: 'loading-message'
+            };
+            Globals.win = window;
+            Globals.composed = [];
+            Globals.userAgent = (Globals.win.navigator && Globals.win.navigator.userAgent) || '';
+            Globals.isChrome = Globals.userAgent.indexOf('Chrome') !== -1;
+            Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1;
+            Globals.getClassName = (classNameKey) => Globals.classNamePrefix + Globals.rawClassNames[classNameKey];
+        })(Globals || (Globals = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Globals;
+    });
+    _registerModule(_modules, 'Grid/Core/GridUtils.js', [_modules['Core/Renderer/HTML/AST.js']], function (AST) {
+        /* *
+         *
+         *  Grid utilities
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        var GridUtils;
+        (function (GridUtils) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Creates a HTML element with the provided options.
+             *
+             * @param tagName
+             * The tag name of the element.
+             *
+             * @param params
+             * The parameters of the element.
+             *
+             * @param parent
+             * The parent element.
+             */
+            function makeHTMLElement(tagName, params, parent) {
+                const element = document.createElement(tagName);
+                if (params) {
+                    const paramsKeys = Object.keys(params);
+                    for (let i = 0; i < paramsKeys.length; i++) {
+                        const key = paramsKeys[i];
+                        const value = params[key];
+                        if (value !== void 0) {
+                            if (key === 'style') {
+                                Object.assign(element.style, value);
+                            }
+                            else {
+                                element[key] = value;
+                            }
+                        }
+                    }
+                }
+                if (parent) {
+                    parent.appendChild(element);
+                }
+                return element;
+            }
+            GridUtils.makeHTMLElement = makeHTMLElement;
+            /**
+             * Creates a div element with the provided class name and id.
+             *
+             * @param className
+             * The class name of the div.
+             *
+             * @param id
+             * The id of the element.
+             */
+            function makeDiv(className, id) {
+                return makeHTMLElement('div', { className, id });
+            }
+            GridUtils.makeDiv = makeDiv;
+            /**
+             * Check if there's a possibility that the given string is an HTML
+             * (contains '<').
+             *
+             * @param str
+             * Text to verify.
+             */
+            function isHTML(str) {
+                return str.indexOf('<') !== -1;
+            }
+            GridUtils.isHTML = isHTML;
+            /**
+             * Returns a string containing plain text format by removing HTML tags
+             *
+             * @param text
+             * String to be sanitized
+             *
+             * @returns
+             * Sanitized plain text string
+             */
+            function sanitizeText(text) {
+                try {
+                    return new DOMParser().parseFromString(text, 'text/html')
+                        .body.textContent || '';
+                }
+                catch (error) {
+                    return '';
+                }
+            }
+            GridUtils.sanitizeText = sanitizeText;
+            /**
+             * Sets an element's content, checking whether it is HTML or plain text.
+             * Should be used instead of element.innerText when the content can be HTML.
+             *
+             * @param element
+             * Parent element where the content should be.
+             *
+             * @param content
+             * Content to render.
+             */
+            function setHTMLContent(element, content) {
+                if (isHTML(content)) {
+                    const formattedNodes = new AST(content);
+                    formattedNodes.addToDOM(element);
+                }
+                else {
+                    element.innerText = content;
+                }
+            }
+            GridUtils.setHTMLContent = setHTMLContent;
+        })(GridUtils || (GridUtils = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return GridUtils;
+    });
+    _registerModule(_modules, 'Grid/Core/Accessibility/Accessibility.js', [_modules['Accessibility/HighContrastMode.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Core/GridUtils.js']], function (whcm, Globals, GridUtils) {
+        /* *
+         *
+         *  Grid Accessibility class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = GridUtils;
+        /**
+         *  Representing the accessibility functionalities for the Data Grid.
+         */
+        class Accessibility {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Construct the accessibility object.
+             *
+             * @param grid
+             * The Grid Table instance which the accessibility controller belong to.
+             */
+            constructor(grid) {
+                this.grid = grid;
+                this.element = document.createElement('div');
+                this.element.classList.add(Globals.getClassName('visuallyHidden'));
+                this.grid.container?.prepend(this.element);
+                this.announcerElement = document.createElement('p');
+                this.announcerElement.setAttribute('aria-atomic', 'true');
+                this.announcerElement.setAttribute('aria-hidden', 'false');
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Add the 'sortable' hint span element for the sortable column.
+             *
+             * @param element
+             * The element to add the description to.
+             */
+            addSortableColumnHint(element) {
+                const sortableLang = this.grid.options?.lang?.accessibility?.sorting?.sortable;
+                if (!sortableLang) {
+                    return;
+                }
+                makeHTMLElement('span', {
+                    className: Globals.getClassName('visuallyHidden'),
+                    innerText: ', ' + sortableLang
+                }, element);
+            }
+            /**
+             * Add the description to the header cell.
+             *
+             * @param thElement
+             * The header cell element to add the description to.
+             *
+             * @param description
+             * The description to be added.
+             */
+            addHeaderCellDescription(thElement, description) {
+                if (description) {
+                    thElement.setAttribute('aria-description', description);
+                }
+            }
+            /**
+             * Announce the message to the screen reader.
+             *
+             * @param msg
+             * The message to be announced.
+             *
+             * @param assertive
+             * Whether the message should be assertive. Default is false.
+             */
+            announce(msg, assertive = false) {
+                if (this.announcerTimeout) {
+                    clearTimeout(this.announcerTimeout);
+                }
+                this.announcerElement.remove();
+                this.announcerElement.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+                this.element.appendChild(this.announcerElement);
+                this.announcerElement.textContent = msg;
+                this.announcerTimeout = setTimeout(() => {
+                    this.announcerElement.remove();
+                }, 3000);
+            }
+            /**
+             * Announce the message to the screen reader that the user sorted the
+             * column.
+             *
+             * @param order
+             * The order of the sorting.
+             */
+            userSortedColumn(order) {
+                const { options } = this.grid;
+                const announcementsLang = options?.lang
+                    ?.accessibility?.sorting?.announcements;
+                if (!options?.accessibility?.announcements?.sorting) {
+                    return;
+                }
+                let msg;
+                switch (order) {
+                    case 'asc':
+                        msg = announcementsLang?.ascending;
+                        break;
+                    case 'desc':
+                        msg = announcementsLang?.descending;
+                        break;
+                    default:
+                        msg = announcementsLang?.none;
+                }
+                if (!msg) {
+                    return;
+                }
+                this.announce(msg, true);
+            }
+            /**
+             * Set the aria sort state of the column header cell element.
+             *
+             * @param thElement
+             * The header cell element to set the `aria-sort` state to.
+             *
+             * @param state
+             * The sort state to be set for the column header cell.
+             */
+            setColumnSortState(thElement, state) {
+                thElement?.setAttribute('aria-sort', state);
+            }
+            /**
+             * Adds high contrast CSS class, if the browser is in High Contrast mode.
+             */
+            addHighContrast() {
+                const highContrastMode = this.grid.options?.accessibility?.highContrastMode;
+                if (highContrastMode !== false && (whcm.isHighContrastModeActive() ||
+                    highContrastMode === true)) {
+                    this.grid.contentWrapper?.classList.add('hcg-theme-highcontrast');
+                }
+            }
+            /**
+             * Set the row index attribute for the row element.
+             *
+             * @param el
+             * The row element to set the index to.
+             *
+             * @param idx
+             * The index of the row in the data table.
+             */
+            setRowIndex(el, idx) {
+                el.setAttribute('aria-rowindex', idx);
+            }
+            /**
+             * Set a11y options for the Grid.
+             */
+            setA11yOptions() {
+                const grid = this.grid;
+                const tableEl = grid.tableElement;
+                if (!tableEl) {
+                    return;
+                }
+                tableEl.setAttribute('aria-rowcount', grid.dataTable?.getRowCount() || 0);
+                if (grid.captionElement) {
+                    tableEl.setAttribute('aria-labelledby', grid.captionElement.id);
+                }
+                if (grid.descriptionElement) {
+                    tableEl.setAttribute('aria-describedby', grid.descriptionElement.id);
+                }
+                this.addHighContrast();
+            }
+            /**
+             * Destroy the accessibility controller.
+             */
+            destroy() {
+                this.element.remove();
+                this.announcerElement.remove();
+                clearTimeout(this.announcerTimeout);
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Accessibility;
+    });
+    _registerModule(_modules, 'Grid/Core/Defaults.js', [_modules['Core/Utilities.js']], function (Utils) {
+        /* *
+         *
+         *  Grid default options
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+        *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { merge } = Utils;
+        /**
+         * Namespace for default options.
+         */
+        var Defaults;
+        (function (Defaults) {
+            /**
+             * Default options for the Grid.
+             * @internal
+             */
+            Defaults.defaultOptions = {
+                accessibility: {
+                    enabled: true,
+                    highContrastMode: 'auto',
+                    announcements: {
+                        sorting: true
+                    }
+                },
+                lang: {
+                    accessibility: {
+                        sorting: {
+                            sortable: 'Sortable.',
+                            announcements: {
+                                ascending: 'Sorted ascending.',
+                                descending: 'Sorted descending.',
+                                none: 'Not sorted.'
+                            }
+                        }
+                    },
+                    loading: 'Loading...',
+                    noData: 'No data to display'
+                },
+                time: {
+                    timezone: 'UTC'
+                },
+                rendering: {
+                    columns: {
+                        distribution: 'full'
+                    },
+                    rows: {
+                        bufferSize: 10,
+                        minVisibleRows: 2,
+                        strictHeights: false,
+                        virtualizationThreshold: 50
+                    },
+                    header: {
+                        enabled: true
+                    },
+                    theme: 'hcg-theme-default'
+                },
+                columnDefaults: {
+                    sorting: {
+                        sortable: true
+                    },
+                    resizing: true
+                }
+            };
+            /**
+             * Merge the default options with custom options. Commonly used for defining
+             * reusable templates.
+             *
+             * @param options
+             * The new custom chart options.
+             */
+            function setOptions(options) {
+                merge(true, Defaults.defaultOptions, options);
+            }
+            Defaults.setOptions = setOptions;
+        })(Defaults || (Defaults = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Defaults;
+    });
+    _registerModule(_modules, 'Grid/Core/Table/Column.js', [_modules['Core/Utilities.js'], _modules['Grid/Core/GridUtils.js'], _modules['Core/Templating.js'], _modules['Grid/Core/Globals.js']], function (Utils, GridUtils, Templating, Globals) {
+        /* *
+         *
+         *  Grid Column class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -11737,7 +12145,7 @@
          *
          * */
         const { merge } = Utils;
-        const { makeHTMLElement } = DGUtils;
+        const { makeHTMLElement } = GridUtils;
         /* *
          *
          *  Class
@@ -11769,7 +12177,7 @@
                  * The cells of the column.
                  */
                 this.cells = [];
-                this.options = merge(viewport.dataGrid.options?.columnDefaults ?? {}, viewport.dataGrid.columnOptionsMap?.[id] ?? {});
+                this.options = merge(viewport.grid.options?.columnDefaults ?? {}, viewport.grid.columnOptionsMap?.[id] ?? {});
                 this.id = id;
                 this.index = index;
                 this.viewport = viewport;
@@ -11798,8 +12206,8 @@
                 if (this.options.className) {
                     cell.htmlElement.classList.add(...this.options.className.split(/\s+/g));
                 }
-                if (this.viewport.dataGrid.hoveredColumnId === this.id) {
-                    cell.htmlElement.classList.add(Globals.classNames.hoveredColumn);
+                if (this.viewport.grid.hoveredColumnId === this.id) {
+                    cell.htmlElement.classList.add(Globals.getClassName('hoveredColumn'));
                 }
                 this.cells.push(cell);
             }
@@ -11832,9 +12240,22 @@
              * Whether the column should be hovered.
              */
             setHoveredState(hovered) {
-                this.header?.htmlElement?.classList[hovered ? 'add' : 'remove'](Globals.classNames.hoveredColumn);
+                this.header?.htmlElement?.classList[hovered ? 'add' : 'remove'](Globals.getClassName('hoveredColumn'));
                 for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
-                    this.cells[i].htmlElement.classList[hovered ? 'add' : 'remove'](Globals.classNames.hoveredColumn);
+                    this.cells[i].htmlElement.classList[hovered ? 'add' : 'remove'](Globals.getClassName('hoveredColumn'));
+                }
+            }
+            /**
+             * Adds or removes the synced CSS class to the column element
+             * and its cells.
+             *
+             * @param synced
+             * Whether the column should have synced state.
+             */
+            setSyncedState(synced) {
+                this.header?.htmlElement?.classList[synced ? 'add' : 'remove'](Globals.getClassName('syncedColumn'));
+                for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
+                    this.cells[i].htmlElement.classList[synced ? 'add' : 'remove'](Globals.getClassName('syncedColumn'));
                 }
             }
             /**
@@ -11849,8 +12270,8 @@
                 const { viewport } = this;
                 // Set the initial width of the column.
                 const mock = makeHTMLElement('div', {
-                    className: Globals.classNames.columnElement
-                }, viewport.dataGrid.container);
+                    className: Globals.getClassName('columnElement')
+                }, viewport.grid.container);
                 mock.setAttribute('data-column-id', this.id);
                 if (this.options.className) {
                     mock.classList.add(...this.options.className.split(/\s+/g));
@@ -11873,7 +12294,7 @@
              */
             getInitialFullDistWidth(mock) {
                 const vp = this.viewport;
-                const columnsCount = vp.dataGrid.enabledColumns?.length ?? 0;
+                const columnsCount = vp.grid.enabledColumns?.length ?? 0;
                 if (this.index < columnsCount - 1) {
                     return vp.getRatioFromWidth(mock.offsetWidth) || 1 / columnsCount;
                 }
@@ -11901,7 +12322,7 @@
              * The formatted string.
              */
             format(template) {
-                return Templating.format(template, this);
+                return Templating.format(template, this, this.viewport.grid);
             }
         }
         /* *
@@ -11922,10 +12343,10 @@
 
         return Column;
     });
-    _registerModule(_modules, 'DataGrid/Table/Row.js', [_modules['DataGrid/Utils.js']], function (DGUtils) {
+    _registerModule(_modules, 'Grid/Core/Table/Row.js', [_modules['Grid/Core/GridUtils.js']], function (GridUtils) {
         /* *
          *
-         *  DataGrid class
+         *  Grid Row abstract class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -11938,7 +12359,7 @@
          *  - Sebastian Bochan
          *
          * */
-        const { makeHTMLElement } = DGUtils;
+        const { makeHTMLElement } = GridUtils;
         /* *
          *
          *  Abstract Class of Row
@@ -11957,7 +12378,7 @@
              * Constructs a row in the data grid.
              *
              * @param viewport
-             * The DataGrid Table instance which the row belongs to.
+             * The Grid Table instance which the row belongs to.
              */
             constructor(viewport) {
                 /* *
@@ -11982,7 +12403,10 @@
                     const cell = this.createCell(columns[i]);
                     cell.render();
                 }
-                this.reflow();
+                this.rendered = true;
+                if (this.viewport.grid.options?.rendering?.rows?.virtualization) {
+                    this.reflow();
+                }
             }
             /**
              * Reflows the row's content dimensions.
@@ -12000,11 +12424,10 @@
              * Destroys the row.
              */
             destroy() {
-                this.destroyed = true;
                 if (!this.htmlElement) {
                     return;
                 }
-                for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
+                for (let i = this.cells.length - 1; i >= 0; --i) {
                     this.cells[i].destroy();
                 }
                 this.htmlElement.remove();
@@ -12019,7 +12442,7 @@
              * The cell with the given column ID or undefined if not found.
              */
             getCell(columnId) {
-                return this.cells.find((cell) => cell.column.id === columnId);
+                return this.cells.find((cell) => cell.column?.id === columnId);
             }
             /**
              * Registers a cell in the row.
@@ -12037,9 +12460,6 @@
              * The cell to unregister.
              */
             unregisterCell(cell) {
-                if (this.destroyed) {
-                    return;
-                }
                 const index = this.cells.indexOf(cell);
                 if (index > -1) {
                     this.cells.splice(index, 1);
@@ -12054,10 +12474,10 @@
 
         return Row;
     });
-    _registerModule(_modules, 'DataGrid/Table/Cell.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Templating.js']], function (AST, Templating) {
+    _registerModule(_modules, 'Grid/Core/Table/Cell.js', [_modules['Core/Templating.js']], function (Templating) {
         /* *
          *
-         *  DataGrid class
+         *  Grid Cell abstract class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -12084,13 +12504,13 @@
             /**
              * Constructs a cell in the data grid.
              *
-             * @param column
-             * The column of the cell.
-             *
              * @param row
              * The row of the cell.
+             *
+             * @param column
+             * The column of the cell.
              */
-            constructor(column, row) {
+            constructor(row, column) {
                 /**
                  * Array of cell events to be removed when the cell is destroyed.
                  */
@@ -12156,6 +12576,9 @@
              */
             onKeyDown(e) {
                 const { row, column } = this;
+                if (!column) {
+                    return;
+                }
                 const vp = row.viewport;
                 const changeFocusKeys = {
                     ArrowDown: [1, 0],
@@ -12190,6 +12613,9 @@
              */
             reflow() {
                 const column = this.column;
+                if (!column) {
+                    return;
+                }
                 const elementStyle = this.htmlElement.style;
                 elementStyle.width = elementStyle.maxWidth = column.getWidth() + 'px';
             }
@@ -12203,7 +12629,7 @@
              * The formatted string.
              */
             format(template) {
-                return Templating.format(template, this);
+                return Templating.format(template, this, this.row.viewport.grid);
             }
             /**
              * Sets the custom class name of the cell based on the template.
@@ -12229,28 +12655,13 @@
                 this.customClassName = newClassName;
             }
             /**
-             * Renders content of cell.
-             *
-             * @param cellContent
-             * Content to render.
-             *
-             * @param parentElement
-             * Parent element where the content should be.
-             *
-             * @internal
-             */
-            renderHTMLCellContent(cellContent, parentElement) {
-                const formattedNodes = new AST(cellContent);
-                formattedNodes.addToDOM(parentElement);
-            }
-            /**
              * Destroys the cell.
              */
             destroy() {
                 this.cellEvents.forEach((pair) => {
                     this.htmlElement.removeEventListener(pair[0], pair[1]);
                 });
-                this.column.unregisterCell(this);
+                this.column?.unregisterCell(this);
                 this.row.unregisterCell(this);
                 this.htmlElement.remove();
             }
@@ -12263,10 +12674,10 @@
 
         return Cell;
     });
-    _registerModule(_modules, 'DataGrid/Table/Actions/ColumnSorting.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/Utils.js']], function (Globals, DGUtils) {
+    _registerModule(_modules, 'Grid/Core/Table/Actions/ColumnSorting.js', [_modules['Grid/Core/GridUtils.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (GridUtils, Globals, U) {
         /* *
          *
-         *  DataGrid class
+         *  Grid ColumnSorting class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -12279,7 +12690,8 @@
          *  - Sebastian Bochan
          *
          * */
-        const { makeHTMLElement } = DGUtils;
+        const { makeHTMLElement } = GridUtils;
+        const { fireEvent } = U;
         /* *
          *
          *  Class
@@ -12309,7 +12721,7 @@
                  */
                 this.toggle = () => {
                     const viewport = this.column.viewport;
-                    const querying = viewport.dataGrid.querying;
+                    const querying = viewport.grid.querying;
                     const sortingController = querying.sorting;
                     const currentOrder = (sortingController.currentSorting?.columnId === this.column.id ?
                         sortingController.currentSorting.order : null) || 'none';
@@ -12325,10 +12737,10 @@
                 this.addHeaderElementAttributes();
                 if (column.options.sorting?.sortable) {
                     makeHTMLElement('span', {
-                        className: Globals.classNames.columnSortableIcon,
+                        className: Globals.getClassName('columnSortableIcon'),
                         innerText: '▲'
                     }, headerCellElement).setAttribute('aria-hidden', true);
-                    headerCellElement.classList.add(Globals.classNames.columnSortable);
+                    headerCellElement.classList.add(Globals.getClassName('columnSortable'));
                 }
             }
             /* *
@@ -12341,13 +12753,15 @@
              */
             addHeaderElementAttributes() {
                 const col = this.column;
-                const a11y = col.viewport.dataGrid.accessibility;
+                const a11y = col.viewport.grid.accessibility;
                 const sortingOptions = col.options.sorting;
-                const { currentSorting } = col.viewport.dataGrid.querying.sorting;
+                const { currentSorting } = col.viewport.grid.querying.sorting;
+                const sortedAscClassName = Globals.getClassName('columnSortedAsc');
+                const sortedDescClassName = Globals.getClassName('columnSortedDesc');
                 const el = this.headerCellElement;
                 if (currentSorting?.columnId !== col.id || !currentSorting?.order) {
-                    el.classList.remove(Globals.classNames.columnSortedAsc);
-                    el.classList.remove(Globals.classNames.columnSortedDesc);
+                    el.classList.remove(sortedAscClassName);
+                    el.classList.remove(sortedDescClassName);
                     if (sortingOptions?.sortable) {
                         a11y?.setColumnSortState(el, 'none');
                     }
@@ -12355,13 +12769,13 @@
                 }
                 switch (currentSorting?.order) {
                     case 'asc':
-                        el.classList.add(Globals.classNames.columnSortedAsc);
-                        el.classList.remove(Globals.classNames.columnSortedDesc);
+                        el.classList.add(sortedAscClassName);
+                        el.classList.remove(sortedDescClassName);
                         a11y?.setColumnSortState(el, 'ascending');
                         break;
                     case 'desc':
-                        el.classList.remove(Globals.classNames.columnSortedAsc);
-                        el.classList.add(Globals.classNames.columnSortedDesc);
+                        el.classList.remove(sortedAscClassName);
+                        el.classList.add(sortedDescClassName);
                         a11y?.setColumnSortState(el, 'descending');
                         break;
                 }
@@ -12376,9 +12790,9 @@
              */
             async setOrder(order) {
                 const viewport = this.column.viewport;
-                const querying = viewport.dataGrid.querying;
+                const querying = viewport.grid.querying;
                 const sortingController = querying.sorting;
-                const a11y = viewport.dataGrid.accessibility;
+                const a11y = viewport.grid.accessibility;
                 sortingController.setSorting(order, this.column.id);
                 await querying.proceed();
                 viewport.loadPresentationData();
@@ -12386,7 +12800,9 @@
                     col.sorting?.addHeaderElementAttributes();
                 }
                 a11y?.userSortedColumn(order);
-                viewport.dataGrid.options?.events?.column?.afterSorting?.call(this.column);
+                fireEvent(this.column, 'afterSorting', {
+                    target: this.column
+                });
             }
         }
         /* *
@@ -12397,10 +12813,10 @@
 
         return ColumnSorting;
     });
-    _registerModule(_modules, 'DataGrid/Table/Header/HeaderCell.js', [_modules['DataGrid/Table/Cell.js'], _modules['DataGrid/Utils.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Table/Actions/ColumnSorting.js'], _modules['Core/Utilities.js']], function (Cell, DGUtils, Globals, ColumnSorting, Utilities) {
+    _registerModule(_modules, 'Grid/Core/Table/Header/HeaderCell.js', [_modules['Grid/Core/Table/Cell.js'], _modules['Grid/Core/GridUtils.js'], _modules['Grid/Core/Table/Actions/ColumnSorting.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (Cell, GridUtils, ColumnSorting, Globals, Utilities) {
         /* *
          *
-         *  DataGrid class
+         *  Grid HeaderCell class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -12413,8 +12829,8 @@
          *  - Sebastian Bochan
          *
          * */
-        const { makeHTMLElement, isHTML } = DGUtils;
-        const { merge } = Utilities;
+        const { makeHTMLElement, setHTMLContent } = GridUtils;
+        const { fireEvent, merge, isString } = Utilities;
         /* *
          *
          *  Class
@@ -12432,24 +12848,44 @@
             /**
              * Constructs a cell in the data grid header.
              *
+             * @param row
+             * The row of the cell.
+             *
              * @param column
              * The column of the cell.
              *
-             * @param row
-             * The row of the cell.
+             * @param columnsTree
+             * If the cell is a wider than one column, this property contains the
+             * structure of the columns that are subordinated to the header cell.
              */
-            constructor(column, row) {
-                super(column, row);
+            constructor(row, column, columnsTree) {
+                super(row, column);
                 /**
                  * Reference to options in settings header.
                  */
                 this.options = {};
                 /**
+                 * List of columns that are subordinated to the header cell.
+                 */
+                this.columns = [];
+                /**
                  * Content value of the header cell.
                  */
                 this.value = '';
-                column.header = this;
-                this.isMain = !!this.row.viewport.getColumn(this.column.id);
+                if (column) {
+                    column.header = this;
+                    this.columns.push(column);
+                }
+                else if (columnsTree) {
+                    const vp = this.row.viewport;
+                    const columnIds = vp.grid.getColumnIds(columnsTree, true);
+                    for (const columnId of columnIds) {
+                        const column = vp.getColumn(columnId);
+                        if (column) {
+                            this.columns.push(column);
+                        }
+                    }
+                }
             }
             /* *
             *
@@ -12461,75 +12897,70 @@
              */
             init() {
                 const elem = document.createElement('th', {});
-                elem.classList.add(Globals.classNames.headerCell);
+                elem.classList.add(Globals.getClassName('headerCell'));
                 return elem;
             }
             /**
              * Render the cell container.
              */
             render() {
-                const column = this.column;
-                const options = merge(column.options, this.options); // ??
+                const { column } = this;
+                const options = merge(column?.options || {}, this.options);
                 const headerCellOptions = options.header || {};
+                const isSortableData = options.sorting?.sortable && column?.data;
                 if (headerCellOptions.formatter) {
                     this.value = headerCellOptions.formatter.call(this).toString();
                 }
-                else if (headerCellOptions.format) {
-                    this.value = column.format(headerCellOptions.format);
+                else if (isString(headerCellOptions.format)) {
+                    this.value = column ?
+                        column.format(headerCellOptions.format) :
+                        headerCellOptions.format;
                 }
                 else {
-                    this.value = column.id;
+                    this.value = column?.id || '';
                 }
                 // Render content of th element
                 this.row.htmlElement.appendChild(this.htmlElement);
-                this.headerContent = makeHTMLElement(options.sorting?.sortable && column.data ? 'button' : 'span', {
-                    className: Globals.classNames.headerCellContent
+                this.headerContent = makeHTMLElement('span', {
+                    className: Globals.getClassName('headerCellContent')
                 }, this.htmlElement);
-                if (isHTML(this.value)) {
-                    this.renderHTMLCellContent(this.value, this.headerContent);
-                }
-                else {
-                    this.headerContent.innerText = this.value;
-                }
+                // Render the header cell element content.
+                setHTMLContent(this.headerContent, this.value);
                 this.htmlElement.setAttribute('scope', 'col');
                 if (this.options.className) {
                     this.htmlElement.classList.add(...this.options.className.split(/\s+/g));
                 }
-                if (this.isMain) {
+                if (column) {
                     this.htmlElement.setAttribute('data-column-id', column.id);
+                    if (isSortableData) {
+                        column.viewport.grid.accessibility?.addSortableColumnHint(this.headerContent);
+                    }
                     // Add user column classname
                     if (column.options.className) {
                         this.htmlElement.classList.add(...column.options.className.split(/\s+/g));
                     }
                     // Add resizing
-                    this.column.viewport.columnsResizer?.renderColumnDragHandles(this.column, this);
+                    column.viewport.columnsResizer?.renderColumnDragHandles(column, this);
                     // Add sorting
                     this.initColumnSorting();
                 }
                 this.setCustomClassName(options.header?.className);
             }
             reflow() {
-                const cell = this;
-                const th = cell.htmlElement;
-                const vp = cell.column.viewport;
+                const th = this.htmlElement;
                 if (!th) {
                     return;
                 }
                 let width = 0;
-                if (cell.columns) {
-                    for (const col of cell.columns) {
-                        width += (vp.getColumn(col.columnId || '')?.getWidth()) || 0;
-                    }
-                }
-                else {
-                    width = cell.column.getWidth();
+                for (const column of this.columns) {
+                    width += column.getWidth() || 0;
                 }
                 // Set the width of the column. Max width is needed for the
                 // overflow: hidden to work.
                 th.style.width = th.style.maxWidth = width + 'px';
             }
             onKeyDown(e) {
-                if (e.target !== this.htmlElement) {
+                if (!this.column || e.target !== this.htmlElement) {
                     return;
                 }
                 if (e.key === 'Enter') {
@@ -12542,21 +12973,36 @@
             }
             onClick(e) {
                 const column = this.column;
-                if (!this.isMain || (e.target !== this.htmlElement &&
+                if (!column || (e.target !== this.htmlElement &&
                     e.target !== column.header?.headerContent)) {
                     return;
                 }
                 if (column.options.sorting?.sortable) {
                     column.sorting?.toggle();
                 }
-                column.viewport.dataGrid.options?.events?.header?.click?.call(column);
+                fireEvent(this, 'click', {
+                    originalEvent: e,
+                    target: this.column
+                });
             }
             /**
              * Add sorting option to the column.
              */
             initColumnSorting() {
                 const { column } = this;
+                if (!column) {
+                    return;
+                }
                 column.sorting = new ColumnSorting(column, this.htmlElement);
+            }
+            /**
+             * Check if the cell is part of the last cell in the header.
+             */
+            isLastColumn() {
+                const vp = this.row.viewport;
+                const lastViewportColumn = vp.columns[vp.columns.length - 1];
+                const lastCellColumn = this.columns?.[this.columns.length - 1];
+                return lastViewportColumn === lastCellColumn;
             }
         }
         /* *
@@ -12567,10 +13013,10 @@
 
         return HeaderCell;
     });
-    _registerModule(_modules, 'DataGrid/Table/Header/HeaderRow.js', [_modules['DataGrid/Table/Row.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Table/Header/HeaderCell.js'], _modules['DataGrid/Table/Column.js'], _modules['DataGrid/Utils.js']], function (Row, Globals, HeaderCell, Column, DGUtils) {
+    _registerModule(_modules, 'Grid/Core/Table/Header/HeaderRow.js', [_modules['Grid/Core/Table/Row.js'], _modules['Grid/Core/Table/Header/HeaderCell.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (Row, HeaderCell, Globals, Utils) {
         /* *
          *
-         *  DataGrid class
+         *  Grid HeaderRow class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -12583,7 +13029,7 @@
          *  - Sebastian Bochan
          *
          * */
-        const { sanitizeText } = DGUtils;
+        const { isString } = Utils;
         /* *
          *
          *  Class
@@ -12602,7 +13048,7 @@
              * Constructs a row in the data grid.
              *
              * @param viewport
-             * The DataGrid Table instance which the row belongs to.
+             * The Grid Table instance which the row belongs to.
              *
              * @param level
              * The current level of header that is rendered.
@@ -12617,8 +13063,8 @@
             *  Methods
             *
             * */
-            createCell(column) {
-                return new HeaderCell(column, this);
+            createCell(column, columnsTree) {
+                return new HeaderCell(this, column, columnsTree);
             }
             /**
              * Renders the row's content in the header.
@@ -12627,64 +13073,66 @@
              * The current level in the header tree
              */
             renderMultipleLevel(level) {
-                const header = this.viewport.dataGrid.options?.header;
+                const header = this.viewport.grid.options?.header;
                 const vp = this.viewport;
-                const enabledColumns = vp.dataGrid.enabledColumns;
+                const enabledColumns = vp.grid.enabledColumns;
                 // Render element
                 vp.theadElement?.appendChild(this.htmlElement);
-                this.htmlElement.classList.add(Globals.classNames.headerRow);
+                this.htmlElement.classList.add(Globals.getClassName('headerRow'));
                 if (!header) {
                     super.render();
-                    return;
                 }
-                const columnsOnLevel = this.getColumnsAtLevel(header, level);
-                for (let i = 0, iEnd = columnsOnLevel.length; i < iEnd; i++) {
-                    const column = columnsOnLevel[i];
-                    const colSpan = (typeof column !== 'string' && column.columns) ?
-                        vp.dataGrid.getColumnIds(column.columns).length : 0;
-                    const columnId = typeof column === 'string' ?
-                        column : column.columnId;
-                    const dataColumn = vp.getColumn(columnId || '');
-                    const headerFormat = (typeof column !== 'string') ?
-                        column.format : void 0;
-                    const className = (typeof column !== 'string') ?
-                        column.className : void 0;
-                    // Skip hidden column or header when all columns are hidden.
-                    if ((columnId &&
-                        enabledColumns && enabledColumns?.indexOf(columnId) < 0) || (!dataColumn && colSpan === 0)) {
-                        continue;
-                    }
-                    const headerCell = this.createCell(vp.getColumn(columnId || '') ||
-                        new Column(vp, 
-                        // Remove HTML tags and empty spaces.
-                        sanitizeText(headerFormat || '').trim() || '', i));
-                    if (typeof column !== 'string') {
-                        vp.dataGrid.accessibility?.addHeaderCellDescription(headerCell.htmlElement, column.accessibility?.description);
-                    }
-                    if (headerFormat) {
-                        if (!headerCell.options.header) {
-                            headerCell.options.header = {};
+                else {
+                    const columnsOnLevel = this.getColumnsAtLevel(header, level);
+                    for (let i = 0, iEnd = columnsOnLevel.length; i < iEnd; i++) {
+                        const columnOnLevel = columnsOnLevel[i];
+                        const colIsString = typeof columnOnLevel === 'string';
+                        const colSpan = (!colIsString && columnOnLevel.columns) ?
+                            vp.grid.getColumnIds(columnOnLevel.columns).length : 0;
+                        const columnId = colIsString ?
+                            columnOnLevel : columnOnLevel.columnId;
+                        const dataColumn = columnId ?
+                            vp.getColumn(columnId || '') : void 0;
+                        const headerFormat = !colIsString ?
+                            columnOnLevel.format : void 0;
+                        const className = !colIsString ?
+                            columnOnLevel.className : void 0;
+                        // Skip hidden column or header when all columns are hidden.
+                        if ((columnId && enabledColumns &&
+                            enabledColumns.indexOf(columnId) < 0) || (!dataColumn && colSpan === 0)) {
+                            continue;
                         }
-                        headerCell.options.header.format = headerFormat;
-                    }
-                    if (className) {
-                        headerCell.options.className = className;
-                    }
-                    // Add class to disable left border on first column
-                    if (dataColumn?.index === 0 && i === 0) {
-                        headerCell.htmlElement.classList.add(Globals.classNames.columnFirst);
-                    }
-                    headerCell.render();
-                    headerCell.columns =
-                        typeof column !== 'string' ? column.columns : void 0;
-                    if (columnId) {
-                        headerCell.htmlElement.setAttribute('rowSpan', (this.viewport.header?.levels || 1) - level);
-                    }
-                    else {
-                        if (colSpan > 1) {
-                            headerCell.htmlElement.setAttribute('colSpan', colSpan);
+                        const headerCell = this.createCell(dataColumn, !colIsString ? columnOnLevel.columns : void 0);
+                        if (!colIsString) {
+                            vp.grid.accessibility?.addHeaderCellDescription(headerCell.htmlElement, columnOnLevel.accessibility?.description);
+                        }
+                        if (isString(headerFormat)) {
+                            if (!headerCell.options.header) {
+                                headerCell.options.header = {};
+                            }
+                            headerCell.options.header.format = headerFormat;
+                        }
+                        if (className) {
+                            headerCell.options.className = className;
+                        }
+                        // Add class to disable left border on first column
+                        if (dataColumn?.index === 0 && i === 0) {
+                            headerCell.htmlElement.classList.add(Globals.getClassName('columnFirst'));
+                        }
+                        headerCell.render();
+                        if (columnId) {
+                            headerCell.htmlElement.setAttribute('rowSpan', (this.viewport.header?.levels || 1) - level);
+                        }
+                        else {
+                            if (colSpan > 1) {
+                                headerCell.htmlElement.setAttribute('colSpan', colSpan);
+                            }
                         }
                     }
+                }
+                const lastCell = this.cells[this.cells.length - 1];
+                if (lastCell.isLastColumn()) {
+                    lastCell.htmlElement.classList.add(Globals.getClassName('lastHeaderCellInRow'));
                 }
             }
             reflow() {
@@ -12725,7 +13173,7 @@
              * Sets the row HTML element attributes and additional classes.
              */
             setRowAttributes() {
-                const a11y = this.viewport.dataGrid.accessibility;
+                const a11y = this.viewport.grid.accessibility;
                 a11y?.setRowIndex(this.htmlElement, this.level);
             }
         }
@@ -12737,10 +13185,10 @@
 
         return HeaderRow;
     });
-    _registerModule(_modules, 'DataGrid/Table/Header/TableHeader.js', [_modules['DataGrid/Table/Header/HeaderRow.js'], _modules['Core/Utilities.js']], function (HeaderRow, Utils) {
+    _registerModule(_modules, 'Grid/Core/Table/Header/TableHeader.js', [_modules['Grid/Core/Table/Header/HeaderRow.js']], function (HeaderRow) {
         /* *
          *
-         *  DataGrid class
+         *  Grid TableHeader class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -12753,7 +13201,6 @@
          *  - Sebastian Bochan
          *
          * */
-        const { getStyle } = Utils;
         /* *
          *
          *  Class
@@ -12795,8 +13242,8 @@
                 this.levels = 1;
                 this.viewport = viewport;
                 this.columns = viewport.columns;
-                if (viewport.dataGrid.options?.header) {
-                    this.levels = this.getRowLevels(viewport.dataGrid.options?.header);
+                if (viewport.grid.options?.header) {
+                    this.levels = this.getRowLevels(viewport.grid.options?.header);
                 }
             }
             /* *
@@ -12809,8 +13256,7 @@
              */
             render() {
                 const vp = this.viewport;
-                const dataGrid = vp.dataGrid;
-                if (!dataGrid.enabledColumns) {
+                if (!vp.grid.enabledColumns) {
                     return;
                 }
                 for (let i = 0, iEnd = this.levels; i < iEnd; i++) {
@@ -12830,11 +13276,7 @@
                 const { clientWidth, offsetWidth } = vp.tbodyElement;
                 const header = vp.header;
                 const rows = this.rows;
-                const tableEl = header?.viewport.dataGrid.tableElement;
-                const theadEL = header?.viewport.theadElement;
-                const theadBorder = theadEL && getStyle(theadEL, 'border-right-width', true) || 0;
-                const tableBorder = (tableEl && getStyle(tableEl, 'border-right-width', true)) || 0;
-                const bordersWidth = offsetWidth - clientWidth - theadBorder - tableBorder;
+                const bordersWidth = offsetWidth - clientWidth;
                 for (const row of rows) {
                     row.reflow();
                 }
@@ -12842,12 +13284,15 @@
                     vp.theadElement.style.width =
                         Math.max(vp.rowsWidth, clientWidth) + bordersWidth + 'px';
                 }
-                // Adjust cell's width when scrollbar is enabled.
-                if (header && bordersWidth > 0) {
-                    const cells = header.rows[header.rows.length - 1].cells;
-                    const cellHtmlElement = cells[cells.length - 1].htmlElement;
-                    cellHtmlElement.style.width = cellHtmlElement.style.maxWidth =
-                        cellHtmlElement.offsetWidth + bordersWidth + 'px';
+                if (header &&
+                    bordersWidth > 0 &&
+                    this.viewport.columnDistribution === 'full') {
+                    const row = this.columns[this.columns.length - 1].header?.row;
+                    const lastCellEl = row?.cells[row.cells.length - 1]?.htmlElement;
+                    if (lastCellEl) {
+                        lastCellEl.style.width = lastCellEl.style.maxWidth =
+                            lastCellEl.offsetWidth + bordersWidth + 'px';
+                    }
                 }
             }
             /**
@@ -12871,7 +13316,8 @@
                 return maxDepth + 1;
             }
             /**
-             * Scrolls the table head horizontally.
+             * Scrolls the table head horizontally, only when the virtualization
+             * is enabled.
              *
              * @param scrollLeft
              * The left scroll position.
@@ -12892,10 +13338,10 @@
 
         return TableHeader;
     });
-    _registerModule(_modules, 'DataGrid/Table/Content/TableCell.js', [_modules['DataGrid/Table/Cell.js'], _modules['Core/Utilities.js'], _modules['DataGrid/Utils.js']], function (Cell, Utils, DGUtils) {
+    _registerModule(_modules, 'Grid/Core/Table/Content/TableCell.js', [_modules['Grid/Core/Table/Cell.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/GridUtils.js']], function (Cell, Utils, GridUtils) {
         /* *
          *
-         *  DataGrid class
+         *  Grid class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -12908,8 +13354,8 @@
          *  - Sebastian Bochan
          *
          * */
+        const { setHTMLContent } = GridUtils;
         const { defined, fireEvent } = Utils;
-        const { isHTML } = DGUtils;
         /* *
          *
          *  Class
@@ -12927,14 +13373,15 @@
             /**
              * Constructs a cell in the data grid.
              *
-             * @param column
-             * The column of the cell.
-             *
              * @param row
              * The row of the cell.
+             *
+             * @param column
+             * The column of the cell.
              */
-            constructor(column, row) {
-                super(column, row);
+            constructor(row, column) {
+                super(row, column);
+                this.column = column;
                 this.row = row;
                 this.column.registerCell(this);
             }
@@ -12952,9 +13399,7 @@
                 void this.setValue(this.column.data?.[this.row.index], false);
             }
             initEvents() {
-                this.cellEvents.push(['dblclick', (e) => {
-                        this.onDblClick(e);
-                    }]);
+                this.cellEvents.push(['dblclick', (e) => (this.onDblClick(e))]);
                 this.cellEvents.push(['mouseout', () => this.onMouseOut()]);
                 this.cellEvents.push(['mouseover', () => this.onMouseOver()]);
                 this.cellEvents.push(['mousedown', (e) => {
@@ -12978,25 +13423,27 @@
              *
              * @param e
              * The mouse event object.
+             *
+             * @internal
              */
             onMouseDown(e) {
-                const { dataGrid } = this.row.viewport;
                 if (e.target === this.htmlElement) {
                     this.htmlElement.focus();
                 }
-                fireEvent(dataGrid, 'cellMouseDown', {
-                    target: this
+                fireEvent(this, 'mouseDown', {
+                    target: this,
+                    originalEvent: e
                 });
             }
             /**
              * Handles the mouse over event on the cell.
+             * @internal
              */
             onMouseOver() {
-                const { dataGrid } = this.row.viewport;
-                dataGrid.hoverRow(this.row.index);
-                dataGrid.hoverColumn(this.column.id);
-                dataGrid.options?.events?.cell?.mouseOver?.call(this);
-                fireEvent(dataGrid, 'cellMouseOver', {
+                const { grid } = this.row.viewport;
+                grid.hoverRow(this.row.index);
+                grid.hoverColumn(this.column.id);
+                fireEvent(this, 'mouseOver', {
                     target: this
                 });
             }
@@ -13004,11 +13451,10 @@
              * Handles the mouse out event on the cell.
              */
             onMouseOut() {
-                const { dataGrid } = this.row.viewport;
-                dataGrid.hoverRow();
-                dataGrid.hoverColumn();
-                dataGrid.options?.events?.cell?.mouseOut?.call(this);
-                fireEvent(dataGrid, 'cellMouseOut', {
+                const { grid } = this.row.viewport;
+                grid.hoverRow();
+                grid.hoverColumn();
+                fireEvent(this, 'mouseOut', {
                     target: this
                 });
             }
@@ -13019,35 +13465,32 @@
              * The mouse event object.
              */
             onDblClick(e) {
-                const vp = this.row.viewport;
-                const { dataGrid } = vp;
-                if (this.column.options.cells?.editable) {
-                    e.preventDefault();
-                    vp.cellEditing.startEditing(this);
-                }
-                dataGrid.options?.events?.cell?.dblClick?.call(this);
-                fireEvent(dataGrid, 'cellDblClick', {
-                    target: this
+                fireEvent(this, 'dblClick', {
+                    target: this,
+                    originalEvent: e
                 });
             }
             onClick() {
-                const vp = this.row.viewport;
-                const { dataGrid } = vp;
-                dataGrid.options?.events?.cell?.click?.call(this);
-                fireEvent(dataGrid, 'cellClick', {
+                fireEvent(this, 'click', {
                     target: this
                 });
             }
+            /**
+             * Handles the key down event on the cell.
+             *
+             * @param e
+             * Keyboard event object.
+             *
+             * @internal
+             */
             onKeyDown(e) {
                 if (e.target !== this.htmlElement) {
                     return;
                 }
-                if (e.key === 'Enter') {
-                    if (this.column.options.cells?.editable) {
-                        this.row.viewport.cellEditing.startEditing(this);
-                    }
-                    return;
-                }
+                fireEvent(this, 'keyDown', {
+                    target: this,
+                    originalEvent: e
+                });
                 super.onKeyDown(e);
             }
             /**
@@ -13064,23 +13507,18 @@
                 const vp = this.column.viewport;
                 const element = this.htmlElement;
                 const cellContent = this.formatCell();
-                if (isHTML(cellContent)) {
-                    this.renderHTMLCellContent(cellContent, element);
-                }
-                else {
-                    element.innerText = cellContent;
-                }
+                // Render the table cell element content.
+                setHTMLContent(element, cellContent);
                 this.htmlElement.setAttribute('data-value', this.value + '');
                 this.setCustomClassName(this.column.options.cells?.className);
-                if (this.column.options.cells?.editable) {
-                    vp.dataGrid.accessibility?.addEditableCellHint(this.htmlElement);
-                }
-                vp.dataGrid.options?.events?.cell?.afterSetValue?.call(this);
+                fireEvent(this, 'afterSetValue', {
+                    target: this
+                });
                 if (!updateTable) {
                     return;
                 }
-                const { dataTable: originalDataTable } = vp.dataGrid;
-                // Taken the local row index of the original datagrid data table, but
+                const { dataTable: originalDataTable } = vp.grid;
+                // Taken the local row index of the original grid data table, but
                 // in the future it should affect the globally original data table.
                 // (To be done after the DataLayer refinement)
                 const rowTableIndex = this.row.id && originalDataTable?.getLocalRowIndex(this.row.id);
@@ -13088,7 +13526,7 @@
                     return;
                 }
                 originalDataTable.setCell(this.column.id, rowTableIndex, this.value);
-                if (vp.dataGrid.querying.willNotModify()) {
+                if (vp.grid.querying.willNotModify()) {
                     // If the data table does not need to be modified, skip the
                     // data modification and don't update the whole table. It checks
                     // if the modifiers are globally set. Can be changed in the future
@@ -13099,7 +13537,7 @@
                 if (vp.focusCursor) {
                     focusedRowId = vp.dataTable.getOriginalRowIndex(vp.focusCursor[0]);
                 }
-                await vp.dataGrid.querying.proceed(true);
+                await vp.grid.querying.proceed(true);
                 vp.loadPresentationData();
                 if (focusedRowId !== void 0 && vp.focusCursor) {
                     const newRowIndex = vp.dataTable.getLocalRowIndex(focusedRowId);
@@ -13111,20 +13549,30 @@
             }
             /**
              * Handle the formatting content of the cell.
+             *
+             * @internal
              */
             formatCell() {
+                const cellsDefaults = this.row.viewport.grid.options?.columnDefaults?.cells || {};
                 const options = this.column.options.cells || {};
                 const { format, formatter } = options;
+                const isDefaultFormat = cellsDefaults.format === format;
+                const isDefaultFormatter = cellsDefaults.formatter === formatter;
                 let value = this.value;
                 if (!defined(value)) {
                     value = '';
                 }
                 let cellContent = '';
-                if (formatter) {
-                    cellContent = formatter.call(this).toString();
+                if (isDefaultFormat && isDefaultFormatter) {
+                    cellContent = formatter ?
+                        formatter.call(this).toString() :
+                        (format ? this.format(format) : value + '');
                 }
-                else {
-                    cellContent = (format ? this.format(format) : value + '');
+                else if (isDefaultFormat) {
+                    cellContent = formatter?.call(this).toString() || value + '';
+                }
+                else if (isDefaultFormatter) {
+                    cellContent = format ? this.format(format) : value + '';
                 }
                 return cellContent;
             }
@@ -13143,10 +13591,10 @@
 
         return TableCell;
     });
-    _registerModule(_modules, 'DataGrid/Table/Content/TableRow.js', [_modules['DataGrid/Table/Row.js'], _modules['DataGrid/Table/Content/TableCell.js'], _modules['DataGrid/Globals.js']], function (Row, TableCell, Globals) {
+    _registerModule(_modules, 'Grid/Core/Table/Content/TableRow.js', [_modules['Grid/Core/Table/Row.js'], _modules['Grid/Core/Table/Content/TableCell.js'], _modules['Grid/Core/Globals.js']], function (Row, TableCell, Globals) {
         /* *
          *
-         *  DataGrid class
+         *  Grid TableRow class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -13177,15 +13625,29 @@
              * Constructs a row in the data grid.
              *
              * @param viewport
-             * The DataGrid Table instance which the row belongs to.
+             * The Grid Table instance which the row belongs to.
              *
              * @param index
              * The index of the row in the data table.
              */
             constructor(viewport, index) {
                 super(viewport);
+                /* *
+                *
+                *  Properties
+                *
+                * */
+                /**
+                 * The row values from the data table in the original column order.
+                 */
+                this.data = {};
+                /**
+                 * The vertical translation of the row.
+                 */
+                this.translateY = 0;
                 this.index = index;
                 this.id = viewport.dataTable.getOriginalRowIndex(index);
+                this.loadData();
                 this.setRowAttributes();
             }
             /* *
@@ -13194,7 +13656,17 @@
             *
             * */
             createCell(column) {
-                return new TableCell(column, this);
+                return new TableCell(this, column);
+            }
+            /**
+             * Loads the row data from the data table.
+             */
+            loadData() {
+                const data = this.viewport.dataTable.getRowObject(this.index);
+                if (!data) {
+                    return;
+                }
+                this.data = data;
             }
             /**
              * Adds or removes the hovered CSS class to the row element.
@@ -13203,9 +13675,21 @@
              * Whether the row should be hovered.
              */
             setHoveredState(hovered) {
-                this.htmlElement.classList[hovered ? 'add' : 'remove'](Globals.classNames.hoveredRow);
+                this.htmlElement.classList[hovered ? 'add' : 'remove'](Globals.getClassName('hoveredRow'));
                 if (hovered) {
-                    this.viewport.dataGrid.hoveredRowIndex = this.index;
+                    this.viewport.grid.hoveredRowIndex = this.index;
+                }
+            }
+            /**
+             * Adds or removes the synced CSS class to the row element.
+             *
+             * @param synced
+             * Whether the row should be synced.
+             */
+            setSyncedState(synced) {
+                this.htmlElement.classList[synced ? 'add' : 'remove'](Globals.getClassName('syncedRow'));
+                if (synced) {
+                    this.viewport.grid.syncedRowIndex = this.index;
                 }
             }
             /**
@@ -13214,9 +13698,8 @@
             setRowAttributes() {
                 const idx = this.index;
                 const el = this.htmlElement;
-                const a11y = this.viewport.dataGrid.accessibility;
-                el.style.transform = `translateY(${this.getDefaultTopOffset()}px)`;
-                el.classList.add(Globals.classNames.rowElement);
+                const a11y = this.viewport.grid.accessibility;
+                el.classList.add(Globals.getClassName('rowElement'));
                 // Index of the row in the presentation data table
                 el.setAttribute('data-row-index', idx);
                 // Index of the row in the original data table (ID)
@@ -13226,10 +13709,23 @@
                 // Calculate levels of header, 1 to avoid indexing from 0
                 a11y?.setRowIndex(el, idx + (this.viewport.header?.levels ?? 1) + 1);
                 // Indexing from 0, so rows with even index are odd.
-                el.classList.add(Globals.classNames[idx % 2 ? 'rowEven' : 'rowOdd']);
-                if (this.viewport.dataGrid.hoveredRowIndex === idx) {
-                    el.classList.add(Globals.classNames.hoveredRow);
+                el.classList.add(Globals.getClassName(idx % 2 ? 'rowEven' : 'rowOdd'));
+                if (this.viewport.grid.hoveredRowIndex === idx) {
+                    el.classList.add(Globals.getClassName('hoveredRow'));
                 }
+                if (this.viewport.grid.syncedRowIndex === idx) {
+                    el.classList.add(Globals.getClassName('syncedRow'));
+                }
+            }
+            /**
+             * Sets the vertical translation of the row. Used for virtual scrolling.
+             *
+             * @param value
+             * The vertical translation of the row.
+             */
+            setTranslateY(value) {
+                this.translateY = value;
+                this.htmlElement.style.transform = `translateY(${value}px)`;
             }
             /**
              * Returns the default top offset of the row (before adjusting row heights).
@@ -13247,10 +13743,10 @@
 
         return TableRow;
     });
-    _registerModule(_modules, 'DataGrid/Table/Actions/RowsVirtualizer.js', [_modules['DataGrid/Utils.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Table/Content/TableRow.js']], function (DGUtils, Globals, TableRow) {
+    _registerModule(_modules, 'Grid/Core/Table/Actions/RowsVirtualizer.js', [_modules['Grid/Core/Table/Content/TableRow.js'], _modules['Grid/Core/Globals.js']], function (TableRow, Globals) {
         /* *
          *
-         *  DataGrid Rows Renderer class.
+         *  Grid Rows Renderer class.
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -13262,7 +13758,6 @@
          *  - Dawid Dragula
          *
          * */
-        const { makeHTMLElement, getTranslateY } = DGUtils;
         /* *
          *
          *  Class
@@ -13293,13 +13788,14 @@
                  * flickering loops when scrolling to the last row.
                  */
                 this.preventScroll = false;
-                const rowSettings = viewport.dataGrid.options?.rendering?.rows;
+                this.rowSettings =
+                    viewport.grid.options?.rendering?.rows;
                 this.viewport = viewport;
-                this.strictRowHeights = rowSettings?.strictHeights;
-                this.buffer = Math.max(rowSettings?.bufferSize, 0);
+                this.strictRowHeights = this.rowSettings.strictHeights;
+                this.buffer = Math.max(this.rowSettings.bufferSize, 0);
                 this.defaultRowHeight = this.getDefaultRowHeight();
                 if (this.strictRowHeights) {
-                    viewport.tbodyElement.classList.add(Globals.classNames.rowsContentNowrap);
+                    viewport.tbodyElement.classList.add(Globals.getClassName('rowsContentNowrap'));
                 }
             }
             /* *
@@ -13312,18 +13808,23 @@
              */
             initialRender() {
                 // Initial reflow to set the viewport height
-                this.viewport.reflow();
+                if (this.rowSettings?.virtualization) {
+                    this.viewport.reflow();
+                }
                 // Load & render rows
                 this.renderRows(this.rowCursor);
-                this.adjustRowHeights();
+                if (this.rowSettings?.virtualization) {
+                    this.adjustRowHeights();
+                }
             }
             /**
              * Renders the rows in the viewport. It is called when the rows need to be
              * re-rendered, e.g., after a sort or filter operation.
              */
             rerender() {
-                const rows = this.viewport.rows;
                 const tbody = this.viewport.tbodyElement;
+                let rows = this.viewport.rows;
+                const oldScrollLeft = tbody.scrollLeft;
                 let oldScrollTop;
                 if (rows.length) {
                     oldScrollTop = tbody.scrollTop;
@@ -13333,17 +13834,22 @@
                     rows.length = 0;
                 }
                 this.renderRows(this.rowCursor);
-                if (oldScrollTop !== void 0) {
-                    tbody.scrollTop = oldScrollTop;
+                if (this.rowSettings?.virtualization) {
+                    if (oldScrollTop !== void 0) {
+                        tbody.scrollTop = oldScrollTop;
+                    }
+                    this.scroll();
                 }
-                this.scroll();
+                rows = this.viewport.rows;
                 // Reflow the rendered row cells widths (check redundancy)
                 for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
                     rows[i].reflow();
                 }
+                tbody.scrollLeft = oldScrollLeft;
             }
             /**
-             * Method called on the viewport scroll event.
+             * Method called on the viewport scroll event, only when the virtualization
+             * is enabled.
              */
             scroll() {
                 const target = this.viewport.tbodyElement;
@@ -13377,12 +13883,12 @@
                 const rows = this.viewport.rows;
                 const rowsLn = rows.length;
                 const lastRow = rows[rowsLn - 1];
-                let rowTop = getTranslateY(lastRow.htmlElement);
+                let rowTop = lastRow.translateY;
                 const rowBottom = rowTop + lastRow.htmlElement.offsetHeight;
                 let newHeight = lastRow.cells[0].htmlElement.offsetHeight;
                 rowTop = rowBottom - newHeight;
                 lastRow.htmlElement.style.height = newHeight + 'px';
-                lastRow.htmlElement.style.transform = `translateY(${rowTop}px)`;
+                lastRow.setTranslateY(rowTop);
                 for (let j = 0, jEnd = lastRow.cells.length; j < jEnd; ++j) {
                     lastRow.cells[j].htmlElement.style.transform = '';
                 }
@@ -13391,7 +13897,7 @@
                     newHeight = row.cells[0].htmlElement.offsetHeight;
                     rowTop -= newHeight;
                     row.htmlElement.style.height = newHeight + 'px';
-                    row.htmlElement.style.transform = `translateY(${rowTop}px)`;
+                    row.setTranslateY(rowTop);
                     for (let j = 0, jEnd = row.cells.length; j < jEnd; ++j) {
                         row.cells[j].htmlElement.style.transform = '';
                     }
@@ -13406,26 +13912,58 @@
              */
             renderRows(rowCursor) {
                 const { viewport: vp, buffer } = this;
-                const rowsPerPage = Math.ceil(vp.tbodyElement.offsetHeight / this.defaultRowHeight);
-                const rows = vp.rows;
+                const isVirtualization = this.rowSettings?.virtualization;
+                const rowsPerPage = isVirtualization ? Math.ceil((vp.grid.tableElement?.clientHeight || 0) /
+                    this.defaultRowHeight) : Infinity; // Need to be refactored when add pagination
+                let rows = vp.rows;
+                if (!isVirtualization && rows.length > 50) {
+                    // eslint-disable-next-line no-console
+                    console.warn('Grid: a large dataset can cause performance issues.');
+                }
                 if (!rows.length) {
                     const last = new TableRow(vp, vp.dataTable.getRowCount() - 1);
                     last.render();
                     rows.push(last);
                     vp.tbodyElement.appendChild(last.htmlElement);
+                    if (isVirtualization) {
+                        last.setTranslateY(last.getDefaultTopOffset());
+                    }
                 }
                 const from = Math.max(0, Math.min(rowCursor - buffer, vp.dataTable.getRowCount() - rowsPerPage));
                 const to = Math.min(rowCursor + rowsPerPage + buffer, rows[rows.length - 1].index - 1);
                 const alwaysLastRow = rows.pop();
+                const tempRows = [];
+                // Remove rows that are out of the range except the last row.
                 for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
-                    rows[i].destroy();
+                    const row = rows[i];
+                    const rowIndex = row.index;
+                    if (rowIndex < from || rowIndex > to) {
+                        row.destroy();
+                    }
+                    else {
+                        tempRows.push(row);
+                    }
                 }
-                rows.length = 0;
+                rows = tempRows;
+                vp.rows = rows;
                 for (let i = from; i <= to; ++i) {
-                    const newRow = new TableRow(vp, i);
-                    newRow.render();
-                    vp.tbodyElement.insertBefore(newRow.htmlElement, vp.tbodyElement.lastChild);
-                    rows.push(newRow);
+                    const row = rows[i - (rows[0]?.index || 0)];
+                    // Recreate row when it is destroyed and it is in the range.
+                    if (!row) {
+                        const newRow = new TableRow(vp, i);
+                        rows.push(newRow);
+                        newRow.rendered = false;
+                        if (isVirtualization) {
+                            newRow.setTranslateY(newRow.getDefaultTopOffset());
+                        }
+                    }
+                }
+                rows.sort((a, b) => a.index - b.index);
+                for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
+                    if (!rows[i].rendered) {
+                        rows[i].render();
+                        vp.tbodyElement.insertBefore(rows[i].htmlElement, vp.tbodyElement.lastChild);
+                    }
                 }
                 if (alwaysLastRow) {
                     rows.push(alwaysLastRow);
@@ -13440,6 +13978,8 @@
                         });
                     }
                 }
+                // Reset the focus anchor cell
+                this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '-1');
                 const firstVisibleRow = rows[rowCursor - rows[0].index];
                 this.focusAnchorCell = firstVisibleRow?.cells[0];
                 this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '0');
@@ -13488,17 +14028,16 @@
                         }
                     }
                 }
+                rows[0].setTranslateY(translateBuffer);
                 for (let i = 1, iEnd = rowsLn - 1; i < iEnd; ++i) {
                     translateBuffer += rows[i - 1].htmlElement.offsetHeight;
-                    rows[i].htmlElement.style.transform =
-                        `translateY(${translateBuffer}px)`;
+                    rows[i].setTranslateY(translateBuffer);
                 }
                 // Set the proper offset for the last row
                 const lastRow = rows[rowsLn - 1];
                 const preLastRow = rows[rowsLn - 2];
                 if (preLastRow && preLastRow.index === lastRow.index - 1) {
-                    lastRow.htmlElement.style.transform = `translateY(${preLastRow.htmlElement.offsetHeight +
-                        getTranslateY(preLastRow.htmlElement)}px)`;
+                    lastRow.setTranslateY(preLastRow.htmlElement.offsetHeight + translateBuffer);
                 }
             }
             /**
@@ -13512,18 +14051,23 @@
                 for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
                     rows[i].reflow();
                 }
-                this.adjustRowHeights();
+                if (this.rowSettings?.virtualization) {
+                    this.adjustRowHeights();
+                }
             }
             /**
              * Returns the default height of a row. This method should be called only
              * once on initialization.
              */
             getDefaultRowHeight() {
-                const mockRow = makeHTMLElement('tr', {
-                    className: Globals.classNames.rowElement
-                }, this.viewport.tbodyElement);
-                const defaultRowHeight = mockRow.offsetHeight;
-                mockRow.remove();
+                const vp = this.viewport;
+                const mockRow = new TableRow(vp, 0);
+                mockRow.htmlElement.style.position = 'absolute';
+                mockRow.htmlElement.classList.add(Globals.getClassName('mockedRow'));
+                mockRow.render();
+                this.viewport.tbodyElement.appendChild(mockRow.htmlElement);
+                const defaultRowHeight = mockRow.htmlElement.offsetHeight;
+                mockRow.destroy();
                 return defaultRowHeight;
             }
         }
@@ -13535,10 +14079,10 @@
 
         return RowsVirtualizer;
     });
-    _registerModule(_modules, 'DataGrid/Table/Actions/ColumnsResizer.js', [_modules['DataGrid/Table/Column.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Utils.js']], function (Column, Globals, DGUtils) {
+    _registerModule(_modules, 'Grid/Core/Table/Actions/ColumnsResizer.js', [_modules['Grid/Core/Table/Column.js'], _modules['Grid/Core/GridUtils.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (Column, GridUtils, Globals, Utils) {
         /* *
          *
-         *  DataGrid Columns Resizer class.
+         *  Grid Columns Resizer class.
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -13551,7 +14095,8 @@
          *  - Sebastian Bochan
          *
          * */
-        const { makeHTMLElement } = DGUtils;
+        const { makeHTMLElement } = GridUtils;
+        const { fireEvent, getStyle } = Utils;
         /* *
          *
          *  Class
@@ -13576,27 +14121,35 @@
                  *
                  * @param e
                  * The mouse event.
+                 *
+                 * @internal
                  */
                 this.onDocumentMouseMove = (e) => {
                     if (!this.draggedResizeHandle || !this.draggedColumn) {
                         return;
                     }
                     const diff = e.pageX - (this.dragStartX || 0);
-                    if (this.viewport.columnDistribution === 'full') {
+                    const vp = this.viewport;
+                    if (vp.columnDistribution === 'full') {
                         this.fullDistributionResize(diff);
                     }
                     else {
                         this.fixedDistributionResize(diff);
                     }
-                    this.viewport.reflow();
-                    this.viewport.rowsVirtualizer.adjustRowHeights();
-                    this.viewport.dataGrid.options?.events?.column?.afterResize?.call(this.draggedColumn);
+                    vp.reflow(true);
+                    if (vp.grid.options?.rendering?.rows?.virtualization) {
+                        vp.rowsVirtualizer.adjustRowHeights();
+                    }
+                    fireEvent(this.draggedColumn, 'afterResize', {
+                        target: this.draggedColumn,
+                        originalEvent: e
+                    });
                 };
                 /**
                  * Handles the mouse up event on the document.
                  */
                 this.onDocumentMouseUp = () => {
-                    this.draggedColumn?.header?.htmlElement?.classList.remove(Globals.classNames.resizedColumn);
+                    this.draggedColumn?.header?.htmlElement?.classList.remove(Globals.getClassName('resizedColumn'));
                     this.dragStartX = void 0;
                     this.draggedColumn = void 0;
                     this.draggedResizeHandle = void 0;
@@ -13612,6 +14165,27 @@
              *  Functions
              *
              * */
+            /**
+             * Render the drag handle for resizing columns.
+             *
+             * @param column
+             * The reference to rendered column
+             *
+             * @param cell
+             * The reference to rendered cell, where hadles should be added
+             */
+            renderColumnDragHandles(column, cell) {
+                const vp = column.viewport;
+                if (vp.columnsResizer && (vp.columnDistribution !== 'full' ||
+                    (vp.grid.enabledColumns &&
+                        column.index < vp.grid.enabledColumns.length - 1))) {
+                    const handle = makeHTMLElement('div', {
+                        className: Globals.getClassName('resizerHandles')
+                    }, cell.htmlElement);
+                    handle.setAttribute('aria-hidden', true);
+                    vp.columnsResizer?.addHandleListeners(handle, column);
+                }
+            }
             /**
              * Resizes the columns in the full distribution mode.
              *
@@ -13630,40 +14204,19 @@
                 }
                 const leftColW = this.columnStartWidth ?? 0;
                 const rightColW = this.nextColumnStartWidth ?? 0;
-                const MIN_WIDTH = Column.MIN_COLUMN_WIDTH;
+                const minWidth = ColumnsResizer.getMinWidth(column);
                 let newLeftW = leftColW + diff;
                 let newRightW = rightColW - diff;
-                if (newLeftW < MIN_WIDTH) {
-                    newLeftW = MIN_WIDTH;
-                    newRightW = leftColW + rightColW - MIN_WIDTH;
+                if (newLeftW < minWidth) {
+                    newLeftW = minWidth;
+                    newRightW = leftColW + rightColW - minWidth;
                 }
-                if (newRightW < MIN_WIDTH) {
-                    newRightW = MIN_WIDTH;
-                    newLeftW = leftColW + rightColW - MIN_WIDTH;
+                if (newRightW < minWidth) {
+                    newRightW = minWidth;
+                    newLeftW = leftColW + rightColW - minWidth;
                 }
                 column.width = vp.getRatioFromWidth(newLeftW);
                 nextColumn.width = vp.getRatioFromWidth(newRightW);
-            }
-            /**
-             * Render the drag handle for resizing columns.
-             *
-             * @param column
-             * The reference to rendered column
-             *
-             * @param cell
-             * The reference to rendered cell, where hadles should be added
-             */
-            renderColumnDragHandles(column, cell) {
-                const vp = column.viewport;
-                if (vp.columnsResizer && (vp.columnDistribution !== 'full' ||
-                    (vp.dataGrid.enabledColumns &&
-                        column.index < vp.dataGrid.enabledColumns.length - 1))) {
-                    const handle = makeHTMLElement('div', {
-                        className: Globals.classNames.resizerHandles
-                    }, cell.htmlElement);
-                    handle.setAttribute('aria-hidden', true);
-                    vp.columnsResizer?.addHandleListeners(handle, column);
-                }
             }
             /**
              * Resizes the columns in the fixed distribution mode.
@@ -13677,10 +14230,10 @@
                     return;
                 }
                 const colW = this.columnStartWidth ?? 0;
-                const MIN_WIDTH = Column.MIN_COLUMN_WIDTH;
+                const minWidth = ColumnsResizer.getMinWidth(column);
                 let newW = colW + diff;
-                if (newW < MIN_WIDTH) {
-                    newW = MIN_WIDTH;
+                if (newW < minWidth) {
+                    newW = minWidth;
                 }
                 column.width = newW;
             }
@@ -13695,13 +14248,20 @@
              */
             addHandleListeners(handle, column) {
                 const onHandleMouseDown = (e) => {
+                    const vp = column.viewport;
+                    const { grid } = vp;
+                    if (!grid.options?.rendering?.rows?.virtualization) {
+                        grid.contentWrapper?.classList.add(Globals.getClassName('resizerWrapper'));
+                        // Apply widths before resizing
+                        vp.reflow(true);
+                    }
                     this.dragStartX = e.pageX;
                     this.draggedColumn = column;
                     this.draggedResizeHandle = handle;
                     this.columnStartWidth = column.getWidth();
                     this.nextColumnStartWidth =
-                        this.viewport.columns[column.index + 1]?.getWidth();
-                    column.header?.htmlElement.classList.add(Globals.classNames.resizedColumn);
+                        vp.columns[column.index + 1]?.getWidth();
+                    column.header?.htmlElement.classList.add(Globals.getClassName('resizedColumn'));
                 };
                 this.handles.push([handle, onHandleMouseDown]);
                 handle.addEventListener('mousedown', onHandleMouseDown);
@@ -13718,6 +14278,31 @@
                     handle.removeEventListener('mousedown', listener);
                 }
             }
+            /**
+             * Returns the minimum width of the column.
+             *
+             * @param column
+             * The column to get the minimum width for.
+             *
+             * @returns
+             * The minimum width in pixels.
+             */
+            static getMinWidth(column) {
+                const tableColumnEl = column.cells[1].htmlElement;
+                const headerColumnEl = column.header?.htmlElement;
+                const getElPaddings = (el) => ((getStyle(el, 'padding-left', true) || 0) +
+                    (getStyle(el, 'padding-right', true) || 0) +
+                    (getStyle(el, 'border-left', true) || 0) +
+                    (getStyle(el, 'border-right', true) || 0));
+                let result = Column.MIN_COLUMN_WIDTH;
+                if (tableColumnEl) {
+                    result = Math.max(result, getElPaddings(tableColumnEl));
+                }
+                if (headerColumnEl) {
+                    result = Math.max(result, getElPaddings(headerColumnEl));
+                }
+                return result;
+            }
         }
         /* *
          *
@@ -13727,10 +14312,10 @@
 
         return ColumnsResizer;
     });
-    _registerModule(_modules, 'DataGrid/Table/Actions/CellEditing.js', [_modules['DataGrid/Globals.js'], _modules['DataGrid/Utils.js']], function (Globals, DGUtils) {
+    _registerModule(_modules, 'Grid/Core/Table/Table.js', [_modules['Grid/Core/GridUtils.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/Table/Column.js'], _modules['Grid/Core/Table/Header/TableHeader.js'], _modules['Grid/Core/Table/Actions/RowsVirtualizer.js'], _modules['Grid/Core/Table/Actions/ColumnsResizer.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Core/Defaults.js']], function (GridUtils, Utils, Column, TableHeader, RowsVirtualizer, ColumnsResizer, Globals, Defaults) {
         /* *
          *
-         *  DataGrid Cell Editing class.
+         *  Grid Table Viewport class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -13743,151 +14328,8 @@
          *  - Sebastian Bochan
          *
          * */
-        const { makeHTMLElement } = DGUtils;
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * The class that handles the manual editing of cells in the data grid.
-         */
-        class CellEditing {
-            constructor() {
-                /* *
-                *
-                *  Properties
-                *
-                * */
-                /**
-                 * Handles the blur event on the input field.
-                 */
-                this.onInputBlur = () => {
-                    this.stopEditing();
-                };
-                /**
-                 * Handles the keydown event on the input field. Cancels editing on escape
-                 * and saves the value on enter.
-                 *
-                 * @param e
-                 * The keyboard event.
-                 */
-                this.onInputKeyDown = (e) => {
-                    const { keyCode } = e;
-                    // Enter / Escape
-                    if (keyCode === 13 || keyCode === 27) {
-                        // Cancel editing on escape
-                        this.stopEditing(keyCode === 13);
-                    }
-                };
-            }
-            /* *
-             *
-             *  Methods
-             *
-             * */
-            /**
-             * Turns the cell into an editable input field.
-             *
-             * @param cell
-             * The cell that is to be edited.
-             */
-            startEditing(cell) {
-                if (this.editedCell === cell) {
-                    return;
-                }
-                if (this.editedCell) {
-                    this.stopEditing();
-                }
-                this.editedCell = cell;
-                const cellElement = cell.htmlElement;
-                cellElement.innerHTML = '';
-                cellElement.classList.add(Globals.classNames.editedCell);
-                cell.row.viewport.dataGrid.accessibility?.userEditedCell('started');
-                this.renderInput();
-            }
-            /**
-             * Stops the editing of the cell.
-             *
-             * @param submit
-             * Whether to save the value of the input to the cell. Defaults to true.
-             */
-            stopEditing(submit = true) {
-                const cell = this.editedCell;
-                const input = this.inputElement;
-                if (!cell || !input) {
-                    return;
-                }
-                const dataGrid = cell.column.viewport.dataGrid;
-                let newValue = input.value;
-                this.destroyInput();
-                cell.htmlElement.classList.remove(Globals.classNames.editedCell);
-                cell.htmlElement.focus();
-                // Convert to number if possible
-                if (!isNaN(+newValue)) {
-                    newValue = +newValue;
-                }
-                void cell.setValue(submit ? newValue : cell.value, submit && cell.value !== newValue);
-                dataGrid.options?.events?.cell?.afterEdit?.call(cell);
-                cell.row.viewport.dataGrid.accessibility?.userEditedCell(submit ? 'edited' : 'cancelled');
-                delete this.editedCell;
-            }
-            /**
-             * Renders the input field for the cell, focuses it and sets up event
-             * listeners.
-             */
-            renderInput() {
-                const cell = this.editedCell;
-                if (!cell) {
-                    return;
-                }
-                const cellEl = cell.htmlElement;
-                const input = this.inputElement = makeHTMLElement('input', {}, cellEl);
-                input.value = '' + cell.value;
-                input.focus();
-                input.addEventListener('blur', this.onInputBlur);
-                input.addEventListener('keydown', this.onInputKeyDown);
-            }
-            /**
-             * Removes event listeners and the input element.
-             */
-            destroyInput() {
-                const input = this.inputElement;
-                if (!input) {
-                    return;
-                }
-                input.removeEventListener('keydown', this.onInputKeyDown);
-                input.removeEventListener('blur', this.onInputBlur);
-                input.remove();
-                delete this.inputElement;
-            }
-        }
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return CellEditing;
-    });
-    _registerModule(_modules, 'DataGrid/Table/Table.js', [_modules['DataGrid/Utils.js'], _modules['DataGrid/Table/Column.js'], _modules['DataGrid/Table/Header/TableHeader.js'], _modules['DataGrid/Table/Actions/RowsVirtualizer.js'], _modules['DataGrid/Table/Actions/ColumnsResizer.js'], _modules['DataGrid/Globals.js'], _modules['Core/Utilities.js'], _modules['DataGrid/Table/Actions/CellEditing.js']], function (DGUtils, Column, TableHeader, RowsVirtualizer, ColumnsResizer, Globals, Utils, CellEditing) {
-        /* *
-         *
-         *  DataGrid class
-         *
-         *  (c) 2020-2024 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Dawid Dragula
-         *  - Sebastian Bochan
-         *
-         * */
-        const { makeHTMLElement } = DGUtils;
-        const { getStyle } = Utils;
+        const { makeHTMLElement } = GridUtils;
+        const { fireEvent, getStyle, defined } = Utils;
         /* *
          *
          *  Class
@@ -13905,13 +14347,13 @@
             /**
              * Constructs a new data grid table.
              *
-             * @param dataGrid
+             * @param grid
              * The data grid instance which the table (viewport) belongs to.
              *
              * @param tableElement
              * The HTML table element of the data grid.
              */
-            constructor(dataGrid, tableElement) {
+            constructor(grid, tableElement) {
                 /**
                  * The visible columns of the table.
                  */
@@ -13935,39 +14377,51 @@
                  * Handles the resize event.
                  */
                 this.onResize = () => {
-                    this.reflow();
+                    this.reflow(this.scrollable);
                 };
                 /**
                  * Handles the scroll event.
                  */
                 this.onScroll = () => {
-                    this.rowsVirtualizer.scroll();
+                    if (this.virtualRows) {
+                        this.rowsVirtualizer.scroll();
+                    }
                     this.header?.scrollHorizontally(this.tbodyElement.scrollLeft);
                 };
-                this.dataGrid = dataGrid;
-                this.dataTable = this.dataGrid.presentationTable;
-                const dgOptions = dataGrid.options;
+                this.grid = grid;
+                this.dataTable = this.grid.presentationTable;
+                const dgOptions = grid.options;
                 const customClassName = dgOptions?.rendering?.table?.className;
                 this.columnDistribution =
                     dgOptions?.rendering?.columns?.distribution;
-                this.renderCaption();
+                this.virtualRows = !!dgOptions?.rendering?.rows?.virtualization;
+                this.scrollable = !!(this.grid.initialContainerHeight || this.virtualRows);
                 if (dgOptions?.rendering?.header?.enabled) {
                     this.theadElement = makeHTMLElement('thead', {}, tableElement);
                 }
                 this.tbodyElement = makeHTMLElement('tbody', {}, tableElement);
-                this.rowsVirtualizer = new RowsVirtualizer(this);
+                if (this.virtualRows) {
+                    tableElement.classList.add(Globals.getClassName('virtualization'));
+                }
                 if (dgOptions?.columnDefaults?.resizing) {
                     this.columnsResizer = new ColumnsResizer(this);
                 }
-                this.cellEditing = new CellEditing();
                 if (customClassName) {
                     tableElement.classList.add(...customClassName.split(/\s+/g));
                 }
+                // Load columns
+                this.loadColumns();
+                // Virtualization
+                this.rowsVirtualizer = new RowsVirtualizer(this);
+                // Init Table
                 this.init();
                 // Add event listeners
                 this.resizeObserver = new ResizeObserver(this.onResize);
                 this.resizeObserver.observe(tableElement);
                 this.tbodyElement.addEventListener('scroll', this.onScroll);
+                if (this.scrollable) {
+                    tableElement.classList.add(Globals.getClassName('scrollableContent'));
+                }
                 this.tbodyElement.addEventListener('focus', this.onTBodyFocus);
             }
             /* *
@@ -13979,10 +14433,10 @@
              * Initializes the data grid table.
              */
             init() {
-                // Load columns
-                this.loadColumns();
+                fireEvent(this, 'beforeInit');
+                this.setTbodyMinHeight();
                 // Load & render head
-                if (this.dataGrid.options?.rendering?.header?.enabled) {
+                if (this.grid.options?.rendering?.header?.enabled) {
                     this.header = new TableHeader(this);
                     this.header.render();
                 }
@@ -13992,10 +14446,22 @@
                 this.rowsVirtualizer.initialRender();
             }
             /**
+             * Sets the minimum height of the table body.
+             */
+            setTbodyMinHeight() {
+                const { options } = this.grid;
+                const minVisibleRows = options?.rendering?.rows?.minVisibleRows;
+                const tbody = this.tbodyElement;
+                if (defined(minVisibleRows) &&
+                    !getStyle(tbody, 'min-height', true)) {
+                    tbody.style.minHeight = (minVisibleRows * this.rowsVirtualizer.defaultRowHeight) + 'px';
+                }
+            }
+            /**
              * Loads the columns of the table.
              */
             loadColumns() {
-                const { enabledColumns } = this.dataGrid;
+                const { enabledColumns } = this.grid;
                 if (!enabledColumns) {
                     return;
                 }
@@ -14006,27 +14472,39 @@
                 }
             }
             /**
+             * Fires an empty update to properly load the virtualization, only if
+             * there's a row count compared to the threshold change detected (due to
+             * performance reasons).
+             */
+            updateVirtualization() {
+                const rows = this.grid.options?.rendering?.rows;
+                const threshold = Number(rows?.virtualizationThreshold ||
+                    Defaults.defaultOptions.rendering?.rows?.virtualizationThreshold);
+                const rowCount = Number(this.dataTable?.rowCount);
+                if (rows?.virtualization !== (rowCount >= threshold)) {
+                    this.grid.update();
+                }
+            }
+            /**
              * Loads the modified data from the data table and renders the rows.
              */
             loadPresentationData() {
-                this.dataTable = this.dataGrid.presentationTable;
+                this.dataTable = this.grid.presentationTable;
                 for (const column of this.columns) {
                     column.loadData();
                 }
+                this.updateVirtualization();
                 this.rowsVirtualizer.rerender();
             }
             /**
              * Reflows the table's content dimensions.
+             *
+             * @param reflowColumns
+             * Force reflow columns and recalculate widths.
+             *
              */
-            reflow() {
-                const tableEl = this.dataGrid.tableElement;
-                const borderWidth = tableEl ? ((getStyle(tableEl, 'border-top-width', true) || 0) +
-                    (getStyle(tableEl, 'border-bottom-width', true) || 0)) : 0;
-                this.tbodyElement.style.height = this.tbodyElement.style.minHeight = `${(this.dataGrid.container?.clientHeight || 0) -
-                    (this.theadElement?.offsetHeight || 0) -
-                    (this.captionElement?.offsetHeight || 0) -
-                    (this.dataGrid.credits?.getHeight() || 0) -
-                    borderWidth}px`;
+            reflow(reflowColumns = false) {
+                const isVirtualization = this.grid.options?.rendering?.rows?.virtualization;
                 // Get the width of the rows.
                 if (this.columnDistribution === 'fixed') {
                     let rowsWidth = 0;
@@ -14035,10 +14513,12 @@
                     }
                     this.rowsWidth = rowsWidth;
                 }
-                // Reflow the head
-                this.header?.reflow();
-                // Reflow rows content dimensions
-                this.rowsVirtualizer.reflowRows();
+                if (isVirtualization || reflowColumns) {
+                    // Reflow the head
+                    this.header?.reflow();
+                    // Reflow rows content dimensions
+                    this.rowsVirtualizer.reflowRows();
+                }
             }
             /**
              * Scrolls the table to the specified row.
@@ -14046,11 +14526,21 @@
              * @param index
              * The index of the row to scroll to.
              *
-             * Try it: {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/data-grid/basic/scroll-to-row | Scroll to row}
+             * Try it: {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/grid-lite/basic/scroll-to-row | Scroll to row}
              */
             scrollToRow(index) {
-                this.tbodyElement.scrollTop =
-                    index * this.rowsVirtualizer.defaultRowHeight;
+                if (this.grid.options?.rendering?.rows?.virtualization) {
+                    this.tbodyElement.scrollTop =
+                        index * this.rowsVirtualizer.defaultRowHeight;
+                    return;
+                }
+                const rowClass = '.' + Globals.getClassName('rowElement');
+                const firstRowTop = this.tbodyElement
+                    .querySelectorAll(rowClass)[0]
+                    .getBoundingClientRect().top;
+                this.tbodyElement.scrollTop = (this.tbodyElement
+                    .querySelectorAll(rowClass)[index]
+                    .getBoundingClientRect().top) - firstRowTop;
             }
             /**
              * Get the widthRatio value from the width in pixels. The widthRatio is
@@ -14081,23 +14571,6 @@
                 return this.tbodyElement.clientWidth * ratio;
             }
             /**
-             * Render caption above the datagrid
-             * @internal
-             */
-            renderCaption() {
-                const captionOptions = this.dataGrid.options?.caption;
-                if (!captionOptions?.text) {
-                    return;
-                }
-                this.captionElement = makeHTMLElement('caption', {
-                    innerText: captionOptions.text,
-                    className: Globals.classNames.captionElement
-                }, this.dataGrid.tableElement);
-                if (captionOptions.className) {
-                    this.captionElement.classList.add(...captionOptions.className.split(/\s+/g));
-                }
-            }
-            /**
              * Destroys the data grid table.
              */
             destroy() {
@@ -14108,6 +14581,7 @@
                 for (let i = 0, iEnd = this.rows.length; i < iEnd; ++i) {
                     this.rows[i].destroy();
                 }
+                fireEvent(this, 'afterDestroy');
             }
             /**
              * Get the viewport state metadata. It is used to save the state of the
@@ -14156,7 +14630,7 @@
              * The ID of the column.
              */
             getColumn(id) {
-                const columns = this.dataGrid.enabledColumns;
+                const columns = this.grid.enabledColumns;
                 if (!columns) {
                     return;
                 }
@@ -14778,10 +15252,10 @@
 
         return SortModifier;
     });
-    _registerModule(_modules, 'DataGrid/Querying/SortingController.js', [_modules['Data/Modifiers/SortModifier.js']], function (SortModifier) {
+    _registerModule(_modules, 'Grid/Core/Querying/SortingController.js', [_modules['Data/Modifiers/SortModifier.js']], function (SortModifier) {
         /* *
          *
-         *  DataGrid Sorting Controller class
+         *  Grid Sorting Controller class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -14810,16 +15284,16 @@
             /**
              * Constructs the SortingController instance.
              *
-             * @param dataGrid
+             * @param grid
              * The data grid instance.
              */
-            constructor(dataGrid) {
+            constructor(grid) {
                 /**
                  * The flag that indicates if the data should be updated because of the
                  * change in the sorting options.
                  */
                 this.shouldBeUpdated = false;
-                this.dataGrid = dataGrid;
+                this.grid = grid;
             }
             /* *
             *
@@ -14852,7 +15326,7 @@
              * Returns the sorting options from the data grid options.
              */
             getSortingOptions() {
-                const dataGrid = this.dataGrid, { columnOptionsMap } = dataGrid;
+                const grid = this.grid, { columnOptionsMap } = grid;
                 if (!columnOptionsMap) {
                     return { order: null };
                 }
@@ -14866,7 +15340,7 @@
                     if (order) {
                         if (foundColumnId) {
                             // eslint-disable-next-line no-console
-                            console.warn('DataGrid: Only one column can be sorted at a time. ' +
+                            console.warn('Grid: Only one column can be sorted at a time. ' +
                                 'Data will be sorted only by the last found column ' +
                                 `with the sorting order defined in the options: "${foundColumnId}".`);
                             break;
@@ -14916,10 +15390,10 @@
 
         return SortingController;
     });
-    _registerModule(_modules, 'DataGrid/Querying/QueryingController.js', [_modules['Data/Modifiers/ChainModifier.js'], _modules['DataGrid/Querying/SortingController.js']], function (ChainModifier, SortingController) {
+    _registerModule(_modules, 'Grid/Core/Querying/QueryingController.js', [_modules['Data/Modifiers/ChainModifier.js'], _modules['Grid/Core/Querying/SortingController.js']], function (ChainModifier, SortingController) {
         /* *
          *
-         *  DataGrid Querying Controller class
+         *  Grid Querying Controller class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -14951,10 +15425,10 @@
             *  Constructor
             *
             * */
-            constructor(dataGrid) {
-                this.dataGrid = dataGrid;
-                this.sorting = new SortingController(dataGrid);
-                /// this.filtering = new FilteringController(dataGrid);
+            constructor(grid) {
+                this.grid = grid;
+                this.sorting = new SortingController(grid);
+                /// this.filtering = new FilteringController(grid);
             }
             /* *
             *
@@ -14994,7 +15468,7 @@
              * Apply all modifiers to the data table.
              */
             async modifyData() {
-                const originalDataTable = this.dataGrid.dataTable;
+                const originalDataTable = this.grid.dataTable;
                 if (!originalDataTable) {
                     return;
                 }
@@ -15010,10 +15484,10 @@
                     const chainModifier = new ChainModifier({}, ...modifiers);
                     const dataTableCopy = originalDataTable.clone();
                     await chainModifier.modify(dataTableCopy.modified);
-                    this.dataGrid.presentationTable = dataTableCopy.modified;
+                    this.grid.presentationTable = dataTableCopy.modified;
                 }
                 else {
-                    this.dataGrid.presentationTable = originalDataTable.modified;
+                    this.grid.presentationTable = originalDataTable.modified;
                 }
                 this.sorting.shouldBeUpdated = false;
                 /// this.filtering.shouldBeUpdated = false;
@@ -15027,10 +15501,10 @@
 
         return QueryingController;
     });
-    _registerModule(_modules, 'DataGrid/DataGrid.js', [_modules['DataGrid/Accessibility/Accessibility.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['DataGrid/Credits.js'], _modules['DataGrid/Defaults.js'], _modules['DataGrid/Utils.js'], _modules['Data/DataTable.js'], _modules['DataGrid/Globals.js'], _modules['DataGrid/Table/Table.js'], _modules['Core/Utilities.js'], _modules['DataGrid/Querying/QueryingController.js']], function (Accessibility, AST, Credits, Defaults, DataGridUtils, DataTable, Globals, Table, U, QueryingController) {
+    _registerModule(_modules, 'Grid/Core/Grid.js', [_modules['Grid/Core/Accessibility/Accessibility.js'], _modules['Core/Renderer/HTML/AST.js'], _modules['Grid/Core/Defaults.js'], _modules['Grid/Core/GridUtils.js'], _modules['Data/DataTable.js'], _modules['Grid/Core/Table/Table.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/Querying/QueryingController.js'], _modules['Grid/Core/Globals.js'], _modules['Shared/TimeBase.js']], function (Accessibility, AST, Defaults, GridUtils, DataTable, Table, U, QueryingController, Globals, TimeBase) {
         /* *
          *
-         *  DataGrid class
+         *  Highcharts Grid class
          *
          *  (c) 2020-2024 Highsoft AS
          *
@@ -15043,28 +15517,27 @@
          *  - Sebastian Bochan
          *
          * */
-        const { makeHTMLElement } = DataGridUtils;
-        const { win } = Globals;
-        const { merge } = U;
+        const { makeHTMLElement, setHTMLContent } = GridUtils;
+        const { fireEvent, extend, getStyle, merge, pick, defined } = U;
         /* *
          *
          *  Class
          *
          * */
         /**
-         * Creates a grid structure (table).
+         * A base class for the Grid.
          */
-        class DataGrid {
+        class Grid {
             // Implementation
-            static dataGrid(renderTo, options, async) {
+            static grid(renderTo, options, async) {
                 if (async) {
                     return new Promise((resolve) => {
-                        void new DataGrid(renderTo, options, (dataGrid) => {
-                            resolve(dataGrid);
+                        void new Grid(renderTo, options, (grid) => {
+                            resolve(grid);
                         });
                     });
                 }
-                return new DataGrid(renderTo, options);
+                return new Grid(renderTo, options);
             }
             /* *
             *
@@ -15072,78 +15545,89 @@
             *
             * */
             /**
-             * Constructs a new data grid.
+             * Constructs a new Grid.
              *
              * @param renderTo
-             * The render target (container) of the data grid.
+             * The render target (container) of the Grid.
              *
              * @param options
-             * The options of the data grid.
+             * The options of the Grid.
              *
              * @param afterLoadCallback
-             * The callback that is called after the data grid is loaded.
+             * The callback that is called after the Grid is loaded.
              */
             constructor(renderTo, options, afterLoadCallback) {
                 /**
                  * The user options declared for the columns as an object of column ID to
                  * column options.
+                 * @internal
                  */
                 this.columnOptionsMap = {};
                 /**
-                 * The options that were declared by the user when creating the data grid
+                 * The options that were declared by the user when creating the Grid
                  * or when updating it.
                  */
                 this.userOptions = {};
+                /**
+                 * The initial height of the container. Can be 0 also if not set.
+                 * @internal
+                 */
+                this.initialContainerHeight = 0;
                 this.loadUserOptions(options);
                 this.querying = new QueryingController(this);
+                this.id = this.options?.id || U.uniqueKey();
                 this.initContainers(renderTo);
                 this.initAccessibility();
                 this.loadDataTable(this.options?.dataTable);
+                this.initVirtualization();
+                this.locale = this.options?.lang?.locale || (this.container?.closest('[lang]')?.lang);
+                this.time = new TimeBase(extend(this.options?.time, { locale: this.locale }), this.options?.lang);
                 this.querying.loadOptions();
                 void this.querying.proceed().then(() => {
                     this.renderViewport();
                     afterLoadCallback?.(this);
                 });
-                DataGrid.dataGrids.push(this);
+                Grid.grids.push(this);
             }
             /* *
              *
              *  Methods
              *
              * */
-            /**
+            /*
              * Initializes the accessibility controller.
              */
             initAccessibility() {
-                if (!this.options?.accessibility?.enabled) {
-                    return;
+                this.accessibility?.destroy();
+                delete this.accessibility;
+                if (this.options?.accessibility?.enabled) {
+                    this.accessibility = new Accessibility(this);
                 }
-                // Can be moved to a separate module in the future (if needed).
-                this.accessibility = new Accessibility(this);
             }
             /**
-             * Initializes the container of the data grid.
+             * Initializes the container of the Grid.
              *
              * @param renderTo
-             * The render target (html element or id) of the data grid.
+             * The render target (html element or id) of the Grid.
              *
              */
             initContainers(renderTo) {
                 const container = (typeof renderTo === 'string') ?
-                    win.document.getElementById(renderTo) : renderTo;
+                    Globals.win.document.getElementById(renderTo) : renderTo;
                 // Display an error if the renderTo is wrong
                 if (!container) {
                     // eslint-disable-next-line no-console
                     console.error(`
                         Rendering div not found. It is unable to find the HTML element
-                        to render the DataGrid in.
+                        to render the Grid in.
                     `);
                     return;
                 }
+                this.initialContainerHeight = getStyle(container, 'height', true) || 0;
                 this.container = container;
                 this.container.innerHTML = AST.emptyHTML;
                 this.contentWrapper = makeHTMLElement('div', {
-                    className: Globals.classNames.container
+                    className: Globals.getClassName('container')
                 }, this.container);
             }
             /**
@@ -15172,6 +15656,7 @@
                 }
                 this.userOptions = merge(this.userOptions, newOptions);
                 this.options = merge(this.options ?? Defaults.defaultOptions, this.userOptions);
+                // Generate column options map
                 const columnOptionsArray = this.options?.columns;
                 if (!columnOptionsArray) {
                     return;
@@ -15247,15 +15732,15 @@
                 this.userOptions.columns = columnOptions;
             }
             /**
-             * Updates the data grid with new options.
+             * Updates the Grid with new options.
              *
              * @param options
-             * The options of the data grid that should be updated. If not provided,
+             * The options of the Grid that should be updated. If not provided,
              * the update will be proceeded based on the `this.userOptions` property.
              * The `column` options are merged using the `id` property as a key.
              *
              * @param render
-             * Whether to re-render the data grid after updating the options.
+             * Whether to re-render the Grid after updating the options.
              *
              * @param oneToOne
              * When `false` (default), the existing column options will be merged with
@@ -15264,12 +15749,14 @@
              */
             async update(options = {}, render = true, oneToOne = false) {
                 this.loadUserOptions(options, oneToOne);
+                this.initAccessibility();
                 let newDataTable = false;
                 if (!this.dataTable || options.dataTable) {
                     this.userOptions.dataTable = options.dataTable;
                     (this.options ?? {}).dataTable = options.dataTable;
                     this.loadDataTable(this.options?.dataTable);
                     newDataTable = true;
+                    this.initVirtualization();
                 }
                 this.querying.loadOptions();
                 if (render) {
@@ -15278,7 +15765,7 @@
                 }
             }
             /**
-             * Updates the column of the data grid with new options.
+             * Updates the column of the Grid with new options.
              *
              * @param columnId
              * The ID of the column that should be updated.
@@ -15288,7 +15775,7 @@
              * column options for this column ID will be removed.
              *
              * @param render
-             * Whether to re-render the data grid after updating the columns.
+             * Whether to re-render the Grid after updating the columns.
              *
              * @param overwrite
              * If true, the column options will be updated by replacing the existing
@@ -15343,51 +15830,150 @@
                 this.hoveredColumnId = columnId;
             }
             /**
-             * Renders the viewport of the data grid. If the data grid is already
+             * Sets the sync state to the row with the provided index. It removes the
+             * synced effect from the previously synced row.
+             *
+             * @param rowIndex
+             * The index of the row.
+             */
+            syncRow(rowIndex) {
+                const rows = this.viewport?.rows;
+                if (!rows) {
+                    return;
+                }
+                const firstRowIndex = this.viewport?.rows[0]?.index ?? 0;
+                if (this.syncedRowIndex !== void 0) {
+                    rows[this.syncedRowIndex - firstRowIndex]?.setSyncedState(false);
+                }
+                if (rowIndex !== void 0) {
+                    rows[rowIndex - firstRowIndex]?.setSyncedState(true);
+                }
+                this.syncedRowIndex = rowIndex;
+            }
+            /**
+             * Sets the sync state to the column with the provided ID. It removes the
+             * synced effect from the previously synced column.
+             *
+             * @param columnId
+             * The ID of the column.
+             */
+            syncColumn(columnId) {
+                const vp = this.viewport;
+                if (!vp) {
+                    return;
+                }
+                if (this.syncedColumnId) {
+                    vp.getColumn(this.syncedColumnId)?.setSyncedState(false);
+                }
+                if (columnId) {
+                    vp.getColumn(columnId)?.setSyncedState(true);
+                }
+                this.syncedColumnId = columnId;
+            }
+            /**
+             * Render caption above the grid.
+             * @internal
+             */
+            renderCaption() {
+                const captionOptions = this.options?.caption;
+                const captionText = captionOptions?.text;
+                if (!captionText) {
+                    return;
+                }
+                // Create a caption element.
+                this.captionElement = makeHTMLElement('div', {
+                    className: Globals.getClassName('captionElement'),
+                    id: this.id + '-caption'
+                }, this.contentWrapper);
+                // Render the caption element content.
+                setHTMLContent(this.captionElement, captionText);
+                if (captionOptions.className) {
+                    this.captionElement.classList.add(...captionOptions.className.split(/\s+/g));
+                }
+            }
+            /**
+             * Render description under the grid.
+             *
+             * @internal
+             */
+            renderDescription() {
+                const descriptionOptions = this.options?.description;
+                const descriptionText = descriptionOptions?.text;
+                if (!descriptionText) {
+                    return;
+                }
+                // Create a description element.
+                this.descriptionElement = makeHTMLElement('div', {
+                    className: Globals.getClassName('descriptionElement'),
+                    id: this.id + '-description'
+                }, this.contentWrapper);
+                // Render the description element content.
+                setHTMLContent(this.descriptionElement, descriptionText);
+                if (descriptionOptions.className) {
+                    this.descriptionElement.classList.add(...descriptionOptions.className.split(/\s+/g));
+                }
+            }
+            /**
+             * Resets the content wrapper of the Grid. It clears the content and
+             * resets the class names.
+             * @internal
+             */
+            resetContentWrapper() {
+                if (!this.contentWrapper) {
+                    return;
+                }
+                this.contentWrapper.innerHTML = AST.emptyHTML;
+                this.contentWrapper.className =
+                    Globals.getClassName('container') + ' ' +
+                        this.options?.rendering?.theme || '';
+            }
+            /**
+             * Renders the viewport of the Grid. If the Grid is already
              * rendered, it will be destroyed and re-rendered with the new data.
              * @internal
              */
             renderViewport() {
-                let vp = this.viewport;
-                const viewportMeta = vp?.getStateMeta();
+                const viewportMeta = this.viewport?.getStateMeta();
                 this.enabledColumns = this.getEnabledColumnIDs();
                 this.credits?.destroy();
-                vp?.destroy();
-                if (this.contentWrapper) {
-                    this.contentWrapper.innerHTML = AST.emptyHTML;
-                }
+                this.viewport?.destroy();
+                delete this.viewport;
+                this.resetContentWrapper();
+                this.renderCaption();
                 if (this.enabledColumns.length > 0) {
-                    this.renderTable();
-                    vp = this.viewport;
-                    if (viewportMeta && vp) {
-                        vp.applyStateMeta(viewportMeta);
+                    this.viewport = this.renderTable();
+                    if (viewportMeta && this.viewport) {
+                        this.viewport.applyStateMeta(viewportMeta);
                     }
                 }
                 else {
                     this.renderNoData();
                 }
-                if (this.options?.credits?.enabled) {
-                    this.credits = new Credits(this);
+                this.renderDescription();
+                this.accessibility?.setA11yOptions();
+                if (this.viewport?.virtualRows) {
+                    this.viewport.reflow();
                 }
-                this.viewport?.reflow();
+                fireEvent(this, 'afterRenderViewport');
             }
             /**
-             * Renders the table (viewport) of the data grid.
+             * Renders the table (viewport) of the Grid.
+             *
+             * @returns
+             * The newly rendered table (viewport) of the Grid.
              */
             renderTable() {
                 this.tableElement = makeHTMLElement('table', {
-                    className: Globals.classNames.tableElement
+                    className: Globals.getClassName('tableElement')
                 }, this.contentWrapper);
-                this.viewport = new Table(this, this.tableElement);
-                // Accessibility
-                this.tableElement.setAttribute('aria-rowcount', this.dataTable?.getRowCount() ?? 0);
+                return new Table(this, this.tableElement);
             }
             /**
              * Renders a message that there is no data to display.
              */
             renderNoData() {
                 makeHTMLElement('div', {
-                    className: Globals.classNames.noData,
+                    className: Globals.getClassName('noData'),
                     innerText: this.options?.lang?.noData
                 }, this.contentWrapper);
             }
@@ -15432,17 +16018,17 @@
              * Extracts all references to columnIds on all levels below defined level
              * in the settings.header structure.
              *
-             * @param columns
+             * @param columnsTree
              * Structure that we start calculation
              *
              * @param [onlyEnabledColumns=true]
              * Extract all columns from header or columns filtered by enabled param
              * @returns
              */
-            getColumnIds(columns, onlyEnabledColumns = true) {
+            getColumnIds(columnsTree, onlyEnabledColumns = true) {
                 let columnIds = [];
                 const { enabledColumns } = this;
-                for (const column of columns) {
+                for (const column of columnsTree) {
                     const columnId = typeof column === 'string' ? column : column.columnId;
                     if (columnId &&
                         (!onlyEnabledColumns || (enabledColumns?.includes(columnId)))) {
@@ -15455,28 +16041,59 @@
                 return columnIds;
             }
             /**
-             * Destroys the data grid.
+             * Destroys the Grid.
              */
             destroy() {
-                const dgIndex = DataGrid.dataGrids.findIndex((dg) => dg === this);
+                const dgIndex = Grid.grids.findIndex((dg) => dg === this);
                 this.viewport?.destroy();
                 if (this.container) {
                     this.container.innerHTML = AST.emptyHTML;
-                    this.container.classList.remove(Globals.classNames.container);
+                    this.container.classList.remove(Globals.getClassName('container'));
                 }
                 // Clear all properties
                 Object.keys(this).forEach((key) => {
                     delete this[key];
                 });
-                DataGrid.dataGrids.splice(dgIndex, 1);
+                Grid.grids.splice(dgIndex, 1);
             }
             /**
-             * Returns the current dataGrid data as a JSON string.
+             * Grey out the Grid and show a loading indicator.
+             *
+             * @param message
+             * The message to display in the loading indicator.
+             */
+            showLoading(message) {
+                if (this.loadingWrapper) {
+                    return;
+                }
+                // Create loading wrapper.
+                this.loadingWrapper = makeHTMLElement('div', {
+                    className: Globals.getClassName('loadingWrapper')
+                }, this.contentWrapper);
+                // Create spinner element.
+                makeHTMLElement('div', {
+                    className: Globals.getClassName('loadingSpinner')
+                }, this.loadingWrapper);
+                // Create loading message span element.
+                const loadingSpan = makeHTMLElement('span', {
+                    className: Globals.getClassName('loadingMessage')
+                }, this.loadingWrapper);
+                setHTMLContent(loadingSpan, pick(message, this.options?.lang?.loading, ''));
+            }
+            /**
+             * Removes the loading indicator.
+             */
+            hideLoading() {
+                this.loadingWrapper?.remove();
+                delete this.loadingWrapper;
+            }
+            /**
+             * Returns the current grid data as a JSON string.
              *
              * @return
              * JSON representation of the data
              */
-            getJSON() {
+            getData() {
                 const json = this.viewport?.dataTable.modified.columns;
                 if (!this.enabledColumns || !json) {
                     return '{}';
@@ -15489,23 +16106,66 @@
                 return JSON.stringify(json);
             }
             /**
-             * Returns the current DataGrid options as a JSON string.
+             * Returns the current grid data as a JSON string.
+             *
+             * @return
+             * JSON representation of the data
+             *
+             * @deprecated
+             */
+            getJSON() {
+                return this.getData();
+            }
+            /**
+             * Returns the current Grid options.
              *
              * @param onlyUserOptions
              * Whether to return only the user options or all options (user options
              * merged with the default ones). Default is `true`.
              *
              * @returns
-             * Options as a JSON string.
+             * Grid options.
              */
-            getOptionsJSON(onlyUserOptions = true) {
-                const optionsCopy = onlyUserOptions ? merge(this.userOptions) : merge(this.options);
-                if (optionsCopy.dataTable?.id) {
-                    optionsCopy.dataTable = {
-                        columns: optionsCopy.dataTable.columns
+            getOptions(onlyUserOptions = true) {
+                const options = onlyUserOptions ? merge(this.userOptions) : merge(this.options);
+                if (options.dataTable?.id) {
+                    options.dataTable = {
+                        columns: options.dataTable.columns
                     };
                 }
-                return JSON.stringify(optionsCopy);
+                return options;
+            }
+            /**
+             * Returns the current Grid options.
+             *
+             * @param onlyUserOptions
+             * Whether to return only the user options or all options (user options
+             * merged with the default ones). Default is `true`.
+             *
+             * @returns
+             * Options as a JSON string
+             *
+             * @deprecated
+             */
+            getOptionsJSON(onlyUserOptions = true) {
+                return JSON.stringify(this.getOptions(onlyUserOptions));
+            }
+            /**
+             * Enables virtualization if the row count is greater than or equal to the
+             * threshold or virtualization is enabled externally. Should be fired after
+             * the data table is loaded.
+             */
+            initVirtualization() {
+                var _a, _b;
+                const rows = this.userOptions.rendering?.rows;
+                const virtualization = rows?.virtualization;
+                const threshold = Number(rows?.virtualizationThreshold ||
+                    Defaults.defaultOptions.rendering?.rows?.virtualizationThreshold);
+                const rowCount = Number(this.dataTable?.rowCount);
+                // Makes sure all nested options are defined.
+                (_b = ((_a = (this.options ?? (this.options = {}))).rendering ?? (_a.rendering = {}))).rows ?? (_b.rows = {});
+                this.options.rendering.rows.virtualization =
+                    defined(virtualization) ? virtualization : rowCount >= threshold;
             }
         }
         /* *
@@ -15514,16 +16174,17 @@
         *
         * */
         /**
-         * An array containing the current DataGrid objects in the page.
+         * An array containing the current Grid objects in the page.
+         * @internal
          */
-        DataGrid.dataGrids = [];
+        Grid.grids = [];
         /* *
          *
          *  Default Export
          *
          * */
 
-        return DataGrid;
+        return Grid;
     });
     _registerModule(_modules, 'Data/DataPoolDefaults.js', [], function () {
         /* *
@@ -15617,7 +16278,7 @@
              * @param {string} connectorId
              * ID of the connector.
              *
-             * @return {Promise<Data.DataConnector>}
+             * @return {Promise<Data.DataConnectorType>}
              * Returns the connector.
              */
             getConnector(connectorId) {
@@ -15725,7 +16386,7 @@
              * @param {Data.DataPoolConnectorOptions} options
              * Options of connector.
              *
-             * @return {Promise<Data.DataConnector>}
+             * @return {Promise<Data.DataConnectorType>}
              * Returns the connector.
              */
             loadConnector(options) {
@@ -15816,111 +16477,732 @@
 
         return DataPool;
     });
-    _registerModule(_modules, 'Accessibility/HighContrastMode.js', [_modules['Core/Globals.js']], function (H) {
+    _registerModule(_modules, 'Grid/Pro/GridEvents.js', [_modules['Core/Utilities.js'], _modules['Core/Globals.js']], function (U, Globals) {
         /* *
          *
-         *  (c) 2009-2024 Øystein Moseng
-         *
-         *  Handling for Windows High Contrast Mode.
+         *  (c) 2020-2024 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
+         *  Authors:
+         *  - Dawid Dragula
+         *
          * */
-        const { doc, isMS, win } = H;
+        const { addEvent, fireEvent, pushUnique } = U;
+        const propagate = {
+            'cell_mouseOver': function () {
+                fireEvent(this.row.viewport.grid, 'cellMouseOver', {
+                    target: this
+                });
+            },
+            'cell_mouseOut': function () {
+                fireEvent(this.row.viewport.grid, 'cellMouseOut', {
+                    target: this
+                });
+            }
+        };
         /* *
          *
          *  Functions
          *
          * */
         /**
-         * Detect WHCM in the browser.
+         * Composition to add events to the TableCellClass methods.
          *
-         * @function Highcharts#isHighContrastModeActive
-         * @private
-         * @return {boolean} Returns true if the browser is in High Contrast mode.
-         */
-        function isHighContrastModeActive() {
-            // Use media query on Edge, but not on IE
-            const isEdge = /(Edg)/.test(win.navigator.userAgent);
-            if (win.matchMedia && isEdge) {
-                return win.matchMedia('(-ms-high-contrast: active)').matches;
-            }
-            // Test BG image for IE
-            if (isMS && win.getComputedStyle) {
-                const testDiv = doc.createElement('div');
-                const imageSrc = 'data:image/gif;base64,' +
-                    'R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-                testDiv.style.backgroundImage = `url(${imageSrc})`; // #13071
-                doc.body.appendChild(testDiv);
-                const bi = (testDiv.currentStyle ||
-                    win.getComputedStyle(testDiv)).backgroundImage;
-                doc.body.removeChild(testDiv);
-                return bi === 'none';
-            }
-            // Other browsers use the forced-colors standard
-            return win.matchMedia && win.matchMedia('(forced-colors: active)').matches;
-        }
-        /**
-         * Force high contrast theme for the chart. The default theme is defined in
-         * a separate file.
+         * @param ColumnClass
+         * The class to extend.
          *
-         * @function Highcharts#setHighContrastTheme
-         * @private
-         * @param {Highcharts.AccessibilityChart} chart The chart to set the theme of.
-         * @return {void}
+         * @param HeaderCellClass
+         * The class to extend.
+         *
+         * @param TableCellClass
+         * The class to extend.
+         *
+         * @internal
          */
-        function setHighContrastTheme(chart) {
-            // We might want to add additional functionality here in the future for
-            // storing the old state so that we can reset the theme if HC mode is
-            // disabled. For now, the user will have to reload the page.
-            chart.highContrastModeActive = true;
-            // Apply theme to chart
-            const theme = (chart.options.accessibility.highContrastTheme);
-            chart.update(theme, false);
-            const hasCustomColors = theme.colors?.length > 1;
-            // Force series colors (plotOptions is not enough)
-            chart.series.forEach(function (s) {
-                const plotOpts = theme.plotOptions[s.type] || {};
-                const fillColor = hasCustomColors && s.colorIndex !== void 0 ?
-                    theme.colors[s.colorIndex] :
-                    plotOpts.color || 'window';
-                const seriesOptions = {
-                    color: plotOpts.color || 'windowText',
-                    colors: hasCustomColors ?
-                        theme.colors : [plotOpts.color || 'windowText'],
-                    borderColor: plotOpts.borderColor || 'window',
-                    fillColor
-                };
-                s.update(seriesOptions, false);
-                if (s.points) {
-                    // Force point colors if existing
-                    s.points.forEach(function (p) {
-                        if (p.options && p.options.color) {
-                            p.update({
-                                color: plotOpts.color || 'windowText',
-                                borderColor: plotOpts.borderColor || 'window'
-                            }, false);
-                        }
-                    });
-                }
+        function compose(ColumnClass, HeaderCellClass, TableCellClass) {
+            if (!pushUnique(Globals.composed, 'GridEvents')) {
+                return;
+            }
+            [
+                'mouseOver',
+                'mouseOut',
+                'dblClick',
+                'click',
+                'afterSetValue'
+            ].forEach((name) => {
+                addEvent(TableCellClass, name, (e) => {
+                    const cell = e.target;
+                    cell.row.viewport.grid.options?.events?.cell?.[name]?.call(cell);
+                    propagate['cell_' + name]?.call(cell);
+                });
             });
-            // The redraw for each series and after is required for 3D pie
-            // (workaround)
-            chart.redraw();
+            [
+                'afterResize',
+                'afterSorting'
+            ].forEach((name) => {
+                addEvent(ColumnClass, name, (e) => {
+                    const column = e.target;
+                    column.viewport.grid.options?.events?.column?.[name]?.call(column);
+                });
+            });
+            // HeaderCell Events
+            addEvent(HeaderCellClass, 'click', (e) => {
+                const col = e.target;
+                col.viewport.grid.options?.events?.header?.click?.call(col);
+            });
         }
         /* *
          *
          *  Default Export
          *
          * */
-        const whcm = {
-            isHighContrastModeActive,
-            setHighContrastTheme
-        };
+        /**
+         * @internal
+         */
 
-        return whcm;
+        return { compose };
+    });
+    _registerModule(_modules, 'Grid/Pro/CellEditing/CellEditing.js', [_modules['Grid/Core/GridUtils.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (GridUtils, Globals, U) {
+        /* *
+         *
+         *  Grid Cell Editing class.
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = GridUtils;
+        const { fireEvent } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * The class that handles the manual editing of cells in the data grid.
+         */
+        class CellEditing {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(viewport) {
+                /**
+                 * Handles the blur event on the input field.
+                 */
+                this.onInputBlur = () => {
+                    this.stopEditing();
+                };
+                /**
+                 * Handles the keydown event on the input field. Cancels editing on escape
+                 * and saves the value on enter.
+                 *
+                 * @param e
+                 * The keyboard event.
+                 */
+                this.onInputKeyDown = (e) => {
+                    const { keyCode } = e;
+                    // Enter / Escape
+                    if (keyCode === 13 || keyCode === 27) {
+                        // Cancel editing on escape
+                        this.stopEditing(keyCode === 13);
+                    }
+                };
+                this.viewport = viewport;
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            /**
+             * Turns the cell into an editable input field.
+             *
+             * @param cell
+             * The cell that is to be edited.
+             */
+            startEditing(cell) {
+                if (this.editedCell === cell) {
+                    return;
+                }
+                if (this.editedCell) {
+                    this.stopEditing();
+                }
+                this.editedCell = cell;
+                const cellElement = cell.htmlElement;
+                cellElement.innerHTML = '';
+                cellElement.classList.add(Globals.getClassName('editedCell'));
+                this.renderInput();
+                fireEvent(cell, 'startedEditing');
+            }
+            /**
+             * Stops the editing of the cell.
+             *
+             * @param submit
+             * Whether to save the value of the input to the cell. Defaults to true.
+             */
+            stopEditing(submit = true) {
+                const cell = this.editedCell;
+                const input = this.inputElement;
+                if (!cell || !input) {
+                    return;
+                }
+                let newValue = input.value;
+                this.destroyInput();
+                cell.htmlElement.classList.remove(Globals.getClassName('editedCell'));
+                cell.htmlElement.focus();
+                // Convert to number if possible
+                if (!isNaN(+newValue)) {
+                    newValue = +newValue;
+                }
+                void cell.setValue(submit ? newValue : cell.value, submit && cell.value !== newValue);
+                fireEvent(cell, 'stoppedEditing', { submit });
+                delete this.editedCell;
+            }
+            /**
+             * Renders the input field for the cell, focuses it and sets up event
+             * listeners.
+             */
+            renderInput() {
+                const cell = this.editedCell;
+                if (!cell) {
+                    return;
+                }
+                const cellEl = cell.htmlElement;
+                const input = this.inputElement = makeHTMLElement('input', {}, cellEl);
+                input.value = '' + cell.value;
+                input.focus();
+                input.addEventListener('blur', this.onInputBlur);
+                input.addEventListener('keydown', this.onInputKeyDown);
+            }
+            /**
+             * Removes event listeners and the input element.
+             */
+            destroyInput() {
+                const input = this.inputElement;
+                if (!input) {
+                    return;
+                }
+                input.removeEventListener('keydown', this.onInputKeyDown);
+                input.removeEventListener('blur', this.onInputBlur);
+                input.remove();
+                delete this.inputElement;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CellEditing;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellEditing/CellEditingComposition.js', [_modules['Grid/Core/Defaults.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Pro/CellEditing/CellEditing.js'], _modules['Grid/Core/GridUtils.js'], _modules['Core/Utilities.js']], function (Defaults, Globals, CellEditing, GU, U) {
+        /* *
+         *
+         *  Grid Cell Editing class.
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = GU;
+        const { addEvent, merge, pushUnique } = U;
+        /* *
+         *
+         *  Composition
+         *
+         * */
+        /**
+         * @internal
+         */
+        var CellEditingComposition;
+        (function (CellEditingComposition) {
+            /**
+             * Default options for the cell editing.
+             */
+            const defaultOptions = {
+                accessibility: {
+                    announcements: {
+                        cellEditing: true
+                    }
+                },
+                lang: {
+                    accessibility: {
+                        cellEditing: {
+                            editable: 'Editable.',
+                            announcements: {
+                                started: 'Entered cell editing mode.',
+                                edited: 'Edited cell value.',
+                                cancelled: 'Editing canceled.'
+                            }
+                        }
+                    }
+                }
+            };
+            /**
+             * Extends the grid classes with cell editing functionality.
+             *
+             * @param TableClass
+             * The class to extend.
+             *
+             * @param TableCellClass
+             * The class to extend.
+             */
+            function compose(TableClass, TableCellClass) {
+                if (!pushUnique(Globals.composed, 'CellEditing')) {
+                    return;
+                }
+                merge(true, Defaults.defaultOptions, defaultOptions);
+                addEvent(TableClass, 'beforeInit', initTable);
+                addEvent(TableCellClass, 'keyDown', onCellKeyDown);
+                addEvent(TableCellClass, 'dblClick', onCellDblClick);
+                addEvent(TableCellClass, 'afterSetValue', addEditableCellA11yHint);
+                addEvent(TableCellClass, 'startedEditing', function () {
+                    announceA11yUserEditedCell(this, 'started');
+                });
+                addEvent(TableCellClass, 'stoppedEditing', function (e) {
+                    this.column.viewport.grid.options
+                        ?.events?.cell?.afterEdit?.call(this);
+                    announceA11yUserEditedCell(this, e.submit ? 'edited' : 'cancelled');
+                });
+            }
+            CellEditingComposition.compose = compose;
+            /**
+             * Callback function called before table initialization.
+             */
+            function initTable() {
+                this.cellEditing = new CellEditing(this);
+            }
+            /**
+             * Callback function called when a key is pressed on a cell.
+             *
+             * @param e
+             * The event object.
+             */
+            function onCellKeyDown(e) {
+                if (e.originalEvent?.key !== 'Enter' ||
+                    !this.column.options.cells?.editable) {
+                    return;
+                }
+                this.row.viewport.cellEditing?.startEditing(this);
+            }
+            /**
+             * Callback function called when a cell is double clicked.
+             */
+            function onCellDblClick() {
+                if (this.column.options.cells?.editable) {
+                    this.row.viewport.cellEditing?.startEditing(this);
+                }
+            }
+            /**
+             * Add the 'editable' hint span element for the editable cell.
+             */
+            function addEditableCellA11yHint() {
+                const a11y = this.row.viewport.grid.accessibility;
+                if (!a11y) {
+                    return;
+                }
+                const editableLang = this.row.viewport.grid.options
+                    ?.lang?.accessibility?.cellEditing?.editable;
+                if (!this.column.options.cells?.editable ||
+                    !editableLang) {
+                    return;
+                }
+                makeHTMLElement('span', {
+                    className: Globals.getClassName('visuallyHidden'),
+                    innerText: ', ' + editableLang
+                }, this.htmlElement);
+            }
+            /**
+             * Announce that the cell editing started.
+             *
+             * @param cell
+             * The cell that is being edited.
+             *
+             * @param msgType
+             * The type of the message.
+             */
+            function announceA11yUserEditedCell(cell, msgType) {
+                const a11y = cell.row.viewport.grid.accessibility;
+                if (!a11y) {
+                    return;
+                }
+                const { options } = a11y.grid;
+                if (!options?.accessibility?.announcements?.cellEditing) {
+                    return;
+                }
+                const lang = options?.lang?.accessibility?.cellEditing?.announcements;
+                const msg = lang?.[msgType];
+                if (!msg) {
+                    return;
+                }
+                a11y.announce(msg);
+            }
+        })(CellEditingComposition || (CellEditingComposition = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CellEditingComposition;
+    });
+    _registerModule(_modules, 'Grid/Pro/Dash3Compatibility.js', [_modules['Core/Utilities.js'], _modules['Core/Globals.js']], function (U, Globals) {
+        /* *
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { pushUnique } = U;
+        /* *
+         *
+         *  Functions
+         *
+         * */
+        /**
+         * Composition to add compatibility with the old `dataGrid` property.
+         *
+         * @param TableClass
+         * The class to extend.
+         */
+        function compose(TableClass) {
+            if (!pushUnique(Globals.composed, 'Dash3Compatibility')) {
+                return;
+            }
+            Object.defineProperty(TableClass.prototype, 'dataGrid', {
+                get: function () {
+                    return this.grid;
+                },
+                configurable: true,
+                enumerable: false
+            });
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return { compose };
+    });
+    _registerModule(_modules, 'Grid/Core/Credits.js', [_modules['Grid/Core/Globals.js'], _modules['Grid/Core/GridUtils.js']], function (Globals, GridUtils) {
+        /* *
+         *
+         *  Grid Credits class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { makeHTMLElement } = GridUtils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a credits in the data grid.
+         */
+        class Credits {
+            /* *
+            *
+            *  Constructor
+            *
+            * */
+            /**
+             * Construct the credits.
+             *
+             * @param grid
+             * The Grid instance which the credits belong to.
+             *
+             * @param options
+             * Options for the credits label. Predefined if not provided.
+             *
+             */
+            constructor(grid, options) {
+                this.grid = grid;
+                this.containerElement = makeHTMLElement('div', {
+                    className: Globals.getClassName('creditsContainer')
+                });
+                this.textElement = this.renderAnchor();
+                this.options = options ?? Credits.defaultOptions;
+                this.render();
+            }
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Render the credits. If the credits are disabled, they will be removed
+             * from the container. If also reflows the viewport dimensions.
+             */
+            render() {
+                const grid = this.grid;
+                const contentWrapper = grid.contentWrapper;
+                const { text, href } = this.options;
+                this.containerElement.remove();
+                if (!this.textElement) {
+                    this.textElement = this.renderAnchor();
+                }
+                if (text && href) {
+                    this.textElement.innerHTML = text;
+                    this.textElement.setAttribute('href', href || '');
+                }
+                if (grid.descriptionElement) {
+                    contentWrapper?.insertBefore(this.containerElement, grid.descriptionElement);
+                }
+                else {
+                    contentWrapper?.appendChild(this.containerElement);
+                }
+                this.grid.viewport?.reflow();
+            }
+            renderAnchor() {
+                const anchorElement = makeHTMLElement('a', {
+                    className: Globals.getClassName('creditsText')
+                }, this.containerElement);
+                anchorElement.setAttribute('target', '_blank');
+                return anchorElement;
+            }
+            /**
+             * Get the height of the credits container.
+             */
+            getHeight() {
+                return this.containerElement.offsetHeight;
+            }
+            /**
+             * Destroy the credits. The credits will be removed from the container and
+             * the reference to the credits will be deleted from the Grid instance
+             * it belongs to.
+             */
+            destroy() {
+                this.containerElement.remove();
+            }
+        }
+        /* *
+        *
+        *  Static Properties
+        *
+        * */
+        /**
+         * Default options of the credits.
+         */
+        Credits.defaultOptions = {
+            enabled: true,
+            // eslint-disable-next-line no-console
+            text: `<picture class="hcg-logo-wrapper">
+                    <source srcset="https://assets.highcharts.com/grid/logo_darkx2.png 2x, https://assets.highcharts.com/grid/logo_dark.png 1x" media="(prefers-color-scheme: dark)">
+                    <img src="https://assets.highcharts.com/grid/logo_light.png" srcset="https://assets.highcharts.com/grid/logo_lightx2.png 2x, https://assets.highcharts.com/grid/logo_light.png 1x" alt="Highcharts logo" style="height: 20px !important; width: auto !important; display: inline-block !important;">
+                </picture>`,
+            href: 'https://www.highcharts.com',
+            position: 'bottom'
+        };
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Credits;
+    });
+    _registerModule(_modules, 'Grid/Pro/Credits/CreditsPro.js', [_modules['Grid/Core/Globals.js'], _modules['Grid/Core/Credits.js']], function (Globals, Credits) {
+        /* *
+         *
+         *  Grid Credits class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a credits in the data grid.
+         */
+        class CreditsPro extends Credits {
+            /* *
+            *
+            *  Methods
+            *
+            * */
+            /**
+             * Set the content of the credits.
+             */
+            setContent() {
+                const { text, href } = this.options;
+                this.textElement.innerHTML = text || '';
+                this.textElement.setAttribute('href', href || '');
+            }
+            /**
+             * Append the credits to the container. The position of the credits is
+             * determined by the `position` option.
+             */
+            appendToContainer() {
+                const grid = this.grid;
+                const contentWrapper = grid.contentWrapper;
+                const { position } = this.options;
+                if (position === 'top') {
+                    // Append the credits to the top of the table.
+                    contentWrapper?.prepend(this.containerElement);
+                    return;
+                }
+                // Append the credits to the bottom of the table.
+                if (grid.descriptionElement) {
+                    contentWrapper?.insertBefore(this.containerElement, grid.descriptionElement);
+                }
+                else {
+                    contentWrapper?.appendChild(this.containerElement);
+                }
+                // Apply grid-pro class
+                this.containerElement.classList.add(Globals.getClassName('creditsPro'));
+            }
+            /**
+             * Update the credits with new options.
+             *
+             * @param options
+             * The new options for the credits.
+             *
+             * @param render
+             * Whether to render the credits after the update.
+             */
+            update(options, render = true) {
+                if (options) {
+                    this.grid.update({
+                        credits: options
+                    }, false);
+                    this.options = this.grid.options?.credits ?? {};
+                }
+                if (render) {
+                    this.render();
+                }
+            }
+            /**
+             * Render the credits. If the credits are disabled, they will be removed
+             * from the container. If also reflows the viewport dimensions.
+             */
+            render() {
+                const enabled = this.options.enabled ?? false;
+                this.containerElement.remove();
+                if (enabled) {
+                    this.setContent();
+                    this.appendToContainer();
+                }
+                else {
+                    this.destroy();
+                }
+                this.grid.viewport?.reflow();
+            }
+            destroy() {
+                super.destroy();
+                delete this.grid.credits;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CreditsPro;
+    });
+    _registerModule(_modules, 'Grid/Pro/Credits/CreditsProComposition.js', [_modules['Grid/Pro/Credits/CreditsPro.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/Defaults.js']], function (CreditsPro, Globals, U, Defaults) {
+        /* *
+         *
+         *  Grid Credits class
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        const { addEvent, merge, pushUnique } = U;
+        /* *
+         *
+         *  Class Namespace
+         *
+         * */
+        var CreditsProComposition;
+        (function (CreditsProComposition) {
+            /**
+             * Extends the grid classes with customizable credits.
+             *
+             * @param GridClass
+             * The class to extend.
+             *
+             */
+            function compose(GridClass) {
+                if (!pushUnique(Globals.composed, 'CreditsPro')) {
+                    return;
+                }
+                merge(true, Defaults.defaultOptions, {
+                    credits: CreditsPro.defaultOptions
+                });
+                addEvent(GridClass, 'afterRenderViewport', initCreditsComposition);
+            }
+            CreditsProComposition.compose = compose;
+            /**
+             * Callback function called before table initialization.
+             */
+            function initCreditsComposition() {
+                this.credits = new CreditsPro(this, this.options?.credits);
+            }
+        })(CreditsProComposition || (CreditsProComposition = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CreditsProComposition;
     });
     _registerModule(_modules, 'Data/Converters/CSVConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
@@ -16354,6 +17636,7 @@
             ...DataConverter.defaultOptions,
             lineDelimiter: '\n'
         };
+        DataConverter.registerType('CSV', CSVConverter);
         /* *
          *
          *  Default Export
@@ -16614,6 +17897,7 @@
         GoogleSheetsConverter.defaultOptions = {
             ...DataConverter.defaultOptions
         };
+        DataConverter.registerType('GoogleSheets', GoogleSheetsConverter);
         /* *
          *
          *  Default Export
@@ -16927,7 +18211,14 @@
                     // of each column is a subcategory
                     if (useMultiLevelHeaders) {
                         for (const name of columnNames) {
-                            const subhead = (columns[name].shift() || '').toString();
+                            let column = columns[name];
+                            if (!Array.isArray(column)) {
+                                // Convert to conventional array from typed array
+                                // if needed
+                                column = Array.from(column);
+                            }
+                            const subhead = (column.shift() || '').toString();
+                            columns[name] = column;
                             subcategories.push(subhead);
                         }
                         tableHead = this.getTableHeaderHTML(columnNames, subcategories, options);
@@ -17177,6 +18468,7 @@
             useRowspanHeaders: true,
             useMultiLevelHeaders: true
         };
+        DataConverter.registerType('HTMLTable', HTMLTableConverter);
         /* *
          *
          *  Default Export
@@ -17475,6 +18767,7 @@
             data: [],
             orientation: 'rows'
         };
+        DataConverter.registerType('JSON', JSONConverter);
         /* *
          *
          *  Default Export
@@ -17552,7 +18845,15 @@
                 });
                 return Promise
                     .resolve(dataUrl ?
-                    fetch(dataUrl).then((json) => json.json()) :
+                    fetch(dataUrl).then((response) => response.json())['catch']((error) => {
+                        connector.emit({
+                            type: 'loadError',
+                            detail: eventDetail,
+                            error,
+                            table
+                        });
+                        console.warn(`Unable to fetch data from ${dataUrl}.`); // eslint-disable-line no-console
+                    }) :
                     data || [])
                     .then((data) => {
                     if (data) {
@@ -17789,8 +19090,11 @@
                 modifier.emit({ type: 'modify', detail: eventDetail, table });
                 const modified = table.modified;
                 if (table.hasColumns(['columnNames'])) { // Inverted table
-                    const columnNames = ((table.deleteColumns(['columnNames']) || {})
-                        .columnNames || []).map((column) => `${column}`), columns = {};
+                    const columnNamesColumn = ((table.deleteColumns(['columnNames']) || {})
+                        .columnNames || []), columns = {}, columnNames = [];
+                    for (let i = 0, iEnd = columnNamesColumn.length; i < iEnd; ++i) {
+                        columnNames.push('' + columnNamesColumn[i]);
+                    }
                     for (let i = 0, iEnd = table.getRowCount(), row; i < iEnd; ++i) {
                         row = table.getRow(i);
                         if (row) {
@@ -17976,7 +19280,7 @@
 
         return RangeModifier;
     });
-    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataCursor.js'], _modules['DataGrid/DataGrid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['DataGrid/Defaults.js'], _modules['DataGrid/Globals.js'], _modules['Accessibility/HighContrastMode.js']], function (AST, DataConnector, DataConverter, DataCursor, _DataGrid, DataModifier, DataPool, DataTable, Defaults, Globals, whcm) {
+    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Templating.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataCursor.js'], _modules['Grid/Core/Grid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['Grid/Core/Defaults.js'], _modules['Grid/Core/Globals.js'], _modules['Accessibility/HighContrastMode.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/Table/Table.js'], _modules['Grid/Core/Table/Column.js'], _modules['Grid/Core/Table/Header/HeaderCell.js'], _modules['Grid/Core/Table/Content/TableCell.js'], _modules['Grid/Pro/GridEvents.js'], _modules['Grid/Pro/CellEditing/CellEditingComposition.js'], _modules['Grid/Pro/Dash3Compatibility.js'], _modules['Grid/Pro/Credits/CreditsProComposition.js']], function (AST, Templating, DataConnector, DataConverter, DataCursor, _Grid, DataModifier, DataPool, DataTable, Defaults, Globals, whcm, Utilities, Table, Column, HeaderCell, TableCell, GridEvents, CellEditingComposition, Dash3Compatibility, CreditsProComposition) {
 
         /* *
          *
@@ -17991,18 +19295,33 @@
          * */
         const G = Globals;
         G.AST = AST;
+        G.classNamePrefix = 'highcharts-datagrid-';
         G.DataConnector = DataConnector;
         G.DataCursor = DataCursor;
         G.DataConverter = DataConverter;
-        G.DataGrid = _DataGrid;
-        G.dataGrid = _DataGrid.dataGrid;
-        G.dataGrids = _DataGrid.dataGrids;
+        G.DataGrid = _Grid;
+        G.dataGrid = _Grid.grid;
+        G.dataGrids = _Grid.grids;
+        G.Grid = _Grid;
+        G.grid = _Grid.grid;
+        G.grids = _Grid.grids;
         G.DataModifier = DataModifier;
         G.DataPool = DataPool;
         G.DataTable = DataTable;
         G.defaultOptions = Defaults.defaultOptions;
-        G.setOptions = Defaults.setOptions;
         G.isHighContrastModeActive = whcm.isHighContrastModeActive;
+        G.setOptions = Defaults.setOptions;
+        G.Templating = Templating;
+        G.product = 'Grid Pro';
+        G.merge = Utilities.merge;
+        G.Table = G.Table || Table;
+        G.Column = G.Column || Column;
+        G.HeaderCell = G.HeaderCell || HeaderCell;
+        G.TableCell = G.TableCell || TableCell;
+        GridEvents.compose(G.Column, G.HeaderCell, G.TableCell);
+        CellEditingComposition.compose(G.Table, G.TableCell);
+        CreditsProComposition.compose(G.Grid);
+        Dash3Compatibility.compose(G.Table);
         /* *
          *
          *  Classic Export
@@ -18010,6 +19329,9 @@
          * */
         if (!G.win.DataGrid) {
             G.win.DataGrid = G;
+        }
+        if (!G.win.Grid) {
+            G.win.Grid = G;
         }
         /* *
          *

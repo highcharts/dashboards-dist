@@ -98,4 +98,9 @@ declare namespace CSVConverter {
      */
     type UserOptions = Partial<(Options & SpecialOptions)>;
 }
+declare module './DataConverterType' {
+    interface DataConverterTypes {
+        CSV: typeof CSVConverter;
+    }
+}
 export default CSVConverter;
