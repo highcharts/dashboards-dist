@@ -2,7 +2,7 @@
  *
  *  Grid Credits class
  *
- *  (c) 2020-2024 Highsoft AS
+ *  (c) 2020-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -16,6 +16,8 @@
 'use strict';
 import Globals from '../../Core/Globals.js';
 import Credits from '../../Core/Credits.js';
+import GridUtils from '../../Core/GridUtils.js';
+const { setHTMLContent } = GridUtils;
 /* *
  *
  *  Class
@@ -35,7 +37,7 @@ class CreditsPro extends Credits {
      */
     setContent() {
         const { text, href } = this.options;
-        this.textElement.innerHTML = text || '';
+        setHTMLContent(this.textElement, text || '');
         this.textElement.setAttribute('href', href || '');
     }
     /**

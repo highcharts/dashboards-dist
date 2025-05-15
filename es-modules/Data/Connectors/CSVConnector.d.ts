@@ -1,6 +1,7 @@
 import type DataEvent from '../DataEvent';
 import type CSVConnectorOptions from './CSVConnectorOptions';
 import type Types from '../../Shared/Types';
+import type DataTable from '../DataTable';
 import CSVConverter from '../Converters/CSVConverter.js';
 import DataConnector from './DataConnector.js';
 /**
@@ -15,8 +16,12 @@ declare class CSVConnector extends DataConnector {
      *
      * @param {CSVConnector.UserOptions} [options]
      * Options for the connector and converter.
+     *
+     * @param {Array<DataTable>} [dataTables]
+     * Multiple connector data tables options.
+     *
      */
-    constructor(options?: CSVConnector.UserOptions);
+    constructor(options?: CSVConnector.UserOptions, dataTables?: Array<DataTable>);
     /**
      * Options related to the handling of the CSV DataConnector,
      * i.e. source, fetching, polling
@@ -25,7 +30,7 @@ declare class CSVConnector extends DataConnector {
     /**
      * The attached parser, which can be replaced in the constructor
      */
-    readonly converter: CSVConverter;
+    converter?: CSVConverter;
     /**
      * Initiates the loading of the CSV source to the connector
      *
@@ -58,9 +63,9 @@ declare namespace CSVConnector {
         csv?: string;
     }
     /**
-     * Available options for constructor and converter of the CSVConnector.
+     * Available options for constructor of the CSVConnector.
      */
-    type UserOptions = (Types.DeepPartial<CSVConnectorOptions> & CSVConverter.UserOptions);
+    type UserOptions = Types.DeepPartial<CSVConnectorOptions>;
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -311,7 +311,7 @@ class Cell extends GUIElement {
         }
     }
     setHighlight(remove) {
-        const cell = this, editMode = cell.row.layout.board.editMode;
+        const cell = this, editMode = cell.row?.layout.board.editMode;
         if (cell.container && editMode) {
             const cnt = cell.container, isSet = cnt.classList.contains(EditGlobals.classNames.cellEditHighlight);
             if (!remove && !isSet) {

@@ -2,7 +2,7 @@
  *
  *  Grid utilities
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -13,6 +13,8 @@
  *
  * */
 import AST from '../../Core/Renderer/HTML/AST.js';
+AST.allowedAttributes.push('srcset', 'media');
+AST.allowedTags.push('picture', 'source');
 /* *
  *
  *  Namespace

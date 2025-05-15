@@ -75,6 +75,13 @@ declare class ConnectorHandler {
      */
     initConnector(): Promise<Component>;
     /**
+     * Sets the data table settings and events.
+     *
+     * @param table
+     * The data table instance for settings and events.
+     */
+    setTable(table: DataTable): void;
+    /**
      * Sets the connector for the component connector handler.
      *
      * @param connector
@@ -90,6 +97,10 @@ declare class ConnectorHandler {
     private setupTableListeners;
     /**
      * Remove event listeners in data table.
+     *
+     * @param table
+     * The connector data table (data source).
+     *
      * @internal
      */
     private clearTableListeners;
@@ -145,6 +156,10 @@ declare namespace ConnectorHandler {
          * @internal
          */
         presentationModifier?: DataModifier;
+        /**
+         * Reference to the specific connector data table.
+         */
+        dataTableKey?: string;
     }
 }
 export default ConnectorHandler;

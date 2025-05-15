@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -63,7 +63,7 @@ class HTMLTableConnector extends DataConnector {
         connector.emit({
             type: 'load',
             detail: eventDetail,
-            table,
+            tables: { table },
             tableElement: connector.tableElement
         });
         let tableElement;
@@ -82,7 +82,7 @@ class HTMLTableConnector extends DataConnector {
                 type: 'loadError',
                 detail: eventDetail,
                 error,
-                table
+                tables: { table }
             });
             return Promise.reject(new Error(error));
         }
@@ -96,7 +96,7 @@ class HTMLTableConnector extends DataConnector {
             connector.emit({
                 type: 'afterLoad',
                 detail: eventDetail,
-                table,
+                tables: { table },
                 tableElement: connector.tableElement
             });
             return connector;

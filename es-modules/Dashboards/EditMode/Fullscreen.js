@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -64,8 +64,7 @@ class Fullscreen {
             unbindChange();
         };
         const promise = board.boardWrapper.requestFullscreen();
-        // eslint-disable-next-line highcharts/quote-members
-        promise.catch(() => {
+        promise['catch'](() => {
             throw new Error('Full screen is not supported.');
         });
     }

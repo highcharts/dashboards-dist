@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -141,6 +141,10 @@ class Component {
             for (const connectorOptions of connectorOptionsArray) {
                 this.connectorHandlers.push(new ConnectorHandler(this, connectorOptions));
             }
+            // Assign the data table key to define the proper dataTable.
+            this.dataTableKey = isArray(this.options.connector) ?
+                this.options.connector[0].dataTableKey :
+                this.options.connector.dataTableKey;
         }
         this.editableOptions =
             new EditableOptions(this, options.editableOptionsBindings);
@@ -403,6 +407,11 @@ class Component {
                 this.connectorHandlers.push(new ConnectorHandler(this, options));
             }
             await this.initConnectors();
+        }
+        // Assign the data table key to define the proper dataTable.
+        const firstConnectorDataTableKey = connectorOptions[0]?.dataTableKey;
+        if (firstConnectorDataTableKey) {
+            this.dataTableKey = firstConnectorDataTableKey;
         }
         if (shouldRerender || eventObject.shouldForceRerender) {
             this.render();

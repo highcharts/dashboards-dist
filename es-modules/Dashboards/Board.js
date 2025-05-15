@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -186,13 +186,22 @@ class Board {
     destroy() {
         const board = this;
         // Destroy layouts.
-        for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
-            board.layouts[i].destroy();
+        if (this.guiEnabled) {
+            for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
+                board.layouts[i].destroy();
+            }
+        }
+        else {
+            for (const mountedComponent of board.mountedComponents) {
+                mountedComponent.component.destroy();
+            }
         }
         // Remove resizeObserver from the board
         this.resizeObserver?.unobserve(board.container);
         // Destroy container.
-        board.container?.remove();
+        if (this.guiEnabled) {
+            board.container?.remove();
+        }
         // @ToDo Destroy bindings.
         // Delete all properties.
         objectEach(board, function (val, key) {

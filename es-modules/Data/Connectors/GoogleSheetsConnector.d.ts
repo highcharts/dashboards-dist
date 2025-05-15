@@ -1,6 +1,7 @@
 import type DataEvent from '../DataEvent';
 import type GoogleSheetsConnectorOptions from './GoogleSheetsConnectorOptions';
 import type Types from '../../Shared/Types';
+import type DataTable from '../DataTable';
 import DataConnector from './DataConnector.js';
 import GoogleSheetsConverter from '../Converters/GoogleSheetsConverter.js';
 /**
@@ -15,12 +16,12 @@ declare class GoogleSheetsConnector extends DataConnector {
      * @param {GoogleSheetsConnector.UserOptions} [options]
      * Options for the connector and converter.
      */
-    constructor(options?: GoogleSheetsConnector.UserOptions);
+    constructor(options?: GoogleSheetsConnector.UserOptions, dataTables?: Array<DataTable>);
     readonly options: GoogleSheetsConnectorOptions;
     /**
      * The attached converter, which can be replaced in the constructor
      */
-    readonly converter: GoogleSheetsConverter;
+    converter: GoogleSheetsConverter;
     /**
      * Loads data from a Google Spreadsheet.
      *
@@ -42,10 +43,9 @@ declare namespace GoogleSheetsConnector {
         readonly url: string;
     }
     /**
-     * Available options for constructor and converter of the
-     * GoogleSheetsConnector.
+     * Available options for constructor of the GoogleSheetsConnector.
      */
-    type UserOptions = (Types.DeepPartial<GoogleSheetsConnectorOptions> & GoogleSheetsConverter.UserOptions);
+    type UserOptions = Types.DeepPartial<GoogleSheetsConnectorOptions>;
     /**
      * Creates GoogleSheets API v4 URL.
      * @private

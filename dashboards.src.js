@@ -1,7 +1,7 @@
 /**
- * @license Highcharts Dashboards v3.2.0 (2025-03-26)
+ * @license Highcharts Dashboards v3.3.0 (2025-05-15)
  *
- * (c) 2009-2024 Highsoft AS
+ * (c) 2009-2025 Highsoft AS
  *
  * License: www.highcharts.com/license
  */
@@ -39,7 +39,7 @@
     _registerModule(_modules, 'Core/Globals.js', [], function () {
         /* *
          *
-         *  (c) 2010-2024 Torstein Honsi
+         *  (c) 2010-2025 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.2.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.3.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -168,7 +168,7 @@
     _registerModule(_modules, 'Core/Utilities.js', [_modules['Core/Globals.js']], function (H) {
         /* *
          *
-         *  (c) 2010-2024 Torstein Honsi
+         *  (c) 2010-2025 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -2158,7 +2158,7 @@
     _registerModule(_modules, 'Core/Renderer/HTML/AST.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
          *
-         *  (c) 2010-2024 Torstein Honsi
+         *  (c) 2010-2025 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -2490,9 +2490,9 @@
             'cx',
             'cy',
             'd',
+            'disabled',
             'dx',
             'dy',
-            'disabled',
             'fill',
             'filterUnits',
             'flood-color',
@@ -2516,22 +2516,22 @@
             'radius',
             'refX',
             'refY',
+            'result',
             'role',
+            'rowspan',
             'scope',
             'slope',
             'src',
             'startOffset',
             'stdDeviation',
-            'stroke',
             'stroke-linecap',
             'stroke-width',
+            'stroke',
             'style',
-            'tableValues',
-            'result',
-            'rowspan',
             'summary',
-            'target',
             'tabindex',
+            'tableValues',
+            'target',
             'text-align',
             'text-anchor',
             'textAnchor',
@@ -2588,6 +2588,7 @@
          * @type    {Array<string>}
          */
         AST.allowedTags = [
+            '#text',
             'a',
             'abbr',
             'b',
@@ -2612,10 +2613,10 @@
             'feFuncG',
             'feFuncR',
             'feGaussianBlur',
-            'feMorphology',
-            'feOffset',
             'feMerge',
             'feMergeNode',
+            'feMorphology',
+            'feOffset',
             'filter',
             'h1',
             'h2',
@@ -2644,18 +2645,17 @@
             'sup',
             'svg',
             'table',
+            'tbody',
+            'td',
             'text',
             'textPath',
+            'th',
             'thead',
             'title',
-            'tbody',
-            'tspan',
-            'td',
-            'th',
             'tr',
+            'tspan',
             'u',
-            'ul',
-            '#text'
+            'ul'
         ];
         AST.emptyHTML = emptyHTML;
         /**
@@ -2720,7 +2720,7 @@
     _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2778,7 +2778,7 @@
     _registerModule(_modules, 'Dashboards/Globals.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2878,7 +2878,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/EditGlobals.js', [_modules['Dashboards/Globals.js']], function (DG) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3034,7 +3034,7 @@
     _registerModule(_modules, 'Dashboards/Layout/GUIElement.js', [_modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (Globals, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3229,7 +3229,7 @@
     _registerModule(_modules, 'Dashboards/Layout/CellHTML.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js']], function (EditGlobals, Globals, GUIElement) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3324,7 +3324,7 @@
     _registerModule(_modules, 'Dashboards/Actions/Bindings.js', [_modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Layout/CellHTML.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (ComponentRegistry, CellHTML, Globals, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3520,7 +3520,7 @@
     _registerModule(_modules, 'Dashboards/Layout/Cell.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (Bindings, EditGlobals, Globals, GUIElement, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3825,7 +3825,7 @@
                 }
             }
             setHighlight(remove) {
-                const cell = this, editMode = cell.row.layout.board.editMode;
+                const cell = this, editMode = cell.row?.layout.board.editMode;
                 if (cell.container && editMode) {
                     const cnt = cell.container, isSet = cnt.classList.contains(EditGlobals.classNames.cellEditHighlight);
                     if (!remove && !isSet) {
@@ -3928,7 +3928,7 @@
     _registerModule(_modules, 'Dashboards/Components/ConnectorHandler.js', [_modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/Globals.js']], function (Cell, Globals) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4001,6 +4001,35 @@
                 return component;
             }
             /**
+             * Sets the data table settings and events.
+             *
+             * @param table
+             * The data table instance for settings and events.
+             */
+            setTable(table) {
+                // Set up event listeners
+                this.clearTableListeners(table);
+                this.setupTableListeners(table);
+                // Re-setup if modifier changes
+                table.on('setModifier', () => this.clearTableListeners(table));
+                table.on('afterSetModifier', (e) => {
+                    if (e.type === 'afterSetModifier' && e.modified) {
+                        this.setupTableListeners(e.modified);
+                        this.component.emit({
+                            type: 'tableChanged',
+                            connector: this.connector
+                        });
+                    }
+                });
+                if (this.presentationModifier) {
+                    this.presentationTable =
+                        this.presentationModifier.modifyTable(table.modified.clone()).modified;
+                }
+                else {
+                    this.presentationTable = table;
+                }
+            }
+            /**
              * Sets the connector for the component connector handler.
              *
              * @param connector
@@ -4016,28 +4045,15 @@
                 }
                 this.connector = connector;
                 if (connector) {
-                    // Set up event listeners
-                    this.clearTableListeners();
-                    this.setupTableListeners(connector.table);
-                    // Re-setup if modifier changes
-                    connector.table.on('setModifier', () => this.clearTableListeners());
-                    connector.table.on('afterSetModifier', (e) => {
-                        if (e.type === 'afterSetModifier' && e.modified) {
-                            this.setupTableListeners(e.modified);
-                            this.component.emit({
-                                type: 'tableChanged',
-                                connector: connector
-                            });
-                        }
-                    });
-                    if (connector.table) {
-                        if (this.presentationModifier) {
-                            this.presentationTable =
-                                this.presentationModifier.modifyTable(connector.table.modified.clone()).modified;
-                        }
-                        else {
-                            this.presentationTable = connector.table;
-                        }
+                    const dataTableKey = this.component.dataTableKey;
+                    const dataTables = connector.dataTables;
+                    if (dataTableKey) {
+                        // Match a data table used in this component.
+                        this.setTable(dataTables[dataTableKey]);
+                        // Take the first connector data table if id not provided.
+                    }
+                    else {
+                        this.setTable(Object.values(dataTables)[0]);
                     }
                 }
                 this.addConnectorAssignment();
@@ -4076,14 +4092,18 @@
             }
             /**
              * Remove event listeners in data table.
+             *
+             * @param table
+             * The connector data table (data source).
+             *
              * @internal
              */
-            clearTableListeners() {
+            clearTableListeners(table) {
                 const connector = this.connector;
                 const tableEvents = this.tableEvents;
                 this.removeTableEvents();
                 if (connector) {
-                    tableEvents.push(connector.table.on('afterSetModifier', (e) => {
+                    tableEvents.push(table.on('afterSetModifier', (e) => {
                         if (e.type === 'afterSetModifier') {
                             clearTimeout(this.tableEventTimeout);
                             this.tableEventTimeout = Globals.win.setTimeout(() => {
@@ -4173,7 +4193,7 @@
     _registerModule(_modules, 'Dashboards/Components/EditableOptions.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4237,7 +4257,7 @@
     _registerModule(_modules, 'Dashboards/Components/Sync/Emitter.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4314,7 +4334,7 @@
     _registerModule(_modules, 'Dashboards/Components/Sync/Handler.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4407,7 +4427,7 @@
     _registerModule(_modules, 'Dashboards/Components/Sync/Sync.js', [_modules['Dashboards/Components/Sync/Emitter.js'], _modules['Dashboards/Components/Sync/Handler.js'], _modules['Core/Utilities.js']], function (SyncEmitter, SyncHandler, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4614,7 +4634,7 @@
     _registerModule(_modules, 'Dashboards/Components/ComponentUtilities.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4689,7 +4709,7 @@
     _registerModule(_modules, 'Dashboards/Utilities.js', [_modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (D, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5140,7 +5160,7 @@
     _registerModule(_modules, 'Dashboards/Components/Component.js', [_modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/CallbackRegistry.js'], _modules['Dashboards/Components/ConnectorHandler.js'], _modules['Dashboards/Components/EditableOptions.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Components/ComponentUtilities.js'], _modules['Dashboards/Utilities.js']], function (Cell, CallbackRegistry, ConnectorHandler, EditableOptions, Sync, Globals, U, CU, DU) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5271,6 +5291,10 @@
                     for (const connectorOptions of connectorOptionsArray) {
                         this.connectorHandlers.push(new ConnectorHandler(this, connectorOptions));
                     }
+                    // Assign the data table key to define the proper dataTable.
+                    this.dataTableKey = isArray(this.options.connector) ?
+                        this.options.connector[0].dataTableKey :
+                        this.options.connector.dataTableKey;
                 }
                 this.editableOptions =
                     new EditableOptions(this, options.editableOptionsBindings);
@@ -5533,6 +5557,11 @@
                         this.connectorHandlers.push(new ConnectorHandler(this, options));
                     }
                     await this.initConnectors();
+                }
+                // Assign the data table key to define the proper dataTable.
+                const firstConnectorDataTableKey = connectorOptions[0]?.dataTableKey;
+                if (firstConnectorDataTableKey) {
+                    this.dataTableKey = firstConnectorDataTableKey;
                 }
                 if (shouldRerender || eventObject.shouldForceRerender) {
                     this.render();
@@ -5808,7 +5837,7 @@
     _registerModule(_modules, 'Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js', [_modules['Dashboards/Components/Component.js']], function (Component) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5850,7 +5879,7 @@
     _registerModule(_modules, 'Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -5880,7 +5909,7 @@
     _registerModule(_modules, 'Dashboards/Components/HTMLComponent/HTMLComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js'], _modules['Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js'], _modules['Dashboards/Utilities.js'], _modules['Core/Utilities.js']], function (AST, Component, HTMLComponentDefaults, HTMLSyncs, DU, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6226,7 +6255,7 @@
     _registerModule(_modules, 'Data/ColumnUtils.js', [], function () {
         /* *
          *
-         *  (c) 2020-2024 Highsoft AS
+         *  (c) 2020-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6342,7 +6371,7 @@
     _registerModule(_modules, 'Data/DataTableCore.js', [_modules['Data/ColumnUtils.js'], _modules['Core/Utilities.js']], function (ColumnUtils, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -6408,6 +6437,11 @@
                 this.modified = this;
                 this.rowCount = 0;
                 this.versionTag = uniqueKey();
+                this.columnNames = options.columnNames;
+                this.firstRowAsNames = options.firstRowAsNames;
+                this.orientation = options.orientation;
+                this.dataModifier = options.dataModifier;
+                this.beforeParse = options.beforeParse;
                 let rowCount = 0;
                 objectEach(options.columns || {}, (column, columnName) => {
                     this.columns[columnName] = column.slice();
@@ -6649,7 +6683,7 @@
     _registerModule(_modules, 'Data/DataTable.js', [_modules['Data/ColumnUtils.js'], _modules['Data/DataTableCore.js'], _modules['Core/Utilities.js']], function (CU, DataTableCore, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -7765,7 +7799,7 @@
     _registerModule(_modules, 'Data/Converters/DataConverter.js', [_modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataTable, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -8391,7 +8425,7 @@
     _registerModule(_modules, 'Data/Converters/CSVConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -8832,7 +8866,7 @@
     _registerModule(_modules, 'Data/Modifiers/DataModifier.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -9114,7 +9148,7 @@
     _registerModule(_modules, 'Data/Connectors/DataConnector.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataModifier, DataTable, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -9148,16 +9182,48 @@
              *
              * @param {DataConnector.UserOptions} [options]
              * Options to use in the connector.
+             *
+             * @param {Array<DataTable>} [dataTables]
+             * Multiple connector data tables options.
              */
-            constructor(options = {}) {
-                this.table = new DataTable(options.dataTable);
+            constructor(options = {}, dataTables = []) {
+                /**
+                 * Tables managed by this DataConnector instance.
+                 */
+                this.dataTables = {};
                 this.metadata = options.metadata || { columns: {} };
+                // Create a data table for each defined in the dataTables user options.
+                let dataTableIndex = 0;
+                if (dataTables?.length > 0) {
+                    for (let i = 0, iEnd = dataTables.length; i < iEnd; ++i) {
+                        const dataTable = dataTables[i];
+                        const key = dataTable?.key;
+                        this.dataTables[key ?? dataTableIndex] =
+                            new DataTable(dataTable);
+                        if (!key) {
+                            dataTableIndex++;
+                        }
+                    }
+                    // If user options dataTables is not defined, generate a default table.
+                }
+                else {
+                    this.dataTables[0] = new DataTable(options.dataTable);
+                }
             }
             /**
              * Poll timer ID, if active.
              */
             get polling() {
                 return !!this._polling;
+            }
+            /**
+             * Gets the first data table.
+             *
+             * @return {DataTable}
+             * The data table instance.
+             */
+            get table() {
+                return this.getTable();
             }
             /* *
              *
@@ -9216,6 +9282,22 @@
                 if (names.length) {
                     return names.sort((a, b) => (pick(columns[a].index, 0) - pick(columns[b].index, 0)));
                 }
+            }
+            /**
+             * Returns a single data table instance based on the provided key.
+             * Otherwise, returns the first data table.
+             *
+             * @param {string} [key]
+             * The data table key.
+             *
+             * @return {DataTable}
+             * The data table instance.
+             */
+            getTable(key) {
+                if (key) {
+                    return this.dataTables[key];
+                }
+                return Object.values(this.dataTables)[0];
             }
             /**
              * Retrieves the columns of the dataTable,
@@ -9282,14 +9364,16 @@
                     connector.describeColumn(columnNames[i], { index: i });
                 }
             }
-            setModifierOptions(modifierOptions) {
-                const ModifierClass = (modifierOptions &&
-                    DataModifier.types[modifierOptions.type]);
-                return this.table
-                    .setModifier(ModifierClass ?
-                    new ModifierClass(modifierOptions) :
-                    void 0)
-                    .then(() => this);
+            async setModifierOptions(modifierOptions) {
+                for (const table of Object.values(this.dataTables)) {
+                    const mergedModifierOptions = merge(table.dataModifier, modifierOptions);
+                    const ModifierClass = (mergedModifierOptions &&
+                        DataModifier.types[mergedModifierOptions.type]);
+                    await table.setModifier(ModifierClass ?
+                        new ModifierClass(mergedModifierOptions) :
+                        void 0);
+                }
+                return this;
             }
             /**
              * Starts polling new data after the specific time span in milliseconds.
@@ -9299,12 +9383,16 @@
              */
             startPolling(refreshTime = 1000) {
                 const connector = this;
+                const tables = connector.dataTables;
+                // Assign a new abort controller.
+                this.pollingController = new AbortController();
+                // Clear the polling timeout.
                 window.clearTimeout(connector._polling);
                 connector._polling = window.setTimeout(() => connector
                     .load()['catch']((error) => connector.emit({
                     type: 'loadError',
                     error,
-                    table: connector.table
+                    tables
                 }))
                     .then(() => {
                     if (connector._polling) {
@@ -9317,6 +9405,9 @@
              */
             stopPolling() {
                 const connector = this;
+                // Abort the existing request.
+                connector?.pollingController?.abort();
+                // Clear the polling timeout.
                 window.clearTimeout(connector._polling);
                 delete connector._polling;
             }
@@ -9331,6 +9422,35 @@
              */
             whatIs(name) {
                 return this.metadata.columns[name];
+            }
+            /**
+             * Iterates over the dataTables and initiates the corresponding converters.
+             * Updates the dataTables and assigns the first converter.
+             *
+             * @param {T}[data]
+             * Data specific to the corresponding converter.
+             *
+             * @param {DataConnector.CreateConverterFunction}[createConverter]
+             * Creates a specific converter combining the dataTable options.
+             *
+             * @param {DataConnector.ParseDataFunction<T>}[parseData]
+             * Runs the converter parse method with the specific data type.
+             */
+            initConverters(data, createConverter, parseData) {
+                let index = 0;
+                for (const [key, table] of Object.entries(this.dataTables)) {
+                    // Create a proper converter and parse its data.
+                    const converter = createConverter(key, table);
+                    parseData(converter, data);
+                    // Update the dataTable.
+                    table.deleteColumns();
+                    table.setColumns(converter.getTable().getColumns());
+                    // Assign the first converter.
+                    if (index === 0) {
+                        this.converter = converter;
+                    }
+                    index++;
+                }
             }
         }
         /* *
@@ -9393,7 +9513,7 @@
     _registerModule(_modules, 'Data/Connectors/CSVConnector.js', [_modules['Data/Converters/CSVConverter.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Core/Utilities.js']], function (CSVConverter, DataConnector, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -9428,11 +9548,14 @@
              *
              * @param {CSVConnector.UserOptions} [options]
              * Options for the connector and converter.
+             *
+             * @param {Array<DataTable>} [dataTables]
+             * Multiple connector data tables options.
+             *
              */
-            constructor(options) {
+            constructor(options, dataTables) {
                 const mergedOptions = merge(CSVConnector.defaultOptions, options);
-                super(mergedOptions);
-                this.converter = new CSVConverter(mergedOptions);
+                super(mergedOptions, dataTables);
                 this.options = mergedOptions;
                 if (mergedOptions.enablePolling) {
                     this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
@@ -9453,23 +9576,35 @@
              * @emits CSVConnector#afterLoad
              */
             load(eventDetail) {
-                const connector = this, converter = connector.converter, table = connector.table, { csv, csvURL, dataModifier } = connector.options;
+                const connector = this, tables = connector.dataTables, { csv, csvURL, dataModifier } = connector.options;
                 connector.emit({
                     type: 'load',
                     csv,
                     detail: eventDetail,
-                    table
+                    tables
                 });
                 return Promise
                     .resolve(csvURL ?
-                    fetch(csvURL).then((response) => response.text()) :
+                    fetch(csvURL, {
+                        signal: connector?.pollingController?.signal
+                    }).then((response) => response.text()) :
                     csv || '')
                     .then((csv) => {
                     if (csv) {
-                        // If already loaded, clear the current rows
-                        table.deleteColumns();
-                        converter.parse({ csv });
-                        table.setColumns(converter.getTable().getColumns());
+                        this.initConverters(csv, (key, table) => {
+                            const options = this.options;
+                            // Takes over the connector default options.
+                            const dataTableOptions = {
+                                dataTableKey: key,
+                                firstRowAsNames: table.firstRowAsNames ??
+                                    options.firstRowAsNames,
+                                beforeParse: table.beforeParse ??
+                                    options.beforeParse
+                            };
+                            return new CSVConverter(merge(this.options, dataTableOptions));
+                        }, (converter, data) => {
+                            converter.parse({ csv: data });
+                        });
                     }
                     return connector
                         .setModifierOptions(dataModifier)
@@ -9480,7 +9615,7 @@
                         type: 'afterLoad',
                         csv,
                         detail: eventDetail,
-                        table
+                        tables
                     });
                     return connector;
                 })['catch']((error) => {
@@ -9488,7 +9623,7 @@
                         type: 'loadError',
                         detail: eventDetail,
                         error,
-                        table
+                        tables
                     });
                     throw error;
                 });
@@ -9518,7 +9653,7 @@
     _registerModule(_modules, 'Data/Converters/GoogleSheetsConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -9654,7 +9789,7 @@
     _registerModule(_modules, 'Data/Connectors/GoogleSheetsConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/GoogleSheetsConverter.js'], _modules['Core/Utilities.js']], function (DataConnector, GoogleSheetsConverter, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -9706,9 +9841,9 @@
              * @param {GoogleSheetsConnector.UserOptions} [options]
              * Options for the connector and converter.
              */
-            constructor(options) {
+            constructor(options, dataTables) {
                 const mergedOptions = merge(GoogleSheetsConnector.defaultOptions, options);
-                super(mergedOptions);
+                super(mergedOptions, dataTables);
                 this.converter = new GoogleSheetsConverter(mergedOptions);
                 this.options = mergedOptions;
             }
@@ -9727,36 +9862,43 @@
              * Same connector instance with modified table.
              */
             load(eventDetail) {
-                const connector = this, converter = connector.converter, table = connector.table, { dataModifier, dataRefreshRate, enablePolling, firstRowAsNames, googleAPIKey, googleSpreadsheetKey } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
+                const connector = this, tables = connector.dataTables, { dataModifier, dataRefreshRate, enablePolling, googleAPIKey, googleSpreadsheetKey } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
                 connector.emit({
                     type: 'load',
                     detail: eventDetail,
-                    table,
+                    tables,
                     url
                 });
                 if (!URL.canParse(url)) {
                     throw new Error('Invalid URL: ' + url);
                 }
-                return fetch(url)
+                return fetch(url, { signal: connector?.pollingController?.signal })
                     .then((response) => (response.json()))
                     .then((json) => {
                     if (isGoogleError(json)) {
                         throw new Error(json.error.message);
                     }
-                    converter.parse({
-                        firstRowAsNames,
-                        json
+                    this.initConverters(json, (key, table) => {
+                        const options = this.options;
+                        // Takes over the connector default options.
+                        const dataTableOptions = {
+                            dataTableKey: key,
+                            firstRowAsNames: table.firstRowAsNames ??
+                                options.firstRowAsNames,
+                            beforeParse: table.beforeParse ??
+                                options.beforeParse
+                        };
+                        return new GoogleSheetsConverter(merge(this.options, dataTableOptions));
+                    }, (converter, data) => {
+                        converter.parse({ json: data });
                     });
-                    // If already loaded, clear the current table
-                    table.deleteColumns();
-                    table.setColumns(converter.getTable().getColumns());
                     return connector.setModifierOptions(dataModifier);
                 })
                     .then(() => {
                     connector.emit({
                         type: 'afterLoad',
                         detail: eventDetail,
-                        table,
+                        tables,
                         url
                     });
                     // Polling
@@ -9769,7 +9911,7 @@
                         type: 'loadError',
                         detail: eventDetail,
                         error,
-                        table
+                        tables
                     });
                     throw error;
                 });
@@ -9858,7 +10000,7 @@
     _registerModule(_modules, 'Data/Converters/HTMLTableConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -10225,7 +10367,7 @@
     _registerModule(_modules, 'Data/Connectors/HTMLTableConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Core/Globals.js'], _modules['Data/Converters/HTMLTableConverter.js'], _modules['Core/Utilities.js']], function (DataConnector, H, HTMLTableConverter, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -10283,7 +10425,7 @@
                 connector.emit({
                     type: 'load',
                     detail: eventDetail,
-                    table,
+                    tables: { table },
                     tableElement: connector.tableElement
                 });
                 let tableElement;
@@ -10302,7 +10444,7 @@
                         type: 'loadError',
                         detail: eventDetail,
                         error,
-                        table
+                        tables: { table }
                     });
                     return Promise.reject(new Error(error));
                 }
@@ -10316,7 +10458,7 @@
                     connector.emit({
                         type: 'afterLoad',
                         detail: eventDetail,
-                        table,
+                        tables: { table },
                         tableElement: connector.tableElement
                     });
                     return connector;
@@ -10343,7 +10485,7 @@
     _registerModule(_modules, 'Data/Converters/JSONConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataConverter, DataTable, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -10524,7 +10666,7 @@
     _registerModule(_modules, 'Data/Connectors/JSONConnector.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Core/Utilities.js'], _modules['Data/Converters/JSONConverter.js']], function (DataConnector, U, JSONConverter) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -10556,11 +10698,13 @@
              *
              * @param {JSONConnector.UserOptions} [options]
              * Options for the connector and converter.
+             *
+             * @param {Array<DataTable>} [dataTables]
+             * Multiple connector data tables options.
              */
-            constructor(options) {
+            constructor(options, dataTables) {
                 const mergedOptions = merge(JSONConnector.defaultOptions, options);
-                super(mergedOptions);
-                this.converter = new JSONConverter(mergedOptions);
+                super(mergedOptions, dataTables);
                 this.options = mergedOptions;
                 if (mergedOptions.enablePolling) {
                     this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
@@ -10581,40 +10725,57 @@
              * @emits JSONConnector#afterLoad
              */
             load(eventDetail) {
-                const connector = this, converter = connector.converter, table = connector.table, { data, dataUrl, dataModifier } = connector.options;
+                const connector = this, tables = connector.dataTables, { data, dataUrl, dataModifier } = connector.options;
                 connector.emit({
                     type: 'load',
                     data,
                     detail: eventDetail,
-                    table
+                    tables
                 });
                 return Promise
                     .resolve(dataUrl ?
-                    fetch(dataUrl).then((response) => response.json())['catch']((error) => {
+                    fetch(dataUrl, {
+                        signal: connector?.pollingController?.signal
+                    }).then((response) => response.json())['catch']((error) => {
                         connector.emit({
                             type: 'loadError',
                             detail: eventDetail,
                             error,
-                            table
+                            tables
                         });
                         console.warn(`Unable to fetch data from ${dataUrl}.`); // eslint-disable-line no-console
                     }) :
                     data || [])
                     .then((data) => {
                     if (data) {
-                        // If already loaded, clear the current rows
-                        table.deleteColumns();
-                        converter.parse({ data });
-                        table.setColumns(converter.getTable().getColumns());
+                        this.initConverters(data, (key, table) => {
+                            const options = this.options;
+                            // Takes over the connector default options.
+                            const dataTableOptions = {
+                                dataTableKey: key,
+                                columnNames: table.columnNames ??
+                                    options.columnNames,
+                                firstRowAsNames: table.firstRowAsNames ??
+                                    options.firstRowAsNames,
+                                orientation: table.orientation ??
+                                    options.orientation,
+                                beforeParse: table.beforeParse ??
+                                    options.beforeParse
+                            };
+                            return new JSONConverter(merge(this.options, dataTableOptions));
+                        }, (converter, data) => {
+                            converter.parse({ data });
+                        });
                     }
-                    return connector.setModifierOptions(dataModifier).then(() => data);
+                    return connector.setModifierOptions(dataModifier)
+                        .then(() => data);
                 })
                     .then((data) => {
                     connector.emit({
                         type: 'afterLoad',
                         data,
                         detail: eventDetail,
-                        table
+                        tables
                     });
                     return connector;
                 })['catch']((error) => {
@@ -10622,7 +10783,7 @@
                         type: 'loadError',
                         detail: eventDetail,
                         error,
-                        table
+                        tables
                     });
                     throw error;
                 });
@@ -10652,7 +10813,7 @@
     _registerModule(_modules, 'Data/Modifiers/ChainModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -10982,7 +11143,7 @@
     _registerModule(_modules, 'Data/Modifiers/InvertModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11218,7 +11379,7 @@
     _registerModule(_modules, 'Data/Modifiers/RangeModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11358,7 +11519,7 @@
     _registerModule(_modules, 'Data/Modifiers/SortModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataTable.js'], _modules['Core/Utilities.js']], function (DataModifier, DataTable, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11622,7 +11783,7 @@
     _registerModule(_modules, 'Dashboards/Accessibility/DashboardsAccessibility.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -11680,7 +11841,7 @@
     _registerModule(_modules, 'Data/DataCursor.js', [], function () {
         /* *
          *
-         *  (c) 2020-2024 Highsoft AS
+         *  (c) 2020-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -12066,7 +12227,7 @@
     _registerModule(_modules, 'Dashboards/Serializable.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -12214,7 +12375,7 @@
     _registerModule(_modules, 'Dashboards/SerializeHelper/DataCursorHelper.js', [_modules['Data/DataCursor.js'], _modules['Dashboards/Serializable.js']], function (DataCursor, Serializable) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -12307,7 +12468,7 @@
     _registerModule(_modules, 'Data/DataPoolDefaults.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -12336,7 +12497,7 @@
     _registerModule(_modules, 'Data/DataPool.js', [_modules['Data/Connectors/DataConnector.js'], _modules['Data/DataPoolDefaults.js'], _modules['Core/Utilities.js']], function (DataConnector, DataPoolDefaults, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -12517,7 +12678,7 @@
                     if (!ConnectorClass) {
                         throw new Error(`Connector type not found. (${options.type})`);
                     }
-                    const connector = new ConnectorClass(options.options);
+                    const connector = new ConnectorClass(options.options, options.dataTables);
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     connector
                         .load()
@@ -12598,7 +12759,7 @@
     _registerModule(_modules, 'Dashboards/Layout/Row.js', [_modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js']], function (Globals, Cell, GUIElement, U, EditGlobals) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -12957,7 +13118,7 @@
     _registerModule(_modules, 'Dashboards/Layout/Layout.js', [_modules['Dashboards/Utilities.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Layout/Row.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Globals.js']], function (DU, U, Row, GUIElement, Globals) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -13254,7 +13415,7 @@
     _registerModule(_modules, 'Dashboards/Board.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Accessibility/DashboardsAccessibility.js'], _modules['Data/DataCursor.js'], _modules['Dashboards/SerializeHelper/DataCursorHelper.js'], _modules['Data/DataPool.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/Layout.js'], _modules['Dashboards/Serializable.js'], _modules['Dashboards/Components/HTMLComponent/HTMLComponent.js'], _modules['Core/Utilities.js']], function (Bindings, ComponentRegistry, DashboardsAccessibility, DataCursor, DataCursorHelper, DataPool, Globals, Layout, Serializable, HTMLComponent, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -13428,13 +13589,22 @@
             destroy() {
                 const board = this;
                 // Destroy layouts.
-                for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
-                    board.layouts[i].destroy();
+                if (this.guiEnabled) {
+                    for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
+                        board.layouts[i].destroy();
+                    }
+                }
+                else {
+                    for (const mountedComponent of board.mountedComponents) {
+                        mountedComponent.component.destroy();
+                    }
                 }
                 // Remove resizeObserver from the board
                 this.resizeObserver?.unobserve(board.container);
                 // Destroy container.
-                board.container?.remove();
+                if (this.guiEnabled) {
+                    board.container?.remove();
+                }
                 // @ToDo Destroy bindings.
                 // Delete all properties.
                 objectEach(board, function (val, key) {
@@ -13651,7 +13821,7 @@
     _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridExtremesSync.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -13728,7 +13898,7 @@
     _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridHighlightSync.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -13870,7 +14040,7 @@
     _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridVisibilitySync.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -13945,7 +14115,7 @@
     _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridSyncs.js', [_modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridExtremesSync.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridHighlightSync.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridVisibilitySync.js']], function (DataGridExtremesSync, DataGridHighlightSync, DataGridVisibilitySync) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -13983,7 +14153,7 @@
     _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14036,9 +14206,13 @@
                                     ],
                                     type: 'select',
                                     selectOptions: [{
+                                            name: ''
+                                        }, {
                                             name: 'full'
                                         }, {
                                             name: 'fixed'
+                                        }, {
+                                            name: 'mixed'
                                         }]
                                 }, {
                                     name: 'Editable Grid',
@@ -14128,7 +14302,7 @@
     _registerModule(_modules, 'Dashboards/Components/DataGridComponent/DataGridComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/DataGridComponent/DataGridSyncs/DataGridSyncs.js'], _modules['Dashboards/Components/DataGridComponent/DataGridComponentDefaults.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Utilities.js']], function (Component, DataGridSyncs, GridComponentDefaults, U, DU) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14339,7 +14513,7 @@
                 if (!DGN) {
                     throw new Error('Grid not connected.');
                 }
-                const dataTable = this.getFirstConnector()?.table, options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
+                const dataTable = this.getFirstConnector()?.getTable(this.dataTableKey), options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
                 if (dataTable) {
                     gridOptions.dataTable = dataTable.modified;
                 }
@@ -14372,7 +14546,7 @@
     _registerModule(_modules, 'Dashboards/Plugins/DataGridPlugin.js', [_modules['Dashboards/Components/DataGridComponent/DataGridComponent.js']], function (GridComponent) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14449,7 +14623,7 @@
     _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsExtremesSync.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -14668,7 +14842,7 @@
     _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsHighlightSync.js', [_modules['Dashboards/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15002,7 +15176,7 @@
     _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsVisibilitySync.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15147,7 +15321,7 @@
     _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsSyncs.js', [_modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsExtremesSync.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsHighlightSync.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsVisibilitySync.js']], function (HighchartsExtremesSync, HighchartsHighlightSync, HighchartsVisibilitySync) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15185,7 +15359,7 @@
     _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js', [_modules['Dashboards/Components/Component.js'], _modules['Core/Utilities.js']], function (Component, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15394,7 +15568,7 @@
     _registerModule(_modules, 'Dashboards/Components/HighchartsComponent/HighchartsComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataTable.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsSyncs.js'], _modules['Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js'], _modules['Dashboards/Utilities.js'], _modules['Core/Utilities.js']], function (Component, DataConverter, DataTable, Globals, HighchartsSyncs, HighchartsComponentDefaults, DU, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -15482,9 +15656,16 @@
                     const connector = connectorHandler.connector;
                     if (connector) {
                         connector.on('afterLoad', (e) => {
-                            if (e.table) {
-                                connector.table.setColumns(e.table.getColumns());
+                            const eventTables = e.tables;
+                            let eventTable;
+                            if (this.dataTableKey) {
+                                eventTable = eventTables[this.dataTableKey];
                             }
+                            else {
+                                eventTable = Object.values(eventTables)[0];
+                            }
+                            const table = connector.getTable(this.dataTableKey);
+                            table.setColumns(eventTable.getColumns());
                         });
                     }
                 }
@@ -15566,7 +15747,7 @@
              * @param connectorHandler Connector handler with data to update.
              */
             onChartUpdate(point, connectorHandler) {
-                const table = connectorHandler.connector?.table;
+                const table = connectorHandler.connector?.getTable(this.dataTableKey);
                 const columnAssignment = connectorHandler.columnAssignment;
                 const seriesId = point.series.options.id;
                 const converter = new DataConverter();
@@ -15642,6 +15823,12 @@
                 for (const connectorHandler of connectorHandlers) {
                     const options = connectorHandler.options;
                     let columnAssignment = options.columnAssignment;
+                    // Set the new data table based on the data table key.
+                    const connector = connectorHandler.connector;
+                    const dataTableKey = this.dataTableKey;
+                    if (connector && dataTableKey) {
+                        connectorHandler.setTable(connector.dataTables[dataTableKey]);
+                    }
                     if (!columnAssignment && connectorHandler.presentationTable) {
                         columnAssignment = this.getDefaultColumnAssignment(connectorHandler.presentationTable.getColumnNames(), connectorHandler.presentationTable);
                     }
@@ -15995,7 +16182,7 @@
     _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPISyncs/KPIExtremesSync.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16070,7 +16257,7 @@
     _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPISyncs/KPISyncs.js', [_modules['Dashboards/Components/KPIComponent/KPISyncs/KPIExtremesSync.js']], function (KPIExtremesSync) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16104,7 +16291,7 @@
     _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPIComponentDefaults.js', [_modules['Dashboards/Components/Component.js']], function (Component) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16165,7 +16352,7 @@
     _registerModule(_modules, 'Data/Formula/FormulaTypes.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16302,7 +16489,7 @@
     _registerModule(_modules, 'Data/Formula/FormulaProcessor.js', [_modules['Data/Formula/FormulaTypes.js']], function (FormulaTypes) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16780,7 +16967,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/SUM.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16846,7 +17033,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/AVERAGE.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -16921,7 +17108,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MEDIAN.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -17000,7 +17187,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MAX.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -17070,7 +17257,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MIN.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -17140,7 +17327,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/COUNT.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -17206,7 +17393,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/PRODUCT.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -17275,7 +17462,7 @@
     _registerModule(_modules, 'Core/Chart/ChartDefaults.js', [], function () {
         /* *
          *
-         *  (c) 2010-2024 Torstein Honsi
+         *  (c) 2010-2025 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -17733,6 +17920,10 @@
                  * [`endOnTick`](#yAxis.endOnTick) were set to `false`. After the
                  * panning action is finished, the axes will adjust to their actual
                  * settings.
+                 *
+                 * **Note:** For non-cartesian series, the only supported panning type
+                 * is `xy`, as zooming in a single direction is not applicable due to
+                 * the radial nature of the coordinate system.
                  *
                  * @sample {highcharts} highcharts/chart/panning-type
                  *         Zooming and xy panning
@@ -18273,6 +18464,11 @@
             /**
              * Chart zooming options.
              * @since 10.2.1
+             *
+             * @sample     highcharts/plotoptions/sankey-inverted
+             *             Zooming in sankey series
+             * @sample     highcharts/series-treegraph/link-types
+             *             Zooming in treegraph series
              */
             zooming: {
                 /**
@@ -18294,6 +18490,10 @@
                 /**
                  * Decides in what dimensions the user can zoom by dragging the mouse.
                  * Can be one of `x`, `y` or `xy`.
+                 *
+                 * **Note:** For non-cartesian series, the only supported zooming type
+                 * is `xy`, as zooming in a single direction is not applicable due to
+                 * the radial nature of the coordinate system.
                  *
                  * @declare    Highcharts.OptionsChartZoomingTypeValue
                  * @type       {string}
@@ -18593,7 +18793,7 @@
     _registerModule(_modules, 'Shared/TimeBase.js', [_modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (H, U) {
         /* *
          *
-         *  (c) 2010-2024 Torstein Honsi
+         *  (c) 2010-2025 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -19419,7 +19619,7 @@
     _registerModule(_modules, 'Core/Time.js', [_modules['Shared/TimeBase.js'], _modules['Core/Utilities.js']], function (TimeBase, U) {
         /* *
          *
-         *  (c) 2010-2024 Torstein Honsi
+         *  (c) 2010-2025 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -19591,7 +19791,7 @@
     _registerModule(_modules, 'Core/Defaults.js', [_modules['Core/Chart/ChartDefaults.js'], _modules['Core/Globals.js'], _modules['Core/Color/Palettes.js'], _modules['Core/Time.js'], _modules['Core/Utilities.js']], function (ChartDefaults, H, Palettes, Time, U) {
         /* *
          *
-         *  (c) 2010-2024 Torstein Honsi
+         *  (c) 2010-2025 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -19681,7 +19881,7 @@
                 /**
                  * The default chart title.
                  *
-                 * @since next
+                 * @since 12.2.0
                  */
                 chartTitle: 'Chart title',
                 /**
@@ -19723,7 +19923,7 @@
                 /**
                  * [Format string](https://www.highcharts.com/docs/chart-concepts/templating) for the default series name.
                  *
-                 * @since next
+                 * @since 12.2.0
                  */
                 seriesName: 'Series {add index 1}',
                 /**
@@ -19810,7 +20010,7 @@
                 numericSymbols: ['k', 'M', 'G', 'T', 'P', 'E'],
                 /**
                  * The default name for a pie slice (point).
-                 * @since next
+                 * @since 12.2.0
                  */
                 pieSliceName: 'Slice',
                 /**
@@ -19850,7 +20050,7 @@
                 /**
                  * The default title of the Y axis
                  *
-                 * @since next
+                 * @since 12.2.0
                  */
                 yAxisTitle: 'Values',
                 resetZoomTitle: 'Reset zoom level 1:1'
@@ -21484,7 +21684,7 @@
                  *
                  * @type      {boolean}
                  * @default   false
-                 * @since     next
+                 * @since 12.2.0
                  * @apioption tooltip.fixed
                  */
                 /**
@@ -21924,7 +22124,7 @@
                  * @sample {highmaps} maps/tooltip/fixed/
                  *         Map with fixed tooltip
                  *
-                 * @since next
+                 * @since 12.2.0
                  */
                 position: {
                     /**
@@ -22546,7 +22746,7 @@
     _registerModule(_modules, 'Core/Templating.js', [_modules['Core/Defaults.js'], _modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (D, G, U) {
         /* *
          *
-         *  (c) 2010-2024 Torstein Honsi
+         *  (c) 2010-2025 Torstein Honsi
          *
          *  License: www.highcharts.com/license
          *
@@ -22941,13 +23141,38 @@
             helpers,
             numberFormat
         };
+        /* *
+         * API Declarations
+         * */
+        /**
+         * @interface Highcharts.Templating
+         *
+         * The Highcharts.Templating interface provides a structure for defining
+         * helpers. Helpers can be used as conditional blocks or functions within
+         * expressions. Highcharts includes several built-in helpers and supports
+         * the addition of custom helpers.
+         *
+         * @see [More information](
+         * https://www.highcharts.com/docs/chart-concepts/templating#helpers)
+         *
+         * @example
+         * // Define a custom helper to return the absolute value of a number
+         * Highcharts.Templating.helpers.abs = value => Math.abs(value);
+         *
+         * // Usage in a format string
+         * format: 'Absolute value: {abs point.y}'
+         *
+         * @name Highcharts.Templating#helpers
+         * @type {Record<string, Function>}
+         */
+        (''); // Keeps doclets above in file
 
         return Templating;
     });
     _registerModule(_modules, 'Dashboards/Components/KPIComponent/KPIComponent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Components/Component.js'], _modules['Dashboards/Components/KPIComponent/KPISyncs/KPISyncs.js'], _modules['Dashboards/Components/KPIComponent/KPIComponentDefaults.js'], _modules['Data/Formula/Functions/SUM.js'], _modules['Data/Formula/Functions/AVERAGE.js'], _modules['Data/Formula/Functions/MEDIAN.js'], _modules['Data/Formula/Functions/MAX.js'], _modules['Data/Formula/Functions/MIN.js'], _modules['Data/Formula/Functions/COUNT.js'], _modules['Data/Formula/Functions/PRODUCT.js'], _modules['Core/Templating.js'], _modules['Core/Utilities.js']], function (AST, Component, KPISyncs, KPIComponentDefaults, SUM, AVERAGE, MEDIAN, MAX, MIN, COUNT, PRODUCT, Templating, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -23495,7 +23720,7 @@
     _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorComponentDefaults.js', [_modules['Dashboards/Components/Component.js']], function (Component) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -23601,7 +23826,7 @@
     _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncUtils.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -23672,7 +23897,7 @@
     _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorCrossfilterSync.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncUtils.js'], _modules['Core/Utilities.js']], function (DataModifier, NavigatorSyncUtils, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -23750,7 +23975,7 @@
     _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorExtremesSync.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncUtils.js'], _modules['Core/Utilities.js']], function (DataModifier, NavigatorSyncUtils, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -23876,7 +24101,7 @@
     _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncs.js', [_modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorCrossfilterSync.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorExtremesSync.js']], function (NavigatorCrossfilterSync, NavigatorExtremesSync) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -23912,7 +24137,7 @@
     _registerModule(_modules, 'Dashboards/Components/NavigatorComponent/NavigatorComponent.js', [_modules['Dashboards/Components/Component.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorComponentDefaults.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncs.js'], _modules['Core/Utilities.js']], function (Component, Globals, NavigatorComponentDefaults, NavigatorSyncs, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -24255,7 +24480,7 @@
     _registerModule(_modules, 'Dashboards/Plugins/HighchartsPlugin.js', [_modules['Dashboards/Components/HighchartsComponent/HighchartsComponent.js'], _modules['Dashboards/Components/KPIComponent/KPIComponent.js'], _modules['Dashboards/Components/NavigatorComponent/NavigatorComponent.js']], function (HighchartsComponent, KPIComponent, NavigatorComponent) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -24322,7 +24547,7 @@
     _registerModule(_modules, 'Dashboards/PluginHandler.js', [_modules['Dashboards/Board.js'], _modules['Dashboards/Components/Sync/Sync.js'], _modules['Dashboards/Components/ComponentRegistry.js']], function (Board, Sync, ComponentRegistry) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *

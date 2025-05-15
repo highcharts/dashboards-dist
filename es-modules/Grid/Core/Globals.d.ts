@@ -41,7 +41,7 @@ declare namespace Globals {
         readonly columnSortableIcon: "column-sortable-icon";
         readonly columnSortedAsc: "column-sorted-asc";
         readonly columnSortedDesc: "column-sorted-desc";
-        readonly resizerWrapper: "resizer-content";
+        readonly resizableContent: "resizable-content";
         readonly resizerHandles: "column-resizer";
         readonly resizedColumn: "column-resized";
         readonly creditsContainer: "credits-container";

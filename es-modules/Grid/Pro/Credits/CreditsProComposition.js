@@ -2,7 +2,7 @@
  *
  *  Grid Credits class
  *
- *  (c) 2020-2024 Highsoft AS
+ *  (c) 2020-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -40,13 +40,13 @@ var CreditsProComposition;
         merge(true, Defaults.defaultOptions, {
             credits: CreditsPro.defaultOptions
         });
-        addEvent(GridClass, 'afterRenderViewport', initCreditsComposition);
+        addEvent(GridClass, 'afterRenderViewport', initCredits);
     }
     CreditsProComposition.compose = compose;
     /**
      * Callback function called before table initialization.
      */
-    function initCreditsComposition() {
+    function initCredits() {
         this.credits = new CreditsPro(this, this.options?.credits);
     }
 })(CreditsProComposition || (CreditsProComposition = {}));

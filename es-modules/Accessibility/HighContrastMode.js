@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Øystein Moseng
+ *  (c) 2009-2025 Øystein Moseng
  *
  *  Handling for Windows High Contrast Mode.
  *
@@ -25,11 +25,6 @@ const { doc, isMS, win } = H;
  * @return {boolean} Returns true if the browser is in High Contrast mode.
  */
 function isHighContrastModeActive() {
-    // Use media query on Edge, but not on IE
-    const isEdge = /(Edg)/.test(win.navigator.userAgent);
-    if (win.matchMedia && isEdge) {
-        return win.matchMedia('(-ms-high-contrast: active)').matches;
-    }
     // Test BG image for IE
     if (isMS && win.getComputedStyle) {
         const testDiv = doc.createElement('div');

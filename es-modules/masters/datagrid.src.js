@@ -1,19 +1,15 @@
 /**
- * @license Highcharts Dashboards v3.2.0 (2025-03-26)
+ * @license Highcharts Dashboards v3.3.0 (2025-05-15)
  * @module datagrid/datagrid
  *
- * (c) 2009-2024 Highsoft AS
+ * (c) 2009-2025 Highsoft AS
  *
  * License: www.highcharts.com/license
  */
 'use strict';
-/* *
- *
- *  Imports
- *
- * */
 import AST from '../Core/Renderer/HTML/AST.js';
 import Templating from '../Core/Templating.js';
+import ColumnDistribution from '../Grid/Core/Table/ColumnDistribution/ColumnDistribution.js';
 import DataConnector from '../Data/Connectors/DataConnector.js';
 import DataConverter from '../Data/Converters/DataConverter.js';
 import DataCursor from '../Data/DataCursor.js';
@@ -66,6 +62,7 @@ G.grids = _Grid.grids;
 G.DataModifier = DataModifier;
 G.DataPool = DataPool;
 G.DataTable = DataTable;
+G.ColumnDistribution = ColumnDistribution;
 G.defaultOptions = Defaults.defaultOptions;
 G.isHighContrastModeActive = whcm.isHighContrastModeActive;
 G.setOptions = Defaults.setOptions;

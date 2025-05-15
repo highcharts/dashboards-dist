@@ -1,6 +1,7 @@
 import type DataEvent from '../DataEvent';
 import type Types from '../../Shared/Types';
 import type JSONConnectorOptions from './JSONConnectorOptions';
+import type DataTable from '../DataTable';
 import DataConnector from './DataConnector.js';
 import JSONConverter from '../Converters/JSONConverter.js';
 /**
@@ -15,8 +16,11 @@ declare class JSONConnector extends DataConnector {
      *
      * @param {JSONConnector.UserOptions} [options]
      * Options for the connector and converter.
+     *
+     * @param {Array<DataTable>} [dataTables]
+     * Multiple connector data tables options.
      */
-    constructor(options?: JSONConnector.UserOptions);
+    constructor(options?: JSONConnector.UserOptions, dataTables?: Array<DataTable>);
     /**
      * Options related to the handling of the JSON DataConnector,
      * i.e. source, fetching, polling
@@ -25,7 +29,7 @@ declare class JSONConnector extends DataConnector {
     /**
      * The attached parser that converts the data format to the table.
      */
-    readonly converter: JSONConverter;
+    converter?: JSONConverter;
     /**
      * Initiates the loading of the JSON source to the connector
      *
@@ -58,9 +62,9 @@ declare namespace JSONConnector {
         data?: JSONConverter.Data;
     }
     /**
-     * Available options for constructor and converter of the JSONConnector.
+     * Available options for constructor of the JSONConnector.
      */
-    type UserOptions = (Types.DeepPartial<JSONConnectorOptions> & JSONConverter.UserOptions);
+    type UserOptions = Types.DeepPartial<JSONConnectorOptions>;
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

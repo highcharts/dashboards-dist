@@ -1,5 +1,5 @@
 import type DataEvent from '../DataEvent';
-import type { BeforeParseCallbackFunction, ColumnNamesOptions } from '../Connectors/JSONConnectorOptions';
+import type { JSONBeforeParseCallbackFunction, ColumnNamesOptions } from '../Connectors/JSONConnectorOptions';
 import DataConverter from './DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -61,7 +61,7 @@ declare namespace JSONConverter {
      * Options that are not compatible with ClassJSON
      */
     interface SpecialOptions {
-        beforeParse?: BeforeParseCallbackFunction;
+        beforeParse?: JSONBeforeParseCallbackFunction;
     }
     /**
      * Available options of the JSONConverter.

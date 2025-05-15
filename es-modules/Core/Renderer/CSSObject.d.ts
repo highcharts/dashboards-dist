@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2024 Torstein Honsi
+ *  (c) 2010-2025 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -45,7 +45,7 @@ export interface CSSObject {
     '-webkit-transform'?: string;
     background?: string;
     backgroundColor?: ColorString;
-    borderRadius?: number|string;
+    borderRadius?: string;
     borderWidth?: number;
     border?: string|0;
     'border-radius'?: string;

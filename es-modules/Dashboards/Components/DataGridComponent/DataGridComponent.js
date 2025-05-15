@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -217,7 +217,7 @@ class DataGridComponent extends Component {
         if (!DGN) {
             throw new Error('Grid not connected.');
         }
-        const dataTable = this.getFirstConnector()?.table, options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
+        const dataTable = this.getFirstConnector()?.getTable(this.dataTableKey), options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
         if (dataTable) {
             gridOptions.dataTable = dataTable.modified;
         }

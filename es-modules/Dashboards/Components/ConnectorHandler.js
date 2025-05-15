@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -75,6 +75,35 @@ class ConnectorHandler {
         return component;
     }
     /**
+     * Sets the data table settings and events.
+     *
+     * @param table
+     * The data table instance for settings and events.
+     */
+    setTable(table) {
+        // Set up event listeners
+        this.clearTableListeners(table);
+        this.setupTableListeners(table);
+        // Re-setup if modifier changes
+        table.on('setModifier', () => this.clearTableListeners(table));
+        table.on('afterSetModifier', (e) => {
+            if (e.type === 'afterSetModifier' && e.modified) {
+                this.setupTableListeners(e.modified);
+                this.component.emit({
+                    type: 'tableChanged',
+                    connector: this.connector
+                });
+            }
+        });
+        if (this.presentationModifier) {
+            this.presentationTable =
+                this.presentationModifier.modifyTable(table.modified.clone()).modified;
+        }
+        else {
+            this.presentationTable = table;
+        }
+    }
+    /**
      * Sets the connector for the component connector handler.
      *
      * @param connector
@@ -90,28 +119,15 @@ class ConnectorHandler {
         }
         this.connector = connector;
         if (connector) {
-            // Set up event listeners
-            this.clearTableListeners();
-            this.setupTableListeners(connector.table);
-            // Re-setup if modifier changes
-            connector.table.on('setModifier', () => this.clearTableListeners());
-            connector.table.on('afterSetModifier', (e) => {
-                if (e.type === 'afterSetModifier' && e.modified) {
-                    this.setupTableListeners(e.modified);
-                    this.component.emit({
-                        type: 'tableChanged',
-                        connector: connector
-                    });
-                }
-            });
-            if (connector.table) {
-                if (this.presentationModifier) {
-                    this.presentationTable =
-                        this.presentationModifier.modifyTable(connector.table.modified.clone()).modified;
-                }
-                else {
-                    this.presentationTable = connector.table;
-                }
+            const dataTableKey = this.component.dataTableKey;
+            const dataTables = connector.dataTables;
+            if (dataTableKey) {
+                // Match a data table used in this component.
+                this.setTable(dataTables[dataTableKey]);
+                // Take the first connector data table if id not provided.
+            }
+            else {
+                this.setTable(Object.values(dataTables)[0]);
             }
         }
         this.addConnectorAssignment();
@@ -150,14 +166,18 @@ class ConnectorHandler {
     }
     /**
      * Remove event listeners in data table.
+     *
+     * @param table
+     * The connector data table (data source).
+     *
      * @internal
      */
-    clearTableListeners() {
+    clearTableListeners(table) {
         const connector = this.connector;
         const tableEvents = this.tableEvents;
         this.removeTableEvents();
         if (connector) {
-            tableEvents.push(connector.table.on('afterSetModifier', (e) => {
+            tableEvents.push(table.on('afterSetModifier', (e) => {
                 if (e.type === 'afterSetModifier') {
                     clearTimeout(this.tableEventTimeout);
                     this.tableEventTimeout = Globals.win.setTimeout(() => {

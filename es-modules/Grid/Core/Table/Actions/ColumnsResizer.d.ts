@@ -10,6 +10,10 @@ declare class ColumnsResizer {
      */
     private viewport;
     /**
+     * Any column is being resized. Turned off after slight delay.
+     */
+    isResizing: boolean;
+    /**
      * The column being dragged.
      * @internal
      */
@@ -25,12 +29,14 @@ declare class ColumnsResizer {
     draggedResizeHandle?: HTMLElement;
     /**
      * The width of the dragged column when dragging started.
+     * @internal
      */
-    private columnStartWidth?;
+    columnStartWidth?: number;
     /**
      * The width of the next column when dragging started.
+     * @internal
      */
-    private nextColumnStartWidth?;
+    nextColumnStartWidth?: number;
     /**
      * The handles and their mouse down event listeners.
      */
@@ -46,20 +52,6 @@ declare class ColumnsResizer {
      * The reference to rendered cell, where hadles should be added
      */
     renderColumnDragHandles(column: Column, cell: Cell): void;
-    /**
-     * Resizes the columns in the full distribution mode.
-     *
-     * @param diff
-     * The X position difference in pixels.
-     */
-    private fullDistributionResize;
-    /**
-     * Resizes the columns in the fixed distribution mode.
-     *
-     * @param diff
-     * The X position difference in pixels.
-     */
-    private fixedDistributionResize;
     /**
      * Handles the mouse move event on the document.
      *
@@ -88,15 +80,5 @@ declare class ColumnsResizer {
      * should be called on the destroy of the data grid.
      */
     removeEventListeners(): void;
-    /**
-     * Returns the minimum width of the column.
-     *
-     * @param column
-     * The column to get the minimum width for.
-     *
-     * @returns
-     * The minimum width in pixels.
-     */
-    private static getMinWidth;
 }
 export default ColumnsResizer;

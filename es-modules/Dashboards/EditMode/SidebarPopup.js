@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2009-2024 Highsoft AS
+ *  (c) 2009-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -218,7 +218,7 @@ class SidebarPopup extends BaseForm {
                             }
                             dropContext = layout.rows[0];
                         }
-                        if (!dropContext) {
+                        if (!dropContext?.type) {
                             const layouts = sidebar.editMode.board.layouts;
                             dragDrop.dropContext = dropContext =
                                 layouts[layouts.length - 1].addRow({}, void 0);
@@ -226,8 +226,9 @@ class SidebarPopup extends BaseForm {
                         const newCell = components[i].onDrop(sidebar, dropContext);
                         const unbindLayoutChanged = addEvent(this.editMode, 'layoutChanged', (e) => {
                             if (newCell && e.type === 'newComponent') {
-                                if (newCell.mountedComponent.chart) {
-                                    const unbind = addEvent(newCell.mountedComponent.chart, 'render', () => {
+                                const chart = newCell.mountedComponent?.chart;
+                                if (chart?.isDirtyBox) {
+                                    const unbind = addEvent(chart, 'render', () => {
                                         sidebar.editMode
                                             .setEditCellContext(newCell);
                                         sidebar.show(newCell);
@@ -240,6 +241,7 @@ class SidebarPopup extends BaseForm {
                                     sidebar.editMode.setEditCellContext(newCell);
                                     sidebar.show(newCell);
                                     newCell.setHighlight();
+                                    unbindLayoutChanged();
                                 }
                             }
                         });
@@ -296,6 +298,9 @@ class SidebarPopup extends BaseForm {
             editMode.showToolbars(['cell', 'row'], editCellContext);
             editCellContext.row.setHighlight();
             editCellContext.setHighlight(true);
+            if (editMode.resizer) {
+                editMode.resizer.setSnapPositions(editMode.editCellContext);
+            }
         }
         else if (CellHTML.isCellHTML(editCellContext) && editMode.cellToolbar) {
             editMode.cellToolbar.showToolbar(editCellContext);

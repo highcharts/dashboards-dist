@@ -116,6 +116,7 @@ declare class Chart {
     };
     credits?: SVGElement;
     caption?: SVGElement;
+    dataLabelsGroup?: SVGElement;
     eventOptions: Record<string, EventCallback<Series, Event>>;
     hasCartesianSeries?: boolean;
     hasLoaded?: boolean;
@@ -166,6 +167,7 @@ declare class Chart {
     xAxis: Array<AxisType>;
     yAxis: Array<AxisType>;
     zooming: ChartZoomingOptions;
+    zoomClipRect?: SVGElement;
     /**
      * Function setting zoom options after chart init and after chart update.
      * Offers support for deprecated options.
@@ -932,6 +934,7 @@ declare namespace Chart {
         selection?: Pointer.SelectEventObject;
         from?: Partial<BBoxObject>;
         trigger?: string;
+        hasZoomed?: boolean;
     }
     interface CreateAxisOptionsObject {
         animation: (undefined | boolean | Partial<AnimationOptions>);

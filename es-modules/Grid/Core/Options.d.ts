@@ -1,4 +1,5 @@
 import type { A11yOptions, HeaderCellA11yOptions, LangAccessibilityOptions } from './Accessibility/A11yOptions';
+import type ColumnDistribution from './Table/ColumnDistribution/ColumnDistribution';
 import type DataTable from '../../Data/DataTable';
 import type DataTableOptions from '../../Data/DataTableOptions';
 import type Cell from './Table/Cell';
@@ -6,7 +7,7 @@ import type { LangOptionsCore } from '../../Shared/LangOptionsCore';
 /**
  * The distribution of the columns in the grid structure.
  */
-export type ColumnDistribution = 'full' | 'fixed';
+export type ColumnDistributionType = ColumnDistribution.StrategyType;
 /**
  * Callback function to be called when a header event is triggered. Returns a
  * formatted cell's string.
@@ -101,13 +102,18 @@ export interface ColumnsSettings {
     /**
      * The distribution of the columns. If `full`, the columns will be
      * distributed so that the first and the last column are at the edges of
-     * the grid. If `fixed`, the columns will have a fixed width in pixels.
+     * the grid. If `fixed`, the columns will have a fixed width in pixels. If
+     * `mixed`, the column widths will be set according to the `width` option
+     * of each column - CSS styles will be ignored then.
      *
-     * Try it: {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/grid-lite/basic/fixed-distribution | Fixed distribution}
+     * If `undefined`, the default column distribution will be used, which is
+     * `mixed`, if `width` is set for any column, otherwise `full`.
      *
-     * @default 'full'
+     * Try it: {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/grid-lite/basic/column-distribution | Distribution overview}
+     *
+     * @default undefined
      */
-    distribution?: ColumnDistribution;
+    distribution?: ColumnDistributionType;
     /**
      * Columns included in the grid structure- contains the columns IDs.
      * If not set, all columns will be included. Useful when many columns needs
@@ -228,6 +234,18 @@ export interface ColumnOptions {
      * @default true
      */
     resizing?: boolean;
+    /**
+     * The width of the column. It can be set in pixels or as a percentage of
+     * the table width. If unset, the width is distributed evenly between all
+     * columns.
+     *
+     * This option works only when the `distribution` option is set to `mixed`.
+     *
+     * If the `distribution` option is undefined, it is set to `mixed` and the
+     * `width` option is used to set the width of the column. Other distribution
+     * modes work only with CSS-defined column widths.
+     */
+    width?: number | string;
 }
 /**
  * Options for all cells in the column.

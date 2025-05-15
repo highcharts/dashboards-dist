@@ -9,21 +9,9 @@ import ColumnSorting from './Actions/ColumnSorting';
  */
 declare class Column {
     /**
-     * The minimum width of a column.
-     * @internal
-     */
-    static readonly MIN_COLUMN_WIDTH = 20;
-    /**
      * The viewport (table) the column belongs to.
      */
     readonly viewport: Table;
-    /**
-     * The width of the column in the viewport. The interpretation of the
-     * value depends on the `columns.distribution` option:
-     * - `full`: The width is a ratio of the viewport width.
-     * - `fixed`: The width is a fixed number of pixels.
-     */
-    width: number;
     /**
      * The cells of the column.
      */
@@ -103,22 +91,6 @@ declare class Column {
      * Whether the column should have synced state.
      */
     setSyncedState(synced: boolean): void;
-    /**
-     * Creates a mock element to measure the width of the column from the CSS.
-     * The element is appended to the viewport container and then removed.
-     * It should be called only once for each column.
-     *
-     * @returns The initial width of the column.
-     */
-    private getInitialWidth;
-    /**
-     * The initial width of the column in the full distribution mode. The last
-     * column in the viewport will have to fill the remaining space.
-     *
-     * @param mock
-     * The mock element to measure the width.
-     */
-    private getInitialFullDistWidth;
     /**
      * Returns the formatted string where the templating context is the column.
      *

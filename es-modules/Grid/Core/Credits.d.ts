@@ -37,7 +37,7 @@ declare class Credits {
     constructor(grid: Grid, options?: CreditsOptions);
     /**
      * Render the credits. If the credits are disabled, they will be removed
-     * from the container. If also reflows the viewport dimensions.
+     * from the container.
      */
     render(): void;
     private renderAnchor;

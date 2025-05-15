@@ -2,6 +2,11 @@ import type { DataConnectorTypes } from './DataConnectorType';
 import type { DataConnectorOptions, MetaColumn, Metadata } from './DataConnectorOptions';
 import type DataEvent from '../DataEvent';
 import type { DataModifierTypeOptions } from '../Modifiers/DataModifierType';
+import type DataTableOptions from '../DataTableOptions';
+import type { JSONBeforeParseCallbackFunction } from './JSONConnectorOptions';
+import type { CSVBeforeParseCallbackFunction } from './CSVConnectorOptions';
+import type { GoogleSheetsBeforeParseCallbackFunction } from './GoogleSheetsConnectorOptions';
+import type DataConverterType from '../Converters/DataConverterType';
 import DataConverter from '../Converters/DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -15,13 +20,16 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      *
      * @param {DataConnector.UserOptions} [options]
      * Options to use in the connector.
+     *
+     * @param {Array<DataTable>} [dataTables]
+     * Multiple connector data tables options.
      */
-    constructor(options?: DataConnector.UserOptions);
+    constructor(options?: DataConnector.UserOptions, dataTables?: Array<DataTableOptions>);
     /**
      * The DataConverter responsible for handling conversion of provided data to
      * a DataConnector.
      */
-    abstract readonly converter: DataConverter;
+    converter?: DataConverter;
     /**
      * Metadata to describe the connector and the content of columns.
      */
@@ -32,9 +40,21 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      */
     get polling(): boolean;
     /**
-     * Table managed by this DataConnector instance.
+     * Gets the first data table.
+     *
+     * @return {DataTable}
+     * The data table instance.
      */
-    readonly table: DataTable;
+    get table(): DataTable;
+    /**
+     * Tables managed by this DataConnector instance.
+     */
+    dataTables: Record<string, DataTable>;
+    /**
+     * The polling controller used to abort the request when data polling stops.
+     * It gets assigned when data polling starts.
+     */
+    pollingController?: AbortController;
     /**
      * Method for adding metadata for a single column.
      *
@@ -70,6 +90,17 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * Order of columns.
      */
     getColumnOrder(usePresentationState?: boolean): (Array<string> | undefined);
+    /**
+     * Returns a single data table instance based on the provided key.
+     * Otherwise, returns the first data table.
+     *
+     * @param {string} [key]
+     * The data table key.
+     *
+     * @return {DataTable}
+     * The data table instance.
+     */
+    getTable(key?: string): DataTable;
     /**
      * Retrieves the columns of the dataTable,
      * applies column order from meta.
@@ -142,6 +173,20 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * Returns a MetaColumn object if found.
      */
     whatIs(name: string): (MetaColumn | undefined);
+    /**
+     * Iterates over the dataTables and initiates the corresponding converters.
+     * Updates the dataTables and assigns the first converter.
+     *
+     * @param {T}[data]
+     * Data specific to the corresponding converter.
+     *
+     * @param {DataConnector.CreateConverterFunction}[createConverter]
+     * Creates a specific converter combining the dataTable options.
+     *
+     * @param {DataConnector.ParseDataFunction<T>}[parseData]
+     * Runs the converter parse method with the specific data type.
+     */
+    initConverters<T>(data: T, createConverter: DataConnector.CreateConverterFunction, parseData: DataConnector.ParseDataFunction<T>): void;
 }
 declare namespace DataConnector {
     /**
@@ -155,7 +200,7 @@ declare namespace DataConnector {
      * The default event object for a DataConnector.
      */
     interface Event extends DataEvent {
-        readonly table: DataTable;
+        readonly tables: Record<string, DataTable>;
     }
     /**
      * The event object that is provided on load events within DataConnector.
@@ -167,6 +212,24 @@ declare namespace DataConnector {
      * Option of the DataConnector.
      */
     type UserOptions = Partial<DataConnectorOptions>;
+    /**
+     * A custom callback function that parses the data before it's being parsed
+     * to the data table format inside the converter.
+     * Supported connectors are: JSON, CSV and Google Google Sheets.
+     */
+    type BeforeParseCallbackFunction = JSONBeforeParseCallbackFunction | CSVBeforeParseCallbackFunction | GoogleSheetsBeforeParseCallbackFunction;
+    /**
+     * Creates a specific converter combining the dataTable options.
+     */
+    interface CreateConverterFunction {
+        (key: string, table: DataTable): DataConverterType;
+    }
+    /**
+     * Runs the converter parse method with the specific data type.
+     */
+    interface ParseDataFunction<T> {
+        (converter: DataConverterType, data: T): void;
+    }
     /**
      * Registry as a record object with connector names and their class.
      */

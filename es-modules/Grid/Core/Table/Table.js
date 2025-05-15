@@ -2,7 +2,7 @@
  *
  *  Grid Table Viewport class
  *
- *  (c) 2020-2024 Highsoft AS
+ *  (c) 2020-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -16,6 +16,7 @@
 'use strict';
 import GridUtils from '../GridUtils.js';
 import Utils from '../../../Core/Utilities.js';
+import ColumnDistribution from './ColumnDistribution/ColumnDistribution.js';
 import Column from './Column.js';
 import TableHeader from './Header/TableHeader.js';
 import RowsVirtualizer from './Actions/RowsVirtualizer.js';
@@ -71,7 +72,7 @@ class Table {
          * Handles the resize event.
          */
         this.onResize = () => {
-            this.reflow(this.scrollable);
+            this.reflow();
         };
         /**
          * Handles the scroll event.
@@ -86,10 +87,8 @@ class Table {
         this.dataTable = this.grid.presentationTable;
         const dgOptions = grid.options;
         const customClassName = dgOptions?.rendering?.table?.className;
-        this.columnDistribution =
-            dgOptions?.rendering?.columns?.distribution;
+        this.columnDistribution = ColumnDistribution.initStrategy(this);
         this.virtualRows = !!dgOptions?.rendering?.rows?.virtualization;
-        this.scrollable = !!(this.grid.initialContainerHeight || this.virtualRows);
         if (dgOptions?.rendering?.header?.enabled) {
             this.theadElement = makeHTMLElement('thead', {}, tableElement);
         }
@@ -112,10 +111,8 @@ class Table {
         // Add event listeners
         this.resizeObserver = new ResizeObserver(this.onResize);
         this.resizeObserver.observe(tableElement);
+        tableElement.classList.add(Globals.getClassName('scrollableContent'));
         this.tbodyElement.addEventListener('scroll', this.onScroll);
-        if (this.scrollable) {
-            tableElement.classList.add(Globals.getClassName('scrollableContent'));
-        }
         this.tbodyElement.addEventListener('focus', this.onTBodyFocus);
     }
     /* *
@@ -164,6 +161,7 @@ class Table {
             columnId = enabledColumns[i];
             this.columns.push(new Column(this, columnId, i));
         }
+        this.columnDistribution.loadColumns();
     }
     /**
      * Fires an empty update to properly load the virtualization, only if
@@ -176,7 +174,7 @@ class Table {
             Defaults.defaultOptions.rendering?.rows?.virtualizationThreshold);
         const rowCount = Number(this.dataTable?.rowCount);
         if (rows?.virtualization !== (rowCount >= threshold)) {
-            this.grid.update();
+            void this.grid.update();
         }
     }
     /**
@@ -192,27 +190,13 @@ class Table {
     }
     /**
      * Reflows the table's content dimensions.
-     *
-     * @param reflowColumns
-     * Force reflow columns and recalculate widths.
-     *
      */
-    reflow(reflowColumns = false) {
-        const isVirtualization = this.grid.options?.rendering?.rows?.virtualization;
-        // Get the width of the rows.
-        if (this.columnDistribution === 'fixed') {
-            let rowsWidth = 0;
-            for (let i = 0, iEnd = this.columns.length; i < iEnd; ++i) {
-                rowsWidth += this.columns[i].width;
-            }
-            this.rowsWidth = rowsWidth;
-        }
-        if (isVirtualization || reflowColumns) {
-            // Reflow the head
-            this.header?.reflow();
-            // Reflow rows content dimensions
-            this.rowsVirtualizer.reflowRows();
-        }
+    reflow() {
+        this.columnDistribution.reflow();
+        // Reflow the head
+        this.header?.reflow();
+        // Reflow rows content dimensions
+        this.rowsVirtualizer.reflowRows();
     }
     /**
      * Scrolls the table to the specified row.
@@ -289,7 +273,6 @@ class Table {
             scrollTop: this.tbodyElement.scrollTop,
             scrollLeft: this.tbodyElement.scrollLeft,
             columnDistribution: this.columnDistribution,
-            columnWidths: this.columns.map((column) => column.width),
             focusCursor: this.focusCursor
         };
     }
@@ -303,18 +286,14 @@ class Table {
     applyStateMeta(meta) {
         this.tbodyElement.scrollTop = meta.scrollTop;
         this.tbodyElement.scrollLeft = meta.scrollLeft;
-        if (this.columnDistribution === meta.columnDistribution &&
-            this.columns.length === meta.columnWidths.length) {
-            const widths = meta.columnWidths;
-            for (let i = 0, iEnd = widths.length; i < iEnd; ++i) {
-                this.columns[i].width = widths[i];
-            }
-            this.reflow();
-            if (meta.focusCursor) {
-                const [rowIndex, columnIndex] = meta.focusCursor;
-                const row = this.rows[rowIndex - this.rows[0].index];
-                row?.cells[columnIndex]?.htmlElement.focus();
-            }
+        if (!meta.columnDistribution.invalidated) {
+            const colDistMeta = meta.columnDistribution.exportMetadata();
+            this.columnDistribution.importMetadata(colDistMeta);
+        }
+        if (meta.focusCursor) {
+            const [rowIndex, columnIndex] = meta.focusCursor;
+            const row = this.rows[rowIndex - this.rows[0].index];
+            row?.cells[columnIndex]?.htmlElement.focus();
         }
     }
     /**

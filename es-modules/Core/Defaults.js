@@ -1,6 +1,6 @@
 /* *
  *
- *  (c) 2010-2024 Torstein Honsi
+ *  (c) 2010-2025 Torstein Honsi
  *
  *  License: www.highcharts.com/license
  *
@@ -96,7 +96,7 @@ const defaultOptions = {
         /**
          * The default chart title.
          *
-         * @since next
+         * @since 12.2.0
          */
         chartTitle: 'Chart title',
         /**
@@ -138,7 +138,7 @@ const defaultOptions = {
         /**
          * [Format string](https://www.highcharts.com/docs/chart-concepts/templating) for the default series name.
          *
-         * @since next
+         * @since 12.2.0
          */
         seriesName: 'Series {add index 1}',
         /**
@@ -225,7 +225,7 @@ const defaultOptions = {
         numericSymbols: ['k', 'M', 'G', 'T', 'P', 'E'],
         /**
          * The default name for a pie slice (point).
-         * @since next
+         * @since 12.2.0
          */
         pieSliceName: 'Slice',
         /**
@@ -265,7 +265,7 @@ const defaultOptions = {
         /**
          * The default title of the Y axis
          *
-         * @since next
+         * @since 12.2.0
          */
         yAxisTitle: 'Values',
         resetZoomTitle: 'Reset zoom level 1:1'
@@ -1899,7 +1899,7 @@ const defaultOptions = {
          *
          * @type      {boolean}
          * @default   false
-         * @since     next
+         * @since 12.2.0
          * @apioption tooltip.fixed
          */
         /**
@@ -2339,7 +2339,7 @@ const defaultOptions = {
          * @sample {highmaps} maps/tooltip/fixed/
          *         Map with fixed tooltip
          *
-         * @since next
+         * @since 12.2.0
          */
         position: {
             /**

@@ -1,7 +1,7 @@
 /**
- * @license Highcharts Dashboards Layout 3.2.0 (2025-03-26)
+ * @license Highcharts Dashboards Layout 3.3.0 (2025-05-15)
  *
- * (c) 2009-2024 Highsoft AS
+ * (c) 2009-2025 Highsoft AS
  *
  * License: www.highcharts.com/license
  */
@@ -36,7 +36,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/EditRenderer.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Core/Utilities.js']], function (EditGlobals, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -535,7 +535,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Menu/MenuItem.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditRenderer.js']], function (EditGlobals, U, EditRenderer) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -659,7 +659,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Menu/MenuItemBindings.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -698,7 +698,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Menu/Menu.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/Menu/MenuItem.js'], _modules['Dashboards/EditMode/Menu/MenuItemBindings.js']], function (EditGlobals, U, MenuItem, MenuItemBindings) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -823,7 +823,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Toolbar/EditToolbar.js', [_modules['Core/Utilities.js'], _modules['Dashboards/EditMode/Menu/Menu.js']], function (U, Menu) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -904,7 +904,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Toolbar/CellEditToolbar.js', [_modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/Toolbar/EditToolbar.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Globals.js'], _modules['Core/Utilities.js']], function (Cell, EditGlobals, EditToolbar, GUIElement, H, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1153,7 +1153,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Toolbar/RowEditToolbar.js', [_modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/Toolbar/EditToolbar.js'], _modules['Dashboards/Layout/GUIElement.js']], function (U, EditGlobals, EditToolbar, GUIElement) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1331,7 +1331,7 @@
     _registerModule(_modules, 'Shared/BaseForm.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Utilities.js']], function (AST, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1454,7 +1454,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/ConfirmationPopup.js', [_modules['Core/Utilities.js'], _modules['Shared/BaseForm.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js']], function (U, BaseForm, EditGlobals, EditRenderer) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1610,7 +1610,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/AccordionMenu.js', [_modules['Dashboards/EditMode/EditRenderer.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/ConfirmationPopup.js']], function (EditRenderer, U, EditGlobals, ConfirmationPopup) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1966,7 +1966,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/SidebarPopup.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Dashboards/Layout/CellHTML.js'], _modules['Dashboards/EditMode/AccordionMenu.js'], _modules['Shared/BaseForm.js'], _modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Layout/Layout.js'], _modules['Core/Utilities.js']], function (AST, CellHTML, AccordionMenu, BaseForm, Bindings, Cell, EditGlobals, EditRenderer, GUIElement, Layout, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2172,7 +2172,7 @@
                                     }
                                     dropContext = layout.rows[0];
                                 }
-                                if (!dropContext) {
+                                if (!dropContext?.type) {
                                     const layouts = sidebar.editMode.board.layouts;
                                     dragDrop.dropContext = dropContext =
                                         layouts[layouts.length - 1].addRow({}, void 0);
@@ -2180,8 +2180,9 @@
                                 const newCell = components[i].onDrop(sidebar, dropContext);
                                 const unbindLayoutChanged = addEvent(this.editMode, 'layoutChanged', (e) => {
                                     if (newCell && e.type === 'newComponent') {
-                                        if (newCell.mountedComponent.chart) {
-                                            const unbind = addEvent(newCell.mountedComponent.chart, 'render', () => {
+                                        const chart = newCell.mountedComponent?.chart;
+                                        if (chart?.isDirtyBox) {
+                                            const unbind = addEvent(chart, 'render', () => {
                                                 sidebar.editMode
                                                     .setEditCellContext(newCell);
                                                 sidebar.show(newCell);
@@ -2194,6 +2195,7 @@
                                             sidebar.editMode.setEditCellContext(newCell);
                                             sidebar.show(newCell);
                                             newCell.setHighlight();
+                                            unbindLayoutChanged();
                                         }
                                     }
                                 });
@@ -2250,6 +2252,9 @@
                     editMode.showToolbars(['cell', 'row'], editCellContext);
                     editCellContext.row.setHighlight();
                     editCellContext.setHighlight(true);
+                    if (editMode.resizer) {
+                        editMode.resizer.setSnapPositions(editMode.editCellContext);
+                    }
                 }
                 else if (CellHTML.isCellHTML(editCellContext) && editMode.cellToolbar) {
                     editMode.cellToolbar.showToolbar(editCellContext);
@@ -2411,7 +2416,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/EditContextMenu.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/Menu/Menu.js']], function (EditGlobals, U, Menu) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2551,7 +2556,7 @@
     _registerModule(_modules, 'Dashboards/Actions/ContextDetection.js', [_modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (GUIElement, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -2657,7 +2662,7 @@
     _registerModule(_modules, 'Dashboards/Actions/DragDrop.js', [_modules['Core/Utilities.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Actions/ContextDetection.js']], function (U, Globals, EditGlobals, GUIElement, ContextDetection) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3479,7 +3484,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/EditMode.js', [_modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/Layout/CellHTML.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/EditMode/EditRenderer.js'], _modules['Dashboards/EditMode/Toolbar/CellEditToolbar.js'], _modules['Dashboards/EditMode/Toolbar/RowEditToolbar.js'], _modules['Dashboards/EditMode/SidebarPopup.js'], _modules['Dashboards/EditMode/EditContextMenu.js'], _modules['Dashboards/Actions/DragDrop.js'], _modules['Dashboards/Actions/Resizer.js'], _modules['Dashboards/EditMode/ConfirmationPopup.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/Layout.js'], _modules['Core/Utilities.js']], function (Cell, CellHTML, EditGlobals, EditRenderer, CellEditToolbar, RowEditToolbar, SidebarPopup, EditContextMenu, DragDrop, Resizer, ConfirmationPopup, GUIElement, Globals, Layout, U) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -3531,7 +3536,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.2.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.3.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(
@@ -4170,7 +4175,7 @@
     _registerModule(_modules, 'Dashboards/EditMode/Fullscreen.js', [_modules['Core/Utilities.js'], _modules['Dashboards/Globals.js']], function (U, Globals) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -4232,8 +4237,7 @@
                     unbindChange();
                 };
                 const promise = board.boardWrapper.requestFullscreen();
-                // eslint-disable-next-line highcharts/quote-members
-                promise.catch(() => {
+                promise['catch'](() => {
                     throw new Error('Full screen is not supported.');
                 });
             }

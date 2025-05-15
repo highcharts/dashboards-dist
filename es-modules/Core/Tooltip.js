@@ -207,7 +207,9 @@ class Tooltip {
             // Use the average position for multiple points
             ret = [chartX - plotLeft, chartY - plotTop];
         }
-        return ret.map(Math.round);
+        const params = { point: points[0], ret };
+        fireEvent(this, 'getAnchor', params);
+        return params.ret.map(Math.round);
     }
     /**
      * Get the CSS class names for the tooltip's label. Styles the label
@@ -434,6 +436,7 @@ class Tooltip {
                     alignedRight + h);
             }
             else {
+                ret[dim] = 0;
                 return false;
             }
         }, 
@@ -653,9 +656,10 @@ class Tooltip {
      * @param {number} anchorY
      */
     move(x, y, anchorX, anchorY) {
-        const tooltip = this, options = this.options, animation = animObject(!tooltip.isHidden &&
+        const { followPointer, options } = this, animation = animObject(!followPointer &&
+            !this.isHidden &&
             !options.fixed &&
-            options.animation), skipAnchor = tooltip.followPointer || (tooltip.len || 0) > 1, attr = { x, y };
+            options.animation), skipAnchor = followPointer || (this.len || 0) > 1, attr = { x, y };
         if (!skipAnchor) {
             attr.anchorX = anchorX;
             attr.anchorY = anchorY;
@@ -664,8 +668,8 @@ class Tooltip {
             // Clear anchor with NaN to prevent animation (#22295)
             attr.anchorX = attr.anchorY = NaN;
         }
-        animation.step = () => tooltip.drawTracker();
-        tooltip.getLabel().animate(attr, animation);
+        animation.step = () => this.drawTracker();
+        this.getLabel().animate(attr, animation);
     }
     /**
      * Refresh the tooltip's text and position.

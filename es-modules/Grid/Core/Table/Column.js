@@ -2,7 +2,7 @@
  *
  *  Grid Column class
  *
- *  (c) 2020-2024 Highsoft AS
+ *  (c) 2020-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -15,11 +15,9 @@
  * */
 'use strict';
 import Utils from '../../../Core/Utilities.js';
-import GridUtils from '../GridUtils.js';
 import Templating from '../../../Core/Templating.js';
 import Globals from '../Globals.js';
 const { merge } = Utils;
-const { makeHTMLElement } = GridUtils;
 /* *
  *
  *  Class
@@ -55,7 +53,6 @@ class Column {
         this.id = id;
         this.index = index;
         this.viewport = viewport;
-        this.width = this.getInitialWidth();
         this.loadData();
     }
     /* *
@@ -101,10 +98,7 @@ class Column {
      * Returns the width of the column in pixels.
      */
     getWidth() {
-        const vp = this.viewport;
-        return vp.columnDistribution === 'full' ?
-            vp.getWidthFromRatio(this.width) :
-            this.width;
+        return this.viewport.columnDistribution.getColumnWidth(this);
     }
     /**
      * Adds or removes the hovered CSS class to the column element
@@ -133,60 +127,6 @@ class Column {
         }
     }
     /**
-     * Creates a mock element to measure the width of the column from the CSS.
-     * The element is appended to the viewport container and then removed.
-     * It should be called only once for each column.
-     *
-     * @returns The initial width of the column.
-     */
-    getInitialWidth() {
-        let result;
-        const { viewport } = this;
-        // Set the initial width of the column.
-        const mock = makeHTMLElement('div', {
-            className: Globals.getClassName('columnElement')
-        }, viewport.grid.container);
-        mock.setAttribute('data-column-id', this.id);
-        if (this.options.className) {
-            mock.classList.add(...this.options.className.split(/\s+/g));
-        }
-        if (viewport.columnDistribution === 'full') {
-            result = this.getInitialFullDistWidth(mock);
-        }
-        else {
-            result = mock.offsetWidth || 100;
-        }
-        mock.remove();
-        return result;
-    }
-    /**
-     * The initial width of the column in the full distribution mode. The last
-     * column in the viewport will have to fill the remaining space.
-     *
-     * @param mock
-     * The mock element to measure the width.
-     */
-    getInitialFullDistWidth(mock) {
-        const vp = this.viewport;
-        const columnsCount = vp.grid.enabledColumns?.length ?? 0;
-        if (this.index < columnsCount - 1) {
-            return vp.getRatioFromWidth(mock.offsetWidth) || 1 / columnsCount;
-        }
-        let allPreviousWidths = 0;
-        for (let i = 0, iEnd = columnsCount - 1; i < iEnd; i++) {
-            allPreviousWidths += vp.columns[i].width;
-        }
-        const result = 1 - allPreviousWidths;
-        if (result < 0) {
-            // eslint-disable-next-line no-console
-            console.warn('The sum of the columns\' widths exceeds the ' +
-                'viewport width. It may cause unexpected behavior in the ' +
-                'full distribution mode. Check the CSS styles of the ' +
-                'columns. Corrections may be needed.');
-        }
-        return result;
-    }
-    /**
      * Returns the formatted string where the templating context is the column.
      *
      * @param template
@@ -199,16 +139,6 @@ class Column {
         return Templating.format(template, this, this.viewport.grid);
     }
 }
-/* *
-*
-*  Static Properties
-*
-* */
-/**
- * The minimum width of a column.
- * @internal
- */
-Column.MIN_COLUMN_WIDTH = 20;
 /* *
  *
  *  Default Export

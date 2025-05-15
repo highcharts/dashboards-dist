@@ -1,7 +1,7 @@
 /**
- * @license Highcharts Dashboards Math 3.2.0 (2025-03-26)
+ * @license Highcharts Dashboards Math 3.3.0 (2025-05-15)
  *
- * (c) 2009-2024 Highsoft AS
+ * (c) 2009-2025 Highsoft AS
  *
  * License: www.highcharts.com/license
  */
@@ -36,7 +36,7 @@
     _registerModule(_modules, 'Data/Formula/FormulaParser.js', [], function () {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -494,7 +494,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/ABS.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -562,7 +562,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/AND.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -622,7 +622,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/AVERAGEA.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -713,7 +713,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/COUNTA.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -785,7 +785,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/IF.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -840,7 +840,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/ISNA.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -893,7 +893,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MOD.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -957,7 +957,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/MODE.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1107,7 +1107,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/NOT.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1168,7 +1168,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/OR.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1231,7 +1231,7 @@
     _registerModule(_modules, 'Data/Formula/Functions/XOR.js', [_modules['Data/Formula/FormulaProcessor.js']], function (FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1313,7 +1313,7 @@
     _registerModule(_modules, 'Data/Formula/Formula.js', [_modules['Data/Formula/FormulaParser.js'], _modules['Data/Formula/FormulaProcessor.js'], _modules['Data/Formula/FormulaTypes.js']], function (FormulaParser, FormulaProcessor, FormulaType) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *
@@ -1348,7 +1348,7 @@
     _registerModule(_modules, 'Data/Modifiers/MathModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Data/Formula/FormulaParser.js'], _modules['Data/Formula/FormulaProcessor.js']], function (DataModifier, FormulaParser, FormulaProcessor) {
         /* *
          *
-         *  (c) 2009-2024 Highsoft AS
+         *  (c) 2009-2025 Highsoft AS
          *
          *  License: www.highcharts.com/license
          *

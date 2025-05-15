@@ -2,7 +2,7 @@
  *
  *  Highcharts Grid class
  *
- *  (c) 2020-2024 Highsoft AS
+ *  (c) 2020-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -265,6 +265,7 @@ class Grid {
             newDataTable = true;
             this.initVirtualization();
         }
+        this.viewport?.columnDistribution.validateOnUpdate(options);
         this.querying.loadOptions();
         if (render) {
             await this.querying.proceed(newDataTable);
@@ -458,10 +459,8 @@ class Grid {
         }
         this.renderDescription();
         this.accessibility?.setA11yOptions();
-        if (this.viewport?.virtualRows) {
-            this.viewport.reflow();
-        }
         fireEvent(this, 'afterRenderViewport');
+        this.viewport?.reflow();
     }
     /**
      * Renders the table (viewport) of the Grid.

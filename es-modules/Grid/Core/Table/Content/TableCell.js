@@ -2,7 +2,7 @@
  *
  *  Grid class
  *
- *  (c) 2020-2024 Highsoft AS
+ *  (c) 2020-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -168,10 +168,8 @@ class TableCell extends Cell {
     async setValue(value, updateTable) {
         this.value = value;
         const vp = this.column.viewport;
-        const element = this.htmlElement;
-        const cellContent = this.formatCell();
         // Render the table cell element content.
-        setHTMLContent(element, cellContent);
+        setHTMLContent(this.htmlElement, this.formatCell());
         this.htmlElement.setAttribute('data-value', this.value + '');
         this.setCustomClassName(this.column.options.cells?.className);
         fireEvent(this, 'afterSetValue', {
@@ -188,6 +186,7 @@ class TableCell extends Cell {
         if (!originalDataTable || rowTableIndex === void 0) {
             return;
         }
+        this.row.data[this.column.id] = this.value;
         originalDataTable.setCell(this.column.id, rowTableIndex, this.value);
         if (vp.grid.querying.willNotModify()) {
             // If the data table does not need to be modified, skip the

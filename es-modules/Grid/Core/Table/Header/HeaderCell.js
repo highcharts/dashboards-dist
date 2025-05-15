@@ -2,7 +2,7 @@
  *
  *  Grid HeaderCell class
  *
- *  (c) 2020-2024 Highsoft AS
+ *  (c) 2020-2025 Highsoft AS
  *
  *  License: www.highcharts.com/license
  *
@@ -164,7 +164,7 @@ class HeaderCell extends Cell {
     onClick(e) {
         const column = this.column;
         if (!column || (e.target !== this.htmlElement &&
-            e.target !== column.header?.headerContent)) {
+            e.target !== column.header?.headerContent) || column.viewport.columnsResizer?.isResizing) {
             return;
         }
         if (column.options.sorting?.sortable) {

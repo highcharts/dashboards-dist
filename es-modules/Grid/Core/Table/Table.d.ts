@@ -1,6 +1,6 @@
-import type { ColumnDistribution } from '../Options';
 import type TableRow from './Content/TableRow';
 import DataTable from '../../../Data/DataTable.js';
+import ColumnDistributionStrategy from './ColumnDistribution/ColumnDistributionStrategy.js';
 import Column from './Column.js';
 import TableHeader from './Header/TableHeader.js';
 import Grid from '../Grid.js';
@@ -56,7 +56,7 @@ declare class Table {
     /**
      * The column distribution.
      */
-    readonly columnDistribution: ColumnDistribution;
+    readonly columnDistribution: ColumnDistributionStrategy;
     /**
      * The columns resizer instance that handles the columns resizing logic.
      * @internal
@@ -77,10 +77,6 @@ declare class Table {
      * The flag that indicates if the table rows are virtualized.
      */
     virtualRows: boolean;
-    /**
-     * The flag that indicates if the table is scrollable vertically.
-     */
-    scrollable: boolean;
     /**
      * Constructs a new data grid table.
      *
@@ -115,12 +111,8 @@ declare class Table {
     loadPresentationData(): void;
     /**
      * Reflows the table's content dimensions.
-     *
-     * @param reflowColumns
-     * Force reflow columns and recalculate widths.
-     *
      */
-    reflow(reflowColumns?: boolean): void;
+    reflow(): void;
     /**
      * Handles the focus event on the table body.
      *
@@ -212,8 +204,7 @@ declare namespace Table {
     interface ViewportStateMetadata {
         scrollTop: number;
         scrollLeft: number;
-        columnDistribution: ColumnDistribution;
-        columnWidths: number[];
+        columnDistribution: ColumnDistributionStrategy;
         focusCursor?: [number, number];
     }
 }
