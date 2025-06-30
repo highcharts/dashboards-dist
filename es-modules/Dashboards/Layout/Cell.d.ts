@@ -1,17 +1,13 @@
 import type Component from '../Components/Component';
 import type CSSJSONObject from '../CSSJSONObject';
-import type JSON from '../JSON';
 import type LayoutType from './Layout';
 import type Row from './Row';
-import type Serializable from '../Serializable';
 import Globals from '../Globals.js';
 import GUIElement from './GUIElement.js';
 /**
  * @internal
  **/
 declare class Cell extends GUIElement {
-    /** @internal */
-    static fromJSON(json: Cell.JSON, row?: Row): (Cell | undefined);
     /**
      * Constructs an instance of the Cell class.
      *
@@ -64,30 +60,10 @@ declare class Cell extends GUIElement {
      */
     setNestedLayout(): void;
     /**
-     * Mount component from JSON.
-     * @internal
-     *
-     * @param {Component.JSON} [json]
-     * Component JSON.
-     *
-     * @return {boolean}
-     * Returns true, if the component created from JSON is mounted,
-     * otherwise false.
-     */
-    mountComponentFromJSON(json: Component.JSON): boolean;
-    /**
      * Destroy the element, its container, event hooks
      * and mounted component.
      */
     destroy(): void;
-    /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @return {Cell.JSON}
-     * Class JSON of this Cell instance.
-     */
-    toJSON(): Cell.JSON;
     /**
      * Get the cell's options.
      * @returns
@@ -142,12 +118,6 @@ declare namespace Cell {
          *
          */
         width: (string | number);
-    }
-    /**
-     * @internal
-     **/
-    interface JSON extends Serializable.JSON<'Dashboards.Layout.Cell'> {
-        options: OptionsJSON;
     }
     /**
      * Options for each cell.
@@ -211,10 +181,6 @@ declare namespace Cell {
          **/
         parentContainerId?: string;
         /**
-         * @internal
-         **/
-        mountedComponentJSON?: Component.JSON;
-        /**
          * To create a nested layout, add a layout object to a cell.
          *
          * Try it:
@@ -223,27 +189,11 @@ declare namespace Cell {
          **/
         layout?: LayoutType.Options;
         /**
-         * To create nested layout from JSON config.
-         */
-        layoutJSON?: LayoutType.JSON;
-        /**
          * Options for responsive design.
          *
          * @deprecated
          **/
         responsive?: Record<string, CellResponsiveOptions>;
-    }
-    /**
-     * @internal
-     **/
-    interface OptionsJSON extends JSON.Object {
-        width?: (string | number);
-        height?: (string | number);
-        containerId: string;
-        parentContainerId: string;
-        mountedComponentJSON?: Component.JSON;
-        style?: CSSJSONObject;
-        layoutJSON?: LayoutType.JSON;
     }
 }
 export default Cell;

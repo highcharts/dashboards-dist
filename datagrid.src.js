@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.3.0 (2025-05-15)
+ * @license Highcharts Dashboards v3.4.0 (2025-06-30)
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.3.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.4.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -3508,11 +3508,12 @@
              * others series in a stack. The shadow can be an object configuration
              * containing `color`, `offsetX`, `offsetY`, `opacity` and `width`.
              *
-             * @sample highcharts/chart/seriesgroupshadow/ Shadow
+             * @sample highcharts/chart/seriesgroupshadow/
+             *         Shadow
              *
              * @type      {boolean|Highcharts.ShadowOptionsObject}
              * @default   false
-             * @apioption chart.shadow
+             * @apioption chart.seriesGroupShadow
              */
             /**
              * Whether to apply a drop shadow to the outer chart area. Requires
@@ -3723,7 +3724,7 @@
              * Chart zooming options.
              * @since 10.2.1
              *
-             * @sample     highcharts/plotoptions/sankey-inverted
+             * @sample     highcharts/plotoptions/sankey-node-color
              *             Zooming in sankey series
              * @sample     highcharts/series-treegraph/link-types
              *             Zooming in treegraph series
@@ -4171,7 +4172,7 @@
             update(options = {}) {
                 this.dTLCache = {};
                 this.options = options = merge(true, this.options, options);
-                const { timezoneOffset, useUTC } = options;
+                const { timezoneOffset, useUTC, locale } = options;
                 // Allow using a different Date class
                 this.Date = options.Date || win.Date || Date;
                 // Assign the time zone. Handle the legacy, deprecated `useUTC` option.
@@ -4191,6 +4192,10 @@
                 this.variableTimezone = timezone !== 'UTC' &&
                     timezone?.indexOf('Etc/GMT') !== 0;
                 this.timezone = timezone;
+                // Update locale.
+                if (this.lang && locale) {
+                    this.lang.locale = locale;
+                }
                 // Assign default time formats from locale strings
                 ['months', 'shortMonths', 'weekdays', 'shortWeekdays'].forEach((name) => {
                     const isMonth = /months/i.test(name), isShort = /short/.test(name), options = {
@@ -6770,6 +6775,10 @@
                         /**
                          * @ignore
                          */
+                        color: "#333333" /* Palette.neutralColor80 */,
+                        /**
+                         * @ignore
+                         */
                         fontSize: '0.8em',
                         /**
                          * @ignore
@@ -8132,7 +8141,7 @@
             // The sub expression regex is the same as the top expression regex,
             // but except parens and block helpers (#), and surrounded by parens
             // instead of curly brackets.
-            subRegex = /\(([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || defaultOptions.lang, time = owner?.time || defaultTime, numberFormatter = owner?.numberFormatter || numberFormat;
+            subRegex = /\(([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || defaultOptions.lang, time = owner?.time || defaultTime, numberFormatter = owner?.numberFormatter || numberFormat.bind(owner);
             /*
              * Get a literal or variable value inside a template expression. May be
              * extended with other types like string or null if needed, but keep it
@@ -8267,9 +8276,11 @@
                         [expression] : expression.split(':');
                     replacement = resolveProperty(valueAndFormat.shift() || '');
                     // Format the replacement
-                    if (valueAndFormat.length && typeof replacement === 'number') {
+                    const isFloat = replacement % 1 !== 0;
+                    if (typeof replacement === 'number' &&
+                        (valueAndFormat.length || isFloat)) {
                         const segment = valueAndFormat.join(':');
-                        if (floatRegex.test(segment)) { // Float
+                        if (floatRegex.test(segment) || isFloat) { // Float
                             const decimals = parseInt((segment.match(decRegex) || ['', '-1'])[1], 10);
                             if (replacement !== null) {
                                 replacement = numberFormatter(replacement, decimals, lang.decimalPoint, segment.indexOf(',') > -1 ? lang.thousandsSep : '');
@@ -8364,8 +8375,7 @@
                 options.useGrouping = false;
             }
             const hasSeparators = thousandsSep || decimalPoint, locale = hasSeparators ?
-                'en' :
-                (this?.locale || lang.locale || pageLang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
+                'en' : (this?.locale || lang.locale || pageLang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
             ret = nf.format(number);
             // If thousandsSep or decimalPoint are set, fall back to using English
             // format with string replacement for the separators.
@@ -8541,7 +8551,11 @@
              * The new options to validate.
              */
             validateOnUpdate(newOptions) {
-                if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'distribution') &&
+                if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'resizing') &&
+                    newOptions.rendering?.columns?.resizing?.mode !== this.type) {
+                    this.invalidated = true;
+                }
+                else if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'distribution') &&
                     newOptions.rendering?.columns?.distribution !== this.type) {
                     this.invalidated = true;
                 }
@@ -8638,19 +8652,19 @@
              *
              * */
             loadColumn(column) {
-                const raw = column.options.width;
-                if (!raw) {
+                const rawWidth = column.options.width;
+                if (!rawWidth) {
                     return;
                 }
                 let value;
                 let unitCode = 0;
-                if (typeof raw === 'number') {
-                    value = raw;
+                if (typeof rawWidth === 'number') {
+                    value = rawWidth;
                     unitCode = 0;
                 }
                 else {
-                    value = parseFloat(raw);
-                    unitCode = raw.charAt(raw.length - 1) === '%' ? 1 : 0;
+                    value = parseFloat(rawWidth);
+                    unitCode = rawWidth.charAt(rawWidth.length - 1) === '%' ? 1 : 0;
                 }
                 this.columnWidthUnits[column.id] = unitCode;
                 this.columnWidths[column.id] = value;
@@ -8803,6 +8817,7 @@
                 headerCellContent: 'header-cell-content',
                 headerRow: 'head-row-content',
                 noData: 'no-data',
+                noPadding: 'no-padding',
                 columnFirst: 'column-first',
                 columnSortable: 'column-sortable',
                 columnSortableIcon: 'column-sortable-icon',
@@ -8959,6 +8974,7 @@
              */
             function setHTMLContent(element, content) {
                 if (isHTML(content)) {
+                    element.innerHTML = AST.emptyHTML;
                     const formattedNodes = new AST(content);
                     formattedNodes.addToDOM(element);
                 }
@@ -8976,7 +8992,7 @@
 
         return GridUtils;
     });
-    _registerModule(_modules, 'Grid/Core/Table/ColumnDistribution/FixedDistributionStrategy.js', [_modules['Grid/Core/Table/ColumnDistribution/ColumnDistributionStrategy.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Core/GridUtils.js']], function (DistributionStrategy, Globals, GridUtils) {
+    _registerModule(_modules, 'Grid/Core/Table/ColumnDistribution/FixedDistributionStrategy.js', [_modules['Grid/Core/Table/ColumnDistribution/ColumnDistributionStrategy.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Core/GridUtils.js'], _modules['Core/Utilities.js']], function (DistributionStrategy, Globals, GridUtils, U) {
         /* *
          *
          *  Fixed Distribution Strategy class
@@ -8992,6 +9008,7 @@
          *
          * */
         const { makeHTMLElement } = GridUtils;
+        const { defined } = U;
         /* *
          *
          *  Class
@@ -9006,6 +9023,12 @@
                  * */
                 super(...arguments);
                 this.type = 'fixed';
+                /**
+                 * Array of units for each column width value. Codified as:
+                 * - `0` - px
+                 * - `1` - %
+                 */
+                this.columnWidthUnits = {};
             }
             /* *
              *
@@ -9013,10 +9036,35 @@
              *
              * */
             loadColumn(column) {
-                this.columnWidths[column.id] = this.getInitialColumnWidth(column);
+                const rawWidth = column.options.width;
+                if (!rawWidth) {
+                    this.columnWidths[column.id] = this.getInitialColumnWidth(column);
+                    this.columnWidthUnits[column.id] = 0;
+                    return;
+                }
+                let value;
+                let unitCode = 0;
+                if (typeof rawWidth === 'number') {
+                    value = rawWidth;
+                    unitCode = 0;
+                }
+                else {
+                    value = parseFloat(rawWidth);
+                    unitCode = rawWidth.charAt(rawWidth.length - 1) === '%' ? 1 : 0;
+                }
+                this.columnWidthUnits[column.id] = unitCode;
+                this.columnWidths[column.id] = value;
             }
             getColumnWidth(column) {
-                return this.columnWidths[column.id];
+                const vp = this.viewport;
+                const widthValue = this.columnWidths[column.id];
+                const minWidth = DistributionStrategy.getMinWidth(column);
+                if (this.columnWidthUnits[column.id] === 1) {
+                    // If %:
+                    return Math.max(vp.getWidthFromRatio(widthValue / 100), minWidth);
+                }
+                // If px:
+                return widthValue || 100; // Default to 100px if not defined
             }
             resize(resizer, diff) {
                 const column = resizer.draggedColumn;
@@ -9024,6 +9072,7 @@
                     return;
                 }
                 this.columnWidths[column.id] = Math.max((resizer.columnStartWidth || 0) + diff, DistributionStrategy.getMinWidth(column));
+                this.columnWidthUnits[column.id] = 0; // Always save in px
             }
             /**
              * Creates a mock element to measure the width of the column from the CSS.
@@ -9048,6 +9097,27 @@
                 const result = mock.offsetWidth || 100;
                 mock.remove();
                 return result;
+            }
+            exportMetadata() {
+                return {
+                    ...super.exportMetadata(),
+                    columnWidthUnits: this.columnWidthUnits
+                };
+            }
+            importMetadata(metadata) {
+                super.importMetadata(metadata, (colId) => {
+                    const unit = metadata.columnWidthUnits[colId];
+                    if (defined(unit)) {
+                        this.columnWidthUnits[colId] = unit;
+                    }
+                });
+            }
+            validateOnUpdate(newOptions) {
+                super.validateOnUpdate(newOptions);
+                if (!this.invalidated && (Object.hasOwnProperty.call(newOptions.columnDefaults || {}, 'width') ||
+                    newOptions.columns?.some((col) => Object.hasOwnProperty.call(col || {}, 'width')))) {
+                    this.invalidated = true;
+                }
             }
         }
         /* *
@@ -9232,7 +9302,7 @@
             };
             /**
              * Returns the column distribution of the table according to the options:
-             * 1. If `columns.distribution` defined, use it. If not:
+             * 1. If `columns.resizing.mode` defined, use it. If not:
              * 2. If any column has a width defined, use `mixed`. If not:
              * 3. Use `full`.
              *
@@ -9241,7 +9311,9 @@
              */
             function assumeDistributionType(viewport) {
                 const { options } = viewport.grid;
-                const result = options?.rendering?.columns?.distribution;
+                const colRendering = options?.rendering?.columns;
+                const result = colRendering?.resizing?.mode ||
+                    colRendering?.distribution;
                 if (result) {
                     return result;
                 }
@@ -9740,11 +9812,6 @@
                 this.modified = this;
                 this.rowCount = 0;
                 this.versionTag = uniqueKey();
-                this.columnNames = options.columnNames;
-                this.firstRowAsNames = options.firstRowAsNames;
-                this.orientation = options.orientation;
-                this.dataModifier = options.dataModifier;
-                this.beforeParse = options.beforeParse;
                 let rowCount = 0;
                 objectEach(options.columns || {}, (column, columnName) => {
                     this.columns[columnName] = column.slice();
@@ -11137,7 +11204,7 @@
              * @param {DataConnector.UserOptions} [options]
              * Options to use in the connector.
              *
-             * @param {Array<DataTable>} [dataTables]
+             * @param {Array<DataTableOptions>} [dataTables]
              * Multiple connector data tables options.
              */
             constructor(options = {}, dataTables = []) {
@@ -11145,6 +11212,11 @@
                  * Tables managed by this DataConnector instance.
                  */
                 this.dataTables = {};
+                /**
+                 * Helper flag for detecting whether the data connector is loaded.
+                 * @internal
+                 */
+                this.loaded = false;
                 this.metadata = options.metadata || { columns: {} };
                 // Create a data table for each defined in the dataTables user options.
                 let dataTableIndex = 0;
@@ -11318,9 +11390,10 @@
                     connector.describeColumn(columnNames[i], { index: i });
                 }
             }
-            async setModifierOptions(modifierOptions) {
-                for (const table of Object.values(this.dataTables)) {
-                    const mergedModifierOptions = merge(table.dataModifier, modifierOptions);
+            async setModifierOptions(modifierOptions, tablesOptions) {
+                for (const [key, table] of Object.entries(this.dataTables)) {
+                    const tableOptions = tablesOptions?.find((dataTable) => dataTable.key === key);
+                    const mergedModifierOptions = merge(tableOptions?.dataModifier, modifierOptions);
                     const ModifierClass = (mergedModifierOptions &&
                         DataModifier.types[mergedModifierOptions.type]);
                     await table.setModifier(ModifierClass ?
@@ -11355,10 +11428,13 @@
                 }), refreshTime);
             }
             /**
-             * Stops polling data.
+             * Stops polling data. Shouldn't be performed if polling is already stopped.
              */
             stopPolling() {
                 const connector = this;
+                if (!connector.polling) {
+                    return;
+                }
                 // Abort the existing request.
                 connector?.pollingController?.abort();
                 // Clear the polling timeout.
@@ -12784,7 +12860,7 @@
          *
          *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
          *
-        *  Authors:
+         *  Authors:
          *  - Dawid Dragula
          *  - Sebastian Bochan
          *
@@ -12834,13 +12910,17 @@
                     header: {
                         enabled: true
                     },
+                    columns: {
+                        resizing: {
+                            enabled: true
+                        }
+                    },
                     theme: 'hcg-theme-default'
                 },
                 columnDefaults: {
                     sorting: {
                         sortable: true
-                    },
-                    resizing: true
+                    }
                 }
             };
             /**
@@ -12863,7 +12943,145 @@
 
         return Defaults;
     });
-    _registerModule(_modules, 'Grid/Core/Table/Column.js', [_modules['Core/Utilities.js'], _modules['Core/Templating.js'], _modules['Grid/Core/Globals.js']], function (Utils, Templating, Globals) {
+    _registerModule(_modules, 'Grid/Core/Table/CellContent/CellContent.js', [], function () {
+        /* *
+         *
+         *  Cell Content abstract class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a cell content in the grid.
+         */
+        class CellContent {
+            /**
+             * Creates and renders the cell content.
+             *
+             * @param cell
+             * The cell to which the content belongs.
+             */
+            constructor(cell) {
+                this.cell = cell;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CellContent;
+    });
+    _registerModule(_modules, 'Grid/Core/Table/CellContent/TextContent.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Grid/Core/Table/CellContent/CellContent.js'], _modules['Grid/Core/GridUtils.js'], _modules['Core/Utilities.js']], function (AST, CellContent, GridUtils, Utils) {
+        /* *
+         *
+         *  Text Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { setHTMLContent } = GridUtils;
+        const { defined } = Utils;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a text type of content.
+         */
+        class TextContent extends CellContent {
+            constructor(cell) {
+                super(cell);
+                this.add();
+            }
+            add() {
+                this.update();
+            }
+            destroy() {
+                this.cell.htmlElement.innerHTML = AST.emptyHTML;
+            }
+            update() {
+                setHTMLContent(this.cell.htmlElement, this.format());
+            }
+            /**
+             * Returns the formatted value of the cell.
+             *
+             * @internal
+             */
+            format() {
+                const { cell } = this;
+                const cellsDefaults = cell.row.viewport.grid.options?.columnDefaults?.cells || {};
+                const { format, formatter } = cell.column.options.cells || {};
+                let value = cell.value;
+                if (!defined(value)) {
+                    value = '';
+                }
+                let cellContent = '';
+                if (!format && !formatter) {
+                    return cell.format(TextContent.defaultFormatsForDataTypes[cell.column.dataType]);
+                }
+                const isDefaultFormat = cellsDefaults.format === format;
+                const isDefaultFormatter = cellsDefaults.formatter === formatter;
+                if (isDefaultFormat && isDefaultFormatter) {
+                    cellContent = formatter ?
+                        formatter.call(cell).toString() :
+                        (format ? cell.format(format) : value + '');
+                }
+                else if (isDefaultFormat) {
+                    cellContent = formatter?.call(cell).toString() || value + '';
+                }
+                else if (isDefaultFormatter) {
+                    cellContent = format ? cell.format(format) : value + '';
+                }
+                return cellContent;
+            }
+        }
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        (function (TextContent) {
+            /**
+             * Default formats for data types.
+             */
+            TextContent.defaultFormatsForDataTypes = {
+                string: '{value}',
+                number: '{value}',
+                'boolean': '{value}',
+                datetime: '{value:%Y-%m-%d %H:%M:%S}'
+            };
+        })(TextContent || (TextContent = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TextContent;
+    });
+    _registerModule(_modules, 'Grid/Core/Table/Column.js', [_modules['Core/Utilities.js'], _modules['Core/Templating.js'], _modules['Grid/Core/Table/CellContent/TextContent.js'], _modules['Grid/Core/Globals.js']], function (Utils, Templating, TextContent, Globals) {
         /* *
          *
          *  Grid Column class
@@ -12879,7 +13097,7 @@
          *  - Sebastian Bochan
          *
          * */
-        const { merge } = Utils;
+        const { defined, merge, fireEvent } = Utils;
         /* *
          *
          *  Class
@@ -12911,11 +13129,14 @@
                  * The cells of the column.
                  */
                 this.cells = [];
-                this.options = merge(viewport.grid.options?.columnDefaults ?? {}, viewport.grid.columnOptionsMap?.[id] ?? {});
+                const { grid } = viewport;
                 this.id = id;
                 this.index = index;
                 this.viewport = viewport;
                 this.loadData();
+                this.dataType = this.assumeDataType();
+                this.options = merge(grid.options?.columnDefaults ?? {}, grid.columnOptionsMap?.[id] ?? {});
+                fireEvent(this, 'afterInit');
             }
             /* *
             *
@@ -12927,6 +13148,55 @@
              */
             loadData() {
                 this.data = this.viewport.dataTable.getColumn(this.id, true);
+            }
+            /**
+             * Creates a cell content instance.
+             *
+             * @param cell
+             * The cell that is to be edited.
+             *
+             */
+            createCellContent(cell) {
+                return new TextContent(cell);
+            }
+            /**
+             * Assumes the data type of the column based on the options or data in the
+             * column if not specified.
+             */
+            assumeDataType() {
+                const { grid } = this.viewport;
+                const type = grid.columnOptionsMap?.[this.id]?.dataType ??
+                    grid.options?.columnDefaults?.dataType;
+                if (type) {
+                    return type;
+                }
+                if (!this.data) {
+                    return 'string';
+                }
+                if (!Array.isArray(this.data)) {
+                    // Typed array
+                    return 'number';
+                }
+                for (let i = 0, iEnd = Math.min(this.data.length, 30); i < iEnd; ++i) {
+                    if (!defined(this.data[i])) {
+                        // If the data is null or undefined, we should look
+                        // at the next value to determine the type.
+                        continue;
+                    }
+                    switch (typeof this.data[i]) {
+                        case 'number':
+                            return 'number';
+                        case 'boolean':
+                            return 'boolean';
+                        default:
+                            return 'string';
+                    }
+                }
+                // eslint-disable-next-line no-console
+                console.warn(`Column "${this.id}" contains too few data points with ` +
+                    'unambiguous types to correctly determine its dataType. It\'s ' +
+                    'recommended to set the `dataType` option for it.');
+                return 'string';
             }
             /**
              * Registers a cell in the column.
@@ -13273,6 +13543,7 @@
              */
             render() {
                 this.row.htmlElement.appendChild(this.htmlElement);
+                this.reflow();
             }
             /**
              * Reflows the cell dimensions.
@@ -13389,6 +13660,10 @@
                     const viewport = this.column.viewport;
                     const querying = viewport.grid.querying;
                     const sortingController = querying.sorting;
+                    // Do not call sorting when cell is currently edited and validated.
+                    if (viewport.validator?.errorCell) {
+                        return;
+                    }
                     const currentOrder = (sortingController.currentSorting?.columnId === this.column.id ?
                         sortingController.currentSorting.order : null) || 'none';
                     const consequents = {
@@ -13611,6 +13886,9 @@
                     this.initColumnSorting();
                 }
                 this.setCustomClassName(options.header?.className);
+                fireEvent(this, 'afterRender', {
+                    target: column
+                });
             }
             reflow() {
                 const th = this.htmlElement;
@@ -14004,7 +14282,7 @@
 
         return TableHeader;
     });
-    _registerModule(_modules, 'Grid/Core/Table/Content/TableCell.js', [_modules['Grid/Core/Table/Cell.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/GridUtils.js']], function (Cell, Utils, GridUtils) {
+    _registerModule(_modules, 'Grid/Core/Table/Body/TableCell.js', [_modules['Grid/Core/Table/Cell.js'], _modules['Core/Utilities.js']], function (Cell, Utils) {
         /* *
          *
          *  Grid class
@@ -14020,8 +14298,7 @@
          *  - Sebastian Bochan
          *
          * */
-        const { setHTMLContent } = GridUtils;
-        const { defined, fireEvent } = Utils;
+        const { fireEvent } = Utils;
         /* *
          *
          *  Class
@@ -14062,7 +14339,7 @@
             render() {
                 super.render();
                 // It may happen that `await` will be needed here in the future.
-                void this.setValue(this.column.data?.[this.row.index], false);
+                void this.setValue();
             }
             initEvents() {
                 this.cellEvents.push(['dblclick', (e) => (this.onDblClick(e))]);
@@ -14163,21 +14440,25 @@
              * Sets the value & updating content of the cell.
              *
              * @param value
-             * The raw value to set.
+             * The raw value to set. If not provided, it will use the value from the
+             * data table for the current row and column.
              *
              * @param updateTable
-             * Whether to update the table after setting the content.
+             * Whether to update the table after setting the content. Defaults to
+             * `false`, meaning the table will not be updated.
              */
-            async setValue(value, updateTable) {
+            async setValue(value = this.column.data?.[this.row.index], updateTable = false) {
                 this.value = value;
                 const vp = this.column.viewport;
-                // Render the table cell element content.
-                setHTMLContent(this.htmlElement, this.formatCell());
+                if (this.content) {
+                    this.content.update();
+                }
+                else {
+                    this.content = this.column.createCellContent(this);
+                }
                 this.htmlElement.setAttribute('data-value', this.value + '');
                 this.setCustomClassName(this.column.options.cells?.className);
-                fireEvent(this, 'afterSetValue', {
-                    target: this
-                });
+                fireEvent(this, 'afterRender', { target: this });
                 if (!updateTable) {
                     return;
                 }
@@ -14213,38 +14494,11 @@
                 }
             }
             /**
-             * Handle the formatting content of the cell.
-             *
-             * @internal
-             */
-            formatCell() {
-                const cellsDefaults = this.row.viewport.grid.options?.columnDefaults?.cells || {};
-                const options = this.column.options.cells || {};
-                const { format, formatter } = options;
-                const isDefaultFormat = cellsDefaults.format === format;
-                const isDefaultFormatter = cellsDefaults.formatter === formatter;
-                let value = this.value;
-                if (!defined(value)) {
-                    value = '';
-                }
-                let cellContent = '';
-                if (isDefaultFormat && isDefaultFormatter) {
-                    cellContent = formatter ?
-                        formatter.call(this).toString() :
-                        (format ? this.format(format) : value + '');
-                }
-                else if (isDefaultFormat) {
-                    cellContent = formatter?.call(this).toString() || value + '';
-                }
-                else if (isDefaultFormatter) {
-                    cellContent = format ? this.format(format) : value + '';
-                }
-                return cellContent;
-            }
-            /**
              * Destroys the cell.
              */
             destroy() {
+                this.content?.destroy();
+                delete this.content;
                 super.destroy();
             }
         }
@@ -14256,7 +14510,7 @@
 
         return TableCell;
     });
-    _registerModule(_modules, 'Grid/Core/Table/Content/TableRow.js', [_modules['Grid/Core/Table/Row.js'], _modules['Grid/Core/Table/Content/TableCell.js'], _modules['Grid/Core/Globals.js']], function (Row, TableCell, Globals) {
+    _registerModule(_modules, 'Grid/Core/Table/Body/TableRow.js', [_modules['Grid/Core/Table/Row.js'], _modules['Grid/Core/Table/Body/TableCell.js'], _modules['Grid/Core/Globals.js']], function (Row, TableCell, Globals) {
         /* *
          *
          *  Grid TableRow class
@@ -14408,7 +14662,7 @@
 
         return TableRow;
     });
-    _registerModule(_modules, 'Grid/Core/Table/Actions/RowsVirtualizer.js', [_modules['Grid/Core/Table/Content/TableRow.js'], _modules['Grid/Core/Globals.js']], function (TableRow, Globals) {
+    _registerModule(_modules, 'Grid/Core/Table/Actions/RowsVirtualizer.js', [_modules['Grid/Core/Table/Body/TableRow.js'], _modules['Grid/Core/Globals.js']], function (TableRow, Globals) {
         /* *
          *
          *  Grid Rows Renderer class.
@@ -14577,24 +14831,31 @@
              */
             renderRows(rowCursor) {
                 const { viewport: vp, buffer } = this;
+                const rowCount = vp.dataTable.getRowCount();
+                // Stop rendering if there are no rows to render.
+                if (rowCount < 1) {
+                    return;
+                }
                 const isVirtualization = this.rowSettings?.virtualization;
                 const rowsPerPage = isVirtualization ? Math.ceil((vp.grid.tableElement?.clientHeight || 0) /
                     this.defaultRowHeight) : Infinity; // Need to be refactored when add pagination
                 let rows = vp.rows;
                 if (!isVirtualization && rows.length > 50) {
                     // eslint-disable-next-line no-console
-                    console.warn('Grid: a large dataset can cause performance issues.');
+                    console.warn('Grid: a large dataset can cause performance issues when ' +
+                        'virtualization is disabled. Consider enabling ' +
+                        'virtualization in the rows settings.');
                 }
                 if (!rows.length) {
-                    const last = new TableRow(vp, vp.dataTable.getRowCount() - 1);
+                    const last = new TableRow(vp, rowCount - 1);
+                    vp.tbodyElement.appendChild(last.htmlElement);
                     last.render();
                     rows.push(last);
-                    vp.tbodyElement.appendChild(last.htmlElement);
                     if (isVirtualization) {
                         last.setTranslateY(last.getDefaultTopOffset());
                     }
                 }
-                const from = Math.max(0, Math.min(rowCursor - buffer, vp.dataTable.getRowCount() - rowsPerPage));
+                const from = Math.max(0, Math.min(rowCursor - buffer, rowCount - rowsPerPage));
                 const to = Math.min(rowCursor + rowsPerPage + buffer, rows[rows.length - 1].index - 1);
                 const alwaysLastRow = rows.pop();
                 const tempRows = [];
@@ -14626,8 +14887,8 @@
                 rows.sort((a, b) => a.index - b.index);
                 for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
                     if (!rows[i].rendered) {
-                        rows[i].render();
                         vp.tbodyElement.insertBefore(rows[i].htmlElement, vp.tbodyElement.lastChild);
+                        rows[i].render();
                     }
                 }
                 if (alwaysLastRow) {
@@ -14729,8 +14990,8 @@
                 const mockRow = new TableRow(vp, 0);
                 mockRow.htmlElement.style.position = 'absolute';
                 mockRow.htmlElement.classList.add(Globals.getClassName('mockedRow'));
-                mockRow.render();
                 this.viewport.tbodyElement.appendChild(mockRow.htmlElement);
+                mockRow.render();
                 const defaultRowHeight = mockRow.htmlElement.offsetHeight;
                 mockRow.destroy();
                 return defaultRowHeight;
@@ -14988,12 +15249,14 @@
                 if (this.virtualRows) {
                     tableElement.classList.add(Globals.getClassName('virtualization'));
                 }
-                if (dgOptions?.columnDefaults?.resizing) {
+                if (!(dgOptions?.rendering?.columns?.resizing?.enabled === false ||
+                    dgOptions?.columnDefaults?.resizing === false)) {
                     this.columnsResizer = new ColumnsResizer(this);
                 }
                 if (customClassName) {
                     tableElement.classList.add(...customClassName.split(/\s+/g));
                 }
+                tableElement.classList.add(Globals.getClassName('scrollableContent'));
                 // Load columns
                 this.loadColumns();
                 // Virtualization
@@ -15003,7 +15266,6 @@
                 // Add event listeners
                 this.resizeObserver = new ResizeObserver(this.onResize);
                 this.resizeObserver.observe(tableElement);
-                tableElement.classList.add(Globals.getClassName('scrollableContent'));
                 this.tbodyElement.addEventListener('scroll', this.onScroll);
                 this.tbodyElement.addEventListener('focus', this.onTBodyFocus);
             }
@@ -15027,6 +15289,7 @@
                 // this.footer = new TableFooter(this);
                 // this.footer.render();
                 this.rowsVirtualizer.initialRender();
+                fireEvent(this, 'afterInit');
             }
             /**
              * Sets the minimum height of the table body.
@@ -15141,7 +15404,7 @@
                 return this.tbodyElement.clientWidth * ratio;
             }
             /**
-             * Destroys the data grid table.
+             * Destroys the grid table.
              */
             destroy() {
                 this.tbodyElement.removeEventListener('focus', this.onTBodyFocus);
@@ -15212,6 +15475,9 @@
              * The ID of the row.
              */
             getRow(id) {
+                // TODO: Change `find` to a method using `vp.dataTable.getLocalRowIndex`
+                // and rows[presentationRowIndex - firstRowIndex]. Needs more testing,
+                // but it should be faster.
                 return this.rows.find((row) => row.id === id);
             }
         }
@@ -16325,6 +16591,12 @@
                 }
                 this.viewport?.columnDistribution.validateOnUpdate(options);
                 this.querying.loadOptions();
+                // Update locale.
+                const locale = options.lang?.locale;
+                if (locale) {
+                    this.locale = locale;
+                    this.time.update(extend(options.time || {}, { locale: this.locale }));
+                }
                 if (render) {
                     await this.querying.proceed(newDataTable);
                     this.renderViewport();
@@ -16848,7 +17120,7 @@
             getConnector(connectorId) {
                 const connector = this.connectors[connectorId];
                 // Already loaded
-                if (connector) {
+                if (connector?.loaded) {
                     return Promise.resolve(connector);
                 }
                 let waitingList = this.waiting[connectorId];
@@ -16963,12 +17235,14 @@
                     if (!ConnectorClass) {
                         throw new Error(`Connector type not found. (${options.type})`);
                     }
-                    const connector = new ConnectorClass(options.options, options.dataTables);
+                    const connector = this.connectors[options.id] = new ConnectorClass(options.options, options.dataTables);
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     connector
                         .load()
-                        .then((connector) => {
-                        this.connectors[options.id] = connector;
+                        .then(({ converter, dataTables }) => {
+                        connector.dataTables = dataTables;
+                        connector.converter = converter;
+                        connector.loaded = true;
                         this.emit({
                             type: 'afterLoad',
                             options
@@ -16976,6 +17250,15 @@
                         resolve(connector);
                     })['catch'](reject);
                 });
+            }
+            /**
+             * Cancels all data connectors pending requests.
+             */
+            cancelPendingRequests() {
+                const { connectors } = this;
+                for (const connectorKey of Object.keys(connectors)) {
+                    connectors[connectorKey].stopPolling();
+                }
             }
             /**
              * Registers a callback for a specific event.
@@ -17095,11 +17378,14 @@
                 'mouseOut',
                 'dblClick',
                 'click',
-                'afterSetValue'
+                'afterRender'
             ].forEach((name) => {
                 addEvent(TableCellClass, name, (e) => {
                     const cell = e.target;
-                    cell.row.viewport.grid.options?.events?.cell?.[name]?.call(cell);
+                    const cellEvent = cell.column.options.cells?.events?.[name] ||
+                        // Backward compatibility
+                        cell.row.viewport.grid.options?.events?.cell?.[name];
+                    cellEvent?.call(cell);
                     propagate['cell_' + name]?.call(cell);
                 });
             });
@@ -17109,13 +17395,24 @@
             ].forEach((name) => {
                 addEvent(ColumnClass, name, (e) => {
                     const column = e.target;
-                    column.viewport.grid.options?.events?.column?.[name]?.call(column);
+                    const columnEvent = column.options?.events?.[name] ||
+                        // Backward compatibility
+                        column.viewport.grid.options?.events?.column?.[name];
+                    columnEvent?.call(column);
                 });
             });
             // HeaderCell Events
-            addEvent(HeaderCellClass, 'click', (e) => {
-                const col = e.target;
-                col.viewport.grid.options?.events?.header?.click?.call(col);
+            [
+                'click',
+                'afterRender'
+            ].forEach((name) => {
+                addEvent(HeaderCellClass, name, (e) => {
+                    const column = e.target;
+                    const headerEvent = column.options?.header?.events?.[name] ||
+                        // Backward compatibility
+                        column.viewport?.grid?.options?.events?.header?.[name];
+                    headerEvent?.call(column);
+                });
             });
         }
         /* *
@@ -17129,7 +17426,7 @@
 
         return { compose };
     });
-    _registerModule(_modules, 'Grid/Pro/CellEditing/CellEditing.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Grid/Core/GridUtils.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (AST, GridUtils, Globals, U) {
+    _registerModule(_modules, 'Grid/Pro/CellEditing/CellEditing.js', [_modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (Globals, U) {
         /* *
          *
          *  Grid Cell Editing class.
@@ -17145,12 +17442,6 @@
          *  - Sebastian Bochan
          *
          * */
-        /* *
-         *
-         *  Imports
-         *
-         * */
-        const { makeHTMLElement } = GridUtils;
         const { fireEvent } = U;
         /* *
          *
@@ -17171,7 +17462,18 @@
                  * Handles the blur event on the input field.
                  */
                 this.onInputBlur = () => {
-                    this.stopEditing();
+                    if (!this.stopEditing()) {
+                        this.editModeContent?.getMainElement().focus();
+                    }
+                };
+                /**
+                 * Handles the change event on the input field.
+                 */
+                this.onInputChange = () => {
+                    if (this.editModeContent?.finishAfterChange &&
+                        !this.stopEditing()) {
+                        this.editModeContent?.getMainElement().focus();
+                    }
                 };
                 /**
                  * Handles the keydown event on the input field. Cancels editing on escape
@@ -17181,11 +17483,18 @@
                  * The keyboard event.
                  */
                 this.onInputKeyDown = (e) => {
-                    const { keyCode } = e;
-                    // Enter / Escape
-                    if (keyCode === 13 || keyCode === 27) {
-                        // Cancel editing on escape
-                        this.stopEditing(keyCode === 13);
+                    const { key } = e;
+                    e.stopPropagation();
+                    if (key === 'Escape') {
+                        this.stopEditing(false);
+                        return;
+                    }
+                    if (key === 'Enter') {
+                        if (this.editModeContent?.finishAfterChange) {
+                            this.onInputChange();
+                            return;
+                        }
+                        this.stopEditing();
                     }
                 };
                 this.viewport = viewport;
@@ -17202,17 +17511,14 @@
              * The cell that is to be edited.
              */
             startEditing(cell) {
-                if (this.editedCell === cell) {
+                if (this.editedCell === cell || (
+                // If value is invalid, do not start new editing
+                this.editedCell && !this.stopEditing())) {
                     return;
                 }
-                if (this.editedCell) {
-                    this.stopEditing();
-                }
                 this.editedCell = cell;
-                const cellElement = cell.htmlElement;
-                cellElement.innerHTML = AST.emptyHTML;
-                cellElement.classList.add(Globals.getClassName('editedCell'));
-                this.renderInput();
+                cell.htmlElement.classList.add(Globals.getClassName('editedCell'));
+                this.render();
                 fireEvent(cell, 'startedEditing');
             }
             /**
@@ -17220,55 +17526,88 @@
              *
              * @param submit
              * Whether to save the value of the input to the cell. Defaults to true.
+             *
+             * @return
+             * Returns `true` if the cell was successfully stopped editing.
              */
             stopEditing(submit = true) {
                 const cell = this.editedCell;
-                const input = this.inputElement;
-                if (!cell || !input) {
-                    return;
+                const emContent = this.editModeContent;
+                if (!cell || !emContent) {
+                    return false;
                 }
-                let newValue = input.value;
-                this.destroyInput();
+                const { column } = cell;
+                const vp = column.viewport;
+                const newValue = emContent.value;
+                if (submit) {
+                    const validationErrors = [];
+                    if (!vp.validator.validate(cell, validationErrors)) {
+                        vp.validator.initErrorBox(cell, validationErrors);
+                        return false;
+                    }
+                    vp.validator.hide();
+                    vp.validator.errorCell = void 0;
+                }
+                // Hide notification
+                this.viewport.validator.hide();
+                // Hide input
+                this.destroy();
                 cell.htmlElement.classList.remove(Globals.getClassName('editedCell'));
                 cell.htmlElement.focus();
-                // Convert to number if possible
-                if (!isNaN(+newValue)) {
-                    newValue = +newValue;
+                const isValueChanged = cell.value !== newValue;
+                void cell.setValue(submit ? newValue : cell.value, submit && isValueChanged);
+                if (isValueChanged) {
+                    fireEvent(cell, 'stoppedEditing', { submit });
                 }
-                void cell.setValue(submit ? newValue : cell.value, submit && cell.value !== newValue);
-                fireEvent(cell, 'stoppedEditing', { submit });
                 delete this.editedCell;
+                return true;
             }
             /**
              * Renders the input field for the cell, focuses it and sets up event
              * listeners.
              */
-            renderInput() {
+            render() {
                 const cell = this.editedCell;
-                if (!cell) {
+                if (!cell || !cell.column.editModeRenderer) {
                     return;
                 }
-                const cellEl = cell.htmlElement;
-                const input = this.inputElement = makeHTMLElement('input', {}, cellEl);
-                input.value = '' + cell.value;
-                input.focus();
-                input.addEventListener('blur', this.onInputBlur);
-                input.addEventListener('keydown', this.onInputKeyDown);
+                this.containerElement = this.containerElement ||
+                    document.createElement('div');
+                this.containerElement.className =
+                    CellEditing.classNames.cellEditingContainer;
+                this.editedCell?.htmlElement.appendChild(this.containerElement);
+                this.editModeContent = cell.column.editModeRenderer?.render(cell, this.containerElement);
+                this.editModeContent.getMainElement().focus();
+                this.editModeContent.blurHandler = this.onInputBlur;
+                this.editModeContent.changeHandler = this.onInputChange;
+                this.editModeContent.keyDownHandler = this.onInputKeyDown;
             }
             /**
              * Removes event listeners and the input element.
              */
-            destroyInput() {
-                const input = this.inputElement;
-                if (!input) {
+            destroy() {
+                if (!this.editModeContent) {
                     return;
                 }
-                input.removeEventListener('keydown', this.onInputKeyDown);
-                input.removeEventListener('blur', this.onInputBlur);
-                input.remove();
-                delete this.inputElement;
+                this.editModeContent.destroy();
+                this.containerElement?.remove();
+                delete this.editModeContent;
+                delete this.containerElement;
             }
         }
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        (function (CellEditing) {
+            /**
+             * The class names used by the CellEditing functionality.
+             */
+            CellEditing.classNames = {
+                cellEditingContainer: Globals.classNamePrefix + 'cell-editing-container'
+            };
+        })(CellEditing || (CellEditing = {}));
         /* *
          *
          *  Default Export
@@ -17277,7 +17616,67 @@
 
         return CellEditing;
     });
-    _registerModule(_modules, 'Grid/Pro/CellEditing/CellEditingComposition.js', [_modules['Grid/Core/Defaults.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Pro/CellEditing/CellEditing.js'], _modules['Grid/Core/GridUtils.js'], _modules['Core/Utilities.js']], function (Defaults, Globals, CellEditing, GU, U) {
+    _registerModule(_modules, 'Grid/Pro/CellRendering/CellRendererRegistry.js', [], function () {
+        /* *
+         *
+         *  Cell Renderer Registry
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        var CellRendererRegistry;
+        (function (CellRendererRegistry) {
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             * Record of cell renderer classes
+             */
+            CellRendererRegistry.types = {};
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Method used to register new cell renderer classes.
+             *
+             * @param key
+             * Registry key of the cell renderer class.
+             *
+             * @param CellRendererClass
+             * Cell renderer class (aka class constructor) to register.
+             */
+            function registerRenderer(key, CellRendererClass) {
+                return (!!key &&
+                    !CellRendererRegistry.types[key] &&
+                    !!(CellRendererRegistry.types[key] = CellRendererClass));
+            }
+            CellRendererRegistry.registerRenderer = registerRenderer;
+        })(CellRendererRegistry || (CellRendererRegistry = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CellRendererRegistry;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellEditing/CellEditingComposition.js', [_modules['Grid/Core/Defaults.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Pro/CellEditing/CellEditing.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Core/GridUtils.js'], _modules['Core/Utilities.js']], function (Defaults, Globals, CellEditing, CellRendererRegistry, GU, U) {
         /* *
          *
          *  Grid Cell Editing class.
@@ -17321,7 +17720,8 @@
                             announcements: {
                                 started: 'Entered cell editing mode.',
                                 edited: 'Edited cell value.',
-                                cancelled: 'Editing canceled.'
+                                cancelled: 'Editing canceled.',
+                                notValid: 'Provided value is not valid.'
                             }
                         }
                     }
@@ -17335,22 +17735,30 @@
              *
              * @param TableCellClass
              * The class to extend.
+             *
+             * @param ColumnClass
+             * The class to extend.
              */
-            function compose(TableClass, TableCellClass) {
+            function compose(TableClass, TableCellClass, ColumnClass) {
                 if (!pushUnique(Globals.composed, 'CellEditing')) {
                     return;
                 }
                 merge(true, Defaults.defaultOptions, defaultOptions);
+                addEvent(ColumnClass, 'afterInit', afterColumnInit);
                 addEvent(TableClass, 'beforeInit', initTable);
                 addEvent(TableCellClass, 'keyDown', onCellKeyDown);
                 addEvent(TableCellClass, 'dblClick', onCellDblClick);
-                addEvent(TableCellClass, 'afterSetValue', addEditableCellA11yHint);
+                addEvent(TableCellClass, 'afterRender', addEditableCellA11yHint);
                 addEvent(TableCellClass, 'startedEditing', function () {
                     announceA11yUserEditedCell(this, 'started');
                 });
                 addEvent(TableCellClass, 'stoppedEditing', function (e) {
-                    this.column.viewport.grid.options
-                        ?.events?.cell?.afterEdit?.call(this);
+                    const cellEvents = merge(
+                    // Backward compatibility
+                    this.column.viewport.grid.options?.events?.cell, this.column.options.cells?.events);
+                    if (e.submit) {
+                        cellEvents?.afterEdit?.call(this);
+                    }
                     announceA11yUserEditedCell(this, e.submit ? 'edited' : 'cancelled');
                 });
             }
@@ -17362,6 +17770,36 @@
                 this.cellEditing = new CellEditing(this);
             }
             /**
+             * Creates the edit mode renderer for the column.
+             *
+             * @param column
+             * The column to create the edit mode renderer for.
+             */
+            function createEditModeRenderer(column) {
+                const editModeOptions = column.options.cells?.editMode;
+                const editModeRendererTypeName = editModeOptions?.renderer?.type;
+                const staticRendererTypeName = column.options?.cells?.renderer?.type || 'text';
+                if (editModeRendererTypeName) {
+                    return new CellRendererRegistry.types[editModeRendererTypeName](column, editModeOptions?.renderer || {});
+                }
+                const staticRendererType = CellRendererRegistry.types[staticRendererTypeName];
+                let defRenderer = staticRendererType.defaultEditingRenderer;
+                if (typeof defRenderer !== 'string') {
+                    defRenderer = defRenderer[column.dataType];
+                }
+                return new CellRendererRegistry.types[defRenderer](column, defRenderer === staticRendererTypeName ? merge(column.options.cells?.renderer, { disabled: false }) || {} : {});
+            }
+            /**
+             * Callback function called after column initialization.
+             */
+            function afterColumnInit() {
+                const { options } = this;
+                if (options?.cells?.editMode?.enabled ||
+                    options?.cells?.editable) {
+                    this.editModeRenderer = createEditModeRenderer(this);
+                }
+            }
+            /**
              * Callback function called when a key is pressed on a cell.
              *
              * @param e
@@ -17369,7 +17807,7 @@
              */
             function onCellKeyDown(e) {
                 if (e.originalEvent?.key !== 'Enter' ||
-                    !this.column.options.cells?.editable) {
+                    !this.column.editModeRenderer) {
                     return;
                 }
                 this.row.viewport.cellEditing?.startEditing(this);
@@ -17378,7 +17816,7 @@
              * Callback function called when a cell is double clicked.
              */
             function onCellDblClick() {
-                if (this.column.options.cells?.editable) {
+                if (this.column.editModeRenderer) {
                     this.row.viewport.cellEditing?.startEditing(this);
                 }
             }
@@ -17387,16 +17825,17 @@
              */
             function addEditableCellA11yHint() {
                 const a11y = this.row.viewport.grid.accessibility;
-                if (!a11y) {
+                if (!a11y || this.a11yEditableHint?.isConnected) {
                     return;
                 }
                 const editableLang = this.row.viewport.grid.options
                     ?.lang?.accessibility?.cellEditing?.editable;
-                if (!this.column.options.cells?.editable ||
+                if ((!this.column.options.cells?.editable &&
+                    !this.column.options.cells?.editMode?.enabled) ||
                     !editableLang) {
                     return;
                 }
-                makeHTMLElement('span', {
+                this.a11yEditableHint = makeHTMLElement('span', {
                     className: Globals.getClassName('visuallyHidden'),
                     innerText: ', ' + editableLang
                 }, this.htmlElement);
@@ -17503,7 +17942,7 @@
          *
          * */
         /**
-         * Represents a credits in the data grid.
+         * Represents a credits in the grid.
          */
         class Credits {
             /* *
@@ -17653,6 +18092,8 @@
                 const grid = this.grid;
                 const contentWrapper = grid.contentWrapper;
                 const { position } = this.options;
+                // Apply grid-pro class
+                this.containerElement.classList.add(Globals.getClassName('creditsPro'));
                 if (position === 'top') {
                     // Append the credits to the top of the table.
                     contentWrapper?.prepend(this.containerElement);
@@ -17665,8 +18106,6 @@
                 else {
                     contentWrapper?.appendChild(this.containerElement);
                 }
-                // Apply grid-pro class
-                this.containerElement.classList.add(Globals.getClassName('creditsPro'));
             }
             /**
              * Update the credits with new options.
@@ -17759,7 +18198,9 @@
             }
             CreditsProComposition.compose = compose;
             /**
-             * Callback function called before table initialization.
+             * Init configurable credits.
+             * @param this
+             * Reference to Grid.
              */
             function initCredits() {
                 this.credits = new CreditsPro(this, this.options?.credits);
@@ -17772,6 +18213,385 @@
          * */
 
         return CreditsProComposition;
+    });
+    _registerModule(_modules, 'Grid/Pro/ColumnTypes/Validator.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Core/GridUtils.js'], _modules['Core/Utilities.js']], function (AST, Globals, GridUtils, U) {
+        /* *
+         *
+         *  Grid cell content validator
+         *
+         *  (c) 2009-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { makeDiv, setHTMLContent } = GridUtils;
+        const { defined } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Class for validating cell content.
+         */
+        class Validator {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(viewport) {
+                this.viewport = viewport;
+                this.notifContainer = makeDiv(Validator.classNames.notifContainer);
+                this.viewport.grid.contentWrapper?.appendChild(this.notifContainer);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            /**
+             * Validates the cell content.
+             *
+             * @param cell
+             * Edited cell.
+             *
+             * @param errors
+             * An output array for error messages.
+             *
+             * @returns
+             * Returns true if the value is valid, false otherwise.
+             */
+            validate(cell, errors = []) {
+                const { options, dataType } = cell.column;
+                const validationErrors = cell.row.viewport.grid.options?.lang?.validationErrors;
+                let rules = Array.from(options?.cells?.editMode?.validationRules || []);
+                // Remove duplicates in validationRules
+                const isArrayString = rules.every((rule) => typeof rule === 'string');
+                if (rules.length > 0 && isArrayString) {
+                    rules = [...new Set(rules)];
+                }
+                else {
+                    const predefined = Validator.predefinedRules[dataType] || [];
+                    const hasPredefined = rules.some((rule) => typeof rule !== 'string' &&
+                        typeof rule.validate === 'string' &&
+                        predefined.includes(rule.validate));
+                    if (!hasPredefined) {
+                        rules.push(...predefined);
+                    }
+                }
+                for (const rule of rules) {
+                    let ruleDef;
+                    let err;
+                    if (typeof rule === 'string') {
+                        ruleDef = Validator.rulesRegistry[rule];
+                        err = validationErrors?.[rule]?.notification;
+                    }
+                    else {
+                        ruleDef = rule;
+                    }
+                    let validateFn;
+                    if (typeof ruleDef.validate === 'string') {
+                        const predefinedRules = (Validator.rulesRegistry[ruleDef.validate]);
+                        validateFn =
+                            predefinedRules?.validate;
+                    }
+                    else {
+                        validateFn = ruleDef.validate;
+                    }
+                    const { editModeContent } = cell.column.viewport.cellEditing || {};
+                    if (typeof validateFn === 'function' &&
+                        editModeContent &&
+                        !validateFn.call(cell, editModeContent)) {
+                        if (typeof ruleDef.notification === 'function') {
+                            err = ruleDef.notification.call(cell, editModeContent);
+                        }
+                        errors.push((err || ruleDef.notification));
+                    }
+                }
+                return !errors.length;
+            }
+            /**
+             * Set content of notification and adjust the position.
+             *
+             * @param cell
+             * Cell that is currently edited and is not valid.
+             *
+             * @param errors
+             * An array of error messages.
+             *
+             */
+            initErrorBox(cell, errors) {
+                const { grid } = this.viewport;
+                this.errorCell = cell;
+                // Set error container position
+                this.reflow();
+                // Set width and content
+                setHTMLContent(this.notifContainer, errors.join('<br />'));
+                // A11y announcement
+                if (grid.options?.accessibility?.announcements?.cellEditing) {
+                    this.viewport.grid.accessibility?.announce((grid.options?.lang?.accessibility?.cellEditing
+                        ?.announcements?.notValid || '') + ' ' + errors.join('. '), true);
+                }
+                this.show();
+            }
+            /**
+             * Highlight the non-valid cell and display error in the notification box.
+             */
+            show() {
+                this.errorCell?.htmlElement.classList.add(Validator.classNames.editedCellError);
+                this.notifContainer.classList.add(Validator.classNames.notifError, Validator.classNames.notifAnimation);
+            }
+            /**
+             * Hide the notification, error and unset highlight on cell.
+             *
+             * @param hideErrorBox
+             * The flag that hides the error on edited cell.
+             *
+             */
+            hide(hideErrorBox = true) {
+                this.errorCell?.htmlElement.classList.remove(Validator.classNames.editedCellError);
+                this.notifContainer.classList.remove(Validator.classNames.notifError, Validator.classNames.notifAnimation);
+                if (hideErrorBox) {
+                    this.errorCell = void 0;
+                }
+                this.notifContainer.innerHTML = AST.emptyHTML;
+            }
+            /**
+             * Set the position of the error box.
+             */
+            reflow() {
+                const vp = this.viewport, errorCell = this.errorCell?.htmlElement, tableElement = vp.grid.tableElement, contentWrapper = vp.grid.contentWrapper;
+                if (!errorCell || !tableElement || !contentWrapper) {
+                    return;
+                }
+                const tableTop = tableElement.offsetTop, tableHeight = tableElement.offsetHeight, middlePoint = tableTop + (tableHeight / 2), errorCellTop = errorCell.offsetTop - tableTop;
+                if (errorCellTop > middlePoint) {
+                    this.notifContainer.style.top = // Avoid header overlap
+                        tableTop + (vp.theadElement?.offsetHeight || 0) + 'px';
+                    this.notifContainer.style.bottom = 'auto';
+                }
+                else {
+                    this.notifContainer.style.top = 'auto';
+                    this.notifContainer.style.bottom =
+                        contentWrapper.offsetHeight - tableTop - tableHeight + 'px';
+                }
+            }
+            /**
+             * Destroy validator.
+             */
+            destroy() {
+                this.errorCell = void 0;
+                this.notifContainer.remove();
+            }
+        }
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        /**
+         * Namespace for Validation functionality.
+         */
+        (function (Validator) {
+            /**
+             * The class names used by the validator functionality.
+             */
+            Validator.classNames = {
+                notifContainer: Globals.classNamePrefix + 'notification',
+                notifError: Globals.classNamePrefix + 'notification-error',
+                notifAnimation: Globals.classNamePrefix + 'notification-animation',
+                editedCellError: Globals.classNamePrefix + 'edited-cell-error'
+            };
+            /* *
+             *
+             *  Variables
+             *
+             * */
+            /**
+             * Definition of default validation rules.
+             */
+            Validator.rulesRegistry = {
+                notEmpty: {
+                    validate: ({ value, rawValue }) => (defined(value) && rawValue.length > 0),
+                    notification: 'Value cannot be empty.'
+                },
+                number: {
+                    validate: ({ rawValue }) => !isNaN(+rawValue),
+                    notification: 'Value has to be a number.'
+                },
+                datetime: {
+                    validate: ({ value }) => !defined(value) || !isNaN(+value),
+                    notification: 'Value has to be parsed to a valid timestamp.'
+                },
+                'boolean': {
+                    validate: ({ rawValue }) => (rawValue === 'true' || rawValue === 'false' ||
+                        Number(rawValue) === 1 || Number(rawValue) === 0),
+                    notification: 'Value has to be a boolean.'
+                }
+            };
+            /**
+             * Default validation rules for each dataType.
+             */
+            Validator.predefinedRules = {
+                'boolean': ['boolean'],
+                datetime: ['datetime'],
+                number: ['number'],
+                string: []
+            };
+        })(Validator || (Validator = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Validator;
+    });
+    _registerModule(_modules, 'Grid/Pro/ColumnTypes/ValidatorComposition.js', [_modules['Grid/Pro/ColumnTypes/Validator.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (Validator, Globals, U) {
+        /* *
+         *
+         *  Validator Composition.
+         *
+         *  (c) 2020-2024 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *
+         * */
+        const { addEvent, pushUnique } = U;
+        /* *
+         *
+         *  Composition
+         *
+         * */
+        /**
+         * @internal
+         */
+        var ValidatorComposition;
+        (function (ValidatorComposition) {
+            /**
+             * Extends the grid classes with cell editing functionality.
+             *
+             * @param TableClass
+             * The class to extend.
+             *
+             */
+            function compose(TableClass) {
+                if (!pushUnique(Globals.composed, 'Validator')) {
+                    return;
+                }
+                addEvent(TableClass, 'afterInit', initValidatorComposition);
+                addEvent(TableClass, 'afterDestroy', destroy);
+            }
+            ValidatorComposition.compose = compose;
+            /**
+             * Callback function called after table initialization.
+             */
+            function initValidatorComposition() {
+                this.validator = new Validator(this);
+            }
+            /**
+             * Callback function called after table destroy.
+             */
+            function destroy() {
+                this.validator.destroy();
+            }
+        })(ValidatorComposition || (ValidatorComposition = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return ValidatorComposition;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/CellRenderersComposition.js', [_modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (CellRendererRegistry, Globals, U) {
+        /* *
+         *
+         *  Cell Content Pro composition
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { addEvent, pushUnique } = U;
+        /* *
+         *
+         *  Composition
+         *
+         * */
+        /**
+         * @internal
+         */
+        var CellRenderersComposition;
+        (function (CellRenderersComposition) {
+            /**
+             * Extends the grid classes with cell editing functionality.
+             *
+             * @param ColumnClass
+             * The class to extend.
+             */
+            function compose(ColumnClass) {
+                if (!pushUnique(Globals.composed, 'CellRenderers')) {
+                    return;
+                }
+                addEvent(ColumnClass, 'afterInit', afterColumnInit);
+                ColumnClass.prototype.createCellContent = createCellContent;
+            }
+            CellRenderersComposition.compose = compose;
+            /**
+             * Init a type of content for a column.
+             * @param this
+             * Current column.
+             */
+            function afterColumnInit() {
+                const rendererType = this.options.cells?.renderer?.type || 'text';
+                let Renderer = CellRendererRegistry.types[rendererType];
+                if (!Renderer) {
+                    // eslint-disable-next-line no-console
+                    console.warn(`The cell renderer of type "${rendererType}" is not registered. Using default text renderer instead.`);
+                    Renderer = CellRendererRegistry.types.text;
+                }
+                this.cellRenderer = new Renderer(this, this.options.cells?.renderer || {});
+            }
+            /**
+             * Render content of cell.
+             * @param this
+             * Current column.
+             *
+             * @param cell
+             * Current cell.
+             *
+             * @returns
+             * Formatted cell content.
+             */
+            function createCellContent(cell) {
+                return this.cellRenderer.render(cell);
+            }
+        })(CellRenderersComposition || (CellRenderersComposition = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CellRenderersComposition;
     });
     _registerModule(_modules, 'Data/Converters/CSVConverter.js', [_modules['Data/Converters/DataConverter.js'], _modules['Core/Utilities.js']], function (DataConverter, U) {
         /* *
@@ -18230,7 +19050,7 @@
          *  - Sophie Bremer
          *
          * */
-        const { merge } = U;
+        const { merge, defined } = U;
         /* *
          *
          *  Class
@@ -18253,14 +19073,15 @@
              * @param {CSVConnector.UserOptions} [options]
              * Options for the connector and converter.
              *
-             * @param {Array<DataTable>} [dataTables]
+             * @param {Array<DataTableOptions>} [dataTables]
              * Multiple connector data tables options.
              *
              */
             constructor(options, dataTables) {
                 const mergedOptions = merge(CSVConnector.defaultOptions, options);
                 super(mergedOptions, dataTables);
-                this.options = mergedOptions;
+                this.options = defined(dataTables) ?
+                    merge(mergedOptions, { dataTables }) : mergedOptions;
                 if (mergedOptions.enablePolling) {
                     this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
                 }
@@ -18280,7 +19101,7 @@
              * @emits CSVConnector#afterLoad
              */
             load(eventDetail) {
-                const connector = this, tables = connector.dataTables, { csv, csvURL, dataModifier } = connector.options;
+                const connector = this, tables = connector.dataTables, { csv, csvURL, dataModifier, dataTables } = connector.options;
                 connector.emit({
                     type: 'load',
                     csv,
@@ -18295,23 +19116,24 @@
                     csv || '')
                     .then((csv) => {
                     if (csv) {
-                        this.initConverters(csv, (key, table) => {
+                        this.initConverters(csv, (key) => {
                             const options = this.options;
+                            const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                             // Takes over the connector default options.
-                            const dataTableOptions = {
+                            const mergedTableOptions = {
                                 dataTableKey: key,
-                                firstRowAsNames: table.firstRowAsNames ??
+                                firstRowAsNames: tableOptions?.firstRowAsNames ??
                                     options.firstRowAsNames,
-                                beforeParse: table.beforeParse ??
+                                beforeParse: tableOptions?.beforeParse ??
                                     options.beforeParse
                             };
-                            return new CSVConverter(merge(this.options, dataTableOptions));
+                            return new CSVConverter(merge(this.options, mergedTableOptions));
                         }, (converter, data) => {
                             converter.parse({ csv: data });
                         });
                     }
                     return connector
-                        .setModifierOptions(dataModifier)
+                        .setModifierOptions(dataModifier, dataTables)
                         .then(() => csv);
                 })
                     .then((csv) => {
@@ -18507,7 +19329,7 @@
          *  - Jomar Hønsi
          *
          * */
-        const { merge, pick } = U;
+        const { merge, pick, defined } = U;
         /* *
          *
          *  Functions
@@ -18544,12 +19366,16 @@
              *
              * @param {GoogleSheetsConnector.UserOptions} [options]
              * Options for the connector and converter.
+             *
+             * @param {Array<DataTableOptions>} [dataTables]
+             * Multiple connector data tables options.
+             *
              */
             constructor(options, dataTables) {
                 const mergedOptions = merge(GoogleSheetsConnector.defaultOptions, options);
                 super(mergedOptions, dataTables);
-                this.converter = new GoogleSheetsConverter(mergedOptions);
-                this.options = mergedOptions;
+                this.options = defined(dataTables) ?
+                    merge(mergedOptions, { dataTables }) : mergedOptions;
             }
             /* *
              *
@@ -18566,7 +19392,7 @@
              * Same connector instance with modified table.
              */
             load(eventDetail) {
-                const connector = this, tables = connector.dataTables, { dataModifier, dataRefreshRate, enablePolling, googleAPIKey, googleSpreadsheetKey } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
+                const connector = this, tables = connector.dataTables, { dataModifier, dataRefreshRate, enablePolling, googleAPIKey, googleSpreadsheetKey, dataTables } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
                 connector.emit({
                     type: 'load',
                     detail: eventDetail,
@@ -18582,21 +19408,22 @@
                     if (isGoogleError(json)) {
                         throw new Error(json.error.message);
                     }
-                    this.initConverters(json, (key, table) => {
+                    this.initConverters(json, (key) => {
                         const options = this.options;
+                        const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                         // Takes over the connector default options.
-                        const dataTableOptions = {
+                        const mergedTableOptions = {
                             dataTableKey: key,
-                            firstRowAsNames: table.firstRowAsNames ??
+                            firstRowAsNames: tableOptions?.firstRowAsNames ??
                                 options.firstRowAsNames,
-                            beforeParse: table.beforeParse ??
+                            beforeParse: tableOptions?.beforeParse ??
                                 options.beforeParse
                         };
-                        return new GoogleSheetsConverter(merge(this.options, dataTableOptions));
+                        return new GoogleSheetsConverter(merge(this.options, mergedTableOptions));
                     }, (converter, data) => {
                         converter.parse({ json: data });
                     });
-                    return connector.setModifierOptions(dataModifier);
+                    return connector.setModifierOptions(dataModifier, dataTables);
                 })
                     .then(() => {
                     connector.emit({
@@ -18885,7 +19712,7 @@
             getTableHeaderHTML(topheaders = [], subheaders = [], options = this.options) {
                 const { useMultiLevelHeaders, useRowspanHeaders } = options;
                 let html = '<thead>', i = 0, len = subheaders && subheaders.length, next, cur, curColspan = 0, rowspan;
-                // Clean up multiple table headers. Chart.getDataRows() returns two
+                // Clean up multiple table headers. Exporting.getDataRows() returns two
                 // levels of headers when using multilevel, not merged. We need to
                 // merge identical headers, remove redundant headers, and keep it
                 // all marked up nicely.
@@ -19380,7 +20207,7 @@
          *  - Pawel Lysy
          *
          * */
-        const { merge } = U;
+        const { merge, defined } = U;
         /* *
          *
          *  Class
@@ -19403,13 +20230,14 @@
              * @param {JSONConnector.UserOptions} [options]
              * Options for the connector and converter.
              *
-             * @param {Array<DataTable>} [dataTables]
+             * @param {Array<DataTableOptions>} [dataTables]
              * Multiple connector data tables options.
              */
             constructor(options, dataTables) {
                 const mergedOptions = merge(JSONConnector.defaultOptions, options);
                 super(mergedOptions, dataTables);
-                this.options = mergedOptions;
+                this.options = defined(dataTables) ?
+                    merge(mergedOptions, { dataTables }) : mergedOptions;
                 if (mergedOptions.enablePolling) {
                     this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
                 }
@@ -19429,7 +20257,7 @@
              * @emits JSONConnector#afterLoad
              */
             load(eventDetail) {
-                const connector = this, tables = connector.dataTables, { data, dataUrl, dataModifier } = connector.options;
+                const connector = this, tables = connector.dataTables, { data, dataUrl, dataModifier, dataTables } = connector.options;
                 connector.emit({
                     type: 'load',
                     data,
@@ -19452,26 +20280,27 @@
                     data || [])
                     .then((data) => {
                     if (data) {
-                        this.initConverters(data, (key, table) => {
+                        this.initConverters(data, (key) => {
                             const options = this.options;
+                            const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                             // Takes over the connector default options.
-                            const dataTableOptions = {
+                            const mergedTableOptions = {
                                 dataTableKey: key,
-                                columnNames: table.columnNames ??
+                                columnNames: tableOptions?.columnNames ??
                                     options.columnNames,
-                                firstRowAsNames: table.firstRowAsNames ??
+                                firstRowAsNames: tableOptions?.firstRowAsNames ??
                                     options.firstRowAsNames,
-                                orientation: table.orientation ??
+                                orientation: tableOptions?.orientation ??
                                     options.orientation,
-                                beforeParse: table.beforeParse ??
+                                beforeParse: tableOptions?.beforeParse ??
                                     options.beforeParse
                             };
-                            return new JSONConverter(merge(this.options, dataTableOptions));
+                            return new JSONConverter(merge(this.options, mergedTableOptions));
                         }, (converter, data) => {
                             converter.parse({ data });
                         });
                     }
-                    return connector.setModifierOptions(dataModifier)
+                    return connector.setModifierOptions(dataModifier, dataTables)
                         .then(() => data);
                 })
                     .then((data) => {
@@ -19890,9 +20719,1185 @@
 
         return RangeModifier;
     });
-    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Templating.js'], _modules['Grid/Core/Table/ColumnDistribution/ColumnDistribution.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataCursor.js'], _modules['Grid/Core/Grid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['Grid/Core/Defaults.js'], _modules['Grid/Core/Globals.js'], _modules['Accessibility/HighContrastMode.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/Table/Table.js'], _modules['Grid/Core/Table/Column.js'], _modules['Grid/Core/Table/Header/HeaderCell.js'], _modules['Grid/Core/Table/Content/TableCell.js'], _modules['Grid/Pro/GridEvents.js'], _modules['Grid/Pro/CellEditing/CellEditingComposition.js'], _modules['Grid/Pro/Dash3Compatibility.js'], _modules['Grid/Pro/Credits/CreditsProComposition.js']], function (AST, Templating, ColumnDistribution, DataConnector, DataConverter, DataCursor, _Grid, DataModifier, DataPool, DataTable, Defaults, Globals, whcm, Utilities, Table, Column, HeaderCell, TableCell, GridEvents, CellEditingComposition, Dash3Compatibility, CreditsProComposition) {
+    _registerModule(_modules, 'Grid/Pro/CellRendering/CellRenderer.js', [], function () {
+        /* *
+         *
+         *  Cell Renderer abstract class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer class that initialize all options per column.
+         */
+        class CellRenderer {
+            /**
+             * Constructs the CellRenderer instance.
+             *
+             * @param column
+             * The column of the cell.
+             *
+             */
+            constructor(column) {
+                this.column = column;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
 
-        // Fill registries
+        return CellRenderer;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/TextRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Core/Table/CellContent/TextContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, TextContent, U) {
+        /* *
+         *
+         *  Text Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Text in a column..
+         */
+        class TextRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column) {
+                super(column);
+                this.options = merge(TextRenderer.defaultOptions, this.column.options.cells?.renderer || {});
+                const cellOptions = column.options.cells;
+                this.format =
+                    cellOptions?.format ??
+                        TextContent.defaultFormatsForDataTypes[column.dataType];
+                this.formatter = cellOptions?.formatter;
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell) {
+                return new TextContent(cell);
+            }
+        }
+        /**
+         * The default edit mode renderer type names for this view renderer.
+         */
+        TextRenderer.defaultEditingRenderer = {
+            string: 'textInput',
+            number: 'textInput',
+            'boolean': 'checkbox',
+            datetime: 'dateInput'
+        };
+        /**
+         * Default options for the text renderer.
+         */
+        TextRenderer.defaultOptions = {
+            type: 'text'
+        };
+        CellRendererRegistry.registerRenderer('text', TextRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TextRenderer;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/CellContentPro.js', [_modules['Grid/Core/Table/CellContent/CellContent.js']], function (CellContent) {
+        /* *
+         *
+         *  Cell Content Pro abstract class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a cell content in the grid.
+         */
+        class CellContentPro extends CellContent {
+            /**
+             * Creates and renders the cell content.
+             *
+             * @param cell
+             * The cell to which the content belongs.
+             *
+             * @param renderer
+             * Renderer that allows print content (inputs, selects, etc.)
+             */
+            constructor(cell, renderer) {
+                super(cell);
+                this.renderer = renderer;
+            }
+        }
+        /* *
+         *
+         * Default Export
+         *
+         * */
+
+        return CellContentPro;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/CheckboxContent.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js'], _modules['Grid/Core/Globals.js']], function (CellContentPro, Globals) {
+        /* *
+         *
+         *  Checkbox Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a checkbox type of cell content.
+         */
+        class CheckboxContent extends CellContentPro {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(cell, renderer, parentElement) {
+                super(cell, renderer);
+                this.finishAfterChange = false;
+                this.onChange = (e) => {
+                    if (this.changeHandler) {
+                        this.changeHandler(e);
+                    }
+                    else {
+                        void this.cell.setValue(this.value, true);
+                    }
+                };
+                this.onKeyDown = (e) => {
+                    this.keyDownHandler?.(e);
+                };
+                this.onBlur = (e) => {
+                    this.blurHandler?.(e);
+                };
+                this.onCellKeyDown = (e) => {
+                    if (e.key === ' ') {
+                        this.input.click();
+                    }
+                };
+                this.input = this.add(parentElement);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            add(parentElement = this.cell.htmlElement) {
+                const cell = this.cell;
+                this.input = document.createElement('input');
+                this.input.tabIndex = -1;
+                this.input.type = 'checkbox';
+                this.input.name = cell.column.id + '-' + cell.row.id;
+                this.update();
+                parentElement.appendChild(this.input);
+                this.input.classList.add(Globals.classNamePrefix + 'field-auto-width');
+                this.input.addEventListener('change', this.onChange);
+                this.input.addEventListener('keydown', this.onKeyDown);
+                this.input.addEventListener('blur', this.onBlur);
+                this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
+                return this.input;
+            }
+            update() {
+                const cell = this.cell;
+                const input = this.input;
+                const { options } = this.renderer;
+                input.checked = !!cell.value;
+                input.disabled = !!options.disabled;
+            }
+            get rawValue() {
+                return this.input.checked ? 'true' : 'false';
+            }
+            get value() {
+                const val = this.input.checked;
+                switch (this.cell.column.dataType) {
+                    case 'datetime':
+                    case 'number':
+                        return +val;
+                    case 'boolean':
+                        return val;
+                    case 'string':
+                        return '' + val;
+                }
+            }
+            getMainElement() {
+                return this.input;
+            }
+            destroy() {
+                const input = this.input;
+                this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
+                input.removeEventListener('blur', this.onBlur);
+                input.removeEventListener('keydown', this.onKeyDown);
+                input.removeEventListener('change', this.onChange);
+                input.remove();
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CheckboxContent;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/CheckboxRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Pro/CellRendering/ContentTypes/CheckboxContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, CheckboxContent, U) {
+        /* *
+         *
+         *  Checkbox Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Checkbox in a column.
+         */
+        class CheckboxRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column, options) {
+                super(column);
+                this.options = merge(CheckboxRenderer.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell, parentElement) {
+                return new CheckboxContent(cell, this, parentElement);
+            }
+        }
+        /**
+         * The default edit mode renderer type name for this view renderer.
+         */
+        CheckboxRenderer.defaultEditingRenderer = 'checkbox';
+        /**
+         * Default options for the checkbox renderer.
+         */
+        CheckboxRenderer.defaultOptions = {
+            type: 'checkbox'
+        };
+        CellRendererRegistry.registerRenderer('checkbox', CheckboxRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CheckboxRenderer;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/SelectContent.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js'], _modules['Core/Renderer/HTML/AST.js']], function (CellContentPro, AST) {
+        /* *
+         *
+         *  Select Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a select type of cell content.
+         */
+        class SelectContent extends CellContentPro {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(cell, renderer, parentElement) {
+                super(cell, renderer);
+                this.finishAfterChange = true;
+                /**
+                 * The HTML option elements representing the options in the select input.
+                 */
+                this.optionElements = [];
+                this.onChange = (e) => {
+                    if (this.changeHandler) {
+                        this.changeHandler(e);
+                    }
+                    else {
+                        this.cell.htmlElement.focus();
+                        void this.cell.setValue(this.value, true);
+                    }
+                };
+                this.onKeyDown = (e) => {
+                    e.stopPropagation();
+                    if (this.keyDownHandler) {
+                        this.keyDownHandler?.(e);
+                        return;
+                    }
+                    if (e.key === 'Escape' || e.key === 'Enter') {
+                        this.cell.htmlElement.focus();
+                    }
+                };
+                this.onBlur = (e) => {
+                    this.blurHandler?.(e);
+                };
+                this.onCellKeyDown = (e) => {
+                    if (e.key === ' ') {
+                        this.select.focus();
+                        e.preventDefault();
+                    }
+                };
+                this.select = this.add(parentElement);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            add(parentElement = this.cell.htmlElement) {
+                const cell = this.cell;
+                const select = this.select = document.createElement('select');
+                select.tabIndex = -1;
+                select.name = cell.column.id + '-' + cell.row.id;
+                this.update();
+                parentElement.appendChild(this.select);
+                select.addEventListener('change', this.onChange);
+                select.addEventListener('keydown', this.onKeyDown);
+                select.addEventListener('blur', this.onBlur);
+                this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
+                return select;
+            }
+            update() {
+                const cell = this.cell;
+                const { options } = this.renderer;
+                this.select.disabled = !!options.disabled;
+                // If there will be a need, we can optimize this by not removing all
+                // old options and only updating the ones that need to be updated.
+                this.select.innerHTML = AST.emptyHTML;
+                for (const option of options.options) {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.label || option.value;
+                    optionElement.disabled = !!option.disabled;
+                    if (cell.value === option.value) {
+                        optionElement.selected = true;
+                    }
+                    this.select.appendChild(optionElement);
+                    this.optionElements.push(optionElement);
+                }
+            }
+            destroy() {
+                const select = this.select;
+                this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
+                select.removeEventListener('blur', this.onBlur);
+                select.removeEventListener('keydown', this.onKeyDown);
+                select.removeEventListener('change', this.onChange);
+                for (const optionElement of this.optionElements) {
+                    optionElement.remove();
+                }
+                this.optionElements.length = 0;
+                select.remove();
+            }
+            get rawValue() {
+                return this.select.value;
+            }
+            get value() {
+                const val = this.select.value;
+                switch (this.cell.column.dataType) {
+                    case 'datetime':
+                    case 'number':
+                        return +val;
+                    case 'boolean':
+                        return val;
+                    case 'string':
+                        return '' + val;
+                }
+            }
+            getMainElement() {
+                return this.select;
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return SelectContent;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/SelectRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Pro/CellRendering/ContentTypes/SelectContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, SelectContent, U) {
+        /* *
+         *
+         *  Select Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Select in a column..
+         */
+        class SelectRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column, options) {
+                super(column);
+                this.options = merge(SelectRenderer.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell, parentElement) {
+                return new SelectContent(cell, this, parentElement);
+            }
+        }
+        /**
+         * The default edit mode renderer type name for this view renderer.
+         */
+        SelectRenderer.defaultEditingRenderer = 'select';
+        /**
+         * Default options for the select renderer.
+         */
+        SelectRenderer.defaultOptions = {
+            type: 'select',
+            options: []
+        };
+        CellRendererRegistry.registerRenderer('select', SelectRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return SelectRenderer;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/TextInputContent.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js'], _modules['Core/Utilities.js']], function (CellContentPro, U) {
+        /* *
+         *
+         *  Text Input Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { defined } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a text input type of cell content.
+         */
+        class TextInputContent extends CellContentPro {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(cell, renderer, parentElement) {
+                super(cell, renderer);
+                this.finishAfterChange = true;
+                this.onChange = (e) => {
+                    if (this.changeHandler) {
+                        this.changeHandler(e);
+                        return;
+                    }
+                    void this.cell.setValue(e.target.value, true);
+                };
+                this.onKeyDown = (e) => {
+                    e.stopPropagation();
+                    if (this.keyDownHandler) {
+                        this.keyDownHandler(e);
+                        return;
+                    }
+                    if (e.key === 'Escape') {
+                        this.input.value = this.convertToInputValue();
+                        this.cell.htmlElement.focus();
+                        return;
+                    }
+                    if (e.key === 'Enter') {
+                        this.cell.htmlElement.focus();
+                    }
+                };
+                this.onBlur = (e) => {
+                    this.blurHandler?.(e);
+                };
+                this.onCellKeyDown = (e) => {
+                    if (e.key === ' ') {
+                        this.input.focus();
+                        e.preventDefault();
+                    }
+                };
+                this.input = this.add(parentElement);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            add(parentElement = this.cell.htmlElement) {
+                const cell = this.cell;
+                const input = this.input = document.createElement('input');
+                input.tabIndex = -1;
+                input.name = cell.column.id + '-' + cell.row.id;
+                this.update();
+                parentElement.appendChild(this.input);
+                input.addEventListener('change', this.onChange);
+                input.addEventListener('keydown', this.onKeyDown);
+                input.addEventListener('blur', this.onBlur);
+                this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
+                return input;
+            }
+            update() {
+                const { options } = this.renderer;
+                this.input.value = this.convertToInputValue();
+                this.input.disabled = !!options.disabled;
+            }
+            get rawValue() {
+                return this.input.value;
+            }
+            get value() {
+                const val = this.input.value;
+                switch (this.cell.column.dataType) {
+                    case 'datetime':
+                    case 'number':
+                        return val === '' ? null : +val;
+                    case 'boolean':
+                        if (val === '') {
+                            return null;
+                        }
+                        if (val === 'false' || +val === 0) {
+                            return false;
+                        }
+                        return true;
+                    case 'string':
+                        return val;
+                }
+            }
+            /**
+             * Converts the cell value to a string for the input.
+             */
+            convertToInputValue() {
+                const val = this.cell.value;
+                return defined(val) ? '' + val : '';
+            }
+            getMainElement() {
+                return this.input;
+            }
+            destroy() {
+                const input = this.input;
+                this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
+                input.removeEventListener('blur', this.onBlur);
+                input.removeEventListener('keydown', this.onKeyDown);
+                input.removeEventListener('change', this.onChange);
+                input.remove();
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TextInputContent;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/TextInputRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Pro/CellRendering/ContentTypes/TextInputContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, TextInputContent, U) {
+        /* *
+         *
+         *  Text Input Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Select in a column..
+         */
+        class TextInputRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column, options) {
+                super(column);
+                this.options = merge(TextInputRenderer.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell, parentElement) {
+                return new TextInputContent(cell, this, parentElement);
+            }
+        }
+        /**
+         * The default edit mode renderer type names for this view renderer.
+         */
+        TextInputRenderer.defaultEditingRenderer = 'textInput';
+        /**
+         * Default options for the text input renderer.
+         */
+        TextInputRenderer.defaultOptions = {
+            type: 'textInput'
+        };
+        CellRendererRegistry.registerRenderer('textInput', TextInputRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TextInputRenderer;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/DateInputContent.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js']], function (CellContentPro) {
+        /* *
+         *
+         *  Date Input Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a date input type of cell content.
+         */
+        class DateInputContent extends CellContentPro {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(cell, renderer, parentElement) {
+                super(cell, renderer);
+                this.finishAfterChange = false;
+                this.onChange = (e) => {
+                    this.changeHandler?.(e);
+                };
+                this.onKeyDown = (e) => {
+                    e.stopPropagation();
+                    if (this.keyDownHandler) {
+                        this.keyDownHandler(e);
+                        return;
+                    }
+                    if (e.key === 'Escape') {
+                        this.cell.htmlElement.focus();
+                        this.input.value = this.convertToInputValue();
+                        return;
+                    }
+                    if (e.key === 'Enter') {
+                        this.cell.htmlElement.focus();
+                        void this.cell.setValue(this.value, true);
+                    }
+                };
+                this.onBlur = (e) => {
+                    if (this.blurHandler) {
+                        this.blurHandler(e);
+                        return;
+                    }
+                    void this.cell.setValue(this.value, true);
+                };
+                this.onCellKeyDown = (e) => {
+                    if (e.key === ' ') {
+                        this.input.focus();
+                        e.preventDefault();
+                    }
+                };
+                this.input = this.add(parentElement);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            add(parentElement = this.cell.htmlElement) {
+                const cell = this.cell;
+                const input = this.input = document.createElement('input');
+                input.tabIndex = -1;
+                input.type = 'date';
+                input.name = cell.column.id + '-' + cell.row.id;
+                this.update();
+                parentElement.appendChild(input);
+                input.addEventListener('change', this.onChange);
+                input.addEventListener('keydown', this.onKeyDown);
+                input.addEventListener('blur', this.onBlur);
+                this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
+                return this.input;
+            }
+            update() {
+                const input = this.input;
+                const { options } = this.renderer;
+                input.value = this.convertToInputValue();
+                input.disabled = !!options.disabled;
+            }
+            get rawValue() {
+                return this.input.value;
+            }
+            get value() {
+                return new Date(this.input.value).getTime();
+            }
+            getMainElement() {
+                return this.input;
+            }
+            destroy() {
+                const input = this.input;
+                this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
+                input.removeEventListener('blur', this.onBlur);
+                input.removeEventListener('keydown', this.onKeyDown);
+                input.removeEventListener('change', this.onChange);
+                input.remove();
+            }
+            /**
+             * Converts the cell value to a string for the input.
+             */
+            convertToInputValue() {
+                const time = this.cell.column.viewport.grid.time;
+                return time.dateFormat('%Y-%m-%d', Number(this.cell.value || 0));
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DateInputContent;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/DateInputRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Pro/CellRendering/ContentTypes/DateInputContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, DateInputContent, U) {
+        /* *
+         *
+         *  Date Input Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Select in a column..
+         */
+        class DateInputRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column, options) {
+                super(column);
+                this.options = merge(DateInputRenderer.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell, parentElement) {
+                return new DateInputContent(cell, this, parentElement);
+            }
+        }
+        /**
+         * The default edit mode renderer type name for this view renderer.
+         */
+        DateInputRenderer.defaultEditingRenderer = 'dateInput';
+        /**
+         * Default options for the date input renderer.
+         */
+        DateInputRenderer.defaultOptions = {
+            type: 'dateInput'
+        };
+        CellRendererRegistry.registerRenderer('dateInput', DateInputRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DateInputRenderer;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/SparklineContent.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (CellContentPro, Globals, U) {
+        /* *
+         *
+         *  Sparkline Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { defined, merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a sparkline type of cell content.
+         */
+        class SparklineContent extends CellContentPro {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(cell, renderer, parentElement) {
+                super(cell, renderer);
+                this.onKeyDown = () => {
+                    this.cell.htmlElement.focus();
+                };
+                this.add(parentElement);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            add(parentElement = this.cell.htmlElement) {
+                const H = SparklineContent.H;
+                if (!H || !defined(this.cell.value)) {
+                    return;
+                }
+                this.chartContainer = document.createElement('div');
+                parentElement.classList.add(Globals.getClassName('noPadding'));
+                parentElement.appendChild(this.chartContainer);
+                this.chart = H.Chart.chart(this.chartContainer, merge(SparklineContent.defaultChartOptions, this.getProcessedOptions()));
+                this.chartContainer.addEventListener('click', this.onKeyDown);
+            }
+            update() {
+                const chartOptions = this.getProcessedOptions();
+                this.chart?.update(chartOptions, true, false, chartOptions.chart?.animation);
+            }
+            destroy() {
+                this.chartContainer?.removeEventListener('keydown', this.onKeyDown);
+                this.chart?.destroy();
+                this.chartContainer?.remove();
+                delete this.chart;
+                delete this.chartContainer;
+                this.cell.htmlElement.classList.remove(Globals.getClassName('noPadding'));
+            }
+            getProcessedOptions() {
+                const renderer = this.renderer;
+                const { chartOptions } = renderer.options;
+                let options;
+                if (typeof chartOptions === 'function') {
+                    options = chartOptions.call(this.cell, this.cell.value);
+                }
+                else {
+                    options = merge(chartOptions) || {};
+                }
+                let trimmedValue = ('' + this.cell.value).trim();
+                if (!trimmedValue.startsWith('[') && !trimmedValue.startsWith('{')) {
+                    trimmedValue = `[${trimmedValue}]`;
+                }
+                if (!options.series) {
+                    options.series = [{
+                            data: JSON.parse(trimmedValue)
+                        }];
+                }
+                return options;
+            }
+        }
+        SparklineContent.defaultChartOptions = {
+            chart: {
+                height: 40,
+                margin: [5, 8, 5, 8],
+                backgroundColor: 'transparent',
+                skipClone: true
+            },
+            accessibility: {
+                enabled: false
+            },
+            tooltip: {
+                enabled: false
+            },
+            title: {
+                text: ''
+            },
+            credits: {
+                enabled: false
+            },
+            xAxis: {
+                visible: false
+            },
+            yAxis: {
+                visible: false
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    borderWidth: 0,
+                    marker: {
+                        enabled: false
+                    },
+                    states: {
+                        hover: {
+                            enabled: false
+                        },
+                        inactive: {
+                            enabled: false
+                        }
+                    },
+                    animation: false,
+                    dataLabels: {
+                        enabled: false
+                    }
+                },
+                pie: {
+                    slicedOffset: 0,
+                    borderRadius: 0
+                }
+            }
+        };
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        (function (SparklineContent) {
+        })(SparklineContent || (SparklineContent = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return SparklineContent;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/SparklineRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Pro/CellRendering/ContentTypes/SparklineContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, SparklineContent, U) {
+        /* *
+         *
+         *  Sparkline Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Text in a column..
+         */
+        class SparklineRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column) {
+                super(column);
+                if (!SparklineContent.H) {
+                    throw new Error('Sparkline Renderer: Highcharts is not loaded. Please ensure ' +
+                        'that Highcharts namespace is registered before the Sparkline' +
+                        ' Renderer is used.');
+                }
+                this.options = merge(SparklineRenderer.defaultOptions, this.column.options.cells?.renderer || {});
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell) {
+                return new SparklineContent(cell, this);
+            }
+        }
+        /**
+         * The default edit mode renderer type names for this view renderer.
+         */
+        SparklineRenderer.defaultEditingRenderer = 'textInput';
+        /**
+         * Default options for the sparkline renderer.
+         */
+        SparklineRenderer.defaultOptions = {
+            type: 'sparkline'
+        };
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        (function (SparklineRenderer) {
+            /**
+             * Imports the Highcharts namespace to be used by the Sparkline Renderer.
+             *
+             * @param H
+             * Highcharts namespace.
+             */
+            function useHighcharts(H) {
+                if (H && !SparklineContent.H) {
+                    SparklineContent.H = H;
+                }
+            }
+            SparklineRenderer.useHighcharts = useHighcharts;
+        })(SparklineRenderer || (SparklineRenderer = {}));
+        CellRendererRegistry.registerRenderer('sparkline', SparklineRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return SparklineRenderer;
+    });
+    _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Templating.js'], _modules['Grid/Core/Table/ColumnDistribution/ColumnDistribution.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataCursor.js'], _modules['Grid/Core/Grid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['Grid/Core/Defaults.js'], _modules['Grid/Core/Globals.js'], _modules['Accessibility/HighContrastMode.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/Table/Table.js'], _modules['Grid/Core/Table/Column.js'], _modules['Grid/Core/Table/Header/HeaderCell.js'], _modules['Grid/Core/Table/Body/TableCell.js'], _modules['Grid/Pro/GridEvents.js'], _modules['Grid/Pro/CellEditing/CellEditingComposition.js'], _modules['Grid/Pro/Dash3Compatibility.js'], _modules['Grid/Pro/Credits/CreditsProComposition.js'], _modules['Grid/Pro/ColumnTypes/ValidatorComposition.js'], _modules['Grid/Pro/CellRendering/CellRenderersComposition.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js']], function (AST, Templating, ColumnDistribution, DataConnector, DataConverter, DataCursor, _Grid, DataModifier, DataPool, DataTable, Defaults, Globals, whcm, Utilities, Table, Column, HeaderCell, TableCell, GridEvents, CellEditingComposition, Dash3Compatibility, CreditsProComposition, ValidatorComposition, CellRenderersComposition, CellRendererRegistry) {
+
+        /* *
+         *
+         *  Registers Imports
+         *
+         * */
+        // Connectors
+        // Compositions
+        // Cell Renderers
         /* *
          *
          *  Namespace
@@ -19925,9 +21930,12 @@
         G.HeaderCell = G.HeaderCell || HeaderCell;
         G.TableCell = G.TableCell || TableCell;
         GridEvents.compose(G.Column, G.HeaderCell, G.TableCell);
-        CellEditingComposition.compose(G.Table, G.TableCell);
+        CellEditingComposition.compose(G.Table, G.TableCell, G.Column);
         CreditsProComposition.compose(G.Grid);
         Dash3Compatibility.compose(G.Table);
+        ValidatorComposition.compose(G.Table);
+        CellRenderersComposition.compose(G.Column);
+        G.CellRendererRegistry = G.CellRendererRegistry || CellRendererRegistry;
         /* *
          *
          *  Classic Export
@@ -19938,6 +21946,9 @@
         }
         if (!G.win.Grid) {
             G.win.Grid = G;
+        }
+        if (G.win.Highcharts) {
+            G.CellRendererRegistry.types.sparkline.useHighcharts(G.win.Highcharts);
         }
         /* *
          *

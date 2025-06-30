@@ -1265,7 +1265,7 @@ class Chart {
         delete chart.pointer?.chartPosition;
         // Width and height checks for display:none. Target is doc in Opera
         // and win in Firefox, Chrome and IE9.
-        if (!chart.isPrinting &&
+        if (!chart.exporting?.isPrinting &&
             !chart.isResizing &&
             oldBox &&
             // When fired by resize observer inside hidden container
@@ -2661,19 +2661,19 @@ class Chart {
             if (!reset && (fromCenter < 0 || fromCenter > axis.len)) {
                 continue;
             }
-            let newMin = axis.toValue(minPx, true) +
-                // Don't apply offset for selection (#20784)
-                (selection || axis.isOrdinal ?
-                    0 : minPointOffset * pointRangeDirection), newMax = axis.toValue(minPx + len / scale, true) -
-                (
-                // Don't apply offset for selection (#20784)
-                selection || axis.isOrdinal ?
-                    0 :
-                    ((minPointOffset * pointRangeDirection) ||
-                        // Polar zoom tests failed when this was not
-                        // commented:
-                        // (axis.isXAxis && axis.pointRangePadding) ||
-                        0)), allExtremes = axis.allExtremes;
+            // Adjust offset to ensure selection zoom triggers correctly
+            // (#22945)
+            const offset = (axis.chart.polar || axis.isOrdinal) ?
+                0 :
+                (minPointOffset * pointRangeDirection || 0), eventMin = axis.toValue(minPx, true), eventMax = axis.toValue(minPx + len / scale, true);
+            let newMin = eventMin + offset, newMax = eventMax - offset, allExtremes = axis.allExtremes;
+            if (selection) {
+                selection[axis.coll].push({
+                    axis,
+                    min: Math.min(eventMin, eventMax),
+                    max: Math.max(eventMin, eventMax)
+                });
+            }
             if (newMin > newMax) {
                 [newMin, newMax] = [newMax, newMin];
             }

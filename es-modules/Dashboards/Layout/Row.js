@@ -29,24 +29,6 @@ class Row extends GUIElement {
     *  Static Properties
     *
     * */
-    /** @internal */
-    static fromJSON(json, layout) {
-        if (layout) {
-            const options = json.options;
-            let id = options.containerId || '';
-            if (id && layout.copyId) {
-                id = id + '_' + layout.copyId;
-            }
-            return new Row(layout, {
-                id: id,
-                parentContainerId: (layout.container && layout.container.id) ||
-                    options.parentContainerId,
-                cellsJSON: options.cells,
-                style: options.style
-            });
-        }
-        return void 0;
-    }
     static setContainerHeight(rowContainer, height) {
         if (height) {
             rowContainer.style.height = height + 'px';
@@ -99,10 +81,6 @@ class Row extends GUIElement {
         if (this.options.cells) {
             this.setCells();
         }
-        // Init rows from JSON.
-        if (options.cellsJSON && !this.cells.length) {
-            this.setCellsFromJSON(options.cellsJSON);
-        }
     }
     /* *
     *
@@ -118,41 +96,6 @@ class Row extends GUIElement {
         for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
             cellElement = cellsElements[i];
             row.addCell(row.layout.board.guiEnabled ? cellElement : { id: '' }, cellElement instanceof HTMLElement ? cellElement : void 0);
-        }
-    }
-    /** @internal */
-    setCellsFromJSON(json) {
-        const row = this, componentsToMount = [];
-        let cell, cellJSON;
-        // Set cells.
-        for (let i = 0, iEnd = json.length; i < iEnd; ++i) {
-            cellJSON = json[i];
-            cell = Cell.fromJSON({
-                $class: cellJSON.$class,
-                options: {
-                    containerId: cellJSON.options.containerId,
-                    parentContainerId: cellJSON.options.parentContainerId,
-                    width: cellJSON.options.width,
-                    height: cellJSON.options.height,
-                    style: cellJSON.options.style,
-                    layoutJSON: cellJSON.options.layoutJSON,
-                    mountedComponentJSON: void 0 // Will be mounted later.
-                }
-            }, row);
-            if (cell) {
-                row.cells.push(cell);
-                if (cellJSON.options.mountedComponentJSON) {
-                    componentsToMount.push({
-                        cell: cell,
-                        // eslint-disable-next-line
-                        mountedComponentJSON: cellJSON.options.mountedComponentJSON
-                    });
-                }
-            }
-        }
-        // Mount components.
-        for (let i = 0, iEnd = componentsToMount.length; i < iEnd; ++i) {
-            componentsToMount[i].cell.mountComponentFromJSON(componentsToMount[i].mountedComponentJSON);
         }
     }
     /**
@@ -204,29 +147,6 @@ class Row extends GUIElement {
                 layout.destroy();
             }
         }
-    }
-    /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @return {Row.JSON}
-     * Class JSON of this Row instance.
-     */
-    toJSON() {
-        const row = this, layoutContainerId = (row.layout.container || {}).id || '', cells = [];
-        // Get cells JSON.
-        for (let i = 0, iEnd = row.cells.length; i < iEnd; ++i) {
-            cells.push(row.cells[i].toJSON());
-        }
-        return {
-            $class: 'Dashboards.Layout.Row',
-            options: {
-                containerId: row.container.id,
-                parentContainerId: layoutContainerId,
-                cells: cells,
-                style: row.options.style
-            }
-        };
     }
     /**
      * Get the row's options.
@@ -311,9 +231,15 @@ class Row extends GUIElement {
     show() {
         this.changeVisibility(true, 'flex');
     }
-    setHighlight() {
-        const container = this.container;
-        container.classList.toggle(EditGlobals.classNames.rowContextHighlight);
+    setHighlight(remove) {
+        const classList = this.container.classList;
+        const highlightClass = EditGlobals.classNames.rowContextHighlight;
+        if (remove === true) {
+            classList.remove(highlightClass);
+        }
+        else {
+            classList.toggle(highlightClass, !remove);
+        }
     }
     // Row can have cells below each others.
     // This method returns cells split into levels.

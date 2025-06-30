@@ -20,11 +20,8 @@ import Bindings from './Actions/Bindings.js';
 import ComponentRegistry from './Components/ComponentRegistry.js';
 import DashboardsAccessibility from './Accessibility/DashboardsAccessibility.js';
 import DataCursor from '../Data/DataCursor.js';
-import DataCursorHelper from './SerializeHelper/DataCursorHelper.js';
 import DataPool from '../Data/DataPool.js';
 import Globals from './Globals.js';
-import Layout from './Layout/Layout.js';
-import Serializable from './Serializable.js';
 import HTMLComponent from './Components/HTMLComponent/HTMLComponent.js';
 import U from '../Core/Utilities.js';
 const { merge, addEvent, error, objectEach, uniqueKey } = U;
@@ -112,8 +109,12 @@ class Board {
         // Init events.
         this.initEvents();
         if (async) {
-            return Promise.all(componentPromises).then(() => this);
+            return Promise.all(componentPromises).then(() => {
+                options.events?.mounted?.call(this);
+                return this;
+            });
         }
+        options.events?.mounted?.call(this);
         return this;
     }
     /**
@@ -185,6 +186,8 @@ class Board {
      */
     destroy() {
         const board = this;
+        // Cancel all data connectors pending requests.
+        this.dataPool.cancelPendingRequests();
         // Destroy layouts.
         if (this.guiEnabled) {
             for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
@@ -211,26 +214,6 @@ class Board {
         return;
     }
     /**
-     * Export layouts to the local storage.
-     */
-    exportLocal() {
-        localStorage.setItem(
-        // Dashboard.prefix + this.id,
-        Globals.classNamePrefix + '1', // Temporary for demo test
-        JSON.stringify(this.toJSON()));
-    }
-    /**
-     * Import the dashboard's layouts from the local storage.
-     *
-     * @param id
-     * The id of the layout to import.
-     *
-     * @returns Returns the imported layout.
-     */
-    importLayoutLocal(id) {
-        return Layout.importLocal(id, this);
-    }
-    /**
      * Reflow the dashboard. Hide the toolbars and context pointer. Reflow the
      * layouts and its cells.
      */
@@ -246,46 +229,6 @@ class Board {
                     .updatePosition(editModeTools.contextButtonElement);
             }
         }
-    }
-    /**
-     * Converts the given JSON to a class instance.
-     *
-     * @param json
-     * JSON to deserialize as a class instance or object.
-     *
-     * @returns Returns the class instance or object.
-     */
-    fromJSON(json) {
-        const options = json.options, board = new Board(options.containerId, {
-            componentOptions: options.componentOptions,
-            dataPool: options.dataPool,
-            layoutsJSON: options.layouts
-        });
-        board.dataCursor = DataCursorHelper.fromJSON(json.dataCursor);
-        return board;
-    }
-    /**
-     * Converts the class instance to a class JSON.
-     *
-     * @returns Class JSON of this Dashboard instance.
-     */
-    toJSON() {
-        const board = this, layouts = [];
-        // Get layouts JSON.
-        for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-            layouts.push(board.layouts[i].toJSON());
-        }
-        return {
-            $class: 'Board',
-            dataCursor: DataCursorHelper.toJSON(board.dataCursor),
-            options: {
-                containerId: board.container.id,
-                dataPool: board.options.dataPool,
-                guiEnabled: board.guiEnabled,
-                layouts: layouts,
-                componentOptions: board.options.componentOptions
-            }
-        };
     }
     /**
      * Convert the current state of board's options into JSON. The function does
@@ -373,39 +316,12 @@ class Board {
         },
         components: []
     };
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Import layouts from the local storage.
-     *
-     * @returns Returns the Dashboard instance or undefined.
-     */
-    function importLocal() {
-        const dashboardJSON = localStorage.getItem(
-        // Dashboard.prefix + this.id,
-        Globals.classNamePrefix + '1' // Temporary for demo test
-        );
-        if (dashboardJSON) {
-            try {
-                return Serializable
-                    .fromJSON(JSON.parse(dashboardJSON));
-            }
-            catch (e) {
-                throw new Error('' + e);
-            }
-        }
-    }
-    Board.importLocal = importLocal;
 })(Board || (Board = {}));
 /* *
  *
  *  Registry
  *
  * */
-Serializable.registerClassPrototype('Board', Board.prototype);
 ComponentRegistry.registerComponent('HTML', HTMLComponent);
 /* *
  *

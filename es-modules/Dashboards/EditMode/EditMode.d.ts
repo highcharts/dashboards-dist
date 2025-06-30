@@ -153,15 +153,6 @@ declare class EditMode {
      */
     private setLayouts;
     /**
-     * Set the layouts from JSON.
-     * @internal
-     *
-     * @param json
-     * An array of layout JSON objects.
-     *
-     */
-    private setLayoutsFromJSON;
-    /**
      * Set events for the layout.
      * @internal
      */

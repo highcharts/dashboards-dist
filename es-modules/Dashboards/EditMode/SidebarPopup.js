@@ -224,27 +224,33 @@ class SidebarPopup extends BaseForm {
                                 layouts[layouts.length - 1].addRow({}, void 0);
                         }
                         const newCell = components[i].onDrop(sidebar, dropContext);
+                        /* eslint-disable max-len */
                         const unbindLayoutChanged = addEvent(this.editMode, 'layoutChanged', (e) => {
                             if (newCell && e.type === 'newComponent') {
                                 const chart = newCell.mountedComponent?.chart;
+                                const settingsEnabled = this.editMode.options.settings?.enabled;
                                 if (chart?.isDirtyBox) {
                                     const unbind = addEvent(chart, 'render', () => {
-                                        sidebar.editMode
-                                            .setEditCellContext(newCell);
-                                        sidebar.show(newCell);
-                                        newCell.setHighlight();
+                                        sidebar.editMode.setEditCellContext(newCell);
+                                        if (settingsEnabled) {
+                                            sidebar.show(newCell);
+                                            newCell.setHighlight();
+                                        }
                                         unbind();
                                         unbindLayoutChanged();
                                     });
                                 }
                                 else {
                                     sidebar.editMode.setEditCellContext(newCell);
-                                    sidebar.show(newCell);
-                                    newCell.setHighlight();
+                                    if (settingsEnabled) {
+                                        sidebar.show(newCell);
+                                        newCell.setHighlight();
+                                    }
                                     unbindLayoutChanged();
                                 }
                             }
                         });
+                        /* eslint-enable max-len */
                         // Clean up event listener after drop is complete
                         document.removeEventListener('mousemove', onMouseMove);
                     });
@@ -269,7 +275,7 @@ class SidebarPopup extends BaseForm {
             cell: newCell.id
         });
         const componentPromise = Bindings.addComponent(options, sidebar.editMode.board, newCell);
-        sidebar.editMode.setEditOverlay();
+        sidebar.editMode.setEditOverlay(!this.editMode.options.settings?.enabled);
         void (async () => {
             const component = await componentPromise;
             if (!component) {
@@ -296,7 +302,7 @@ class SidebarPopup extends BaseForm {
         }
         if (Cell.isCell(editCellContext) && editCellContext.row) {
             editMode.showToolbars(['cell', 'row'], editCellContext);
-            editCellContext.row.setHighlight();
+            editCellContext.row.setHighlight(true);
             editCellContext.setHighlight(true);
             if (editMode.resizer) {
                 editMode.resizer.setSnapPositions(editMode.editCellContext);
@@ -417,25 +423,31 @@ SidebarPopup.addRow = {
         if (!dropContext) {
             return;
         }
-        const row = (dropContext.getType() === 'cell' ?
-            dropContext.row :
-            dropContext), board = row.layout.board, newLayoutId = GUIElement.getElementId('layout'), cellId = GUIElement.getElementId('cell'), layout = new Layout(board, {
-            id: newLayoutId,
-            copyId: '',
-            parentContainerId: board.container.id,
-            rows: [{
-                    cells: [{
-                            id: cellId
-                        }]
-                }],
-            style: {}
-        });
-        if (layout) {
+        const isCellType = dropContext.getType() === 'cell', row = isCellType ? dropContext.row :
+            dropContext, board = row.layout.board, cellId = GUIElement.getElementId('cell');
+        if (isCellType) {
+            const newLayoutId = GUIElement.getElementId('layout');
+            const layout = new Layout(board, {
+                id: newLayoutId,
+                copyId: '',
+                parentContainerId: board.container.id,
+                rows: [{
+                        cells: [{
+                                id: cellId
+                            }]
+                    }],
+                style: {}
+            });
             board.layouts.push(layout);
             fireEvent(board.editMode, 'layoutChanged', {
                 type: 'newLayout',
                 target: layout,
                 board
+            });
+        }
+        else {
+            dropContext.layout.rows[0].addCell({
+                id: cellId
             });
         }
         void Bindings.addComponent({

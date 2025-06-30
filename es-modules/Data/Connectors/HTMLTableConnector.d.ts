@@ -25,7 +25,7 @@ declare class HTMLTableConnector extends DataConnector {
     /**
      * The attached parser, which can be replaced in the constructor
      */
-    readonly converter: HTMLTableConverter;
+    converter: HTMLTableConverter;
     /**
      * The table element to create the connector from. Is either supplied
      * directly or is fetched by an ID.

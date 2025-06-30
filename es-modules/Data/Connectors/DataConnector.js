@@ -39,7 +39,7 @@ class DataConnector {
      * @param {DataConnector.UserOptions} [options]
      * Options to use in the connector.
      *
-     * @param {Array<DataTable>} [dataTables]
+     * @param {Array<DataTableOptions>} [dataTables]
      * Multiple connector data tables options.
      */
     constructor(options = {}, dataTables = []) {
@@ -47,6 +47,11 @@ class DataConnector {
          * Tables managed by this DataConnector instance.
          */
         this.dataTables = {};
+        /**
+         * Helper flag for detecting whether the data connector is loaded.
+         * @internal
+         */
+        this.loaded = false;
         this.metadata = options.metadata || { columns: {} };
         // Create a data table for each defined in the dataTables user options.
         let dataTableIndex = 0;
@@ -220,9 +225,10 @@ class DataConnector {
             connector.describeColumn(columnNames[i], { index: i });
         }
     }
-    async setModifierOptions(modifierOptions) {
-        for (const table of Object.values(this.dataTables)) {
-            const mergedModifierOptions = merge(table.dataModifier, modifierOptions);
+    async setModifierOptions(modifierOptions, tablesOptions) {
+        for (const [key, table] of Object.entries(this.dataTables)) {
+            const tableOptions = tablesOptions?.find((dataTable) => dataTable.key === key);
+            const mergedModifierOptions = merge(tableOptions?.dataModifier, modifierOptions);
             const ModifierClass = (mergedModifierOptions &&
                 DataModifier.types[mergedModifierOptions.type]);
             await table.setModifier(ModifierClass ?
@@ -257,10 +263,13 @@ class DataConnector {
         }), refreshTime);
     }
     /**
-     * Stops polling data.
+     * Stops polling data. Shouldn't be performed if polling is already stopped.
      */
     stopPolling() {
         const connector = this;
+        if (!connector.polling) {
+            return;
+        }
         // Abort the existing request.
         connector?.pollingController?.abort();
         // Clear the polling timeout.

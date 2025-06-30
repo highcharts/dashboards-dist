@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.3.0 (2025-05-15)
+ * @license Highcharts Dashboards v3.4.0 (2025-06-30)
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.3.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.4.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -2717,64 +2717,6 @@
 
         return AST;
     });
-    _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [], function () {
-        /* *
-         *
-         *  (c) 2009-2025 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         * */
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        var ComponentRegistry;
-        (function (ComponentRegistry) {
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            /**
-             *
-             * Record of component classes
-             * @todo
-             *
-             */
-            ComponentRegistry.types = {};
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Method used to register new component classes.
-             *
-             * @param {string} key
-             * Registry key of the component class.
-             *
-             * @param {ComponentType} DataConnectorClass
-             * Component class (aka class constructor) to register.
-             */
-            function registerComponent(key, ComponentClass) {
-                return (!!key &&
-                    !ComponentRegistry.types[key] &&
-                    !!(ComponentRegistry.types[key] = ComponentClass));
-            }
-            ComponentRegistry.registerComponent = registerComponent;
-        })(ComponentRegistry || (ComponentRegistry = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return ComponentRegistry;
-    });
     _registerModule(_modules, 'Dashboards/Globals.js', [], function () {
         /* *
          *
@@ -3226,7 +3168,7 @@
 
         return GUIElement;
     });
-    _registerModule(_modules, 'Dashboards/Layout/CellHTML.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js']], function (EditGlobals, Globals, GUIElement) {
+    _registerModule(_modules, 'Dashboards/Layout/Cell.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (EditGlobals, Globals, GUIElement, U) {
         /* *
          *
          *  (c) 2009-2025 Highsoft AS
@@ -3242,298 +3184,6 @@
          *  - Sophie Bremer
          *
          * */
-        /* *
-         *
-         *  Class
-         *
-         * */
-        /**
-         * @internal
-         **/
-        class CellHTML extends GUIElement {
-            /* *
-             *
-             *  Constructor
-             *
-             * */
-            /**
-             * Constructs an instance of the CellHTML class.
-             *
-             * @param {Cell.Options} options
-             * Options for the cell.
-             */
-            constructor(options) {
-                super();
-                /**
-                 * The type of a GUIElement instance.
-                 */
-                this.type = 'cell-html';
-                this.options = options;
-                this.id = options.id;
-                this.container = options.container;
-                this.mountedComponent = options.mountedComponent;
-            }
-            /**
-             * Destroy the element, its container, event hooks
-             * and mounted component.
-             */
-            destroy() {
-                const cell = this;
-                // Destroy mounted component.
-                cell.mountedComponent?.destroy();
-                super.destroy();
-            }
-            /**
-             * Highlight the cell.
-             */
-            setHighlight() {
-                const cell = this;
-                cell.container.classList.toggle(EditGlobals.classNames.cellEditHighlight);
-                cell.mountedComponent?.board.container.classList.toggle(EditGlobals.classNames.dashboardCellEditHighlightActive);
-            }
-            setActiveState() {
-                const cell = this;
-                // Apply class
-                if (cell.container) {
-                    cell.container.classList.add(Globals.classNames.cellActive);
-                }
-            }
-        }
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        (function (CellHTML) {
-            /**
-             * Checks if a valid cell HTML instance.
-             */
-            function isCellHTML(cellHTML) {
-                return cellHTML instanceof CellHTML;
-            }
-            CellHTML.isCellHTML = isCellHTML;
-        })(CellHTML || (CellHTML = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return CellHTML;
-    });
-    _registerModule(_modules, 'Dashboards/Actions/Bindings.js', [_modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Layout/CellHTML.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (ComponentRegistry, CellHTML, Globals, U) {
-        /* *
-         *
-         *  (c) 2009-2025 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const { addEvent, fireEvent } = U;
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        var Bindings;
-        (function (Bindings) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            function getGUIElement(idOrElement, parentElement) {
-                let guiElement;
-                if (typeof idOrElement === 'string' &&
-                    document.querySelectorAll('#' + idOrElement).length > 1) {
-                    // eslint-disable-next-line no-console
-                    console.warn(`Multiple cells have identical ID %c${idOrElement}%c, potentially leading to unexpected behavior. \nEnsure that each cell has a unique ID on the page.`, 'font-weight: bold', '');
-                }
-                const container = parentElement ?
-                    parentElement.querySelector('#' + idOrElement) :
-                    document.getElementById(idOrElement);
-                if (container !== null) {
-                    fireEvent(container, 'bindedGUIElement', {}, function (e) {
-                        guiElement = e.guiElement;
-                    });
-                }
-                return guiElement;
-            }
-            async function addComponent(options, board, cell) {
-                const optionsStates = options.states;
-                const optionsEvents = options.events;
-                const renderTo = options.renderTo || options.cell;
-                if (!renderTo) {
-                    // eslint-disable-next-line no-console
-                    console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
-                    return;
-                }
-                if (board.mountedComponents.filter((el) => ((el.options.renderTo || el.options.cell) === renderTo)).length > 0) {
-                    // eslint-disable-next-line no-console
-                    console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
-                    return;
-                }
-                cell = cell || Bindings.getCell(renderTo, board.container);
-                const componentContainer = cell?.container || document.querySelector('#' + renderTo);
-                if (!componentContainer || !options.type) {
-                    // eslint-disable-next-line no-console
-                    console.error(`The component is unable to find the HTML cell element %c${renderTo}%c to render the content.`, 'font-weight: bold', '');
-                    return;
-                }
-                let ComponentClass = ComponentRegistry.types[options.type];
-                if (!ComponentClass) {
-                    // eslint-disable-next-line no-console
-                    console.error(`The component's type %c${options.type}%c does not exist.`, 'font-weight: bold', '');
-                    if (cell) {
-                        ComponentClass =
-                            ComponentRegistry.types['HTML'];
-                        options.title = {
-                            text: board.editMode?.lang.errorMessage ||
-                                'Something went wrong',
-                            className: Globals.classNamePrefix + 'component-title-error ' +
-                                Globals.classNamePrefix + 'component-title'
-                        };
-                    }
-                }
-                const component = new ComponentClass(cell, options, board);
-                const promise = component.load()['catch']((e) => {
-                    // eslint-disable-next-line no-console
-                    console.error(e);
-                    component.update({
-                        connector: {
-                            id: ''
-                        },
-                        title: {
-                            text: board.editMode?.lang.errorMessage ||
-                                'Something went wrong',
-                            className: Globals.classNamePrefix + 'component-title-error ' +
-                                Globals.classNamePrefix + 'component-title'
-                        }
-                    });
-                });
-                if (cell) {
-                    component.setCell(cell);
-                    cell.mountedComponent = component;
-                }
-                board.mountedComponents.push({
-                    options: options,
-                    component: component,
-                    cell: cell || new CellHTML({
-                        id: renderTo,
-                        container: componentContainer,
-                        mountedComponent: component
-                    })
-                });
-                if (cell &&
-                    optionsStates?.active?.enabled &&
-                    optionsStates?.active?.isActive) {
-                    cell.setActiveState();
-                    component.isActive = true;
-                }
-                fireEvent(component, 'mount');
-                // Events
-                addEvent(componentContainer, 'click', () => {
-                    // Call the component's click callback
-                    if (optionsEvents && optionsEvents.click) {
-                        optionsEvents.click.call(component);
-                    }
-                    // Default behavior
-                    if (cell &&
-                        component &&
-                        componentContainer &&
-                        optionsStates?.active?.enabled) {
-                        cell.setActiveState();
-                        component.isActive = true;
-                    }
-                });
-                // States
-                if (optionsStates?.hover?.enabled) {
-                    componentContainer.classList.add(Globals.classNames.cellHover);
-                }
-                fireEvent(component, 'afterLoad');
-                return promise;
-            }
-            Bindings.addComponent = addComponent;
-            /** @internal */
-            function componentFromJSON(json) {
-                const componentClass = ComponentRegistry.types[json.$class];
-                if (!componentClass) {
-                    return;
-                }
-                const cell = Bindings.getCell(json.options.renderTo || '');
-                if (!cell) {
-                    return;
-                }
-                const component = componentClass.fromJSON(json, cell);
-                if (component) {
-                    component.render();
-                }
-                return component;
-            }
-            Bindings.componentFromJSON = componentFromJSON;
-            function getCell(idOrElement, parentElement) {
-                const cell = getGUIElement(idOrElement, parentElement);
-                if (!(cell && cell.getType() === 'cell')) {
-                    return;
-                }
-                return cell;
-            }
-            Bindings.getCell = getCell;
-            function getRow(idOrElement, parentElement) {
-                const row = getGUIElement(idOrElement, parentElement);
-                if (!(row && row.getType() === 'row')) {
-                    return;
-                }
-                return row;
-            }
-            Bindings.getRow = getRow;
-            function getLayout(idOrElement, parentElement) {
-                const layout = getGUIElement(idOrElement, parentElement);
-                if (!(layout && layout.getType() === 'layout')) {
-                    return;
-                }
-                return layout;
-            }
-            Bindings.getLayout = getLayout;
-        })(Bindings || (Bindings = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Bindings;
-    });
-    _registerModule(_modules, 'Dashboards/Layout/Cell.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js']], function (Bindings, EditGlobals, Globals, GUIElement, U) {
-        /* *
-         *
-         *  (c) 2009-2025 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const { componentFromJSON } = Bindings;
         const { merge, fireEvent } = U;
         /* *
          *
@@ -3544,32 +3194,6 @@
          * @internal
          **/
         class Cell extends GUIElement {
-            /* *
-             *
-             *  Static Properties
-             *
-             * */
-            /** @internal */
-            static fromJSON(json, row) {
-                if (row) {
-                    const options = json.options;
-                    let id = options.containerId;
-                    if (row.layout.copyId) {
-                        id = id + '_' + row.layout.copyId;
-                    }
-                    return new Cell(row, {
-                        id: id,
-                        parentContainerId: (row.container && row.container.id) ||
-                            options.parentContainerId,
-                        mountedComponentJSON: options.mountedComponentJSON,
-                        style: options.style,
-                        layoutJSON: options.layoutJSON,
-                        width: options.width,
-                        height: options.height
-                    });
-                }
-                return void 0;
-            }
             /* *
              *
              *  Constructor
@@ -3624,19 +3248,9 @@
                         height: cellHeight
                     })
                 });
-                // Mount component from JSON.
-                if (this.options.mountedComponentJSON) {
-                    this.mountComponentFromJSON(this.options.mountedComponentJSON);
-                }
                 // Nested layout
                 if (this.options.layout) {
                     this.setNestedLayout();
-                }
-                if (this.options.layoutJSON) {
-                    const layout = this.row.layout, board = layout.board, layoutFromJSON = layout.constructor.fromJSON;
-                    this.nestedLayout = layoutFromJSON(merge(this.options.layoutJSON, {
-                        parentContainerId: this.options.id
-                    }), board, this);
                 }
             }
             /* *
@@ -3657,29 +3271,6 @@
                 }), this);
             }
             /**
-             * Mount component from JSON.
-             * @internal
-             *
-             * @param {Component.JSON} [json]
-             * Component JSON.
-             *
-             * @return {boolean}
-             * Returns true, if the component created from JSON is mounted,
-             * otherwise false.
-             */
-            mountComponentFromJSON(json) {
-                const cell = this;
-                if (cell.id !== json.options.parentElement) {
-                    json.options.parentElement = cell.id;
-                }
-                const component = componentFromJSON(json);
-                if (component) {
-                    cell.mountedComponent = component;
-                    return true;
-                }
-                return false;
-            }
-            /**
              * Destroy the element, its container, event hooks
              * and mounted component.
              */
@@ -3696,28 +3287,6 @@
                 if (destroyRow) {
                     row.destroy();
                 }
-            }
-            /**
-             * Converts the class instance to a class JSON.
-             * @internal
-             *
-             * @return {Cell.JSON}
-             * Class JSON of this Cell instance.
-             */
-            toJSON() {
-                const cell = this, rowContainerId = (cell.row.container || {}).id || '';
-                return {
-                    $class: 'Dashboards.Layout.Cell',
-                    options: {
-                        containerId: cell.container.id,
-                        parentContainerId: rowContainerId,
-                        width: cell.options.width,
-                        height: cell.options.height,
-                        mountedComponentJSON: cell.mountedComponent && cell.mountedComponent.toJSON(),
-                        style: cell.options.style,
-                        layoutJSON: cell.nestedLayout && cell.nestedLayout.toJSON()
-                    }
-                };
             }
             /**
              * Get the cell's options.
@@ -3996,7 +3565,11 @@
                         component.cell.setLoadingState();
                     }
                     const connector = await dataPool.getConnector(connectorId);
-                    this.setConnector(connector);
+                    // The connector shouldn't be set if the handler was destroyed
+                    // during its creation.
+                    if (!this.destroyed) {
+                        this.setConnector(connector);
+                    }
                 }
                 return component;
             }
@@ -4183,6 +3756,7 @@
              * @internal
              */
             destroy() {
+                this.destroyed = true;
                 this.removeConnectorAssignment();
                 this.removeTableEvents();
             }
@@ -5722,38 +5296,6 @@
                 fireEvent(this, e.type, e);
             }
             /**
-             * Converts the class instance to a class JSON.
-             * @internal
-             *
-             * @returns
-             * Class JSON of this Component instance.
-             *
-             * @internal
-             */
-            toJSON() {
-                const dimensions = {
-                    width: 0,
-                    height: 0
-                };
-                objectEach(this.dimensions, function (value, key) {
-                    if (value === null) {
-                        return;
-                    }
-                    dimensions[key] = value;
-                });
-                const json = {
-                    $class: this.options.type,
-                    options: {
-                        renderTo: this.options.renderTo,
-                        parentElement: this.parentElement.id,
-                        dimensions,
-                        id: this.id,
-                        type: this.type
-                    }
-                };
-                return json;
-            }
-            /**
              * Get the component's options.
              * @returns
              * The JSON of component's options.
@@ -5961,45 +5503,6 @@
         class HTMLComponent extends Component {
             /* *
              *
-             *  Static functions
-             *
-             * */
-            /**
-             * Creates component from JSON.
-             *
-             * @param json
-             * Set of component options, used for creating the HTML component.
-             *
-             * @param cell
-             * Instance of cell, where component is attached.
-             *
-             * @returns
-             * HTML component based on config from JSON.
-             *
-             * @internal
-             */
-            static fromJSON(json, cell) {
-                const options = json.options;
-                const elements = (json.elements ?
-                    json.elements.map((el) => JSON.parse(el)) :
-                    []);
-                /// const connector = (
-                //     json.connector ? DataJSON.fromJSON(json.connector) : void 0
-                // );
-                const component = new HTMLComponent(cell, merge(options, {
-                    elements
-                    /// connector: (
-                    //   connector instanceof DataConnector ? connector : void 0
-                    // )
-                }));
-                component.emit({
-                    type: 'fromJSON',
-                    json
-                });
-                return component;
-            }
-            /* *
-             *
              *  Constructor
              *
              * */
@@ -6116,27 +5619,6 @@
              */
             getElementsFromString(htmlString) {
                 return new AST(htmlString).nodes;
-            }
-            /**
-             * Converts the class instance to a class JSON.
-             *
-             * @returns
-             * Class JSON of this Component instance.
-             *
-             * @internal
-             */
-            toJSON() {
-                const elements = (this.options.elements || [])
-                    .map((el) => JSON.stringify(el));
-                const json = merge(super.toJSON(), {
-                    elements,
-                    options: this.options
-                });
-                this.emit({
-                    type: 'toJSON',
-                    json
-                });
-                return json;
             }
             /**
              * Get the HTML component's options.
@@ -6437,11 +5919,6 @@
                 this.modified = this;
                 this.rowCount = 0;
                 this.versionTag = uniqueKey();
-                this.columnNames = options.columnNames;
-                this.firstRowAsNames = options.firstRowAsNames;
-                this.orientation = options.orientation;
-                this.dataModifier = options.dataModifier;
-                this.beforeParse = options.beforeParse;
                 let rowCount = 0;
                 objectEach(options.columns || {}, (column, columnName) => {
                     this.columns[columnName] = column.slice();
@@ -9183,7 +8660,7 @@
              * @param {DataConnector.UserOptions} [options]
              * Options to use in the connector.
              *
-             * @param {Array<DataTable>} [dataTables]
+             * @param {Array<DataTableOptions>} [dataTables]
              * Multiple connector data tables options.
              */
             constructor(options = {}, dataTables = []) {
@@ -9191,6 +8668,11 @@
                  * Tables managed by this DataConnector instance.
                  */
                 this.dataTables = {};
+                /**
+                 * Helper flag for detecting whether the data connector is loaded.
+                 * @internal
+                 */
+                this.loaded = false;
                 this.metadata = options.metadata || { columns: {} };
                 // Create a data table for each defined in the dataTables user options.
                 let dataTableIndex = 0;
@@ -9364,9 +8846,10 @@
                     connector.describeColumn(columnNames[i], { index: i });
                 }
             }
-            async setModifierOptions(modifierOptions) {
-                for (const table of Object.values(this.dataTables)) {
-                    const mergedModifierOptions = merge(table.dataModifier, modifierOptions);
+            async setModifierOptions(modifierOptions, tablesOptions) {
+                for (const [key, table] of Object.entries(this.dataTables)) {
+                    const tableOptions = tablesOptions?.find((dataTable) => dataTable.key === key);
+                    const mergedModifierOptions = merge(tableOptions?.dataModifier, modifierOptions);
                     const ModifierClass = (mergedModifierOptions &&
                         DataModifier.types[mergedModifierOptions.type]);
                     await table.setModifier(ModifierClass ?
@@ -9401,10 +8884,13 @@
                 }), refreshTime);
             }
             /**
-             * Stops polling data.
+             * Stops polling data. Shouldn't be performed if polling is already stopped.
              */
             stopPolling() {
                 const connector = this;
+                if (!connector.polling) {
+                    return;
+                }
                 // Abort the existing request.
                 connector?.pollingController?.abort();
                 // Clear the polling timeout.
@@ -9526,7 +9012,7 @@
          *  - Sophie Bremer
          *
          * */
-        const { merge } = U;
+        const { merge, defined } = U;
         /* *
          *
          *  Class
@@ -9549,14 +9035,15 @@
              * @param {CSVConnector.UserOptions} [options]
              * Options for the connector and converter.
              *
-             * @param {Array<DataTable>} [dataTables]
+             * @param {Array<DataTableOptions>} [dataTables]
              * Multiple connector data tables options.
              *
              */
             constructor(options, dataTables) {
                 const mergedOptions = merge(CSVConnector.defaultOptions, options);
                 super(mergedOptions, dataTables);
-                this.options = mergedOptions;
+                this.options = defined(dataTables) ?
+                    merge(mergedOptions, { dataTables }) : mergedOptions;
                 if (mergedOptions.enablePolling) {
                     this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
                 }
@@ -9576,7 +9063,7 @@
              * @emits CSVConnector#afterLoad
              */
             load(eventDetail) {
-                const connector = this, tables = connector.dataTables, { csv, csvURL, dataModifier } = connector.options;
+                const connector = this, tables = connector.dataTables, { csv, csvURL, dataModifier, dataTables } = connector.options;
                 connector.emit({
                     type: 'load',
                     csv,
@@ -9591,23 +9078,24 @@
                     csv || '')
                     .then((csv) => {
                     if (csv) {
-                        this.initConverters(csv, (key, table) => {
+                        this.initConverters(csv, (key) => {
                             const options = this.options;
+                            const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                             // Takes over the connector default options.
-                            const dataTableOptions = {
+                            const mergedTableOptions = {
                                 dataTableKey: key,
-                                firstRowAsNames: table.firstRowAsNames ??
+                                firstRowAsNames: tableOptions?.firstRowAsNames ??
                                     options.firstRowAsNames,
-                                beforeParse: table.beforeParse ??
+                                beforeParse: tableOptions?.beforeParse ??
                                     options.beforeParse
                             };
-                            return new CSVConverter(merge(this.options, dataTableOptions));
+                            return new CSVConverter(merge(this.options, mergedTableOptions));
                         }, (converter, data) => {
                             converter.parse({ csv: data });
                         });
                     }
                     return connector
-                        .setModifierOptions(dataModifier)
+                        .setModifierOptions(dataModifier, dataTables)
                         .then(() => csv);
                 })
                     .then((csv) => {
@@ -9803,7 +9291,7 @@
          *  - Jomar Hønsi
          *
          * */
-        const { merge, pick } = U;
+        const { merge, pick, defined } = U;
         /* *
          *
          *  Functions
@@ -9840,12 +9328,16 @@
              *
              * @param {GoogleSheetsConnector.UserOptions} [options]
              * Options for the connector and converter.
+             *
+             * @param {Array<DataTableOptions>} [dataTables]
+             * Multiple connector data tables options.
+             *
              */
             constructor(options, dataTables) {
                 const mergedOptions = merge(GoogleSheetsConnector.defaultOptions, options);
                 super(mergedOptions, dataTables);
-                this.converter = new GoogleSheetsConverter(mergedOptions);
-                this.options = mergedOptions;
+                this.options = defined(dataTables) ?
+                    merge(mergedOptions, { dataTables }) : mergedOptions;
             }
             /* *
              *
@@ -9862,7 +9354,7 @@
              * Same connector instance with modified table.
              */
             load(eventDetail) {
-                const connector = this, tables = connector.dataTables, { dataModifier, dataRefreshRate, enablePolling, googleAPIKey, googleSpreadsheetKey } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
+                const connector = this, tables = connector.dataTables, { dataModifier, dataRefreshRate, enablePolling, googleAPIKey, googleSpreadsheetKey, dataTables } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
                 connector.emit({
                     type: 'load',
                     detail: eventDetail,
@@ -9878,21 +9370,22 @@
                     if (isGoogleError(json)) {
                         throw new Error(json.error.message);
                     }
-                    this.initConverters(json, (key, table) => {
+                    this.initConverters(json, (key) => {
                         const options = this.options;
+                        const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                         // Takes over the connector default options.
-                        const dataTableOptions = {
+                        const mergedTableOptions = {
                             dataTableKey: key,
-                            firstRowAsNames: table.firstRowAsNames ??
+                            firstRowAsNames: tableOptions?.firstRowAsNames ??
                                 options.firstRowAsNames,
-                            beforeParse: table.beforeParse ??
+                            beforeParse: tableOptions?.beforeParse ??
                                 options.beforeParse
                         };
-                        return new GoogleSheetsConverter(merge(this.options, dataTableOptions));
+                        return new GoogleSheetsConverter(merge(this.options, mergedTableOptions));
                     }, (converter, data) => {
                         converter.parse({ json: data });
                     });
-                    return connector.setModifierOptions(dataModifier);
+                    return connector.setModifierOptions(dataModifier, dataTables);
                 })
                     .then(() => {
                     connector.emit({
@@ -10181,7 +9674,7 @@
             getTableHeaderHTML(topheaders = [], subheaders = [], options = this.options) {
                 const { useMultiLevelHeaders, useRowspanHeaders } = options;
                 let html = '<thead>', i = 0, len = subheaders && subheaders.length, next, cur, curColspan = 0, rowspan;
-                // Clean up multiple table headers. Chart.getDataRows() returns two
+                // Clean up multiple table headers. Exporting.getDataRows() returns two
                 // levels of headers when using multilevel, not merged. We need to
                 // merge identical headers, remove redundant headers, and keep it
                 // all marked up nicely.
@@ -10676,7 +10169,7 @@
          *  - Pawel Lysy
          *
          * */
-        const { merge } = U;
+        const { merge, defined } = U;
         /* *
          *
          *  Class
@@ -10699,13 +10192,14 @@
              * @param {JSONConnector.UserOptions} [options]
              * Options for the connector and converter.
              *
-             * @param {Array<DataTable>} [dataTables]
+             * @param {Array<DataTableOptions>} [dataTables]
              * Multiple connector data tables options.
              */
             constructor(options, dataTables) {
                 const mergedOptions = merge(JSONConnector.defaultOptions, options);
                 super(mergedOptions, dataTables);
-                this.options = mergedOptions;
+                this.options = defined(dataTables) ?
+                    merge(mergedOptions, { dataTables }) : mergedOptions;
                 if (mergedOptions.enablePolling) {
                     this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
                 }
@@ -10725,7 +10219,7 @@
              * @emits JSONConnector#afterLoad
              */
             load(eventDetail) {
-                const connector = this, tables = connector.dataTables, { data, dataUrl, dataModifier } = connector.options;
+                const connector = this, tables = connector.dataTables, { data, dataUrl, dataModifier, dataTables } = connector.options;
                 connector.emit({
                     type: 'load',
                     data,
@@ -10748,26 +10242,27 @@
                     data || [])
                     .then((data) => {
                     if (data) {
-                        this.initConverters(data, (key, table) => {
+                        this.initConverters(data, (key) => {
                             const options = this.options;
+                            const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                             // Takes over the connector default options.
-                            const dataTableOptions = {
+                            const mergedTableOptions = {
                                 dataTableKey: key,
-                                columnNames: table.columnNames ??
+                                columnNames: tableOptions?.columnNames ??
                                     options.columnNames,
-                                firstRowAsNames: table.firstRowAsNames ??
+                                firstRowAsNames: tableOptions?.firstRowAsNames ??
                                     options.firstRowAsNames,
-                                orientation: table.orientation ??
+                                orientation: tableOptions?.orientation ??
                                     options.orientation,
-                                beforeParse: table.beforeParse ??
+                                beforeParse: tableOptions?.beforeParse ??
                                     options.beforeParse
                             };
-                            return new JSONConverter(merge(this.options, dataTableOptions));
+                            return new JSONConverter(merge(this.options, mergedTableOptions));
                         }, (converter, data) => {
                             converter.parse({ data });
                         });
                     }
-                    return connector.setModifierOptions(dataModifier)
+                    return connector.setModifierOptions(dataModifier, dataTables)
                         .then(() => data);
                 })
                     .then((data) => {
@@ -11780,6 +11275,338 @@
 
         return SortModifier;
     });
+    _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [], function () {
+        /* *
+         *
+         *  (c) 2009-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         * */
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        var ComponentRegistry;
+        (function (ComponentRegistry) {
+            /* *
+             *
+             *  Constants
+             *
+             * */
+            /**
+             *
+             * Record of component classes
+             * @todo
+             *
+             */
+            ComponentRegistry.types = {};
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Method used to register new component classes.
+             *
+             * @param {string} key
+             * Registry key of the component class.
+             *
+             * @param {ComponentType} DataConnectorClass
+             * Component class (aka class constructor) to register.
+             */
+            function registerComponent(key, ComponentClass) {
+                return (!!key &&
+                    !ComponentRegistry.types[key] &&
+                    !!(ComponentRegistry.types[key] = ComponentClass));
+            }
+            ComponentRegistry.registerComponent = registerComponent;
+        })(ComponentRegistry || (ComponentRegistry = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return ComponentRegistry;
+    });
+    _registerModule(_modules, 'Dashboards/Layout/CellHTML.js', [_modules['Dashboards/EditMode/EditGlobals.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/GUIElement.js']], function (EditGlobals, Globals, GUIElement) {
+        /* *
+         *
+         *  (c) 2009-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *  - Wojciech Chmiel
+         *  - Gøran Slettemark
+         *  - Sophie Bremer
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * @internal
+         **/
+        class CellHTML extends GUIElement {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the CellHTML class.
+             *
+             * @param {Cell.Options} options
+             * Options for the cell.
+             */
+            constructor(options) {
+                super();
+                /**
+                 * The type of a GUIElement instance.
+                 */
+                this.type = 'cell-html';
+                this.options = options;
+                this.id = options.id;
+                this.container = options.container;
+                this.mountedComponent = options.mountedComponent;
+            }
+            /**
+             * Destroy the element, its container, event hooks
+             * and mounted component.
+             */
+            destroy() {
+                const cell = this;
+                // Destroy mounted component.
+                cell.mountedComponent?.destroy();
+                super.destroy();
+            }
+            /**
+             * Highlight the cell.
+             */
+            setHighlight() {
+                const cell = this;
+                cell.container.classList.toggle(EditGlobals.classNames.cellEditHighlight);
+                cell.mountedComponent?.board.container.classList.toggle(EditGlobals.classNames.dashboardCellEditHighlightActive);
+            }
+            setActiveState() {
+                const cell = this;
+                // Apply class
+                if (cell.container) {
+                    cell.container.classList.add(Globals.classNames.cellActive);
+                }
+            }
+        }
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        (function (CellHTML) {
+            /**
+             * Checks if a valid cell HTML instance.
+             */
+            function isCellHTML(cellHTML) {
+                return cellHTML instanceof CellHTML;
+            }
+            CellHTML.isCellHTML = isCellHTML;
+        })(CellHTML || (CellHTML = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return CellHTML;
+    });
+    _registerModule(_modules, 'Dashboards/Actions/Bindings.js', [_modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Layout/CellHTML.js'], _modules['Dashboards/Globals.js'], _modules['Core/Utilities.js']], function (ComponentRegistry, CellHTML, Globals, U) {
+        /* *
+         *
+         *  (c) 2009-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *  - Wojciech Chmiel
+         *  - Gøran Slettemark
+         *  - Sophie Bremer
+         *
+         * */
+        const { addEvent, fireEvent } = U;
+        /* *
+         *
+         *  Namespace
+         *
+         * */
+        var Bindings;
+        (function (Bindings) {
+            /* *
+             *
+             *  Declarations
+             *
+             * */
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            function getGUIElement(idOrElement, parentElement) {
+                let guiElement;
+                if (typeof idOrElement === 'string' &&
+                    document.querySelectorAll('#' + idOrElement).length > 1) {
+                    // eslint-disable-next-line no-console
+                    console.warn(`Multiple cells have identical ID %c${idOrElement}%c, potentially leading to unexpected behavior. \nEnsure that each cell has a unique ID on the page.`, 'font-weight: bold', '');
+                }
+                const container = parentElement ?
+                    parentElement.querySelector('#' + idOrElement) :
+                    document.getElementById(idOrElement);
+                if (container !== null) {
+                    fireEvent(container, 'bindedGUIElement', {}, function (e) {
+                        guiElement = e.guiElement;
+                    });
+                }
+                return guiElement;
+            }
+            async function addComponent(options, board, cell) {
+                const optionsStates = options.states;
+                const optionsEvents = options.events;
+                const renderTo = options.renderTo || options.cell;
+                if (!renderTo) {
+                    // eslint-disable-next-line no-console
+                    console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
+                    return;
+                }
+                if (board.mountedComponents.filter((el) => ((el.options.renderTo || el.options.cell) === renderTo)).length > 0) {
+                    // eslint-disable-next-line no-console
+                    console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
+                    return;
+                }
+                cell = cell || Bindings.getCell(renderTo, board.container);
+                const componentContainer = cell?.container || document.querySelector('#' + renderTo);
+                if (!componentContainer || !options.type) {
+                    // eslint-disable-next-line no-console
+                    console.error(`The component is unable to find the HTML cell element %c${renderTo}%c to render the content.`, 'font-weight: bold', '');
+                    return;
+                }
+                let ComponentClass = ComponentRegistry.types[options.type];
+                if (!ComponentClass) {
+                    // eslint-disable-next-line no-console
+                    console.error(`The component's type %c${options.type}%c does not exist.`, 'font-weight: bold', '');
+                    if (cell) {
+                        ComponentClass =
+                            ComponentRegistry.types['HTML'];
+                        options.title = {
+                            text: board.editMode?.lang.errorMessage ||
+                                'Something went wrong',
+                            className: Globals.classNamePrefix + 'component-title-error ' +
+                                Globals.classNamePrefix + 'component-title'
+                        };
+                    }
+                }
+                const component = new ComponentClass(cell, options, board);
+                const promise = component.load()['catch']((e) => {
+                    // eslint-disable-next-line no-console
+                    console.error(e);
+                    component.update({
+                        connector: {
+                            id: ''
+                        },
+                        title: {
+                            text: board.editMode?.lang.errorMessage ||
+                                'Something went wrong',
+                            className: Globals.classNamePrefix + 'component-title-error ' +
+                                Globals.classNamePrefix + 'component-title'
+                        }
+                    });
+                });
+                if (cell) {
+                    component.setCell(cell);
+                    cell.mountedComponent = component;
+                }
+                board.mountedComponents.push({
+                    options: options,
+                    component: component,
+                    cell: cell || new CellHTML({
+                        id: renderTo,
+                        container: componentContainer,
+                        mountedComponent: component
+                    })
+                });
+                if (cell &&
+                    optionsStates?.active?.enabled &&
+                    optionsStates?.active?.isActive) {
+                    cell.setActiveState();
+                    component.isActive = true;
+                }
+                fireEvent(component, 'mount');
+                // Events
+                addEvent(componentContainer, 'click', () => {
+                    // Call the component's click callback
+                    if (optionsEvents && optionsEvents.click) {
+                        optionsEvents.click.call(component);
+                    }
+                    // Default behavior
+                    if (cell &&
+                        component &&
+                        componentContainer &&
+                        optionsStates?.active?.enabled) {
+                        cell.setActiveState();
+                        component.isActive = true;
+                    }
+                });
+                // States
+                if (optionsStates?.hover?.enabled) {
+                    componentContainer.classList.add(Globals.classNames.cellHover);
+                }
+                fireEvent(component, 'afterLoad');
+                return promise;
+            }
+            Bindings.addComponent = addComponent;
+            function getCell(idOrElement, parentElement) {
+                const cell = getGUIElement(idOrElement, parentElement);
+                if (!(cell && cell.getType() === 'cell')) {
+                    return;
+                }
+                return cell;
+            }
+            Bindings.getCell = getCell;
+            function getRow(idOrElement, parentElement) {
+                const row = getGUIElement(idOrElement, parentElement);
+                if (!(row && row.getType() === 'row')) {
+                    return;
+                }
+                return row;
+            }
+            Bindings.getRow = getRow;
+            function getLayout(idOrElement, parentElement) {
+                const layout = getGUIElement(idOrElement, parentElement);
+                if (!(layout && layout.getType() === 'layout')) {
+                    return;
+                }
+                return layout;
+            }
+            Bindings.getLayout = getLayout;
+        })(Bindings || (Bindings = {}));
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return Bindings;
+    });
     _registerModule(_modules, 'Dashboards/Accessibility/DashboardsAccessibility.js', [], function () {
         /* *
          *
@@ -12224,247 +12051,6 @@
 
         return DataCursor;
     });
-    _registerModule(_modules, 'Dashboards/Serializable.js', [], function () {
-        /* *
-         *
-         *  (c) 2009-2025 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *
-         * */
-        /* *
-         *
-         *  Namespace
-         *
-         * */
-        /**
-         * Contains the toolset to serialize class instance to JSON and deserialize JSON
-         * to class instances.
-         * @internal
-         * @private
-         */
-        var Serializable;
-        (function (Serializable) {
-            /* *
-             *
-             *  Declarations
-             *
-             * */
-            /* *
-             *
-             *  Constants
-             *
-             * */
-            /**
-             * Registry of serializable classes.
-             */
-            const classRegistry = {};
-            /**
-             * Registry of function sets.
-             */
-            const helperRegistry = {};
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Creates a class instance from the given JSON, if a suitable serializer
-             * has been found.
-             *
-             * @function Serializable.fromJSON
-             *
-             * @param {Serializable.JSON} json
-             * JSON to create a class instance or object from.
-             *
-             * @return {Globals.AnyRecord}
-             * Returns the class instance or object, or throws an exception.
-             */
-            function fromJSON(json) {
-                const $class = json.$class;
-                if (typeof $class !== 'string') {
-                    throw new Error('JSON has no $class property.');
-                }
-                const classs = classRegistry[$class];
-                if (classs) {
-                    return classs.fromJSON(json);
-                }
-                const helper = helperRegistry[$class];
-                if (helper) {
-                    return helper.fromJSON(json);
-                }
-                throw new Error(`'${$class}' unknown.`);
-            }
-            Serializable.fromJSON = fromJSON;
-            /**
-             * Registers a class prototype for the given JSON $class.
-             *
-             * @function Serializable.registerClassPrototype
-             *
-             * @param {string} $class
-             * JSON $class to register for.
-             *
-             * @param {Serializable} classPrototype
-             * Class to register.
-             */
-            function registerClassPrototype($class, classPrototype) {
-                if (classRegistry[$class]) {
-                    throw new Error('A serializer for \'' + $class + '\' is already registered.');
-                }
-                classRegistry[$class] = classPrototype;
-            }
-            Serializable.registerClassPrototype = registerClassPrototype;
-            /**
-             * Registers helper functions for the given JSON $class.
-             *
-             * @function Serializable.registerHelper
-             *
-             * @param {Helper} helperFunctions
-             * Helper functions to register.
-             */
-            function registerHelper(helperFunctions) {
-                if (helperRegistry[helperFunctions.$class]) {
-                    throw new Error('A serializer for \'' + helperFunctions.$class +
-                        '\' is already registered.');
-                }
-                helperRegistry[helperFunctions.$class] = helperFunctions;
-            }
-            Serializable.registerHelper = registerHelper;
-            /**
-             * Creates JSON from a class instance.
-             *
-             * @function Serializable.toJSON
-             *
-             * @param {Globals.AnyRecord} obj
-             * Class instance or object to serialize as JSON.
-             *
-             * @return {Serializable.JSON}
-             * JSON of the class instance.
-             */
-            function toJSON(obj) {
-                if (typeof obj.fromJSON === 'function' &&
-                    typeof obj.toJSON === 'function') {
-                    return obj.toJSON();
-                }
-                const classes = Object.keys(helperRegistry), numberOfHelpers = classes.length;
-                let $class, serializer;
-                for (let i = 0; i < numberOfHelpers; ++i) {
-                    $class = classes[i];
-                    serializer = helperRegistry[$class];
-                    if (serializer.jsonSupportFor(obj)) {
-                        return serializer.toJSON(obj);
-                    }
-                }
-                throw new Error('Object is not supported.');
-            }
-            Serializable.toJSON = toJSON;
-        })(Serializable || (Serializable = {}));
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return Serializable;
-    });
-    _registerModule(_modules, 'Dashboards/SerializeHelper/DataCursorHelper.js', [_modules['Data/DataCursor.js'], _modules['Dashboards/Serializable.js']], function (DataCursor, Serializable) {
-        /* *
-         *
-         *  (c) 2009-2025 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sophie Bremer
-         *
-         * */
-        /* *
-         *
-         *  Functions
-         *
-         * */
-        /**
-         * Converts the given JSON to a class instance.
-         *
-         * @param {DataCursorHelper.JSON} json
-         * JSON to deserialize as a class instance or object.
-         *
-         * @return {DataCursor}
-         * Returns the class instance or object, or throws an exception.
-         */
-        function fromJSON(json) {
-            return new DataCursor(json.stateMap);
-        }
-        /**
-         * Validates the given class instance for JSON support.
-         *
-         * @param {Globals.AnyRecord} obj
-         * Class instance or object to validate.
-         *
-         * @return {boolean}
-         * Returns true, if the function set can convert the given object, otherwise
-         * false.
-         */
-        function jsonSupportFor(obj) {
-            return obj instanceof DataCursor;
-        }
-        /**
-         * Converts the given class instance to JSON.
-         *
-         * @param {DataTable} obj
-         * Class instance or object to serialize as JSON.
-         *
-         * @return {DataTableHelper.JSON}
-         * Returns the JSON of the class instance or object.
-         */
-        function toJSON(obj) {
-            const stateMap = obj.stateMap, stateMapJSON = {}, tableIds = Object.keys(obj.stateMap);
-            let cursors, cursorsJSON, tableId, state, states;
-            for (let i = 0, iEnd = tableIds.length; i < iEnd; ++i) {
-                tableId = tableIds[i];
-                states = Object.keys(stateMap[tableId]);
-                stateMapJSON[tableId] = {};
-                for (let j = 0, jEnd = states.length; j < jEnd; ++j) {
-                    state = states[j];
-                    cursors = stateMap[tableId][state];
-                    stateMapJSON[tableId][state] = cursorsJSON = [];
-                    for (let k = 0, kEnd = cursors.length; k < kEnd; ++k) {
-                        cursorsJSON.push({ ...cursors[k] });
-                    }
-                }
-            }
-            return {
-                $class: 'Data.DataCursor',
-                stateMap: stateMapJSON
-            };
-        }
-        /* *
-         *
-         *  Registry
-         *
-         * */
-        const DataCursorHelper = {
-            $class: 'Data.DataCursor',
-            fromJSON,
-            jsonSupportFor,
-            toJSON
-        };
-        Serializable.registerHelper(DataCursorHelper);
-        /* *
-         *
-         *  Default Export
-         *
-         * */
-
-        return DataCursorHelper;
-    });
     _registerModule(_modules, 'Data/DataPoolDefaults.js', [], function () {
         /* *
          *
@@ -12563,7 +12149,7 @@
             getConnector(connectorId) {
                 const connector = this.connectors[connectorId];
                 // Already loaded
-                if (connector) {
+                if (connector?.loaded) {
                     return Promise.resolve(connector);
                 }
                 let waitingList = this.waiting[connectorId];
@@ -12678,12 +12264,14 @@
                     if (!ConnectorClass) {
                         throw new Error(`Connector type not found. (${options.type})`);
                     }
-                    const connector = new ConnectorClass(options.options, options.dataTables);
+                    const connector = this.connectors[options.id] = new ConnectorClass(options.options, options.dataTables);
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     connector
                         .load()
-                        .then((connector) => {
-                        this.connectors[options.id] = connector;
+                        .then(({ converter, dataTables }) => {
+                        connector.dataTables = dataTables;
+                        connector.converter = converter;
+                        connector.loaded = true;
                         this.emit({
                             type: 'afterLoad',
                             options
@@ -12691,6 +12279,15 @@
                         resolve(connector);
                     })['catch'](reject);
                 });
+            }
+            /**
+             * Cancels all data connectors pending requests.
+             */
+            cancelPendingRequests() {
+                const { connectors } = this;
+                for (const connectorKey of Object.keys(connectors)) {
+                    connectors[connectorKey].stopPolling();
+                }
             }
             /**
              * Registers a callback for a specific event.
@@ -12756,663 +12353,7 @@
 
         return DataPool;
     });
-    _registerModule(_modules, 'Dashboards/Layout/Row.js', [_modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/Cell.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Core/Utilities.js'], _modules['Dashboards/EditMode/EditGlobals.js']], function (Globals, Cell, GUIElement, U, EditGlobals) {
-        /* *
-         *
-         *  (c) 2009-2025 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const { pick, defined, merge, objectEach, fireEvent } = U;
-        /**
-         * @internal
-         **/
-        class Row extends GUIElement {
-            /* *
-            *
-            *  Static Properties
-            *
-            * */
-            /** @internal */
-            static fromJSON(json, layout) {
-                if (layout) {
-                    const options = json.options;
-                    let id = options.containerId || '';
-                    if (id && layout.copyId) {
-                        id = id + '_' + layout.copyId;
-                    }
-                    return new Row(layout, {
-                        id: id,
-                        parentContainerId: (layout.container && layout.container.id) ||
-                            options.parentContainerId,
-                        cellsJSON: options.cells,
-                        style: options.style
-                    });
-                }
-                return void 0;
-            }
-            static setContainerHeight(rowContainer, height) {
-                if (height) {
-                    rowContainer.style.height = height + 'px';
-                }
-            }
-            /* *
-            *
-            *  Constructor
-            *
-            * */
-            /**
-             * Constructs an instance of the Row class.
-             *
-             * @param {Layout} layout
-             * Reference to the layout instance.
-             *
-             * @param {Row.Options} options
-             * Options for the row.
-             *
-             * @param {HTMLElement} rowElement
-             * The container of the row HTML element.
-             */
-            constructor(layout, options, rowElement) {
-                super();
-                /**
-                 * The type of GUI element.
-                 */
-                this.type = Globals.guiElementType.row;
-                this.layout = layout;
-                this.cells = [];
-                this.options = options;
-                this.isVisible = true;
-                // Get parent container
-                const parentContainer = document.getElementById(options.parentContainerId || '') ||
-                    layout.container;
-                const layoutOptions = (layout.options || {}), rowClassName = layoutOptions.rowClassName || '';
-                this.container = this.getElementContainer({
-                    render: layout.board.guiEnabled,
-                    parentContainer: parentContainer,
-                    attribs: {
-                        id: options.id,
-                        className: Globals.classNames.row + ' ' +
-                            rowClassName
-                    },
-                    element: rowElement,
-                    elementId: options.id,
-                    style: merge(layoutOptions.style, options.style)
-                });
-                // Init rows from options.
-                if (this.options.cells) {
-                    this.setCells();
-                }
-                // Init rows from JSON.
-                if (options.cellsJSON && !this.cells.length) {
-                    this.setCellsFromJSON(options.cellsJSON);
-                }
-            }
-            /* *
-            *
-            *  Functions
-            *
-            * */
-            /**
-             * Set the row cells using cell options or cellClassName.
-             */
-            setCells() {
-                const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
-                let cellElement, i, iEnd;
-                for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
-                    cellElement = cellsElements[i];
-                    row.addCell(row.layout.board.guiEnabled ? cellElement : { id: '' }, cellElement instanceof HTMLElement ? cellElement : void 0);
-                }
-            }
-            /** @internal */
-            setCellsFromJSON(json) {
-                const row = this, componentsToMount = [];
-                let cell, cellJSON;
-                // Set cells.
-                for (let i = 0, iEnd = json.length; i < iEnd; ++i) {
-                    cellJSON = json[i];
-                    cell = Cell.fromJSON({
-                        $class: cellJSON.$class,
-                        options: {
-                            containerId: cellJSON.options.containerId,
-                            parentContainerId: cellJSON.options.parentContainerId,
-                            width: cellJSON.options.width,
-                            height: cellJSON.options.height,
-                            style: cellJSON.options.style,
-                            layoutJSON: cellJSON.options.layoutJSON,
-                            mountedComponentJSON: void 0 // Will be mounted later.
-                        }
-                    }, row);
-                    if (cell) {
-                        row.cells.push(cell);
-                        if (cellJSON.options.mountedComponentJSON) {
-                            componentsToMount.push({
-                                cell: cell,
-                                // eslint-disable-next-line
-                                mountedComponentJSON: cellJSON.options.mountedComponentJSON
-                            });
-                        }
-                    }
-                }
-                // Mount components.
-                for (let i = 0, iEnd = componentsToMount.length; i < iEnd; ++i) {
-                    componentsToMount[i].cell.mountComponentFromJSON(componentsToMount[i].mountedComponentJSON);
-                }
-            }
-            /**
-             * Add a new Cell instance to the row cells array.
-             *
-             * @param {Cell.Options} [options]
-             * Options for the row cell.
-             *
-             * @param {HTMLElement} [cellElement]
-             * The container for a new cell HTML element.
-             *
-             * @return {Cell}
-             * Returns the Cell object.
-             */
-            addCell(options, cellElement, index) {
-                const row = this, cell = new Cell(row, options, cellElement);
-                if (!defined(index)) {
-                    row.cells.push(cell);
-                }
-                else {
-                    row.mountCell(cell, index);
-                }
-                // Set editMode events.
-                if (row.layout.board.editMode) {
-                    row.layout.board.editMode.setCellEvents(cell);
-                }
-                return cell;
-            }
-            /**
-             * Destroy the element, its container, event hooks
-             * and inner cells.
-             */
-            destroy() {
-                const row = this;
-                const { layout } = row;
-                // Copy to avoid problem with index when shifting array of cells during
-                // the destroy.
-                const rowCells = [...row.cells];
-                // Destroy cells.
-                for (let i = 0, iEnd = rowCells?.length; i < iEnd; ++i) {
-                    if (rowCells[i]) {
-                        rowCells[i].destroy();
-                    }
-                }
-                if (row.layout) {
-                    row.layout.unmountRow(row);
-                    super.destroy();
-                    if (layout.rows?.length === 0) {
-                        layout.destroy();
-                    }
-                }
-            }
-            /**
-             * Converts the class instance to a class JSON.
-             * @internal
-             *
-             * @return {Row.JSON}
-             * Class JSON of this Row instance.
-             */
-            toJSON() {
-                const row = this, layoutContainerId = (row.layout.container || {}).id || '', cells = [];
-                // Get cells JSON.
-                for (let i = 0, iEnd = row.cells.length; i < iEnd; ++i) {
-                    cells.push(row.cells[i].toJSON());
-                }
-                return {
-                    $class: 'Dashboards.Layout.Row',
-                    options: {
-                        containerId: row.container.id,
-                        parentContainerId: layoutContainerId,
-                        cells: cells,
-                        style: row.options.style
-                    }
-                };
-            }
-            /**
-             * Get the row's options.
-             * @returns
-             * The JSON of row's options.
-             *
-             * @internal
-             *
-             */
-            getOptions() {
-                const row = this, cells = [];
-                for (let i = 0, iEnd = row.cells.length; i < iEnd; ++i) {
-                    cells.push(row.cells[i].getOptions());
-                }
-                return {
-                    id: this.options.id,
-                    style: this.options.style,
-                    cells
-                };
-            }
-            setSize(height) {
-                Row.setContainerHeight(this.container, height);
-            }
-            // Get cell index from the row.cells array.
-            getCellIndex(cell) {
-                for (let i = 0, iEnd = this.cells?.length; i < iEnd; ++i) {
-                    if (this.cells[i].id === cell.id) {
-                        return i;
-                    }
-                }
-            }
-            // Add cell to the row.cells array and move cell container.
-            mountCell(cell, index = 0) {
-                const row = this, nextCell = row.cells[index], prevCell = row.cells[index - 1];
-                if (cell.container) {
-                    if (nextCell && nextCell.container) {
-                        nextCell.container.parentNode.insertBefore(cell.container, nextCell.container);
-                    }
-                    else if (prevCell && prevCell.container) {
-                        prevCell.container.parentNode.insertBefore(cell.container, prevCell.container.nextSibling);
-                    }
-                    else if (!prevCell && !nextCell && row.container) {
-                        row.container.appendChild(cell.container);
-                    }
-                    row.cells.splice(index, 0, cell);
-                    cell.row = row;
-                    setTimeout(() => {
-                        fireEvent(row, 'cellChange', { row, cell });
-                    }, 0);
-                }
-            }
-            // Remove cell from the row.cells array.
-            unmountCell(cell) {
-                const cellIndex = this.getCellIndex(cell);
-                if (defined(cellIndex)) {
-                    this.cells.splice(cellIndex, 1);
-                }
-                setTimeout(() => {
-                    fireEvent(this, 'cellChange', { row: this, cell });
-                }, 0);
-            }
-            getVisibleCells() {
-                const cells = [];
-                for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
-                    if (this.cells[i].isVisible) {
-                        cells.push(this.cells[i]);
-                    }
-                }
-                return cells;
-            }
-            changeVisibility(setVisible = true, displayStyle) {
-                const row = this;
-                super.changeVisibility(setVisible, displayStyle);
-                // Change layout visibility if needed.
-                if (!row.layout.getVisibleRows().length) {
-                    row.layout.hide();
-                }
-                else if (row.isVisible && !row.layout.isVisible) {
-                    row.layout.show();
-                }
-            }
-            show() {
-                this.changeVisibility(true, 'flex');
-            }
-            setHighlight() {
-                const container = this.container;
-                container.classList.toggle(EditGlobals.classNames.rowContextHighlight);
-            }
-            // Row can have cells below each others.
-            // This method returns cells split into levels.
-            getRowLevels() {
-                const row = this, rowLevels = {}, rowLevelsArray = [];
-                let cell, cellOffsets;
-                for (let k = 0, kEnd = row.cells.length; k < kEnd; ++k) {
-                    cell = row.cells[k];
-                    if (cell.isVisible) {
-                        cellOffsets = GUIElement.getOffsets(cell);
-                        if (!rowLevels[cellOffsets.top]) {
-                            rowLevels[cellOffsets.top] = {
-                                top: cellOffsets.top,
-                                bottom: cellOffsets.bottom,
-                                cells: []
-                            };
-                        }
-                        if (rowLevels[cellOffsets.top].bottom < cellOffsets.bottom) {
-                            rowLevels[cellOffsets.top].bottom = cellOffsets.bottom;
-                        }
-                        rowLevels[cellOffsets.top].cells.push(cell);
-                    }
-                }
-                objectEach(rowLevels, (value) => {
-                    rowLevelsArray.push(value);
-                });
-                return rowLevelsArray;
-            }
-            // Get row level with additional info
-            // on a specific Y position.
-            getRowLevelInfo(posY) {
-                const rowLevels = this.getRowLevels();
-                let rowLevelInfo;
-                for (let i = 0, iEnd = rowLevels.length; i < iEnd; ++i) {
-                    if (rowLevels[i].top <= posY && rowLevels[i].bottom > posY) {
-                        rowLevelInfo = {
-                            index: i,
-                            rowLevels: rowLevels,
-                            rowLevel: rowLevels[i]
-                        };
-                    }
-                }
-                return rowLevelInfo;
-            }
-        }
-
-        return Row;
-    });
-    _registerModule(_modules, 'Dashboards/Layout/Layout.js', [_modules['Dashboards/Utilities.js'], _modules['Core/Utilities.js'], _modules['Dashboards/Layout/Row.js'], _modules['Dashboards/Layout/GUIElement.js'], _modules['Dashboards/Globals.js']], function (DU, U, Row, GUIElement, Globals) {
-        /* *
-         *
-         *  (c) 2009-2025 Highsoft AS
-         *
-         *  License: www.highcharts.com/license
-         *
-         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
-         *
-         *  Authors:
-         *  - Sebastian Bochan
-         *  - Wojciech Chmiel
-         *  - Gøran Slettemark
-         *  - Sophie Bremer
-         *
-         * */
-        const { uniqueKey } = DU;
-        const { pick, defined } = U;
-        /**
-         * @internal
-         **/
-        class Layout extends GUIElement {
-            /* *
-            *
-            *  Static Properties
-            *
-            * */
-            /** @internal */
-            static fromJSON(json, board, parentCell) {
-                const options = json.options, 
-                // Check if layout container exists.
-                container = document.getElementById(json.options.containerId), layout = new Layout(board, {
-                    id: options.containerId,
-                    copyId: container ? uniqueKey() : '',
-                    parentContainerId: options.parentContainerId || board.container.id,
-                    rowsJSON: options.rows,
-                    style: options.style
-                }, parentCell);
-                // Save layout in the dashboard.
-                if (layout && !parentCell) {
-                    board.layouts.push(layout);
-                }
-                return layout;
-            }
-            /** @internal */
-            static importLocal(id, board) {
-                const layoutOptions = localStorage.getItem(Globals.classNamePrefix + id);
-                let layout;
-                if (layoutOptions) {
-                    layout = Layout.fromJSON(JSON.parse(layoutOptions), board);
-                }
-                return layout;
-            }
-            /* *
-            *
-            *  Constructor
-            *
-            * */
-            /**
-             * Constructs an instance of the Layout class.
-             *
-             * @param {Dashboard} board
-             * Reference to the dashboard instance.
-             *
-             * @param {Layout.Options} options
-             * Options for the layout.
-             */
-            constructor(board, options, parentCell) {
-                super();
-                /**
-                 * The type of GUI element.
-                 */
-                this.type = Globals.guiElementType.layout;
-                this.board = board;
-                this.rows = [];
-                this.options = options;
-                this.isVisible = true;
-                // Get parent container
-                const parentContainer = parentCell ? parentCell.container :
-                    document.getElementById(options.parentContainerId || '') || board.layoutsWrapper;
-                // Set layout level.
-                if (parentCell) {
-                    this.parentCell = parentCell;
-                    this.level = parentCell.row.layout.level + 1;
-                }
-                else {
-                    this.level = 0;
-                }
-                // GUI structure
-                if (options.copyId) {
-                    this.copyId = options.copyId;
-                }
-                const layoutOptions = (this.options || {}), layoutClassName = layoutOptions.rowClassName || '';
-                this.container = this.getElementContainer({
-                    render: board.guiEnabled,
-                    parentContainer: parentContainer,
-                    attribs: {
-                        id: (options.id || '') + (this.copyId ? '_' + this.copyId : ''),
-                        className: Globals.classNames.layout + ' ' +
-                            layoutClassName
-                    },
-                    elementId: options.id,
-                    style: this.options.style
-                });
-                // Init rows from options.
-                if (this.options.rows) {
-                    this.setRows();
-                }
-                // Init rows from JSON.
-                if (options.rowsJSON && !this.rows.length) {
-                    this.setRowsFromJSON(options.rowsJSON);
-                }
-            }
-            /* *
-            *
-            *  Functions
-            *
-            * */
-            /**
-             * Set the layout rows using rows options or rowClassName.
-             */
-            setRows() {
-                const layout = this, rowsElements = pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
-                let rowElement, i, iEnd;
-                for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
-                    rowElement = rowsElements[i];
-                    layout.addRow(layout.board.guiEnabled ? rowElement : {}, rowElement instanceof HTMLElement ? rowElement : void 0);
-                }
-            }
-            /** @internal */
-            setRowsFromJSON(json) {
-                const layout = this;
-                let row;
-                for (let i = 0, iEnd = json.length; i < iEnd; ++i) {
-                    row = Row.fromJSON(json[i], layout);
-                    if (row) {
-                        layout.rows.push(row);
-                    }
-                }
-            }
-            /**
-             * Add a new Row instance to the layout rows array.
-             *
-             * @param {Row.Options} options
-             * Options of a row.
-             *
-             * @param {HTMLElement} rowElement
-             * The container for a new row HTML element.
-             *
-             * @return {Row}
-             * Returns the Row object.
-             */
-            addRow(options, rowElement, index) {
-                const layout = this, row = new Row(layout, options, rowElement);
-                if (!defined(index)) {
-                    layout.rows.push(row);
-                }
-                else {
-                    layout.mountRow(row, index);
-                }
-                // Set editMode events.
-                if (layout.board.editMode) {
-                    layout.board.editMode.setRowEvents(row);
-                }
-                return row;
-            }
-            /**
-             * Destroy the element, its container, event hooks
-             * and inner rows.
-             */
-            destroy() {
-                const layout = this;
-                for (let i = layout.board.layouts.length - 1; i >= 0; i--) {
-                    if (layout.board.layouts[i] === layout) {
-                        layout.board.layouts.splice(i, 1);
-                    }
-                }
-                if (layout.parentCell) {
-                    delete layout.parentCell.nestedLayout;
-                }
-                // Destroy rows.
-                for (let i = layout.rows.length - 1; i >= 0; i--) {
-                    layout.rows[i].destroy();
-                }
-                if (layout.parentCell) {
-                    layout.parentCell.destroy();
-                }
-                super.destroy();
-            }
-            /**
-             * Export layout's options and save in the local storage
-             * @internal
-             */
-            exportLocal() {
-                localStorage.setItem(Globals.classNamePrefix + this.options.id, JSON.stringify(this.toJSON()));
-            }
-            // Get row index from the layout.rows array.
-            getRowIndex(row) {
-                for (let i = 0, iEnd = this.rows.length; i < iEnd; ++i) {
-                    if (this.rows[i] === row) {
-                        return i;
-                    }
-                }
-            }
-            // Add cell to the layout.rows array and move row container.
-            mountRow(row, index) {
-                const nextRow = this.rows[index], prevRow = this.rows[index - 1];
-                if (row.container) {
-                    if (nextRow && nextRow.container) {
-                        nextRow.container.parentNode.insertBefore(row.container, nextRow.container);
-                    }
-                    else if (prevRow && prevRow.container) {
-                        prevRow.container.parentNode.insertBefore(row.container, prevRow.container.nextSibling);
-                    }
-                    this.rows.splice(index, 0, row);
-                    row.layout = this;
-                }
-            }
-            // Remove row from the layout.rows array.
-            unmountRow(row) {
-                const rowIndex = this.getRowIndex(row);
-                if (defined(rowIndex)) {
-                    this.rows.splice(rowIndex, 1);
-                }
-            }
-            getVisibleRows() {
-                const rows = [];
-                for (let i = 0, iEnd = this.rows.length; i < iEnd; ++i) {
-                    if (this.rows[i].isVisible) {
-                        rows.push(this.rows[i]);
-                    }
-                }
-                return rows;
-            }
-            changeVisibility(setVisible = true) {
-                const layout = this;
-                super.changeVisibility(setVisible);
-                // Change parentCell visibility.
-                if (layout.parentCell) {
-                    if (layout.isVisible && !layout.parentCell.isVisible) {
-                        layout.parentCell.show();
-                    }
-                    else if (!layout.isVisible && layout.parentCell.isVisible) {
-                        layout.parentCell.hide();
-                    }
-                }
-            }
-            /**
-             * Converts the class instance to a class JSON.
-             * @internal
-             *
-             * @return {Layout.JSON}
-             * Class JSON of this Layout instance.
-             */
-            toJSON() {
-                const layout = this, dashboardContainerId = (layout.board.container || {}).id || '', rows = [];
-                // Get rows JSON.
-                for (let i = 0, iEnd = layout.rows.length; i < iEnd; ++i) {
-                    rows.push(layout.rows[i].toJSON());
-                }
-                return {
-                    $class: 'Dashboards.Layout',
-                    options: {
-                        containerId: layout.container.id,
-                        parentContainerId: dashboardContainerId,
-                        rows: rows,
-                        style: layout.options.style
-                    }
-                };
-            }
-            /**
-             * Get the layout's options.
-             * @returns
-             * Layout's options.
-             *
-             * @internal
-             *
-             */
-            getOptions() {
-                const layout = this, rows = [];
-                // Get rows JSON.
-                for (let i = 0, iEnd = layout.rows.length; i < iEnd; ++i) {
-                    rows.push(layout.rows[i].getOptions());
-                }
-                return {
-                    id: this.options.id,
-                    layoutClassName: this.options.layoutClassName,
-                    rowClassName: this.options.rowClassName,
-                    cellClassName: this.options.cellClassName,
-                    style: this.options.style,
-                    rows
-                };
-            }
-        }
-
-        return Layout;
-    });
-    _registerModule(_modules, 'Dashboards/Board.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Accessibility/DashboardsAccessibility.js'], _modules['Data/DataCursor.js'], _modules['Dashboards/SerializeHelper/DataCursorHelper.js'], _modules['Data/DataPool.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Layout/Layout.js'], _modules['Dashboards/Serializable.js'], _modules['Dashboards/Components/HTMLComponent/HTMLComponent.js'], _modules['Core/Utilities.js']], function (Bindings, ComponentRegistry, DashboardsAccessibility, DataCursor, DataCursorHelper, DataPool, Globals, Layout, Serializable, HTMLComponent, U) {
+    _registerModule(_modules, 'Dashboards/Board.js', [_modules['Dashboards/Actions/Bindings.js'], _modules['Dashboards/Components/ComponentRegistry.js'], _modules['Dashboards/Accessibility/DashboardsAccessibility.js'], _modules['Data/DataCursor.js'], _modules['Data/DataPool.js'], _modules['Dashboards/Globals.js'], _modules['Dashboards/Components/HTMLComponent/HTMLComponent.js'], _modules['Core/Utilities.js']], function (Bindings, ComponentRegistry, DashboardsAccessibility, DataCursor, DataPool, Globals, HTMLComponent, U) {
         /* *
          *
          *  (c) 2009-2025 Highsoft AS
@@ -13515,8 +12456,12 @@
                 // Init events.
                 this.initEvents();
                 if (async) {
-                    return Promise.all(componentPromises).then(() => this);
+                    return Promise.all(componentPromises).then(() => {
+                        options.events?.mounted?.call(this);
+                        return this;
+                    });
                 }
+                options.events?.mounted?.call(this);
                 return this;
             }
             /**
@@ -13588,6 +12533,8 @@
              */
             destroy() {
                 const board = this;
+                // Cancel all data connectors pending requests.
+                this.dataPool.cancelPendingRequests();
                 // Destroy layouts.
                 if (this.guiEnabled) {
                     for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
@@ -13614,26 +12561,6 @@
                 return;
             }
             /**
-             * Export layouts to the local storage.
-             */
-            exportLocal() {
-                localStorage.setItem(
-                // Dashboard.prefix + this.id,
-                Globals.classNamePrefix + '1', // Temporary for demo test
-                JSON.stringify(this.toJSON()));
-            }
-            /**
-             * Import the dashboard's layouts from the local storage.
-             *
-             * @param id
-             * The id of the layout to import.
-             *
-             * @returns Returns the imported layout.
-             */
-            importLayoutLocal(id) {
-                return Layout.importLocal(id, this);
-            }
-            /**
              * Reflow the dashboard. Hide the toolbars and context pointer. Reflow the
              * layouts and its cells.
              */
@@ -13649,46 +12576,6 @@
                             .updatePosition(editModeTools.contextButtonElement);
                     }
                 }
-            }
-            /**
-             * Converts the given JSON to a class instance.
-             *
-             * @param json
-             * JSON to deserialize as a class instance or object.
-             *
-             * @returns Returns the class instance or object.
-             */
-            fromJSON(json) {
-                const options = json.options, board = new Board(options.containerId, {
-                    componentOptions: options.componentOptions,
-                    dataPool: options.dataPool,
-                    layoutsJSON: options.layouts
-                });
-                board.dataCursor = DataCursorHelper.fromJSON(json.dataCursor);
-                return board;
-            }
-            /**
-             * Converts the class instance to a class JSON.
-             *
-             * @returns Class JSON of this Dashboard instance.
-             */
-            toJSON() {
-                const board = this, layouts = [];
-                // Get layouts JSON.
-                for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-                    layouts.push(board.layouts[i].toJSON());
-                }
-                return {
-                    $class: 'Board',
-                    dataCursor: DataCursorHelper.toJSON(board.dataCursor),
-                    options: {
-                        containerId: board.container.id,
-                        dataPool: board.options.dataPool,
-                        guiEnabled: board.guiEnabled,
-                        layouts: layouts,
-                        componentOptions: board.options.componentOptions
-                    }
-                };
             }
             /**
              * Convert the current state of board's options into JSON. The function does
@@ -13776,39 +12663,12 @@
                 },
                 components: []
             };
-            /* *
-             *
-             *  Functions
-             *
-             * */
-            /**
-             * Import layouts from the local storage.
-             *
-             * @returns Returns the Dashboard instance or undefined.
-             */
-            function importLocal() {
-                const dashboardJSON = localStorage.getItem(
-                // Dashboard.prefix + this.id,
-                Globals.classNamePrefix + '1' // Temporary for demo test
-                );
-                if (dashboardJSON) {
-                    try {
-                        return Serializable
-                            .fromJSON(JSON.parse(dashboardJSON));
-                    }
-                    catch (e) {
-                        throw new Error('' + e);
-                    }
-                }
-            }
-            Board.importLocal = importLocal;
         })(Board || (Board = {}));
         /* *
          *
          *  Registry
          *
          * */
-        Serializable.registerClassPrototype('Board', Board.prototype);
         ComponentRegistry.registerComponent('HTML', HTMLComponent);
         /* *
          *
@@ -13924,41 +12784,45 @@
                     return;
                 }
                 const component = this;
-                const { dataGrid, board } = component;
+                const { grid, board } = component;
                 const highlightOptions = this.sync.syncConfig.highlight;
                 const groupKey = highlightOptions.group ?
                     ':' + highlightOptions.group : '';
-                if (!board || !dataGrid || !highlightOptions?.enabled) {
+                if (!board || !grid || !highlightOptions?.enabled) {
                     return;
                 }
                 const { dataCursor: cursor } = board;
+                const table = this.getFirstConnector()?.getTable(component.dataTableKey);
                 const onCellHover = (e) => {
-                    const table = this.getFirstConnector()?.table;
                     if (table) {
                         const cell = e.target;
                         cursor.emitCursor(table, {
                             type: 'position',
                             row: cell.row.id,
                             column: cell.column.id,
-                            state: 'dataGrid.hoverRow' + groupKey
+                            state: 'point.mouseOver' + groupKey,
+                            sourceId: this.id
                         });
                     }
                 };
-                const onCellMouseOut = () => {
-                    const table = this.getFirstConnector()?.table;
+                const onCellMouseOut = (e) => {
                     if (table) {
+                        const cell = e.target;
                         cursor.emitCursor(table, {
                             type: 'position',
-                            state: 'dataGrid.hoverOut' + groupKey
+                            row: cell.row.id,
+                            column: cell.column.id,
+                            state: 'point.mouseOut' + groupKey,
+                            sourceId: this.id
                         });
                     }
                 };
-                addEvent(dataGrid, 'cellMouseOver', onCellHover);
-                addEvent(dataGrid, 'cellMouseOut', onCellMouseOut);
+                addEvent(grid, 'cellMouseOver', onCellHover);
+                addEvent(grid, 'cellMouseOut', onCellMouseOut);
                 // Return a function that calls the callbacks
                 return function () {
-                    removeEvent(dataGrid.container, 'cellMouseOver', onCellHover);
-                    removeEvent(dataGrid.container, 'cellMouseOut', onCellMouseOut);
+                    removeEvent(grid.container, 'cellMouseOver', onCellHover);
+                    removeEvent(grid.container, 'cellMouseOut', onCellMouseOut);
                 };
             },
             handler: function () {
@@ -13974,14 +12838,16 @@
                 if (!highlightOptions?.enabled) {
                     return;
                 }
+                const table = component.getFirstConnector()?.getTable(component.dataTableKey);
                 const handleCursor = (e) => {
                     const cursor = e.cursor;
-                    if (cursor.type !== 'position') {
+                    if (cursor.sourceId === component.id ||
+                        cursor.type !== 'position') {
                         return;
                     }
                     const { row, column } = cursor;
-                    const { dataGrid } = component;
-                    const viewport = dataGrid?.viewport;
+                    const { grid } = component;
+                    const viewport = grid?.viewport;
                     if (row === void 0 || !viewport) {
                         return;
                     }
@@ -13992,14 +12858,14 @@
                     if (highlightOptions.autoScroll) {
                         viewport.scrollToRow(rowIndex);
                     }
-                    dataGrid.syncRow(rowIndex);
-                    dataGrid.syncColumn(column);
+                    grid.syncRow(rowIndex);
+                    grid.syncColumn(column);
                 };
-                const handleCursorOut = () => {
-                    const { dataGrid } = component;
-                    if (dataGrid) {
-                        dataGrid.syncColumn();
-                        dataGrid.syncRow();
+                const handleCursorOut = (e) => {
+                    const { grid } = component;
+                    if (grid && e.cursor.sourceId !== component.id) {
+                        grid.syncColumn();
+                        grid.syncRow();
                     }
                 };
                 const registerCursorListeners = () => {
@@ -14007,7 +12873,6 @@
                     if (!cursor) {
                         return;
                     }
-                    const table = component.connectorHandlers?.[0]?.connector?.table;
                     if (!table) {
                         return;
                     }
@@ -14015,11 +12880,10 @@
                     cursor.addListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
                 };
                 const unregisterCursorListeners = () => {
-                    const cursor = board.dataCursor;
-                    const table = component.connectorHandlers?.[0]?.connector?.table;
                     if (!table) {
                         return;
                     }
+                    const cursor = board.dataCursor;
                     cursor.removeListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
                     cursor.removeListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
                 };
@@ -14197,12 +13061,13 @@
                                     propertyPath: ['gridOptions', 'caption', 'text'],
                                     type: 'input'
                                 }, {
-                                    name: 'Columns distribution',
+                                    name: 'Columns resizing mode',
                                     propertyPath: [
                                         'gridOptions',
                                         'rendering',
                                         'columns',
-                                        'distribution'
+                                        'resizing',
+                                        'mode'
                                     ],
                                     type: 'select',
                                     selectOptions: [{
@@ -14220,15 +13085,18 @@
                                         'gridOptions',
                                         'columnDefaults',
                                         'cells',
-                                        'editable'
+                                        'editMode',
+                                        'enabled'
                                     ],
                                     type: 'toggle'
                                 }, {
                                     name: 'Resizable columns',
                                     propertyPath: [
                                         'gridOptions',
-                                        'columnDefaults',
-                                        'resizing'
+                                        'rendering',
+                                        'columns',
+                                        'resizing',
+                                        'enabled'
                                     ],
                                     type: 'toggle'
                                 }, {
@@ -14332,33 +13200,6 @@
              */
             static get DataGridNamespace() {
                 return DataGridComponent.GridNamespace;
-            }
-            /* *
-             *
-             *  Static Functions
-             *
-             * */
-            /**
-             * Function to create a Grid Component from JSON.
-             *
-             * @param json
-             * The JSON to create the Grid Component from.
-             *
-             * @param cell
-             * The cell to create the Grid Component in.
-             *
-             * @returns
-             * The Grid Component created from the JSON.
-             */
-            static fromJSON(json, cell) {
-                const options = json.options;
-                const gridOptions = JSON.parse((options.gridOptions || options.dataGridOptions) ?? '');
-                const component = new DataGridComponent(cell, merge(options, { gridOptions }));
-                component.emit({
-                    type: 'fromJSON',
-                    json
-                });
-                return component;
             }
             /* *
              *
@@ -14914,7 +13755,8 @@
                                         type: 'position',
                                         row: presTable.getOriginalRowIndex(this.index),
                                         column: columnName,
-                                        state: 'point.mouseOver' + groupKey
+                                        state: 'point.mouseOver' + groupKey,
+                                        sourceId: component.id
                                     });
                                 },
                                 mouseOut: function () {
@@ -14922,7 +13764,8 @@
                                         type: 'position',
                                         row: presTable.getOriginalRowIndex(this.index),
                                         column: columnName,
-                                        state: 'point.mouseOut' + groupKey
+                                        state: 'point.mouseOut' + groupKey,
+                                        sourceId: component.id
                                     });
                                 }
                             }
@@ -15025,7 +13868,8 @@
                 const handleCursor = (e) => {
                     const highlightOptions = this.sync
                         .syncConfig.highlight;
-                    if (!highlightOptions.enabled) {
+                    if (!highlightOptions.enabled ||
+                        e.cursor.sourceId === component.id) {
                         return;
                     }
                     const point = getHoveredPoint(e);
@@ -15064,7 +13908,8 @@
                     const highlightOptions = this.sync
                         .syncConfig.highlight;
                     if (!chart || !chart.series.length ||
-                        !highlightOptions.enabled) {
+                        !highlightOptions.enabled ||
+                        e.cursor.sourceId === component.id) {
                         return;
                     }
                     const point = getHoveredPoint(e);
@@ -15137,9 +13982,7 @@
                             continue;
                         }
                         cursor.addListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
-                        cursor.addListener(table.id, 'dataGrid.hoverRow' + groupKey, handleCursor);
                         cursor.addListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
-                        cursor.addListener(table.id, 'dataGrid.hoverOut' + groupKey, handleCursorOut);
                     }
                 };
                 const unregisterCursorListeners = () => {
@@ -15154,9 +13997,7 @@
                             continue;
                         }
                         cursor.removeListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
-                        cursor.removeListener(table.id, 'dataGrid.hoverRow' + groupKey, handleCursor);
                         cursor.removeListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
-                        cursor.removeListener(table.id, 'dataGrid.hoverOut' + groupKey, handleCursorOut);
                     }
                 };
                 if (board) {
@@ -15594,37 +14435,6 @@
          *
          */
         class HighchartsComponent extends Component {
-            /* *
-             *
-             *  Static functions
-             *
-             * */
-            /**
-             * Creates component from JSON.
-             *
-             * @param json
-             * Set of component options, used for creating the Highcharts component.
-             *
-             * @returns
-             * Highcharts component based on config from JSON.
-             *
-             * @private
-             */
-            static fromJSON(json, cell) {
-                const options = json.options;
-                const chartOptions = JSON.parse(json.options.chartOptions || '{}');
-                /// const store = json.store ? DataJSON.fromJSON(json.store) : void 0;
-                const component = new HighchartsComponent(cell, merge(options, {
-                    chartOptions
-                    // Highcharts, // TODO: Find a solution
-                    // store: store instanceof DataConnector ? store : void 0
-                }));
-                component.emit({
-                    type: 'fromJSON',
-                    json
-                });
-                return component;
-            }
             /* *
              *
              *  Constructor
@@ -16086,34 +14896,6 @@
                 return options;
             }
             /**
-             * Converts the class instance to a class JSON.
-             *
-             * @returns
-             * Class JSON of this Component instance.
-             *
-             * @private
-             */
-            toJSON() {
-                const chartOptions = JSON.stringify(this.options.chartOptions), chartConstructor = this.options.chartConstructor || 'chart';
-                this.registerChartEvents();
-                const base = super.toJSON();
-                const json = {
-                    ...base,
-                    type: 'Highcharts',
-                    options: {
-                        ...base.options,
-                        chartOptions,
-                        chartConstructor,
-                        // TODO: may need to handle callback functions
-                        // Maybe have a sync.toJSON()
-                        type: 'Highcharts',
-                        sync: {}
-                    }
-                };
-                this.emit({ type: 'toJSON', json });
-                return json;
-            }
-            /**
              * Get the HighchartsComponent component's options.
              * @returns
              * HighchartsComponent component's options.
@@ -16486,7 +15268,7 @@
 
         return MathFormula;
     });
-    _registerModule(_modules, 'Data/Formula/FormulaProcessor.js', [_modules['Data/Formula/FormulaTypes.js']], function (FormulaTypes) {
+    _registerModule(_modules, 'Data/Formula/FormulaProcessor.js', [_modules['Data/Formula/FormulaTypes.js'], _modules['Core/Utilities.js']], function (FormulaTypes, U) {
         /* *
          *
          *  (c) 2009-2025 Highsoft AS
@@ -16500,6 +15282,7 @@
          *
          * */
         const { isFormula, isFunction, isOperator, isRange, isReference, isValue } = FormulaTypes;
+        const { defined } = U;
         /* *
          *
          *  Constants
@@ -16765,13 +15548,56 @@
                     const result = table.modified.getCell(columnName, reference.row);
                     return isValue(result) ? result : NaN;
                 }
-                return isValue(cell) ? cell : NaN;
+                if (isValue(cell)) {
+                    return reference.isNegative ? -cell : cell;
+                }
+                return NaN;
             }
             return NaN;
         }
         /**
+         * Calculates a value based on the two top values and the related operator.
+         *
+         * Used to properly process the formula's values based on its operators.
+         *
+         * @private
+         * @function Highcharts.applyOperator
+         *
+         * @param {Array<Highcharts.Value>} values
+         * Processed formula values.
+         *
+         * @param {Array<Highcharts.Operator>} operators
+         * Processed formula operators.
+         */
+        function applyOperator(values, operators) {
+            if (values.length < 2 || operators.length < 1) {
+                values.push(NaN);
+            }
+            const secondValue = values.pop();
+            const firstValue = values.pop();
+            const operator = operators.pop();
+            if (!defined(secondValue) || !defined(firstValue) || !defined(operator)) {
+                values.push(NaN);
+            }
+            else {
+                values.push(basicOperation(operator, firstValue, secondValue));
+            }
+        }
+        /**
          * Processes a formula array on the given table. If the formula does not contain
          * references or ranges, then no table has to be provided.
+         *
+         * Performs formulas considering the operators precedence.
+         *
+         * // Example of the `2 * 3 + 4` formula:
+         * 2 -> values: [2], operators: []
+         * * -> values: [2], operators: [*]
+         * 3 -> values: [2, 3], operators: [*]
+         * // Since the higher precedence operator exists (* > +), perform it first.
+         * + -> values: [6], operators: [+]
+         * 4 -> values: [6, 4], operators: [+]
+         * // When non-higher precedence operators remain, perform rest calculations.
+         * -> values: [10], operators: []
          *
          * @private
          * @function Highcharts.processFormula
@@ -16786,61 +15612,68 @@
          * Result value of the process. `NaN` indicates an error.
          */
         function processFormula(formula, table) {
-            let x;
-            for (let i = 0, iEnd = formula.length, item, operator, result, y; i < iEnd; ++i) {
-                item = formula[i];
-                // Remember operator for operation on next item
+            // Keeps all the values to calculate them in a proper priority, based on the
+            // given operators.
+            const values = [];
+            // Keeps all the operators to calculate the values above, following the
+            // proper priority.
+            const operators = [];
+            // Indicates if the next item is a value (not an operator).
+            let expectingValue = true;
+            for (let i = 0, iEnd = formula.length; i < iEnd; ++i) {
+                const item = formula[i];
                 if (isOperator(item)) {
-                    operator = item;
-                    continue;
-                }
-                // Next item is a value
-                if (isValue(item)) {
-                    y = item;
-                    // Next item is a formula and needs to get processed first
-                }
-                else if (isFormula(item)) {
-                    y = processFormula(formula, table);
-                    // Next item is a function call and needs to get processed first
-                }
-                else if (isFunction(item)) {
-                    result = processFunction(item, table);
-                    y = (isValue(result) ? result : NaN); // Arrays are not allowed here
-                    // Next item is a reference and needs to get resolved
-                }
-                else if (isReference(item)) {
-                    y = (table && getReferenceValue(item, table));
-                }
-                // If we have a next value, lets do the operation
-                if (typeof y !== 'undefined') {
-                    // Next value is our first value
-                    if (typeof x === 'undefined') {
-                        if (operator) {
-                            x = basicOperation(operator, 0, y);
-                        }
-                        else {
-                            x = y;
-                        }
-                        // Fail fast if no operator available
-                    }
-                    else if (!operator) {
-                        return NaN;
-                        // Regular next value
+                    if (expectingValue && item === '-') {
+                        // Split the negative values to be handled as a binary
+                        // operation if the next item is a value.
+                        values.push(0);
+                        operators.push('-');
+                        expectingValue = true;
                     }
                     else {
-                        const operator2 = formula[i + 1];
-                        if (isOperator(operator2) &&
-                            operatorPriority[operator2] > operatorPriority[operator]) {
-                            y = basicOperation(operator2, y, processFormula(formula.slice(i + 2)));
-                            i = iEnd;
+                        // Perform if the higher precedence operator exist.
+                        while (operators.length &&
+                            operatorPriority[operators[operators.length - 1]] >=
+                                operatorPriority[item]) {
+                            applyOperator(values, operators);
                         }
-                        x = basicOperation(operator, x, y);
+                        operators.push(item);
+                        expectingValue = true;
                     }
-                    operator = void 0;
-                    y = void 0;
+                    continue;
+                }
+                let value;
+                // Assign the proper value, starting from the most common types.
+                if (isValue(item)) {
+                    value = item;
+                }
+                else if (isReference(item)) {
+                    value = table ? getReferenceValue(item, table) : NaN;
+                }
+                else if (isFunction(item)) {
+                    const result = processFunction(item, table);
+                    value = isValue(result) ? result : NaN;
+                }
+                else if (isFormula(item)) {
+                    value = processFormula(item, table);
+                }
+                if (typeof value !== 'undefined') {
+                    values.push(value);
+                    expectingValue = false;
+                }
+                else {
+                    return NaN;
                 }
             }
-            return isValue(x) ? x : NaN;
+            // Handle the remaining operators that weren't taken into consideration, due
+            // to non-higher precedence.
+            while (operators.length) {
+                applyOperator(values, operators);
+            }
+            if (values.length !== 1) {
+                return NaN;
+            }
+            return values[0];
         }
         /**
          * Process a function on the given table. If the arguments do not contain
@@ -18250,11 +17083,12 @@
              * others series in a stack. The shadow can be an object configuration
              * containing `color`, `offsetX`, `offsetY`, `opacity` and `width`.
              *
-             * @sample highcharts/chart/seriesgroupshadow/ Shadow
+             * @sample highcharts/chart/seriesgroupshadow/
+             *         Shadow
              *
              * @type      {boolean|Highcharts.ShadowOptionsObject}
              * @default   false
-             * @apioption chart.shadow
+             * @apioption chart.seriesGroupShadow
              */
             /**
              * Whether to apply a drop shadow to the outer chart area. Requires
@@ -18465,7 +17299,7 @@
              * Chart zooming options.
              * @since 10.2.1
              *
-             * @sample     highcharts/plotoptions/sankey-inverted
+             * @sample     highcharts/plotoptions/sankey-node-color
              *             Zooming in sankey series
              * @sample     highcharts/series-treegraph/link-types
              *             Zooming in treegraph series
@@ -18913,7 +17747,7 @@
             update(options = {}) {
                 this.dTLCache = {};
                 this.options = options = merge(true, this.options, options);
-                const { timezoneOffset, useUTC } = options;
+                const { timezoneOffset, useUTC, locale } = options;
                 // Allow using a different Date class
                 this.Date = options.Date || win.Date || Date;
                 // Assign the time zone. Handle the legacy, deprecated `useUTC` option.
@@ -18933,6 +17767,10 @@
                 this.variableTimezone = timezone !== 'UTC' &&
                     timezone?.indexOf('Etc/GMT') !== 0;
                 this.timezone = timezone;
+                // Update locale.
+                if (this.lang && locale) {
+                    this.lang.locale = locale;
+                }
                 // Assign default time formats from locale strings
                 ['months', 'shortMonths', 'weekdays', 'shortWeekdays'].forEach((name) => {
                     const isMonth = /months/i.test(name), isShort = /short/.test(name), options = {
@@ -21512,6 +20350,10 @@
                         /**
                          * @ignore
                          */
+                        color: "#333333" /* Palette.neutralColor80 */,
+                        /**
+                         * @ignore
+                         */
                         fontSize: '0.8em',
                         /**
                          * @ignore
@@ -22874,7 +21716,7 @@
             // The sub expression regex is the same as the top expression regex,
             // but except parens and block helpers (#), and surrounded by parens
             // instead of curly brackets.
-            subRegex = /\(([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || defaultOptions.lang, time = owner?.time || defaultTime, numberFormatter = owner?.numberFormatter || numberFormat;
+            subRegex = /\(([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || defaultOptions.lang, time = owner?.time || defaultTime, numberFormatter = owner?.numberFormatter || numberFormat.bind(owner);
             /*
              * Get a literal or variable value inside a template expression. May be
              * extended with other types like string or null if needed, but keep it
@@ -23009,9 +21851,11 @@
                         [expression] : expression.split(':');
                     replacement = resolveProperty(valueAndFormat.shift() || '');
                     // Format the replacement
-                    if (valueAndFormat.length && typeof replacement === 'number') {
+                    const isFloat = replacement % 1 !== 0;
+                    if (typeof replacement === 'number' &&
+                        (valueAndFormat.length || isFloat)) {
                         const segment = valueAndFormat.join(':');
-                        if (floatRegex.test(segment)) { // Float
+                        if (floatRegex.test(segment) || isFloat) { // Float
                             const decimals = parseInt((segment.match(decRegex) || ['', '-1'])[1], 10);
                             if (replacement !== null) {
                                 replacement = numberFormatter(replacement, decimals, lang.decimalPoint, segment.indexOf(',') > -1 ? lang.thousandsSep : '');
@@ -23106,8 +21950,7 @@
                 options.useGrouping = false;
             }
             const hasSeparators = thousandsSep || decimalPoint, locale = hasSeparators ?
-                'en' :
-                (this?.locale || lang.locale || pageLang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
+                'en' : (this?.locale || lang.locale || pageLang), cacheKey = JSON.stringify(options) + locale, nf = numberFormatCache[cacheKey] ?? (numberFormatCache[cacheKey] = new Intl.NumberFormat(locale, options));
             ret = nf.format(number);
             // If thousandsSep or decimalPoint are set, fall back to using English
             // format with string replacement for the separators.
@@ -23198,36 +22041,6 @@
          *
          */
         class KPIComponent extends Component {
-            /* *
-             *
-             *  Static functions
-             *
-             * */
-            /**
-             * Creates component from JSON.
-             *
-             * @param json
-             * Set of component options, used for creating the KPI component.
-             *
-             * @param cell
-             * Instance of cell, where component is attached.
-             *
-             * @returns
-             * KPI component based on config from JSON.
-             *
-             * @internal
-             */
-            static fromJSON(json, cell) {
-                const options = json.options;
-                const chartOptions = options.chartOptions && JSON.parse(options.chartOptions);
-                const subtitle = JSON.parse(options.subtitle || '{}');
-                const title = options.title && JSON.parse(options.title);
-                return new KPIComponent(cell, merge(options, {
-                    chartOptions,
-                    title,
-                    subtitle
-                }));
-            }
             /* *
              *
              *  Constructor
@@ -23565,34 +22378,6 @@
                     };
                 }
                 return options;
-            }
-            /**
-             * Converts the class instance to a class JSON.
-             *
-             * @returns
-             * Class JSON of this Component instance.
-             *
-             * @internal
-             */
-            toJSON() {
-                const base = super.toJSON();
-                const json = {
-                    ...base,
-                    type: 'KPI',
-                    options: {
-                        ...base.options,
-                        type: 'KPI',
-                        value: this.options.value,
-                        subtitle: JSON.stringify(this.options.subtitle),
-                        title: JSON.stringify(this.options.title),
-                        threshold: this.options.threshold,
-                        thresholdColors: this.options.thresholdColors,
-                        chartOptions: JSON.stringify(this.options.chartOptions),
-                        valueFormat: this.options.valueFormat
-                    }
-                };
-                this.emit({ type: 'toJSON', json: base });
-                return json;
             }
             /**
              * Get the KPI component's options.
@@ -24157,30 +22942,6 @@
          * Setup a component with data navigation.
          */
         class NavigatorComponent extends Component {
-            /* *
-             *
-             *  Static Functions
-             *
-             * */
-            /**
-             * Creates component from JSON.
-             *
-             * @param json
-             * Set of component options, used for creating the Highcharts component.
-             *
-             * @returns
-             * Highcharts component based on config from JSON.
-             *
-             * @private
-             */
-            static fromJSON(json, cell) {
-                const options = json.options, component = new NavigatorComponent(cell, options);
-                component.emit({
-                    type: 'fromJSON',
-                    json
-                });
-                return component;
-            }
             /* *
              *
              *  Constructor

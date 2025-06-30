@@ -28,41 +28,45 @@ const syncPair = {
             return;
         }
         const component = this;
-        const { dataGrid, board } = component;
+        const { grid, board } = component;
         const highlightOptions = this.sync.syncConfig.highlight;
         const groupKey = highlightOptions.group ?
             ':' + highlightOptions.group : '';
-        if (!board || !dataGrid || !highlightOptions?.enabled) {
+        if (!board || !grid || !highlightOptions?.enabled) {
             return;
         }
         const { dataCursor: cursor } = board;
+        const table = this.getFirstConnector()?.getTable(component.dataTableKey);
         const onCellHover = (e) => {
-            const table = this.getFirstConnector()?.table;
             if (table) {
                 const cell = e.target;
                 cursor.emitCursor(table, {
                     type: 'position',
                     row: cell.row.id,
                     column: cell.column.id,
-                    state: 'dataGrid.hoverRow' + groupKey
+                    state: 'point.mouseOver' + groupKey,
+                    sourceId: this.id
                 });
             }
         };
-        const onCellMouseOut = () => {
-            const table = this.getFirstConnector()?.table;
+        const onCellMouseOut = (e) => {
             if (table) {
+                const cell = e.target;
                 cursor.emitCursor(table, {
                     type: 'position',
-                    state: 'dataGrid.hoverOut' + groupKey
+                    row: cell.row.id,
+                    column: cell.column.id,
+                    state: 'point.mouseOut' + groupKey,
+                    sourceId: this.id
                 });
             }
         };
-        addEvent(dataGrid, 'cellMouseOver', onCellHover);
-        addEvent(dataGrid, 'cellMouseOut', onCellMouseOut);
+        addEvent(grid, 'cellMouseOver', onCellHover);
+        addEvent(grid, 'cellMouseOut', onCellMouseOut);
         // Return a function that calls the callbacks
         return function () {
-            removeEvent(dataGrid.container, 'cellMouseOver', onCellHover);
-            removeEvent(dataGrid.container, 'cellMouseOut', onCellMouseOut);
+            removeEvent(grid.container, 'cellMouseOver', onCellHover);
+            removeEvent(grid.container, 'cellMouseOut', onCellMouseOut);
         };
     },
     handler: function () {
@@ -78,14 +82,16 @@ const syncPair = {
         if (!highlightOptions?.enabled) {
             return;
         }
+        const table = component.getFirstConnector()?.getTable(component.dataTableKey);
         const handleCursor = (e) => {
             const cursor = e.cursor;
-            if (cursor.type !== 'position') {
+            if (cursor.sourceId === component.id ||
+                cursor.type !== 'position') {
                 return;
             }
             const { row, column } = cursor;
-            const { dataGrid } = component;
-            const viewport = dataGrid?.viewport;
+            const { grid } = component;
+            const viewport = grid?.viewport;
             if (row === void 0 || !viewport) {
                 return;
             }
@@ -96,14 +102,14 @@ const syncPair = {
             if (highlightOptions.autoScroll) {
                 viewport.scrollToRow(rowIndex);
             }
-            dataGrid.syncRow(rowIndex);
-            dataGrid.syncColumn(column);
+            grid.syncRow(rowIndex);
+            grid.syncColumn(column);
         };
-        const handleCursorOut = () => {
-            const { dataGrid } = component;
-            if (dataGrid) {
-                dataGrid.syncColumn();
-                dataGrid.syncRow();
+        const handleCursorOut = (e) => {
+            const { grid } = component;
+            if (grid && e.cursor.sourceId !== component.id) {
+                grid.syncColumn();
+                grid.syncRow();
             }
         };
         const registerCursorListeners = () => {
@@ -111,7 +117,6 @@ const syncPair = {
             if (!cursor) {
                 return;
             }
-            const table = component.connectorHandlers?.[0]?.connector?.table;
             if (!table) {
                 return;
             }
@@ -119,11 +124,10 @@ const syncPair = {
             cursor.addListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
         };
         const unregisterCursorListeners = () => {
-            const cursor = board.dataCursor;
-            const table = component.connectorHandlers?.[0]?.connector?.table;
             if (!table) {
                 return;
             }
+            const cursor = board.dataCursor;
             cursor.removeListener(table.id, 'point.mouseOver' + groupKey, handleCursor);
             cursor.removeListener(table.id, 'point.mouseOut' + groupKey, handleCursorOut);
         };

@@ -21,7 +21,7 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * @param {DataConnector.UserOptions} [options]
      * Options to use in the connector.
      *
-     * @param {Array<DataTable>} [dataTables]
+     * @param {Array<DataTableOptions>} [dataTables]
      * Multiple connector data tables options.
      */
     constructor(options?: DataConnector.UserOptions, dataTables?: Array<DataTableOptions>);
@@ -55,6 +55,11 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * It gets assigned when data polling starts.
      */
     pollingController?: AbortController;
+    /**
+     * Helper flag for detecting whether the data connector is loaded.
+     * @internal
+     */
+    loaded: boolean;
     /**
      * Method for adding metadata for a single column.
      *
@@ -151,7 +156,7 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * Order of columns.
      */
     setColumnOrder(columnNames: Array<string>): void;
-    setModifierOptions(modifierOptions?: DataModifierTypeOptions): Promise<this>;
+    setModifierOptions(modifierOptions?: DataModifierTypeOptions, tablesOptions?: DataTableOptions[]): Promise<this>;
     /**
      * Starts polling new data after the specific time span in milliseconds.
      *
@@ -160,7 +165,7 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      */
     startPolling(refreshTime?: number): void;
     /**
-     * Stops polling data.
+     * Stops polling data. Shouldn't be performed if polling is already stopped.
      */
     stopPolling(): void;
     /**

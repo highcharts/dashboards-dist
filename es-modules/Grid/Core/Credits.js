@@ -23,7 +23,7 @@ const { makeHTMLElement, setHTMLContent } = GridUtils;
  *
  * */
 /**
- * Represents a credits in the data grid.
+ * Represents a credits in the grid.
  */
 class Credits {
     /* *

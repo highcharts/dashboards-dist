@@ -59,45 +59,6 @@ AST.allowedReferences = [
 class HTMLComponent extends Component {
     /* *
      *
-     *  Static functions
-     *
-     * */
-    /**
-     * Creates component from JSON.
-     *
-     * @param json
-     * Set of component options, used for creating the HTML component.
-     *
-     * @param cell
-     * Instance of cell, where component is attached.
-     *
-     * @returns
-     * HTML component based on config from JSON.
-     *
-     * @internal
-     */
-    static fromJSON(json, cell) {
-        const options = json.options;
-        const elements = (json.elements ?
-            json.elements.map((el) => JSON.parse(el)) :
-            []);
-        /// const connector = (
-        //     json.connector ? DataJSON.fromJSON(json.connector) : void 0
-        // );
-        const component = new HTMLComponent(cell, merge(options, {
-            elements
-            /// connector: (
-            //   connector instanceof DataConnector ? connector : void 0
-            // )
-        }));
-        component.emit({
-            type: 'fromJSON',
-            json
-        });
-        return component;
-    }
-    /* *
-     *
      *  Constructor
      *
      * */
@@ -214,27 +175,6 @@ class HTMLComponent extends Component {
      */
     getElementsFromString(htmlString) {
         return new AST(htmlString).nodes;
-    }
-    /**
-     * Converts the class instance to a class JSON.
-     *
-     * @returns
-     * Class JSON of this Component instance.
-     *
-     * @internal
-     */
-    toJSON() {
-        const elements = (this.options.elements || [])
-            .map((el) => JSON.stringify(el));
-        const json = merge(super.toJSON(), {
-            elements,
-            options: this.options
-        });
-        this.emit({
-            type: 'toJSON',
-            json
-        });
-        return json;
     }
     /**
      * Get the HTML component's options.

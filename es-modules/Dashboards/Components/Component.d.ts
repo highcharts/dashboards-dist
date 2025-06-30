@@ -1,7 +1,5 @@
 import type Board from '../Board';
 import type { ComponentType, ComponentTypeRegistry } from './ComponentType';
-import type JSON from '../JSON';
-import type Serializable from '../Serializable';
 import type TextOptions from './TextOptions';
 import type SidebarPopup from '../EditMode/SidebarPopup';
 import type DataConnectorType from '../../Data/Connectors/DataConnectorType';
@@ -298,16 +296,6 @@ declare abstract class Component {
     /** @internal */
     emit<TEvent extends Component.EventTypes>(e: TEvent): void;
     /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @returns
-     * Class JSON of this Component instance.
-     *
-     * @internal
-     */
-    toJSON(): Component.JSON;
-    /**
      * Get the component's options.
      * @returns
      * The JSON of component's options.
@@ -324,15 +312,11 @@ interface Component {
 }
 declare namespace Component {
     type ConnectorOptions = ConnectorHandler.ConnectorOptions;
-    /** @internal */
-    interface JSON extends Serializable.JSON<string> {
-        options: ComponentOptionsJSON;
-    }
     /**
      * The basic events
      */
     /** @internal */
-    type EventTypes = SetConnectorsEvent | ResizeEvent | UpdateEvent | TableChangedEvent | LoadEvent | RenderEvent | JSONEvent | PresentationModifierEvent;
+    type EventTypes = SetConnectorsEvent | ResizeEvent | UpdateEvent | TableChangedEvent | LoadEvent | RenderEvent | PresentationModifierEvent;
     type SetConnectorsEvent = Event<'setConnectors' | 'afterSetConnectors', {}>;
     /** @internal */
     type ResizeEvent = Event<'resize', {
@@ -348,10 +332,6 @@ declare namespace Component {
     type LoadEvent = Event<'load' | 'afterLoad', {}>;
     /** @internal */
     type RenderEvent = Event<'render' | 'afterRender', {}>;
-    /** @internal */
-    type JSONEvent = Event<'toJSON' | 'fromJSON', {
-        json: Serializable.JSON<string>;
-    }>;
     /** @internal */
     type TableChangedEvent = Event<'tableChanged', {}>;
     /** @internal */
@@ -469,24 +449,6 @@ declare namespace Component {
              */
             enabled?: boolean;
         };
-    }
-    /**
-     * JSON compatible options for export
-     * @internal
-     *  */
-    interface ComponentOptionsJSON extends JSON.Object {
-        caption?: string;
-        className?: string;
-        renderTo?: string;
-        editableOptions?: JSON.Array<string>;
-        editableOptionsBindings?: EditableOptions.OptionsBindings & JSON.Object;
-        id: string;
-        parentCell?: Cell.JSON;
-        parentElement?: string;
-        style?: {};
-        sync?: Sync.RawOptionsRecord & JSON.Object;
-        title?: string;
-        type: keyof ComponentTypeRegistry;
     }
     /** @internal */
     type ConnectorTypes = DataConnectorType;

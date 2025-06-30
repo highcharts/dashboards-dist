@@ -1,7 +1,7 @@
 import type DataEvent from '../DataEvent';
 import type CSVConnectorOptions from './CSVConnectorOptions';
 import type Types from '../../Shared/Types';
-import type DataTable from '../DataTable';
+import type DataTableOptions from '../DataTableOptions';
 import CSVConverter from '../Converters/CSVConverter.js';
 import DataConnector from './DataConnector.js';
 /**
@@ -17,11 +17,11 @@ declare class CSVConnector extends DataConnector {
      * @param {CSVConnector.UserOptions} [options]
      * Options for the connector and converter.
      *
-     * @param {Array<DataTable>} [dataTables]
+     * @param {Array<DataTableOptions>} [dataTables]
      * Multiple connector data tables options.
      *
      */
-    constructor(options?: CSVConnector.UserOptions, dataTables?: Array<DataTable>);
+    constructor(options?: CSVConnector.UserOptions, dataTables?: Array<DataTableOptions>);
     /**
      * Options related to the handling of the CSV DataConnector,
      * i.e. source, fetching, polling

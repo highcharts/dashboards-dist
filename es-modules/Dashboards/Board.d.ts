@@ -1,17 +1,14 @@
 import type Component from './Components/Component';
 import type ComponentType from './Components/ComponentType';
 import type DataPoolOptions from '../Data/DataPoolOptions';
-import type JSON from './JSON';
 import type EditMode from './EditMode/EditMode';
 import type Fullscreen from './EditMode/Fullscreen';
 import Bindings from './Actions/Bindings.js';
 import DashboardsAccessibility from './Accessibility/DashboardsAccessibility.js';
 import DataCursor from '../Data/DataCursor.js';
-import DataCursorHelper from './SerializeHelper/DataCursorHelper.js';
 import DataPool from '../Data/DataPool.js';
 import Globals from './Globals.js';
 import Layout from './Layout/Layout.js';
-import Serializable from './Serializable.js';
 /**
  * Class that represents a dashboard.
  *
@@ -38,7 +35,7 @@ import Serializable from './Serializable.js';
  *      }]
  * });
  */
-declare class Board implements Serializable<Board, Board.JSON> {
+declare class Board {
     /**
      * Factory function for creating a new dashboard.
      *
@@ -218,38 +215,10 @@ declare class Board implements Serializable<Board, Board.JSON> {
      */
     destroy(): void;
     /**
-     * Export layouts to the local storage.
-     */
-    exportLocal(): void;
-    /**
-     * Import the dashboard's layouts from the local storage.
-     *
-     * @param id
-     * The id of the layout to import.
-     *
-     * @returns Returns the imported layout.
-     */
-    importLayoutLocal(id: string): Layout | undefined;
-    /**
      * Reflow the dashboard. Hide the toolbars and context pointer. Reflow the
      * layouts and its cells.
      */
     reflow(): void;
-    /**
-     * Converts the given JSON to a class instance.
-     *
-     * @param json
-     * JSON to deserialize as a class instance or object.
-     *
-     * @returns Returns the class instance or object.
-     */
-    fromJSON(json: Board.JSON): Board;
-    /**
-     * Converts the class instance to a class JSON.
-     *
-     * @returns Class JSON of this Dashboard instance.
-     */
-    toJSON(): Board.JSON;
     /**
      * Convert the current state of board's options into JSON. The function does
      * not support converting functions or events into JSON object.
@@ -320,41 +289,9 @@ declare namespace Board {
          **/
         componentOptions?: Partial<Component.Options>;
         /**
-         * A list of serialized layouts to add to the board.
-         * @internal
-         **/
-        layoutsJSON?: Array<Layout.JSON>;
-    }
-    /**
-     * Serialized options to configure the board.
-     * @internal
-     **/
-    interface OptionsJSON extends JSON.Object {
-        /**
-         * General options for the components in JSON format.
-         **/
-        componentOptions?: Partial<Component.ComponentOptionsJSON>;
-        /**
-         * List of components to add to the board in JSON format.
-         **/
-        components?: Array<Component.ComponentOptionsJSON>;
-        /**
-         * Id of the container to which the board is added.
-         **/
-        containerId: string;
-        /**
-         * Data pool with all of the connectors.
-         **/
-        dataPool?: DataPoolOptions & JSON.Object;
-        /**
-         * An array of serialized layouts options and their elements to add to
-         * the board.
-         **/
-        layouts: Array<Layout.JSON>;
-        /**
-         * Whether the GUI is enabled or not.
-         **/
-        guiEnabled?: boolean;
+         * Events related to the board.
+         */
+        events?: BoardEvents;
     }
     interface GUIOptions {
         /**
@@ -375,26 +312,23 @@ declare namespace Board {
          **/
         layouts: Array<Layout.Options>;
     }
-    /** @internal */
-    interface JSON extends Serializable.JSON<'Board'> {
+    /**
+     * Events related to the board.
+     */
+    interface BoardEvents {
         /**
-         * Serialized data cursor of the board.
-         **/
-        dataCursor: DataCursorHelper.JSON;
-        /**
-         * Serialized options to configure the board.
-         **/
-        options: OptionsJSON;
+         * Callback function to be called after the board and all components are
+         * initialized.
+         */
+        mounted: MountedEventCallback;
     }
+    /**
+     * Callback function to be called when a board event is triggered.
+     */
+    type MountedEventCallback = (this: Board) => void;
     /**
      * Global dashboard settings.
      */
     const defaultOptions: Board.Options;
-    /**
-     * Import layouts from the local storage.
-     *
-     * @returns Returns the Dashboard instance or undefined.
-     */
-    function importLocal(): (Board | undefined);
 }
 export default Board;

@@ -572,38 +572,6 @@ class Component {
         fireEvent(this, e.type, e);
     }
     /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @returns
-     * Class JSON of this Component instance.
-     *
-     * @internal
-     */
-    toJSON() {
-        const dimensions = {
-            width: 0,
-            height: 0
-        };
-        objectEach(this.dimensions, function (value, key) {
-            if (value === null) {
-                return;
-            }
-            dimensions[key] = value;
-        });
-        const json = {
-            $class: this.options.type,
-            options: {
-                renderTo: this.options.renderTo,
-                parentElement: this.parentElement.id,
-                dimensions,
-                id: this.id,
-                type: this.type
-            }
-        };
-        return json;
-    }
-    /**
      * Get the component's options.
      * @returns
      * The JSON of component's options.

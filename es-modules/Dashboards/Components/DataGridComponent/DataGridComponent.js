@@ -39,33 +39,6 @@ class DataGridComponent extends Component {
     }
     /* *
      *
-     *  Static Functions
-     *
-     * */
-    /**
-     * Function to create a Grid Component from JSON.
-     *
-     * @param json
-     * The JSON to create the Grid Component from.
-     *
-     * @param cell
-     * The cell to create the Grid Component in.
-     *
-     * @returns
-     * The Grid Component created from the JSON.
-     */
-    static fromJSON(json, cell) {
-        const options = json.options;
-        const gridOptions = JSON.parse((options.gridOptions || options.dataGridOptions) ?? '');
-        const component = new DataGridComponent(cell, merge(options, { gridOptions }));
-        component.emit({
-            type: 'fromJSON',
-            json
-        });
-        return component;
-    }
-    /* *
-     *
      *  Properties
      *
      * */

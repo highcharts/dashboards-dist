@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Math 3.3.0 (2025-05-15)
+ * @license Highcharts Dashboards Math 3.4.0 (2025-06-30)
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -33,7 +33,7 @@
             }
         }
     }
-    _registerModule(_modules, 'Data/Formula/FormulaParser.js', [], function () {
+    _registerModule(_modules, 'Data/Formula/FormulaParser.js', [_modules['Core/Utilities.js']], function (U) {
         /* *
          *
          *  (c) 2009-2025 Highsoft AS
@@ -46,6 +46,7 @@
          *  - Sophie Bremer
          *
          * */
+        const { isString } = U;
         /* *
          *
          *  Constants
@@ -326,6 +327,20 @@
             return args;
         }
         /**
+         * Checks if there's one of the following operator before the negative number
+         * value: '*', '/' or '^'.
+         *
+         * Used to properly indicate a negative value reference or negate a directly
+         * passed number value.
+         */
+        function negativeReference(formula) {
+            const formulaLength = formula.length;
+            const priorFormula = formula[formulaLength - 2];
+            return (formula[formulaLength - 1] === '-' &&
+                isString(priorFormula) &&
+                !!priorFormula.match(/\*|\/|\^/));
+        }
+        /**
          * Converts a spreadsheet formula string into a formula array. Throws a
          * `FormulaParserError` when the string can not be parsed.
          *
@@ -368,6 +383,10 @@
                     if (rowRelative) {
                         reference.rowRelative = true;
                     }
+                    if (negativeReference(formula)) {
+                        formula.pop();
+                        reference.isNegative = true;
+                    }
                     formula.push(reference);
                     next = next.substring(match[0].length).trim();
                     continue;
@@ -392,6 +411,10 @@
                     if (rowRelative) {
                         reference.rowRelative = true;
                     }
+                    if (negativeReference(formula)) {
+                        formula.pop();
+                        reference.isNegative = true;
+                    }
                     formula.push(reference);
                     next = next.substring(match[0].length).trim();
                     continue;
@@ -413,7 +436,15 @@
                 // Check for a number value
                 match = next.match(decimalRegExp);
                 if (match) {
-                    formula.push(parseFloat(match[0]));
+                    let number = parseFloat(match[0]);
+                    // If the current value is multiplication-related and the previous
+                    // one is a minus sign, set the current value to negative and remove
+                    // the minus sign.
+                    if (negativeReference(formula)) {
+                        formula.pop();
+                        number = -number;
+                    }
+                    formula.push(number);
                     next = next.substring(match[0].length).trim();
                     continue;
                 }

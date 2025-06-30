@@ -50,6 +50,10 @@ class ColumnSorting {
             const viewport = this.column.viewport;
             const querying = viewport.grid.querying;
             const sortingController = querying.sorting;
+            // Do not call sorting when cell is currently edited and validated.
+            if (viewport.validator?.errorCell) {
+                return;
+            }
             const currentOrder = (sortingController.currentSorting?.columnId === this.column.id ?
                 sortingController.currentSorting.order : null) || 'none';
             const consequents = {

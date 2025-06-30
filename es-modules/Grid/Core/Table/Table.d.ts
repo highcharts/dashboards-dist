@@ -1,4 +1,4 @@
-import type TableRow from './Content/TableRow';
+import type TableRow from './Body/TableRow';
 import DataTable from '../../../Data/DataTable.js';
 import ColumnDistributionStrategy from './ColumnDistribution/ColumnDistributionStrategy.js';
 import Column from './Column.js';
@@ -162,7 +162,7 @@ declare class Table {
      */
     getWidthFromRatio(ratio: number): number;
     /**
-     * Destroys the data grid table.
+     * Destroys the grid table.
      */
     destroy(): void;
     /**

@@ -1,7 +1,7 @@
 import type DataEvent from '../DataEvent';
 import type Types from '../../Shared/Types';
 import type JSONConnectorOptions from './JSONConnectorOptions';
-import type DataTable from '../DataTable';
+import type DataTableOptions from '../DataTableOptions';
 import DataConnector from './DataConnector.js';
 import JSONConverter from '../Converters/JSONConverter.js';
 /**
@@ -17,10 +17,10 @@ declare class JSONConnector extends DataConnector {
      * @param {JSONConnector.UserOptions} [options]
      * Options for the connector and converter.
      *
-     * @param {Array<DataTable>} [dataTables]
+     * @param {Array<DataTableOptions>} [dataTables]
      * Multiple connector data tables options.
      */
-    constructor(options?: JSONConnector.UserOptions, dataTables?: Array<DataTable>);
+    constructor(options?: JSONConnector.UserOptions, dataTables?: Array<DataTableOptions>);
     /**
      * Options related to the handling of the JSON DataConnector,
      * i.e. source, fetching, polling

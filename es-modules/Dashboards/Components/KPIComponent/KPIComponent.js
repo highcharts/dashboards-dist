@@ -42,36 +42,6 @@ const { createElement, css, defined, diffObjects, isArray, isNumber, merge, isFu
 class KPIComponent extends Component {
     /* *
      *
-     *  Static functions
-     *
-     * */
-    /**
-     * Creates component from JSON.
-     *
-     * @param json
-     * Set of component options, used for creating the KPI component.
-     *
-     * @param cell
-     * Instance of cell, where component is attached.
-     *
-     * @returns
-     * KPI component based on config from JSON.
-     *
-     * @internal
-     */
-    static fromJSON(json, cell) {
-        const options = json.options;
-        const chartOptions = options.chartOptions && JSON.parse(options.chartOptions);
-        const subtitle = JSON.parse(options.subtitle || '{}');
-        const title = options.title && JSON.parse(options.title);
-        return new KPIComponent(cell, merge(options, {
-            chartOptions,
-            title,
-            subtitle
-        }));
-    }
-    /* *
-     *
      *  Constructor
      *
      * */
@@ -407,34 +377,6 @@ class KPIComponent extends Component {
             };
         }
         return options;
-    }
-    /**
-     * Converts the class instance to a class JSON.
-     *
-     * @returns
-     * Class JSON of this Component instance.
-     *
-     * @internal
-     */
-    toJSON() {
-        const base = super.toJSON();
-        const json = {
-            ...base,
-            type: 'KPI',
-            options: {
-                ...base.options,
-                type: 'KPI',
-                value: this.options.value,
-                subtitle: JSON.stringify(this.options.subtitle),
-                title: JSON.stringify(this.options.title),
-                threshold: this.options.threshold,
-                thresholdColors: this.options.thresholdColors,
-                chartOptions: JSON.stringify(this.options.chartOptions),
-                valueFormat: this.options.valueFormat
-            }
-        };
-        this.emit({ type: 'toJSON', json: base });
-        return json;
     }
     /**
      * Get the KPI component's options.

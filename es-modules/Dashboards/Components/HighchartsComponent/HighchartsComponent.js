@@ -37,37 +37,6 @@ const { deepClone } = DU;
 class HighchartsComponent extends Component {
     /* *
      *
-     *  Static functions
-     *
-     * */
-    /**
-     * Creates component from JSON.
-     *
-     * @param json
-     * Set of component options, used for creating the Highcharts component.
-     *
-     * @returns
-     * Highcharts component based on config from JSON.
-     *
-     * @private
-     */
-    static fromJSON(json, cell) {
-        const options = json.options;
-        const chartOptions = JSON.parse(json.options.chartOptions || '{}');
-        /// const store = json.store ? DataJSON.fromJSON(json.store) : void 0;
-        const component = new HighchartsComponent(cell, merge(options, {
-            chartOptions
-            // Highcharts, // TODO: Find a solution
-            // store: store instanceof DataConnector ? store : void 0
-        }));
-        component.emit({
-            type: 'fromJSON',
-            json
-        });
-        return component;
-    }
-    /* *
-     *
      *  Constructor
      *
      * */
@@ -525,34 +494,6 @@ class HighchartsComponent extends Component {
             };
         }
         return options;
-    }
-    /**
-     * Converts the class instance to a class JSON.
-     *
-     * @returns
-     * Class JSON of this Component instance.
-     *
-     * @private
-     */
-    toJSON() {
-        const chartOptions = JSON.stringify(this.options.chartOptions), chartConstructor = this.options.chartConstructor || 'chart';
-        this.registerChartEvents();
-        const base = super.toJSON();
-        const json = {
-            ...base,
-            type: 'Highcharts',
-            options: {
-                ...base.options,
-                chartOptions,
-                chartConstructor,
-                // TODO: may need to handle callback functions
-                // Maybe have a sync.toJSON()
-                type: 'Highcharts',
-                sync: {}
-            }
-        };
-        this.emit({ type: 'toJSON', json });
-        return json;
     }
     /**
      * Get the HighchartsComponent component's options.

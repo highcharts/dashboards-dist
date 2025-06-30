@@ -114,6 +114,10 @@ declare class DataPool implements DataEvent.Emitter {
      */
     protected loadConnector(options: DataPoolConnectorOptions): Promise<DataConnectorType>;
     /**
+     * Cancels all data connectors pending requests.
+     */
+    cancelPendingRequests(): void;
+    /**
      * Registers a callback for a specific event.
      *
      * @function Highcharts.DataPool#on

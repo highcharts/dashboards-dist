@@ -70,7 +70,11 @@ class ConnectorHandler {
                 component.cell.setLoadingState();
             }
             const connector = await dataPool.getConnector(connectorId);
-            this.setConnector(connector);
+            // The connector shouldn't be set if the handler was destroyed
+            // during its creation.
+            if (!this.destroyed) {
+                this.setConnector(connector);
+            }
         }
         return component;
     }
@@ -257,6 +261,7 @@ class ConnectorHandler {
      * @internal
      */
     destroy() {
+        this.destroyed = true;
         this.removeConnectorAssignment();
         this.removeTableEvents();
     }

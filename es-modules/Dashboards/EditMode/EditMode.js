@@ -67,7 +67,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.3.0/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.4.0/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(
@@ -211,6 +211,13 @@ class EditMode {
                 editMode.setLayoutEvents(board.layouts[i]);
             }
         }
+        addEvent(document, 'keydown', (e) => {
+            if (e.key === 'Escape' && editMode.isActive()) {
+                editMode.hideToolbars(['cell', 'row']);
+                editMode.editCellContext = void 0;
+                editMode.resizer?.disableResizer();
+            }
+        });
         if (editMode.cellToolbar) {
             // Stop context detection when mouse on cell toolbar.
             addEvent(editMode.cellToolbar.container, 'mouseenter', function () {
@@ -257,9 +264,6 @@ class EditMode {
         if (board.options.gui) {
             this.setLayouts(board.options.gui);
         }
-        if (board.options.layoutsJSON && !board.layouts.length) {
-            this.setLayoutsFromJSON(board.options.layoutsJSON);
-        }
     }
     /**
      * Creates a new layouts and adds it to the dashboard based on the options.
@@ -273,24 +277,6 @@ class EditMode {
         const board = this.board, layoutsOptions = guiOptions.layouts;
         for (let i = 0, iEnd = layoutsOptions.length; i < iEnd; ++i) {
             board.layouts.push(new Layout(board, merge({}, guiOptions.layoutOptions, layoutsOptions[i])));
-        }
-    }
-    /**
-     * Set the layouts from JSON.
-     * @internal
-     *
-     * @param json
-     * An array of layout JSON objects.
-     *
-     */
-    setLayoutsFromJSON(json) {
-        const board = this.board;
-        let layout;
-        for (let i = 0, iEnd = json.length; i < iEnd; ++i) {
-            layout = Layout.fromJSON(json[i], board);
-            if (layout) {
-                board.layouts.push(layout);
-            }
         }
     }
     /**
@@ -637,7 +623,7 @@ class EditMode {
             if (!oldContextRow || oldContextRow !== editCellContext.row) {
                 if (oldContextRow) {
                     // Remove highlight from the previous row.
-                    oldContextRow.setHighlight();
+                    oldContextRow.setHighlight(true);
                 }
                 // Add highlight to the context row.
                 if (editCellContext.row) {

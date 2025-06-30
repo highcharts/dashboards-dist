@@ -23,18 +23,6 @@ declare class HighchartsComponent extends Component {
      */
     static defaultOptions: Partial<Component.Options> & Globals.DeepPartial<Options>;
     /**
-     * Creates component from JSON.
-     *
-     * @param json
-     * Set of component options, used for creating the Highcharts component.
-     *
-     * @returns
-     * Highcharts component based on config from JSON.
-     *
-     * @private
-     */
-    static fromJSON(json: HighchartsComponent.ClassJSON, cell: Cell): HighchartsComponent;
-    /**
      * A full set of chart options used by the chart.
      * [Highcharts API](https://api.highcharts.com/highcharts/)
      *
@@ -165,15 +153,6 @@ declare class HighchartsComponent extends Component {
     private registerChartEvents;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
     /**
-     * Converts the class instance to a class JSON.
-     *
-     * @returns
-     * Class JSON of this Component instance.
-     *
-     * @private
-     */
-    toJSON(): HighchartsComponent.ClassJSON;
-    /**
      * Get the HighchartsComponent component's options.
      * @returns
      * HighchartsComponent component's options.
@@ -196,26 +175,10 @@ declare namespace HighchartsComponent {
     /** @private */
     type ComponentType = HighchartsComponent;
     /** @private */
-    type ChartComponentEvents = JSONEvent | Component.EventTypes;
-    /** @private */
-    type JSONEvent = Component.Event<'toJSON' | 'fromJSON', {
-        json: ClassJSON;
-    }>;
+    type ChartComponentEvents = Component.EventTypes;
     /** @private */
     interface HCConnectorHandler extends ConnectorHandler {
         columnAssignment?: ColumnAssignmentOptions[];
-    }
-    /** @private */
-    interface OptionsJSON extends Component.ComponentOptionsJSON {
-        chartOptions?: string;
-        chartClassName?: string;
-        chartID?: string;
-        chartConstructor: ConstructorType;
-        type: 'Highcharts';
-    }
-    /** @private */
-    interface ClassJSON extends Component.JSON {
-        options: OptionsJSON;
     }
 }
 export default HighchartsComponent;

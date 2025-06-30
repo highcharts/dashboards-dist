@@ -1,7 +1,5 @@
 import type CSSJSONObject from '../CSSJSONObject';
-import type JSON from '../JSON';
 import type Layout from './Layout';
-import type Serializable from '../Serializable';
 import Globals from '../Globals.js';
 import Cell from './Cell.js';
 import GUIElement from './GUIElement.js';
@@ -10,8 +8,6 @@ import { HTMLDOMElement } from '../../Core/Renderer/DOMElementType';
  * @internal
  **/
 declare class Row extends GUIElement {
-    /** @internal */
-    static fromJSON(json: Row.JSON, layout?: Layout): (Row | undefined);
     static setContainerHeight(rowContainer: HTMLDOMElement, height?: number | string): void;
     /**
      * Constructs an instance of the Row class.
@@ -50,8 +46,6 @@ declare class Row extends GUIElement {
      * Set the row cells using cell options or cellClassName.
      */
     setCells(): void;
-    /** @internal */
-    setCellsFromJSON(json: Array<Cell.JSON>): void;
     /**
      * Add a new Cell instance to the row cells array.
      *
@@ -71,14 +65,6 @@ declare class Row extends GUIElement {
      */
     destroy(): void;
     /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @return {Row.JSON}
-     * Class JSON of this Row instance.
-     */
-    toJSON(): Row.JSON;
-    /**
      * Get the row's options.
      * @returns
      * The JSON of row's options.
@@ -94,17 +80,11 @@ declare class Row extends GUIElement {
     getVisibleCells(): Array<Cell>;
     protected changeVisibility(setVisible?: boolean, displayStyle?: string): void;
     show(): void;
-    setHighlight(): void;
+    setHighlight(remove?: boolean): void;
     getRowLevels(): Array<Row.RowLevel>;
     getRowLevelInfo(posY: number): Row.RowLevelInfo | undefined;
 }
 declare namespace Row {
-    /**
-     * @internal
-     **/
-    interface JSON extends Serializable.JSON<'Dashboards.Layout.Row'> {
-        options: OptionsJSON;
-    }
     /**
      * Options for the row.
      **/
@@ -152,19 +132,6 @@ declare namespace Row {
         /**
          * CSS styles for the row.
          **/
-        style?: CSSJSONObject;
-        /**
-         * @internal
-         **/
-        cellsJSON?: Array<Cell.JSON>;
-    }
-    /**
-     * @internal
-     **/
-    interface OptionsJSON extends JSON.Object {
-        containerId: string;
-        parentContainerId: string;
-        cells: Array<Cell.JSON>;
         style?: CSSJSONObject;
     }
     /**

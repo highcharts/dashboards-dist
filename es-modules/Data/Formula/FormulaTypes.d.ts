@@ -45,6 +45,7 @@ export interface Reference {
     row: number;
     rowRelative?: true;
     type: 'reference';
+    isNegative?: boolean;
 }
 /**
  * A term represents some form of processing into a value or is already a value.

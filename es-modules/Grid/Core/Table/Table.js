@@ -96,12 +96,14 @@ class Table {
         if (this.virtualRows) {
             tableElement.classList.add(Globals.getClassName('virtualization'));
         }
-        if (dgOptions?.columnDefaults?.resizing) {
+        if (!(dgOptions?.rendering?.columns?.resizing?.enabled === false ||
+            dgOptions?.columnDefaults?.resizing === false)) {
             this.columnsResizer = new ColumnsResizer(this);
         }
         if (customClassName) {
             tableElement.classList.add(...customClassName.split(/\s+/g));
         }
+        tableElement.classList.add(Globals.getClassName('scrollableContent'));
         // Load columns
         this.loadColumns();
         // Virtualization
@@ -111,7 +113,6 @@ class Table {
         // Add event listeners
         this.resizeObserver = new ResizeObserver(this.onResize);
         this.resizeObserver.observe(tableElement);
-        tableElement.classList.add(Globals.getClassName('scrollableContent'));
         this.tbodyElement.addEventListener('scroll', this.onScroll);
         this.tbodyElement.addEventListener('focus', this.onTBodyFocus);
     }
@@ -135,6 +136,7 @@ class Table {
         // this.footer = new TableFooter(this);
         // this.footer.render();
         this.rowsVirtualizer.initialRender();
+        fireEvent(this, 'afterInit');
     }
     /**
      * Sets the minimum height of the table body.
@@ -249,7 +251,7 @@ class Table {
         return this.tbodyElement.clientWidth * ratio;
     }
     /**
-     * Destroys the data grid table.
+     * Destroys the grid table.
      */
     destroy() {
         this.tbodyElement.removeEventListener('focus', this.onTBodyFocus);
@@ -320,6 +322,9 @@ class Table {
      * The ID of the row.
      */
     getRow(id) {
+        // TODO: Change `find` to a method using `vp.dataTable.getLocalRowIndex`
+        // and rows[presentationRowIndex - firstRowIndex]. Needs more testing,
+        // but it should be faster.
         return this.rows.find((row) => row.id === id);
     }
 }

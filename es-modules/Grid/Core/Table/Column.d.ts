@@ -1,9 +1,11 @@
 import type { IndividualColumnOptions } from '../Options';
 import type Cell from './Cell';
+import type CellContent from './CellContent/CellContent';
 import type HeaderCell from './Header/HeaderCell';
 import Table from './Table.js';
 import DataTable from '../../../Data/DataTable.js';
 import ColumnSorting from './Actions/ColumnSorting';
+import TableCell from './Body/TableCell';
 /**
  * Represents a column in the data grid.
  */
@@ -12,6 +14,10 @@ declare class Column {
      * The viewport (table) the column belongs to.
      */
     readonly viewport: Table;
+    /**
+     * Type of the data in the column.
+     */
+    readonly dataType: Column.DataType;
     /**
      * The cells of the column.
      */
@@ -57,6 +63,19 @@ declare class Column {
      * Loads the data of the column from the viewport's data table.
      */
     loadData(): void;
+    /**
+     * Creates a cell content instance.
+     *
+     * @param cell
+     * The cell that is to be edited.
+     *
+     */
+    createCellContent(cell: TableCell): CellContent;
+    /**
+     * Assumes the data type of the column based on the options or data in the
+     * column if not specified.
+     */
+    private assumeDataType;
     /**
      * Registers a cell in the column.
      *
@@ -104,5 +123,6 @@ declare class Column {
 }
 declare namespace Column {
     type Options = Omit<IndividualColumnOptions, 'id'>;
+    type DataType = 'string' | 'number' | 'boolean' | 'datetime';
 }
 export default Column;

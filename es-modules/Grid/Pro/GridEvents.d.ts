@@ -1,5 +1,5 @@
 import type Column from '../Core/Table/Column';
-import type TableCell from '../Core/Table/Content/TableCell';
+import type TableCell from '../Core/Table/Body/TableCell';
 import type HeaderCell from '../Core/Table/Header/HeaderCell';
 /**
  * Composition to add events to the TableCellClass methods.
@@ -47,8 +47,17 @@ export interface CellEvents {
     /**
      * Callback function to be called after the cell value is set (on init or
      * after editing).
+     *
+     * Use the `afterRender` event instead.
+     *
+     * @deprecated
      */
     afterSetValue?: CellEventCallback;
+    /**
+     * Callback function to be called after the cell value is set (on init or
+     * after editing).
+     */
+    afterRender?: CellEventCallback;
 }
 /**
  * Event callbacks option group related to the column.
@@ -69,6 +78,10 @@ export interface HeaderEvents {
      * Callback function to be called when the header is clicked.
      */
     click?: ColumnEventCallback;
+    /**
+     * Callback function to be called after the header is initialized.
+     */
+    afterRender?: ColumnEventCallback;
 }
 /**
  * Events options.
@@ -97,8 +110,27 @@ declare module '../Core/Options' {
     interface Options {
         /**
          * Events options triggered by the grid elements.
+         * @deprecated
          */
         events?: GridEvents;
+    }
+    interface ColumnCellOptions {
+        /**
+         * Events options triggered by the grid elements.
+         */
+        events?: CellEvents;
+    }
+    interface IndividualColumnOptions {
+        /**
+         * Events options triggered by the grid elements.
+         */
+        events?: ColumnEvents;
+    }
+    interface ColumnHeaderOptions {
+        /**
+         * Events options triggered by the grid elements.
+         */
+        events?: HeaderEvents;
     }
 }
 /**

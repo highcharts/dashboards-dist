@@ -1,7 +1,7 @@
 import type { CreditsOptions } from './Options';
 import type Grid from './Grid';
 /**
- * Represents a credits in the data grid.
+ * Represents a credits in the grid.
  */
 declare class Credits {
     /**

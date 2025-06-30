@@ -6,7 +6,8 @@
  *
  * License: www.highcharts.com/license
  */
-import type _Options from '../Grid/Core/Options.ts';
+import type _Options from '../Grid/Core/Options';
+import type * as H from '../Grid/Pro/highcharts';
 import AST from '../Core/Renderer/HTML/AST.js';
 import Templating from '../Core/Templating.js';
 import ColumnDistribution from '../Grid/Core/Table/ColumnDistribution/ColumnDistribution.js';
@@ -24,7 +25,8 @@ import Utilities from '../Core/Utilities.js';
 import Table from '../Grid/Core/Table/Table.js';
 import Column from '../Grid/Core/Table/Column.js';
 import HeaderCell from '../Grid/Core/Table/Header/HeaderCell.js';
-import TableCell from '../Grid/Core/Table/Content/TableCell.js';
+import TableCell from '../Grid/Core/Table/Body/TableCell.js';
+import CellRendererRegistry from '../Grid/Pro/CellRendering/CellRendererRegistry.js';
 import '../Data/Connectors/CSVConnector.js';
 import '../Data/Connectors/GoogleSheetsConnector.js';
 import '../Data/Connectors/HTMLTableConnector.js';
@@ -37,6 +39,12 @@ import '../Grid/Pro/GridEvents.js';
 import '../Grid/Pro/CellEditing/CellEditingComposition.js';
 import '../Grid/Pro/Dash3Compatibility.js';
 import '../Grid/Pro/Credits/CreditsProComposition.js';
+import '../Grid/Pro/CellRendering/Renderers/TextRenderer.js';
+import '../Grid/Pro/CellRendering/Renderers/CheckboxRenderer.js';
+import '../Grid/Pro/CellRendering/Renderers/SelectRenderer.js';
+import '../Grid/Pro/CellRendering/Renderers/TextInputRenderer.js';
+import '../Grid/Pro/CellRendering/Renderers/DateInputRenderer.js';
+import '../Grid/Pro/CellRendering/Renderers/SparklineRenderer.js';
 declare global {
     interface DataGridNamespace {
         win: typeof Globals.win;
@@ -74,6 +82,7 @@ declare global {
         TableCell: typeof TableCell;
         Templating: typeof Templating;
         merge: typeof Utilities.merge;
+        CellRendererRegistry: typeof CellRendererRegistry;
     }
     interface Window {
         /**
@@ -81,6 +90,7 @@ declare global {
          */
         DataGrid: DataGridNamespace;
         Grid: DataGridNamespace;
+        Highcharts?: typeof H;
     }
 }
 declare const G: DataGridNamespace;

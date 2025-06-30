@@ -18,7 +18,7 @@
 import DataConnector from './DataConnector.js';
 import GoogleSheetsConverter from '../Converters/GoogleSheetsConverter.js';
 import U from '../../Core/Utilities.js';
-const { merge, pick } = U;
+const { merge, pick, defined } = U;
 /* *
  *
  *  Functions
@@ -55,12 +55,16 @@ class GoogleSheetsConnector extends DataConnector {
      *
      * @param {GoogleSheetsConnector.UserOptions} [options]
      * Options for the connector and converter.
+     *
+     * @param {Array<DataTableOptions>} [dataTables]
+     * Multiple connector data tables options.
+     *
      */
     constructor(options, dataTables) {
         const mergedOptions = merge(GoogleSheetsConnector.defaultOptions, options);
         super(mergedOptions, dataTables);
-        this.converter = new GoogleSheetsConverter(mergedOptions);
-        this.options = mergedOptions;
+        this.options = defined(dataTables) ?
+            merge(mergedOptions, { dataTables }) : mergedOptions;
     }
     /* *
      *
@@ -77,7 +81,7 @@ class GoogleSheetsConnector extends DataConnector {
      * Same connector instance with modified table.
      */
     load(eventDetail) {
-        const connector = this, tables = connector.dataTables, { dataModifier, dataRefreshRate, enablePolling, googleAPIKey, googleSpreadsheetKey } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
+        const connector = this, tables = connector.dataTables, { dataModifier, dataRefreshRate, enablePolling, googleAPIKey, googleSpreadsheetKey, dataTables } = connector.options, url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, connector.options);
         connector.emit({
             type: 'load',
             detail: eventDetail,
@@ -93,21 +97,22 @@ class GoogleSheetsConnector extends DataConnector {
             if (isGoogleError(json)) {
                 throw new Error(json.error.message);
             }
-            this.initConverters(json, (key, table) => {
+            this.initConverters(json, (key) => {
                 const options = this.options;
+                const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                 // Takes over the connector default options.
-                const dataTableOptions = {
+                const mergedTableOptions = {
                     dataTableKey: key,
-                    firstRowAsNames: table.firstRowAsNames ??
+                    firstRowAsNames: tableOptions?.firstRowAsNames ??
                         options.firstRowAsNames,
-                    beforeParse: table.beforeParse ??
+                    beforeParse: tableOptions?.beforeParse ??
                         options.beforeParse
                 };
-                return new GoogleSheetsConverter(merge(this.options, dataTableOptions));
+                return new GoogleSheetsConverter(merge(this.options, mergedTableOptions));
             }, (converter, data) => {
                 converter.parse({ json: data });
             });
-            return connector.setModifierOptions(dataModifier);
+            return connector.setModifierOptions(dataModifier, dataTables);
         })
             .then(() => {
             connector.emit({

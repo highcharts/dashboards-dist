@@ -1,5 +1,5 @@
 import type { DataConnectorTypes } from './Connectors/DataConnectorType';
-import type DataTable from './DataTable';
+import type DataTableOptions from './DataTableOptions';
 /**
  * Options to initialize a data pool.
  */
@@ -53,36 +53,52 @@ export interface DataPoolConnectorOptions<T extends keyof DataConnectorTypes = k
      **/
     type: T;
     /**
-     * Allows defining multiple data tables within a single connector, primarily
-     * to apply multiple parser methods to each data table.
+     * Allows defining multiple data tables within a single connector to adjust
+     * options or data parsing in various ways based on the same data source.
      *
      * @example
      * dataPool: {
      *     connectors: [{
-     *         id: "json-connector",
-     *         type: "JSON",
+     *         id: 'data-connector',
+     *         type: 'JSON',
      *         options: {
-     *             firstRowAsNames: false,
-     *             columnNames: ["time", "open", "high", "low", "close", "volume"],
-     *             dataUrl: "https://demo-live-data.highcharts.com/aapl-ohlcv.json"
+     *             data: {
+     *                 kpis: { a: 1, b: 2 },
+     *                 more: {
+     *                     alpha: [1, 2, 3, 4, 5],
+     *                     beta: [10, 20, 30, 40, 50]
+     *                 }
+     *             }
      *         },
      *         dataTables: [{
-     *             id: "data-table-0",
-     *             beforeParse: function (payload) {
-     *                 return payload;
+     *             key: 'more',
+     *             beforeParse: function ({ more }) {
+     *                 const keys = Object.keys(more);
+     *                 return [
+     *                     keys,
+     *                     ...more[keys[0]].map((_, index) =>
+     *                         keys.map(key => more[key][index])
+     *                     )
+     *                 ];
      *             }
      *         }, {
-     *             id: "data-table-1",
-     *             beforeParse: function (payload) {
-     *                 payload.forEach((data, index) => {
-     *                     payload[index][3] = payload[index][3] -= 10;
-     *                 });
-     *                 return payload;
+     *             key: 'kpis',
+     *             firstRowAsNames: false,
+     *             columnNames: ['a', 'b'],
+     *             beforeParse: function ({ kpis }) {
+     *                 return [[kpis.a, kpis.b]];
+     *             },
+     *             dataModifier: {
+     *                 type: 'Math',
+     *                 columnFormulas: [{
+     *                     column: 'c',
+     *                     formula: 'A1+B1'
+     *                 }]
      *             }
      *         }]
      *     }]
      * }
      **/
-    dataTables?: Array<DataTable>;
+    dataTables?: Array<DataTableOptions>;
 }
 export default DataPoolOptions;

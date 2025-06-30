@@ -14,8 +14,6 @@
  *
  * */
 'use strict';
-import Bindings from '../Actions/Bindings.js';
-const { componentFromJSON } = Bindings;
 import EditGlobals from '../EditMode/EditGlobals.js';
 import Globals from '../Globals.js';
 import GUIElement from './GUIElement.js';
@@ -30,32 +28,6 @@ const { merge, fireEvent } = U;
  * @internal
  **/
 class Cell extends GUIElement {
-    /* *
-     *
-     *  Static Properties
-     *
-     * */
-    /** @internal */
-    static fromJSON(json, row) {
-        if (row) {
-            const options = json.options;
-            let id = options.containerId;
-            if (row.layout.copyId) {
-                id = id + '_' + row.layout.copyId;
-            }
-            return new Cell(row, {
-                id: id,
-                parentContainerId: (row.container && row.container.id) ||
-                    options.parentContainerId,
-                mountedComponentJSON: options.mountedComponentJSON,
-                style: options.style,
-                layoutJSON: options.layoutJSON,
-                width: options.width,
-                height: options.height
-            });
-        }
-        return void 0;
-    }
     /* *
      *
      *  Constructor
@@ -110,19 +82,9 @@ class Cell extends GUIElement {
                 height: cellHeight
             })
         });
-        // Mount component from JSON.
-        if (this.options.mountedComponentJSON) {
-            this.mountComponentFromJSON(this.options.mountedComponentJSON);
-        }
         // Nested layout
         if (this.options.layout) {
             this.setNestedLayout();
-        }
-        if (this.options.layoutJSON) {
-            const layout = this.row.layout, board = layout.board, layoutFromJSON = layout.constructor.fromJSON;
-            this.nestedLayout = layoutFromJSON(merge(this.options.layoutJSON, {
-                parentContainerId: this.options.id
-            }), board, this);
         }
     }
     /* *
@@ -143,29 +105,6 @@ class Cell extends GUIElement {
         }), this);
     }
     /**
-     * Mount component from JSON.
-     * @internal
-     *
-     * @param {Component.JSON} [json]
-     * Component JSON.
-     *
-     * @return {boolean}
-     * Returns true, if the component created from JSON is mounted,
-     * otherwise false.
-     */
-    mountComponentFromJSON(json) {
-        const cell = this;
-        if (cell.id !== json.options.parentElement) {
-            json.options.parentElement = cell.id;
-        }
-        const component = componentFromJSON(json);
-        if (component) {
-            cell.mountedComponent = component;
-            return true;
-        }
-        return false;
-    }
-    /**
      * Destroy the element, its container, event hooks
      * and mounted component.
      */
@@ -182,28 +121,6 @@ class Cell extends GUIElement {
         if (destroyRow) {
             row.destroy();
         }
-    }
-    /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @return {Cell.JSON}
-     * Class JSON of this Cell instance.
-     */
-    toJSON() {
-        const cell = this, rowContainerId = (cell.row.container || {}).id || '';
-        return {
-            $class: 'Dashboards.Layout.Cell',
-            options: {
-                containerId: cell.container.id,
-                parentContainerId: rowContainerId,
-                width: cell.options.width,
-                height: cell.options.height,
-                mountedComponentJSON: cell.mountedComponent && cell.mountedComponent.toJSON(),
-                style: cell.options.style,
-                layoutJSON: cell.nestedLayout && cell.nestedLayout.toJSON()
-            }
-        };
     }
     /**
      * Get the cell's options.

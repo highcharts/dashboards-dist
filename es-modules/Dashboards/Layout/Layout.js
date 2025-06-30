@@ -13,8 +13,6 @@
  *  - Sophie Bremer
  *
  * */
-import DU from '../Utilities.js';
-const { uniqueKey } = DU;
 import U from '../../Core/Utilities.js';
 const { pick, defined } = U;
 import Row from './Row.js';
@@ -24,37 +22,6 @@ import Globals from '../Globals.js';
  * @internal
  **/
 class Layout extends GUIElement {
-    /* *
-    *
-    *  Static Properties
-    *
-    * */
-    /** @internal */
-    static fromJSON(json, board, parentCell) {
-        const options = json.options, 
-        // Check if layout container exists.
-        container = document.getElementById(json.options.containerId), layout = new Layout(board, {
-            id: options.containerId,
-            copyId: container ? uniqueKey() : '',
-            parentContainerId: options.parentContainerId || board.container.id,
-            rowsJSON: options.rows,
-            style: options.style
-        }, parentCell);
-        // Save layout in the dashboard.
-        if (layout && !parentCell) {
-            board.layouts.push(layout);
-        }
-        return layout;
-    }
-    /** @internal */
-    static importLocal(id, board) {
-        const layoutOptions = localStorage.getItem(Globals.classNamePrefix + id);
-        let layout;
-        if (layoutOptions) {
-            layout = Layout.fromJSON(JSON.parse(layoutOptions), board);
-        }
-        return layout;
-    }
     /* *
     *
     *  Constructor
@@ -110,10 +77,6 @@ class Layout extends GUIElement {
         if (this.options.rows) {
             this.setRows();
         }
-        // Init rows from JSON.
-        if (options.rowsJSON && !this.rows.length) {
-            this.setRowsFromJSON(options.rowsJSON);
-        }
     }
     /* *
     *
@@ -129,17 +92,6 @@ class Layout extends GUIElement {
         for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
             rowElement = rowsElements[i];
             layout.addRow(layout.board.guiEnabled ? rowElement : {}, rowElement instanceof HTMLElement ? rowElement : void 0);
-        }
-    }
-    /** @internal */
-    setRowsFromJSON(json) {
-        const layout = this;
-        let row;
-        for (let i = 0, iEnd = json.length; i < iEnd; ++i) {
-            row = Row.fromJSON(json[i], layout);
-            if (row) {
-                layout.rows.push(row);
-            }
         }
     }
     /**
@@ -191,13 +143,6 @@ class Layout extends GUIElement {
         }
         super.destroy();
     }
-    /**
-     * Export layout's options and save in the local storage
-     * @internal
-     */
-    exportLocal() {
-        localStorage.setItem(Globals.classNamePrefix + this.options.id, JSON.stringify(this.toJSON()));
-    }
     // Get row index from the layout.rows array.
     getRowIndex(row) {
         for (let i = 0, iEnd = this.rows.length; i < iEnd; ++i) {
@@ -248,29 +193,6 @@ class Layout extends GUIElement {
                 layout.parentCell.hide();
             }
         }
-    }
-    /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @return {Layout.JSON}
-     * Class JSON of this Layout instance.
-     */
-    toJSON() {
-        const layout = this, dashboardContainerId = (layout.board.container || {}).id || '', rows = [];
-        // Get rows JSON.
-        for (let i = 0, iEnd = layout.rows.length; i < iEnd; ++i) {
-            rows.push(layout.rows[i].toJSON());
-        }
-        return {
-            $class: 'Dashboards.Layout',
-            options: {
-                containerId: layout.container.id,
-                parentContainerId: dashboardContainerId,
-                rows: rows,
-                style: layout.options.style
-            }
-        };
     }
     /**
      * Get the layout's options.

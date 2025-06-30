@@ -14,7 +14,7 @@
 import DataConnector from './DataConnector.js';
 import U from '../../Core/Utilities.js';
 import JSONConverter from '../Converters/JSONConverter.js';
-const { merge } = U;
+const { merge, defined } = U;
 /* *
  *
  *  Class
@@ -37,13 +37,14 @@ class JSONConnector extends DataConnector {
      * @param {JSONConnector.UserOptions} [options]
      * Options for the connector and converter.
      *
-     * @param {Array<DataTable>} [dataTables]
+     * @param {Array<DataTableOptions>} [dataTables]
      * Multiple connector data tables options.
      */
     constructor(options, dataTables) {
         const mergedOptions = merge(JSONConnector.defaultOptions, options);
         super(mergedOptions, dataTables);
-        this.options = mergedOptions;
+        this.options = defined(dataTables) ?
+            merge(mergedOptions, { dataTables }) : mergedOptions;
         if (mergedOptions.enablePolling) {
             this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
         }
@@ -63,7 +64,7 @@ class JSONConnector extends DataConnector {
      * @emits JSONConnector#afterLoad
      */
     load(eventDetail) {
-        const connector = this, tables = connector.dataTables, { data, dataUrl, dataModifier } = connector.options;
+        const connector = this, tables = connector.dataTables, { data, dataUrl, dataModifier, dataTables } = connector.options;
         connector.emit({
             type: 'load',
             data,
@@ -86,26 +87,27 @@ class JSONConnector extends DataConnector {
             data || [])
             .then((data) => {
             if (data) {
-                this.initConverters(data, (key, table) => {
+                this.initConverters(data, (key) => {
                     const options = this.options;
+                    const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                     // Takes over the connector default options.
-                    const dataTableOptions = {
+                    const mergedTableOptions = {
                         dataTableKey: key,
-                        columnNames: table.columnNames ??
+                        columnNames: tableOptions?.columnNames ??
                             options.columnNames,
-                        firstRowAsNames: table.firstRowAsNames ??
+                        firstRowAsNames: tableOptions?.firstRowAsNames ??
                             options.firstRowAsNames,
-                        orientation: table.orientation ??
+                        orientation: tableOptions?.orientation ??
                             options.orientation,
-                        beforeParse: table.beforeParse ??
+                        beforeParse: tableOptions?.beforeParse ??
                             options.beforeParse
                     };
-                    return new JSONConverter(merge(this.options, dataTableOptions));
+                    return new JSONConverter(merge(this.options, mergedTableOptions));
                 }, (converter, data) => {
                     converter.parse({ data });
                 });
             }
-            return connector.setModifierOptions(dataModifier)
+            return connector.setModifierOptions(dataModifier, dataTables)
                 .then(() => data);
         })
             .then((data) => {

@@ -132,6 +132,7 @@ declare namespace DataCursor {
         column?: string;
         row?: number;
         state: State;
+        sourceId?: string;
     }
     interface Range {
         type: 'range';
@@ -139,6 +140,7 @@ declare namespace DataCursor {
         firstRow: number;
         lastRow: number;
         state: State;
+        sourceId?: string;
     }
     interface Event {
         cursor: Type;

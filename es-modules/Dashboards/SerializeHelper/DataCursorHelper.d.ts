@@ -7,6 +7,7 @@ declare namespace DataCursorHelper {
         column?: string;
         row?: number;
         state: DataCursor.State;
+        sourceId?: string;
         type: 'position';
     }
     interface RangeJSON extends JSON.Object {
@@ -14,6 +15,7 @@ declare namespace DataCursorHelper {
         firstRow: number;
         lastRow: number;
         state: DataCursor.State;
+        sourceId?: string;
         type: 'range';
     }
     interface JSON extends Serializable.JSON<'Data.DataCursor'> {

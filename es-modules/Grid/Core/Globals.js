@@ -59,6 +59,7 @@ var Globals;
         headerCellContent: 'header-cell-content',
         headerRow: 'head-row-content',
         noData: 'no-data',
+        noPadding: 'no-padding',
         columnFirst: 'column-first',
         columnSortable: 'column-sortable',
         columnSortableIcon: 'column-sortable-icon',

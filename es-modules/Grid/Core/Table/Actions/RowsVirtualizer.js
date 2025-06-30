@@ -13,7 +13,7 @@
  *
  * */
 'use strict';
-import TableRow from '../Content/TableRow.js';
+import TableRow from '../Body/TableRow.js';
 import Globals from '../../Globals.js';
 /* *
  *
@@ -169,24 +169,31 @@ class RowsVirtualizer {
      */
     renderRows(rowCursor) {
         const { viewport: vp, buffer } = this;
+        const rowCount = vp.dataTable.getRowCount();
+        // Stop rendering if there are no rows to render.
+        if (rowCount < 1) {
+            return;
+        }
         const isVirtualization = this.rowSettings?.virtualization;
         const rowsPerPage = isVirtualization ? Math.ceil((vp.grid.tableElement?.clientHeight || 0) /
             this.defaultRowHeight) : Infinity; // Need to be refactored when add pagination
         let rows = vp.rows;
         if (!isVirtualization && rows.length > 50) {
             // eslint-disable-next-line no-console
-            console.warn('Grid: a large dataset can cause performance issues.');
+            console.warn('Grid: a large dataset can cause performance issues when ' +
+                'virtualization is disabled. Consider enabling ' +
+                'virtualization in the rows settings.');
         }
         if (!rows.length) {
-            const last = new TableRow(vp, vp.dataTable.getRowCount() - 1);
+            const last = new TableRow(vp, rowCount - 1);
+            vp.tbodyElement.appendChild(last.htmlElement);
             last.render();
             rows.push(last);
-            vp.tbodyElement.appendChild(last.htmlElement);
             if (isVirtualization) {
                 last.setTranslateY(last.getDefaultTopOffset());
             }
         }
-        const from = Math.max(0, Math.min(rowCursor - buffer, vp.dataTable.getRowCount() - rowsPerPage));
+        const from = Math.max(0, Math.min(rowCursor - buffer, rowCount - rowsPerPage));
         const to = Math.min(rowCursor + rowsPerPage + buffer, rows[rows.length - 1].index - 1);
         const alwaysLastRow = rows.pop();
         const tempRows = [];
@@ -218,8 +225,8 @@ class RowsVirtualizer {
         rows.sort((a, b) => a.index - b.index);
         for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
             if (!rows[i].rendered) {
-                rows[i].render();
                 vp.tbodyElement.insertBefore(rows[i].htmlElement, vp.tbodyElement.lastChild);
+                rows[i].render();
             }
         }
         if (alwaysLastRow) {
@@ -321,8 +328,8 @@ class RowsVirtualizer {
         const mockRow = new TableRow(vp, 0);
         mockRow.htmlElement.style.position = 'absolute';
         mockRow.htmlElement.classList.add(Globals.getClassName('mockedRow'));
-        mockRow.render();
         this.viewport.tbodyElement.appendChild(mockRow.htmlElement);
+        mockRow.render();
         const defaultRowHeight = mockRow.htmlElement.offsetHeight;
         mockRow.destroy();
         return defaultRowHeight;

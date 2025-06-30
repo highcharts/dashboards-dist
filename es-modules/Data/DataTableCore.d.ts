@@ -1,9 +1,6 @@
 import type DataEvent from './DataEvent.js';
 import type DataTable from './DataTable.js';
 import type DataTableOptions from './DataTableOptions.js';
-import type { ColumnNamesOptions } from './Connectors/JSONConnectorOptions.js';
-import type { DataModifierTypeOptions } from './Modifiers/DataModifierType.js';
-import DataConnector from './Connectors/DataConnector.js';
 /**
  * Class to manage columns and rows in a table structure. It provides methods
  * to add, remove, and manipulate columns and rows, as well as to retrieve data
@@ -39,11 +36,6 @@ declare class DataTableCore {
     modified: DataTableCore;
     rowCount: number;
     protected versionTag: string;
-    columnNames?: Array<string> | ColumnNamesOptions;
-    firstRowAsNames?: boolean;
-    orientation?: 'columns' | 'rows';
-    dataModifier?: DataModifierTypeOptions;
-    beforeParse?: DataConnector.BeforeParseCallbackFunction;
     /**
      * Applies a row count to the table by setting the `rowCount` property and
      * adjusting the length of all columns.

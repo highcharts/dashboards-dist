@@ -148,6 +148,7 @@ class RowEditToolbar extends EditToolbar {
             toolbar.row = void 0;
             // Hide row and cell toolbars.
             toolbar.editMode.hideToolbars(['cell', 'row']);
+            toolbar.editMode.resizer?.disableResizer();
             fireEvent(toolbar.editMode, 'layoutChanged', {
                 type: 'rowDestroyed',
                 target: rowId,

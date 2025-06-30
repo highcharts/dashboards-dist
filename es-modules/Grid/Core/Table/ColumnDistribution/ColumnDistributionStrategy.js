@@ -113,7 +113,11 @@ class ColumnDistributionStrategy {
      * The new options to validate.
      */
     validateOnUpdate(newOptions) {
-        if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'distribution') &&
+        if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'resizing') &&
+            newOptions.rendering?.columns?.resizing?.mode !== this.type) {
+            this.invalidated = true;
+        }
+        else if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'distribution') &&
             newOptions.rendering?.columns?.distribution !== this.type) {
             this.invalidated = true;
         }

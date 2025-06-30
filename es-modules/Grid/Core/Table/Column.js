@@ -16,8 +16,9 @@
 'use strict';
 import Utils from '../../../Core/Utilities.js';
 import Templating from '../../../Core/Templating.js';
+import TextContent from './CellContent/TextContent.js';
 import Globals from '../Globals.js';
-const { merge } = Utils;
+const { defined, merge, fireEvent } = Utils;
 /* *
  *
  *  Class
@@ -49,11 +50,14 @@ class Column {
          * The cells of the column.
          */
         this.cells = [];
-        this.options = merge(viewport.grid.options?.columnDefaults ?? {}, viewport.grid.columnOptionsMap?.[id] ?? {});
+        const { grid } = viewport;
         this.id = id;
         this.index = index;
         this.viewport = viewport;
         this.loadData();
+        this.dataType = this.assumeDataType();
+        this.options = merge(grid.options?.columnDefaults ?? {}, grid.columnOptionsMap?.[id] ?? {});
+        fireEvent(this, 'afterInit');
     }
     /* *
     *
@@ -65,6 +69,55 @@ class Column {
      */
     loadData() {
         this.data = this.viewport.dataTable.getColumn(this.id, true);
+    }
+    /**
+     * Creates a cell content instance.
+     *
+     * @param cell
+     * The cell that is to be edited.
+     *
+     */
+    createCellContent(cell) {
+        return new TextContent(cell);
+    }
+    /**
+     * Assumes the data type of the column based on the options or data in the
+     * column if not specified.
+     */
+    assumeDataType() {
+        const { grid } = this.viewport;
+        const type = grid.columnOptionsMap?.[this.id]?.dataType ??
+            grid.options?.columnDefaults?.dataType;
+        if (type) {
+            return type;
+        }
+        if (!this.data) {
+            return 'string';
+        }
+        if (!Array.isArray(this.data)) {
+            // Typed array
+            return 'number';
+        }
+        for (let i = 0, iEnd = Math.min(this.data.length, 30); i < iEnd; ++i) {
+            if (!defined(this.data[i])) {
+                // If the data is null or undefined, we should look
+                // at the next value to determine the type.
+                continue;
+            }
+            switch (typeof this.data[i]) {
+                case 'number':
+                    return 'number';
+                case 'boolean':
+                    return 'boolean';
+                default:
+                    return 'string';
+            }
+        }
+        // eslint-disable-next-line no-console
+        console.warn(`Column "${this.id}" contains too few data points with ` +
+            'unambiguous types to correctly determine its dataType. It\'s ' +
+            'recommended to set the `dataType` option for it.');
+        return 'string';
     }
     /**
      * Registers a cell in the column.

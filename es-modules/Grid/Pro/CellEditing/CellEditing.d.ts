@@ -1,4 +1,5 @@
-import TableCell from '../../Core/Table/Content/TableCell.js';
+import { EditModeContent } from './CellEditMode.js';
+import TableCell from '../../Core/Table/Body/TableCell.js';
 import Table from '../../Core/Table/Table.js';
 /**
  * The class that handles the manual editing of cells in the data grid.
@@ -13,9 +14,16 @@ declare class CellEditing {
      */
     editedCell?: TableCell;
     /**
-     * Input element for the cell.
+     * The content of the cell edit mode, which represents a context containing
+     * the input field or similar element for applying changes to the cell
+     * value.
      */
-    private inputElement?;
+    editModeContent?: EditModeContent;
+    /**
+     * The container element for the cell edit mode, which is used to
+     * position the edit mode content correctly within the cell.
+     */
+    private containerElement?;
     constructor(viewport: Table);
     /**
      * Turns the cell into an editable input field.
@@ -29,12 +37,19 @@ declare class CellEditing {
      *
      * @param submit
      * Whether to save the value of the input to the cell. Defaults to true.
+     *
+     * @return
+     * Returns `true` if the cell was successfully stopped editing.
      */
-    stopEditing(submit?: boolean): void;
+    stopEditing(submit?: boolean): boolean;
     /**
      * Handles the blur event on the input field.
      */
-    private onInputBlur;
+    private readonly onInputBlur;
+    /**
+     * Handles the change event on the input field.
+     */
+    private readonly onInputChange;
     /**
      * Handles the keydown event on the input field. Cancels editing on escape
      * and saves the value on enter.
@@ -42,15 +57,23 @@ declare class CellEditing {
      * @param e
      * The keyboard event.
      */
-    private onInputKeyDown;
+    private readonly onInputKeyDown;
     /**
      * Renders the input field for the cell, focuses it and sets up event
      * listeners.
      */
-    private renderInput;
+    private render;
     /**
      * Removes event listeners and the input element.
      */
-    private destroyInput;
+    private destroy;
+}
+declare namespace CellEditing {
+    /**
+     * The class names used by the CellEditing functionality.
+     */
+    const classNames: {
+        readonly cellEditingContainer: string;
+    };
 }
 export default CellEditing;

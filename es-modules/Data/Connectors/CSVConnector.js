@@ -17,7 +17,7 @@
 import CSVConverter from '../Converters/CSVConverter.js';
 import DataConnector from './DataConnector.js';
 import U from '../../Core/Utilities.js';
-const { merge } = U;
+const { merge, defined } = U;
 /* *
  *
  *  Class
@@ -40,14 +40,15 @@ class CSVConnector extends DataConnector {
      * @param {CSVConnector.UserOptions} [options]
      * Options for the connector and converter.
      *
-     * @param {Array<DataTable>} [dataTables]
+     * @param {Array<DataTableOptions>} [dataTables]
      * Multiple connector data tables options.
      *
      */
     constructor(options, dataTables) {
         const mergedOptions = merge(CSVConnector.defaultOptions, options);
         super(mergedOptions, dataTables);
-        this.options = mergedOptions;
+        this.options = defined(dataTables) ?
+            merge(mergedOptions, { dataTables }) : mergedOptions;
         if (mergedOptions.enablePolling) {
             this.startPolling(Math.max(mergedOptions.dataRefreshRate || 0, 1) * 1000);
         }
@@ -67,7 +68,7 @@ class CSVConnector extends DataConnector {
      * @emits CSVConnector#afterLoad
      */
     load(eventDetail) {
-        const connector = this, tables = connector.dataTables, { csv, csvURL, dataModifier } = connector.options;
+        const connector = this, tables = connector.dataTables, { csv, csvURL, dataModifier, dataTables } = connector.options;
         connector.emit({
             type: 'load',
             csv,
@@ -82,23 +83,24 @@ class CSVConnector extends DataConnector {
             csv || '')
             .then((csv) => {
             if (csv) {
-                this.initConverters(csv, (key, table) => {
+                this.initConverters(csv, (key) => {
                     const options = this.options;
+                    const tableOptions = dataTables?.find((dataTable) => dataTable.key === key);
                     // Takes over the connector default options.
-                    const dataTableOptions = {
+                    const mergedTableOptions = {
                         dataTableKey: key,
-                        firstRowAsNames: table.firstRowAsNames ??
+                        firstRowAsNames: tableOptions?.firstRowAsNames ??
                             options.firstRowAsNames,
-                        beforeParse: table.beforeParse ??
+                        beforeParse: tableOptions?.beforeParse ??
                             options.beforeParse
                     };
-                    return new CSVConverter(merge(this.options, dataTableOptions));
+                    return new CSVConverter(merge(this.options, mergedTableOptions));
                 }, (converter, data) => {
                     converter.parse({ csv: data });
                 });
             }
             return connector
-                .setModifierOptions(dataModifier)
+                .setModifierOptions(dataModifier, dataTables)
                 .then(() => csv);
         })
             .then((csv) => {

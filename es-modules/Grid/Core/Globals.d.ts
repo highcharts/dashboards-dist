@@ -36,6 +36,7 @@ declare namespace Globals {
         readonly headerCellContent: "header-cell-content";
         readonly headerRow: "head-row-content";
         readonly noData: "no-data";
+        readonly noPadding: "no-padding";
         readonly columnFirst: "column-first";
         readonly columnSortable: "column-sortable";
         readonly columnSortableIcon: "column-sortable-icon";

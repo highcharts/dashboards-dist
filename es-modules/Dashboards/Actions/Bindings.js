@@ -148,23 +148,6 @@ var Bindings;
         return promise;
     }
     Bindings.addComponent = addComponent;
-    /** @internal */
-    function componentFromJSON(json) {
-        const componentClass = ComponentRegistry.types[json.$class];
-        if (!componentClass) {
-            return;
-        }
-        const cell = Bindings.getCell(json.options.renderTo || '');
-        if (!cell) {
-            return;
-        }
-        const component = componentClass.fromJSON(json, cell);
-        if (component) {
-            component.render();
-        }
-        return component;
-    }
-    Bindings.componentFromJSON = componentFromJSON;
     function getCell(idOrElement, parentElement) {
         const cell = getGUIElement(idOrElement, parentElement);
         if (!(cell && cell.getType() === 'cell')) {

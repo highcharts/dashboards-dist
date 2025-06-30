@@ -44,7 +44,9 @@ var CreditsProComposition;
     }
     CreditsProComposition.compose = compose;
     /**
-     * Callback function called before table initialization.
+     * Init configurable credits.
+     * @param this
+     * Reference to Grid.
      */
     function initCredits() {
         this.credits = new CreditsPro(this, this.options?.credits);

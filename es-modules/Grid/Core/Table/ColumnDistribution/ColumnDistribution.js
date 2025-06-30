@@ -40,7 +40,7 @@ var ColumnDistribution;
     };
     /**
      * Returns the column distribution of the table according to the options:
-     * 1. If `columns.distribution` defined, use it. If not:
+     * 1. If `columns.resizing.mode` defined, use it. If not:
      * 2. If any column has a width defined, use `mixed`. If not:
      * 3. Use `full`.
      *
@@ -49,7 +49,9 @@ var ColumnDistribution;
      */
     function assumeDistributionType(viewport) {
         const { options } = viewport.grid;
-        const result = options?.rendering?.columns?.distribution;
+        const colRendering = options?.rendering?.columns;
+        const result = colRendering?.resizing?.mode ||
+            colRendering?.distribution;
         if (result) {
             return result;
         }

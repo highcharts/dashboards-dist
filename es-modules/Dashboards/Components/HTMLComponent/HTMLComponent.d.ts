@@ -16,21 +16,6 @@ declare class HTMLComponent extends Component {
      */
     static predefinedSyncConfig: import("../Sync/Sync.js").default.PredefinedSyncConfig;
     /**
-     * Creates component from JSON.
-     *
-     * @param json
-     * Set of component options, used for creating the HTML component.
-     *
-     * @param cell
-     * Instance of cell, where component is attached.
-     *
-     * @returns
-     * HTML component based on config from JSON.
-     *
-     * @internal
-     */
-    static fromJSON(json: HTMLComponent.ClassJSON, cell: Cell): HTMLComponent;
-    /**
      * Array of HTML elements, declared as string or node.
      */
     private elements;
@@ -70,15 +55,6 @@ declare class HTMLComponent extends Component {
      * @internal
      */
     private getElementsFromString;
-    /**
-     * Converts the class instance to a class JSON.
-     *
-     * @returns
-     * Class JSON of this Component instance.
-     *
-     * @internal
-     */
-    toJSON(): HTMLComponent.ClassJSON;
     /**
      * Get the HTML component's options.
      * @returns
@@ -123,21 +99,7 @@ declare namespace HTMLComponent {
     /** @internal */
     type ComponentType = HTMLComponent;
     /** @internal */
-    interface HTMLComponentOptionsJSON extends Component.ComponentOptionsJSON {
-        type: 'HTML';
-    }
-    /** @internal */
-    type HTMLComponentEvents = Component.EventTypes | JSONEvent;
-    /** @internal */
-    type JSONEvent = Component.Event<'toJSON' | 'fromJSON', {
-        json: HTMLComponent.ClassJSON;
-    }>;
-    /** @internal */
-    interface ClassJSON extends Component.JSON {
-        elements?: string[];
-        events?: string[];
-        options: HTMLComponentOptionsJSON;
-    }
+    type HTMLComponentEvents = Component.EventTypes;
 }
 declare module '../ComponentType' {
     interface ComponentTypeRegistry {

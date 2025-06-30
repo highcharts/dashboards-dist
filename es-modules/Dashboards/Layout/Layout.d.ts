@@ -1,7 +1,5 @@
 import type CSSJSONObject from '../CSSJSONObject';
 import type Board from '../Board.js';
-import type JSON from '../JSON';
-import type Serializable from '../Serializable';
 import Cell from './Cell.js';
 import Row from './Row.js';
 import GUIElement from './GUIElement.js';
@@ -10,10 +8,6 @@ import Globals from '../Globals.js';
  * @internal
  **/
 declare class Layout extends GUIElement {
-    /** @internal */
-    static fromJSON(json: Layout.JSON, board: Board, parentCell?: Cell): Layout | undefined;
-    /** @internal */
-    static importLocal(id: string, board: Board): Layout | undefined;
     /**
      * Constructs an instance of the Layout class.
      *
@@ -51,8 +45,6 @@ declare class Layout extends GUIElement {
      * Set the layout rows using rows options or rowClassName.
      */
     setRows(): void;
-    /** @internal */
-    setRowsFromJSON(json: Array<Row.JSON>): void;
     /**
      * Add a new Row instance to the layout rows array.
      *
@@ -71,24 +63,11 @@ declare class Layout extends GUIElement {
      * and inner rows.
      */
     destroy(): void;
-    /**
-     * Export layout's options and save in the local storage
-     * @internal
-     */
-    exportLocal(): void;
     getRowIndex(row: Row): number | undefined;
     mountRow(row: Row, index: number): void;
     unmountRow(row: Row): void;
     getVisibleRows(): Array<Row>;
     protected changeVisibility(setVisible?: boolean): void;
-    /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @return {Layout.JSON}
-     * Class JSON of this Layout instance.
-     */
-    toJSON(): Layout.JSON;
     /**
      * Get the layout's options.
      * @returns
@@ -103,12 +82,6 @@ interface Layout {
     options: Layout.Options;
 }
 declare namespace Layout {
-    /**
-     * @internal
-     **/
-    interface JSON extends Serializable.JSON<'Dashboards.Layout'> {
-        options: OptionsJSON;
-    }
     /**
      * Each layout's options.
      **/
@@ -151,19 +124,6 @@ declare namespace Layout {
         /**
          * CSS styles of the layout.
          **/
-        style?: CSSJSONObject;
-        /**
-         * @internal
-         **/
-        rowsJSON?: Array<Row.JSON>;
-    }
-    /**
-     * @internal
-     **/
-    interface OptionsJSON extends JSON.Object {
-        containerId: string;
-        parentContainerId: string;
-        rows: Array<Row.JSON>;
         style?: CSSJSONObject;
     }
 }

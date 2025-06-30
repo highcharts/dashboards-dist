@@ -57,6 +57,12 @@ declare class ConnectorHandler {
      */
     presentationTable?: DataTable;
     /**
+     * Helper flag for detecting whether the connector handler has been
+     * destroyed, used to check and prevent further operations if the connector
+     * handler has been destroyed during asynchronous functions.
+     */
+    private destroyed?;
+    /**
      * Creates an object that manages the data layer for the component.
      *
      * @param component

@@ -132,6 +132,7 @@ class Cell {
      */
     render() {
         this.row.htmlElement.appendChild(this.htmlElement);
+        this.reflow();
     }
     /**
      * Reflows the cell dimensions.

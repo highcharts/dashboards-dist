@@ -135,6 +135,9 @@ class HeaderCell extends Cell {
             this.initColumnSorting();
         }
         this.setCustomClassName(options.header?.className);
+        fireEvent(this, 'afterRender', {
+            target: column
+        });
     }
     reflow() {
         const th = this.htmlElement;

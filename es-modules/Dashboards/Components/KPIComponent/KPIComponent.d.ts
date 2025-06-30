@@ -18,21 +18,6 @@ import PRODUCT from '../../../Data/Formula/Functions/PRODUCT.js';
  *
  */
 declare class KPIComponent extends Component {
-    /**
-     * Creates component from JSON.
-     *
-     * @param json
-     * Set of component options, used for creating the KPI component.
-     *
-     * @param cell
-     * Instance of cell, where component is attached.
-     *
-     * @returns
-     * KPI component based on config from JSON.
-     *
-     * @internal
-     */
-    static fromJSON(json: KPIComponent.ClassJSON, cell: Cell): KPIComponent;
     /** @internal */
     static charter?: H;
     /**
@@ -220,15 +205,6 @@ declare class KPIComponent extends Component {
     private getValueColor;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
     /**
-     * Converts the class instance to a class JSON.
-     *
-     * @returns
-     * Class JSON of this Component instance.
-     *
-     * @internal
-     */
-    toJSON(): KPIComponent.ClassJSON;
-    /**
      * Get the KPI component's options.
      * @returns
      * KPI component's options.
@@ -243,20 +219,5 @@ declare namespace KPIComponent {
     type ComponentType = KPIComponent;
     /** @internal */
     type FormulaType = keyof typeof KPIComponent.formulaFunctions;
-    /** @internal */
-    interface ClassJSON extends Component.JSON {
-        options: ComponentJSONOptions;
-    }
-    /** @internal */
-    interface ComponentJSONOptions extends Component.ComponentOptionsJSON {
-        title?: string;
-        chartOptions?: string;
-        threshold?: number | Array<number>;
-        thresholdColors?: Array<string>;
-        type: 'KPI';
-        value?: number | string;
-        subtitle?: string;
-        valueFormat?: string;
-    }
 }
 export default KPIComponent;

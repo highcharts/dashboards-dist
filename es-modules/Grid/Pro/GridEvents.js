@@ -54,11 +54,14 @@ function compose(ColumnClass, HeaderCellClass, TableCellClass) {
         'mouseOut',
         'dblClick',
         'click',
-        'afterSetValue'
+        'afterRender'
     ].forEach((name) => {
         addEvent(TableCellClass, name, (e) => {
             const cell = e.target;
-            cell.row.viewport.grid.options?.events?.cell?.[name]?.call(cell);
+            const cellEvent = cell.column.options.cells?.events?.[name] ||
+                // Backward compatibility
+                cell.row.viewport.grid.options?.events?.cell?.[name];
+            cellEvent?.call(cell);
             propagate['cell_' + name]?.call(cell);
         });
     });
@@ -68,13 +71,24 @@ function compose(ColumnClass, HeaderCellClass, TableCellClass) {
     ].forEach((name) => {
         addEvent(ColumnClass, name, (e) => {
             const column = e.target;
-            column.viewport.grid.options?.events?.column?.[name]?.call(column);
+            const columnEvent = column.options?.events?.[name] ||
+                // Backward compatibility
+                column.viewport.grid.options?.events?.column?.[name];
+            columnEvent?.call(column);
         });
     });
     // HeaderCell Events
-    addEvent(HeaderCellClass, 'click', (e) => {
-        const col = e.target;
-        col.viewport.grid.options?.events?.header?.click?.call(col);
+    [
+        'click',
+        'afterRender'
+    ].forEach((name) => {
+        addEvent(HeaderCellClass, name, (e) => {
+            const column = e.target;
+            const headerEvent = column.options?.header?.events?.[name] ||
+                // Backward compatibility
+                column.viewport?.grid?.options?.events?.header?.[name];
+            headerEvent?.call(column);
+        });
     });
 }
 /* *

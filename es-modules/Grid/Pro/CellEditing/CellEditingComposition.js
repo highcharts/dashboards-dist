@@ -17,6 +17,7 @@
 import Defaults from '../../Core/Defaults.js';
 import Globals from '../../Core/Globals.js';
 import CellEditing from './CellEditing.js';
+import CellRendererRegistry from '../CellRendering/CellRendererRegistry.js';
 import GU from '../../Core/GridUtils.js';
 import U from '../../../Core/Utilities.js';
 const { makeHTMLElement } = GU;
@@ -47,7 +48,8 @@ var CellEditingComposition;
                     announcements: {
                         started: 'Entered cell editing mode.',
                         edited: 'Edited cell value.',
-                        cancelled: 'Editing canceled.'
+                        cancelled: 'Editing canceled.',
+                        notValid: 'Provided value is not valid.'
                     }
                 }
             }
@@ -61,22 +63,30 @@ var CellEditingComposition;
      *
      * @param TableCellClass
      * The class to extend.
+     *
+     * @param ColumnClass
+     * The class to extend.
      */
-    function compose(TableClass, TableCellClass) {
+    function compose(TableClass, TableCellClass, ColumnClass) {
         if (!pushUnique(Globals.composed, 'CellEditing')) {
             return;
         }
         merge(true, Defaults.defaultOptions, defaultOptions);
+        addEvent(ColumnClass, 'afterInit', afterColumnInit);
         addEvent(TableClass, 'beforeInit', initTable);
         addEvent(TableCellClass, 'keyDown', onCellKeyDown);
         addEvent(TableCellClass, 'dblClick', onCellDblClick);
-        addEvent(TableCellClass, 'afterSetValue', addEditableCellA11yHint);
+        addEvent(TableCellClass, 'afterRender', addEditableCellA11yHint);
         addEvent(TableCellClass, 'startedEditing', function () {
             announceA11yUserEditedCell(this, 'started');
         });
         addEvent(TableCellClass, 'stoppedEditing', function (e) {
-            this.column.viewport.grid.options
-                ?.events?.cell?.afterEdit?.call(this);
+            const cellEvents = merge(
+            // Backward compatibility
+            this.column.viewport.grid.options?.events?.cell, this.column.options.cells?.events);
+            if (e.submit) {
+                cellEvents?.afterEdit?.call(this);
+            }
             announceA11yUserEditedCell(this, e.submit ? 'edited' : 'cancelled');
         });
     }
@@ -88,6 +98,36 @@ var CellEditingComposition;
         this.cellEditing = new CellEditing(this);
     }
     /**
+     * Creates the edit mode renderer for the column.
+     *
+     * @param column
+     * The column to create the edit mode renderer for.
+     */
+    function createEditModeRenderer(column) {
+        const editModeOptions = column.options.cells?.editMode;
+        const editModeRendererTypeName = editModeOptions?.renderer?.type;
+        const staticRendererTypeName = column.options?.cells?.renderer?.type || 'text';
+        if (editModeRendererTypeName) {
+            return new CellRendererRegistry.types[editModeRendererTypeName](column, editModeOptions?.renderer || {});
+        }
+        const staticRendererType = CellRendererRegistry.types[staticRendererTypeName];
+        let defRenderer = staticRendererType.defaultEditingRenderer;
+        if (typeof defRenderer !== 'string') {
+            defRenderer = defRenderer[column.dataType];
+        }
+        return new CellRendererRegistry.types[defRenderer](column, defRenderer === staticRendererTypeName ? merge(column.options.cells?.renderer, { disabled: false }) || {} : {});
+    }
+    /**
+     * Callback function called after column initialization.
+     */
+    function afterColumnInit() {
+        const { options } = this;
+        if (options?.cells?.editMode?.enabled ||
+            options?.cells?.editable) {
+            this.editModeRenderer = createEditModeRenderer(this);
+        }
+    }
+    /**
      * Callback function called when a key is pressed on a cell.
      *
      * @param e
@@ -95,7 +135,7 @@ var CellEditingComposition;
      */
     function onCellKeyDown(e) {
         if (e.originalEvent?.key !== 'Enter' ||
-            !this.column.options.cells?.editable) {
+            !this.column.editModeRenderer) {
             return;
         }
         this.row.viewport.cellEditing?.startEditing(this);
@@ -104,7 +144,7 @@ var CellEditingComposition;
      * Callback function called when a cell is double clicked.
      */
     function onCellDblClick() {
-        if (this.column.options.cells?.editable) {
+        if (this.column.editModeRenderer) {
             this.row.viewport.cellEditing?.startEditing(this);
         }
     }
@@ -113,16 +153,17 @@ var CellEditingComposition;
      */
     function addEditableCellA11yHint() {
         const a11y = this.row.viewport.grid.accessibility;
-        if (!a11y) {
+        if (!a11y || this.a11yEditableHint?.isConnected) {
             return;
         }
         const editableLang = this.row.viewport.grid.options
             ?.lang?.accessibility?.cellEditing?.editable;
-        if (!this.column.options.cells?.editable ||
+        if ((!this.column.options.cells?.editable &&
+            !this.column.options.cells?.editMode?.enabled) ||
             !editableLang) {
             return;
         }
-        makeHTMLElement('span', {
+        this.a11yEditableHint = makeHTMLElement('span', {
             className: Globals.getClassName('visuallyHidden'),
             innerText: ', ' + editableLang
         }, this.htmlElement);

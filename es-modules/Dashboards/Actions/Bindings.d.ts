@@ -12,8 +12,6 @@ declare namespace Bindings {
         options: Partial<Component.Options>;
     }
     function addComponent(options: Partial<ComponentType['options']>, board: Board, cell?: Cell): Promise<(Component | void)>;
-    /** @internal */
-    function componentFromJSON(json: Component.JSON): (Component | undefined);
     function getCell(idOrElement: string, parentElement?: HTMLElement): (Cell | undefined);
     function getRow(idOrElement: string, parentElement?: HTMLElement): (Row | undefined);
     function getLayout(idOrElement: string, parentElement?: HTMLElement): (Layout | undefined);

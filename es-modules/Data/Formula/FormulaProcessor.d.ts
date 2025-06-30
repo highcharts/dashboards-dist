@@ -85,6 +85,18 @@ declare function getReferenceValue(reference: Reference, table: DataTable): Valu
  * Processes a formula array on the given table. If the formula does not contain
  * references or ranges, then no table has to be provided.
  *
+ * Performs formulas considering the operators precedence.
+ *
+ * // Example of the `2 * 3 + 4` formula:
+ * 2 -> values: [2], operators: []
+ * * -> values: [2], operators: [*]
+ * 3 -> values: [2, 3], operators: [*]
+ * // Since the higher precedence operator exists (* > +), perform it first.
+ * + -> values: [6], operators: [+]
+ * 4 -> values: [6, 4], operators: [+]
+ * // When non-higher precedence operators remain, perform rest calculations.
+ * -> values: [10], operators: []
+ *
  * @private
  * @function Highcharts.processFormula
  *

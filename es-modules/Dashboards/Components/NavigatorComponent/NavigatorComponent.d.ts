@@ -16,18 +16,6 @@ declare class NavigatorComponent extends Component {
      * Predefined sync configuration for the Navigator component.
      */
     static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
-    /**
-     * Creates component from JSON.
-     *
-     * @param json
-     * Set of component options, used for creating the Highcharts component.
-     *
-     * @returns
-     * Highcharts component based on config from JSON.
-     *
-     * @private
-     */
-    static fromJSON(json: Component.JSON, cell: Cell): NavigatorComponent;
     constructor(cell: Cell, options: Options);
     /**
      * Reference to the navigator chart.

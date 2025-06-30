@@ -1,4 +1,3 @@
-import type Chart from './Chart/Chart';
 import type TimeBase from '../Shared/TimeBase';
 import type { LangOptionsCore } from '../Shared/LangOptionsCore';
 /**
@@ -102,7 +101,7 @@ declare function format(str: string | undefined, ctx: any, owner?: Templating.Ow
  * @return {string}
  *         The formatted number.
  */
-declare function numberFormat(this: Chart | Object | void, number: number, decimals: number, decimalPoint?: string, thousandsSep?: string): string;
+declare function numberFormat(this: Templating.Owner | void, number: number, decimals: number, decimalPoint?: string, thousandsSep?: string): string;
 declare const Templating: {
     dateFormat: typeof dateFormat;
     format: typeof format;
@@ -120,6 +119,7 @@ declare namespace Templating {
         options?: OwnerOptions;
         time?: TimeBase;
         numberFormatter?: Function;
+        locale?: string | string[];
     }
 }
 export default Templating;

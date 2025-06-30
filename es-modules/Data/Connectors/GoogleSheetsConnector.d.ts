@@ -1,7 +1,7 @@
 import type DataEvent from '../DataEvent';
 import type GoogleSheetsConnectorOptions from './GoogleSheetsConnectorOptions';
 import type Types from '../../Shared/Types';
-import type DataTable from '../DataTable';
+import type DataTableOptions from '../DataTableOptions';
 import DataConnector from './DataConnector.js';
 import GoogleSheetsConverter from '../Converters/GoogleSheetsConverter.js';
 /**
@@ -15,13 +15,17 @@ declare class GoogleSheetsConnector extends DataConnector {
      *
      * @param {GoogleSheetsConnector.UserOptions} [options]
      * Options for the connector and converter.
+     *
+     * @param {Array<DataTableOptions>} [dataTables]
+     * Multiple connector data tables options.
+     *
      */
-    constructor(options?: GoogleSheetsConnector.UserOptions, dataTables?: Array<DataTable>);
+    constructor(options?: GoogleSheetsConnector.UserOptions, dataTables?: Array<DataTableOptions>);
     readonly options: GoogleSheetsConnectorOptions;
     /**
      * The attached converter, which can be replaced in the constructor
      */
-    converter: GoogleSheetsConverter;
+    converter?: GoogleSheetsConverter;
     /**
      * Loads data from a Google Spreadsheet.
      *

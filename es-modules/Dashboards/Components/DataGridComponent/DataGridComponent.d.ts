@@ -28,19 +28,6 @@ declare class DataGridComponent extends Component {
      */
     static defaultOptions: Partial<Component.Options> & import("../../Globals").default.DeepPartial<Options>;
     /**
-     * Function to create a Grid Component from JSON.
-     *
-     * @param json
-     * The JSON to create the Grid Component from.
-     *
-     * @param cell
-     * The cell to create the Grid Component in.
-     *
-     * @returns
-     * The Grid Component created from the JSON.
-     */
-    static fromJSON(json: DataGridComponent.ClassJSON, cell: Cell): DataGridComponent;
-    /**
      * The Grid that is rendered in the Grid Component.
      * @deprecated
      * DataGrid will be removed in behalf of Grid in the next major version.
@@ -89,34 +76,6 @@ declare namespace DataGridComponent {
     /** @private */
     type ComponentType = DataGridComponent;
     /** @private */
-    type ChartComponentEvents = JSONEvent | Component.EventTypes;
-    /** @private */
-    type JSONEvent = Component.Event<'toJSON' | 'fromJSON', {
-        json: ClassJSON;
-    }>;
-    /** @private */
-    interface ComponentJSONOptions extends Component.ComponentOptionsJSON {
-        /** @private */
-        gridOptions?: string;
-        /** @private */
-        gridClassName?: string;
-        /**
-         * @private
-         * @deprecated
-         **/
-        dataGridOptions?: string;
-        /**
-         * @private
-         * @deprecated
-         **/
-        dataGridClassName?: string;
-        /** @private */
-        chartID?: string;
-    }
-    /** @private */
-    interface ClassJSON extends Component.JSON {
-        /** @private */
-        options: ComponentJSONOptions;
-    }
+    type ChartComponentEvents = Component.EventTypes;
 }
 export default DataGridComponent;
