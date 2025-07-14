@@ -154,10 +154,10 @@ class Grid {
         newOptions = merge(newOptions);
         if (newOptions.columns) {
             if (oneToOne) {
-                this.loadColumnOptionsOneToOne(newOptions.columns);
+                this.setColumnOptionsOneToOne(newOptions.columns);
             }
             else {
-                this.loadColumnOptions(newOptions.columns);
+                this.setColumnOptions(newOptions.columns);
             }
             delete newOptions.columns;
         }
@@ -168,14 +168,17 @@ class Grid {
         if (!columnOptionsArray) {
             return;
         }
-        const columnOptionsObj = {};
+        const columnOptionsMap = {};
         for (let i = 0, iEnd = columnOptionsArray?.length ?? 0; i < iEnd; ++i) {
-            columnOptionsObj[columnOptionsArray[i].id] = columnOptionsArray[i];
+            columnOptionsMap[columnOptionsArray[i].id] = {
+                index: i,
+                options: columnOptionsArray[i]
+            };
         }
-        this.columnOptionsMap = columnOptionsObj;
+        this.columnOptionsMap = columnOptionsMap;
     }
     /**
-     * Loads the new column options to the userOptions field.
+     * Sets the new column options to the userOptions field.
      *
      * @param newColumnOptions
      * The new column options that should be loaded.
@@ -184,29 +187,29 @@ class Grid {
      * Whether to overwrite the existing column options with the new ones.
      * Default is `false`.
      */
-    loadColumnOptions(newColumnOptions, overwrite = false) {
+    setColumnOptions(newColumnOptions, overwrite = false) {
         if (!this.userOptions.columns) {
             this.userOptions.columns = [];
         }
         const columnOptions = this.userOptions.columns;
         for (let i = 0, iEnd = newColumnOptions.length; i < iEnd; ++i) {
             const newOptions = newColumnOptions[i];
-            const indexInPrevOptions = columnOptions.findIndex((prev) => prev.id === newOptions.id);
+            const colOptionsIndex = this.columnOptionsMap?.[newOptions.id]?.index ?? -1;
             // If the new column options contain only the id.
             if (Object.keys(newOptions).length < 2) {
-                if (overwrite && indexInPrevOptions !== -1) {
-                    columnOptions.splice(indexInPrevOptions, 1);
+                if (overwrite && colOptionsIndex !== -1) {
+                    columnOptions.splice(colOptionsIndex, 1);
                 }
                 continue;
             }
-            if (indexInPrevOptions === -1) {
+            if (colOptionsIndex === -1) {
                 columnOptions.push(newOptions);
             }
             else if (overwrite) {
-                columnOptions[indexInPrevOptions] = newOptions;
+                columnOptions[colOptionsIndex] = newOptions;
             }
             else {
-                columnOptions[indexInPrevOptions] = merge(columnOptions[indexInPrevOptions], newOptions);
+                merge(true, columnOptions[colOptionsIndex], newOptions);
             }
         }
         if (columnOptions.length < 1) {
@@ -221,7 +224,7 @@ class Grid {
      * @param newColumnOptions
      * The new column options that should be loaded.
      */
-    loadColumnOptionsOneToOne(newColumnOptions) {
+    setColumnOptionsOneToOne(newColumnOptions) {
         const prevColumnOptions = this.userOptions.columns;
         const columnOptions = [];
         let prevOptions;
@@ -265,7 +268,6 @@ class Grid {
             newDataTable = true;
             this.initVirtualization();
         }
-        this.viewport?.columnDistribution.validateOnUpdate(options);
         this.querying.loadOptions();
         // Update locale.
         const locale = options.lang?.locale;
@@ -296,7 +298,7 @@ class Grid {
      * options with the new ones instead of merging them.
      */
     async updateColumn(columnId, options, render = true, overwrite = false) {
-        this.loadColumnOptions([{
+        this.setColumnOptions([{
                 id: columnId,
                 ...options
             }], overwrite);
@@ -509,7 +511,7 @@ class Grid {
         const result = [];
         for (let i = 0, iEnd = columnsIncluded.length; i < iEnd; ++i) {
             columnName = columnsIncluded[i];
-            if (columnOptionsMap?.[columnName]?.enabled !== false) {
+            if (columnOptionsMap?.[columnName]?.options?.enabled !== false) {
                 result.push(columnName);
             }
         }

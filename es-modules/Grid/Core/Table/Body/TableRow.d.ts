@@ -39,6 +39,11 @@ declare class TableRow extends Row {
      */
     private loadData;
     /**
+     * Updates the row data and its cells with the latest values from the data
+     * table.
+     */
+    update(): void;
+    /**
      * Adds or removes the hovered CSS class to the row element.
      *
      * @param hovered
@@ -56,6 +61,11 @@ declare class TableRow extends Row {
      * Sets the row HTML element attributes and additional classes.
      */
     setRowAttributes(): void;
+    /**
+     * Sets the row HTML element attributes that are updateable in the row
+     * lifecycle.
+     */
+    updateRowAttributes(): void;
     /**
      * Sets the vertical translation of the row. Used for virtual scrolling.
      *

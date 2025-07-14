@@ -105,17 +105,19 @@ var CellEditingComposition;
      */
     function createEditModeRenderer(column) {
         const editModeOptions = column.options.cells?.editMode;
-        const editModeRendererTypeName = editModeOptions?.renderer?.type;
-        const staticRendererTypeName = column.options?.cells?.renderer?.type || 'text';
-        if (editModeRendererTypeName) {
-            return new CellRendererRegistry.types[editModeRendererTypeName](column, editModeOptions?.renderer || {});
+        const selectedEditModeRendererTypeName = editModeOptions?.renderer?.type;
+        const viewRendererTypeName = column.options?.cells?.renderer?.type || 'text';
+        if (selectedEditModeRendererTypeName) {
+            return new CellRendererRegistry.types[selectedEditModeRendererTypeName](column, editModeOptions?.renderer || {});
         }
-        const staticRendererType = CellRendererRegistry.types[staticRendererTypeName];
-        let defRenderer = staticRendererType.defaultEditingRenderer;
-        if (typeof defRenderer !== 'string') {
-            defRenderer = defRenderer[column.dataType];
+        const ViewRendererType = CellRendererRegistry.types[viewRendererTypeName] ||
+            CellRendererRegistry.types.text;
+        let editModeRendererTypeName = ViewRendererType.defaultEditingRenderer;
+        if (typeof editModeRendererTypeName !== 'string') {
+            editModeRendererTypeName =
+                editModeRendererTypeName[column.dataType] || 'textInput';
         }
-        return new CellRendererRegistry.types[defRenderer](column, defRenderer === staticRendererTypeName ? merge(column.options.cells?.renderer, { disabled: false }) || {} : {});
+        return new CellRendererRegistry.types[editModeRendererTypeName](column, editModeRendererTypeName === viewRendererTypeName ? merge(column.options.cells?.renderer, { disabled: false }) || {} : {});
     }
     /**
      * Callback function called after column initialization.

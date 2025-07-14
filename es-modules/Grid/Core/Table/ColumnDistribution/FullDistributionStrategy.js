@@ -22,6 +22,10 @@ const { makeHTMLElement } = GridUtils;
  *  Class
  *
  * */
+/**
+ * @deprecated
+ * This strategy is deprecated and will be removed in the future.
+ */
 class FullDistributionStrategy extends DistributionStrategy {
     constructor() {
         /* *
@@ -69,8 +73,12 @@ class FullDistributionStrategy extends DistributionStrategy {
             newRightW = minWidth;
             newLeftW = leftColW + rightColW - minWidth;
         }
-        this.columnWidths[column.id] = vp.getRatioFromWidth(newLeftW);
-        this.columnWidths[nextColumn.id] = vp.getRatioFromWidth(newRightW);
+        const leftW = this.columnWidths[column.id] =
+            vp.getRatioFromWidth(newLeftW);
+        const rightW = this.columnWidths[nextColumn.id] =
+            vp.getRatioFromWidth(newRightW);
+        column.update({ width: (leftW * 100).toFixed(4) + '%' }, false);
+        nextColumn.update({ width: (rightW * 100).toFixed(4) + '%' }, false);
     }
     /**
      * The initial width of the column in the full distribution mode. The last
@@ -121,13 +129,6 @@ class FullDistributionStrategy extends DistributionStrategy {
         const result = this.getInitialFullDistWidth(column, mock);
         mock.remove();
         return result;
-    }
-    importMetadata(metadata) {
-        if (Object.keys(metadata.columnWidths).length !==
-            this.viewport.grid.enabledColumns?.length) {
-            return;
-        }
-        super.importMetadata(metadata);
     }
 }
 /* *

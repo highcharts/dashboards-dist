@@ -1,4 +1,4 @@
-import type { Options, GroupedHeaderOptions, IndividualColumnOptions } from './Options';
+import type { Options, GroupedHeaderOptions } from './Options';
 import type Column from './Table/Column';
 import Accessibility from './Accessibility/Accessibility.js';
 import DataTable from '../../Data/DataTable.js';
@@ -62,7 +62,7 @@ declare class Grid {
      * column options.
      * @internal
      */
-    columnOptionsMap: Record<string, Column.Options>;
+    columnOptionsMap: Record<string, Grid.ColumnOptionsMapItem>;
     /**
      * The container of the grid.
      */
@@ -191,7 +191,7 @@ declare class Grid {
      */
     private loadUserOptions;
     /**
-     * Loads the new column options to the userOptions field.
+     * Sets the new column options to the userOptions field.
      *
      * @param newColumnOptions
      * The new column options that should be loaded.
@@ -200,7 +200,7 @@ declare class Grid {
      * Whether to overwrite the existing column options with the new ones.
      * Default is `false`.
      */
-    private loadColumnOptions;
+    private setColumnOptions;
     /**
      * Loads the new column options to the userOptions field in a one-to-one
      * manner. It means that all the columns that are not defined in the new
@@ -209,11 +209,11 @@ declare class Grid {
      * @param newColumnOptions
      * The new column options that should be loaded.
      */
-    private loadColumnOptionsOneToOne;
+    private setColumnOptionsOneToOne;
     update(options?: Options, render?: boolean, oneToOne?: boolean): Promise<void>;
     update(options: Options, render: false, oneToOne?: boolean): void;
-    updateColumn(columnId: string, options: Omit<IndividualColumnOptions, 'id'>, render?: boolean, overwrite?: boolean): void;
-    updateColumn(columnId: string, options: Omit<IndividualColumnOptions, 'id'>, render: true, overwrite?: boolean): Promise<void>;
+    updateColumn(columnId: string, options: Column.Options, render?: boolean, overwrite?: boolean): Promise<void>;
+    updateColumn(columnId: string, options: Column.Options, render?: false, overwrite?: boolean): void;
     /**
      * Hovers the row with the provided index. It removes the hover effect from
      * the previously hovered row.
@@ -363,7 +363,16 @@ declare class Grid {
 declare namespace Grid {
     /**
      * @internal
+     * Callback that is called after the Grid is loaded.
      */
     type AfterLoadCallback = (grid: Grid) => void;
+    /**
+     * @internal
+     * An item in the column options map.
+     */
+    interface ColumnOptionsMapItem {
+        index: number;
+        options: Column.Options;
+    }
 }
 export default Grid;

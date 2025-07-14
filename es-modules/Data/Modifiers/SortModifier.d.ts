@@ -18,6 +18,7 @@ declare class SortModifier extends DataModifier {
     static readonly defaultOptions: SortModifierOptions;
     private static ascending;
     private static descending;
+    private static compareFactory;
     /**
      * Constructs an instance of the range modifier.
      *

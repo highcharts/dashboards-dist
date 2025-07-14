@@ -43,7 +43,7 @@ declare abstract class Cell {
      * Init element.
      * @internal
      */
-    init(): HTMLTableCellElement;
+    protected init(): HTMLTableCellElement;
     /**
      * Initialize event listeners. Events added to the `cellEvents` array will
      * be registered now and unregistered when the cell is destroyed.

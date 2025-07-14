@@ -58,9 +58,7 @@ class ColumnsResizer {
             const vp = this.viewport;
             vp.columnDistribution.resize(this, diff);
             vp.reflow();
-            if (vp.grid.options?.rendering?.rows?.virtualization) {
-                vp.rowsVirtualizer.adjustRowHeights();
-            }
+            vp.rowsVirtualizer.adjustRowHeights();
             fireEvent(this.draggedColumn, 'afterResize', {
                 target: this.draggedColumn,
                 originalEvent: e

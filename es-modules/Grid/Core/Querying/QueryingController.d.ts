@@ -1,3 +1,4 @@
+import DataModifier from '../../../Data/Modifiers/DataModifier.js';
 import Grid from '../Grid.js';
 import SortingController from './SortingController.js';
 /**
@@ -8,11 +9,16 @@ declare class QueryingController {
     /**
      * The data grid instance.
      */
-    private grid;
+    grid: Grid;
     /**
      * Sorting controller instance
      */
     sorting: SortingController;
+    /**
+     * This flag should be set to `true` if the modifiers should reapply to the
+     * data table due to some data change or other important reason.
+     */
+    shouldBeUpdated: boolean;
     constructor(grid: Grid);
     /**
      * Proceeds with the data modification if needed.
@@ -27,14 +33,12 @@ declare class QueryingController {
      */
     loadOptions(): void;
     /**
-     * Check if the data table does not need to be modified.
+     * Creates a list of modifiers that should be applied to the data table.
      */
-    willNotModify(): boolean;
+    getModifiers(): DataModifier[];
     /**
      * Apply all modifiers to the data table.
      */
     private modifyData;
-}
-declare namespace QueryingController {
 }
 export default QueryingController;

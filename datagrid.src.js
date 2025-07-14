@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.4.0 (2025-06-30)
+ * @license Highcharts Dashboards v3.5.0 (2025-07-14)
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.4.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.5.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -8504,62 +8504,6 @@
                 }
                 vp.rowsWidth = rowsWidth;
             }
-            /**
-             * Returns the current column distribution strategy metadata.
-             * @internal
-             */
-            exportMetadata() {
-                return {
-                    type: this.type,
-                    columnWidths: this.columnWidths
-                };
-            }
-            /**
-             * Imports the column distribution strategy metadata. Used to restore the
-             * column distribution strategy after the table is destroyed and recreated.
-             *
-             * @param metadata
-             * The metadata to import.
-             *
-             * @param columnIterator
-             * A function that is called for each significant column in the table.
-             */
-            importMetadata(metadata, columnIterator) {
-                const { enabledColumns } = this.viewport.grid;
-                const savedColumnIds = Object.keys(metadata.columnWidths);
-                if (this.invalidated ||
-                    this.type !== metadata.type ||
-                    !enabledColumns?.length) {
-                    return;
-                }
-                let columnId;
-                for (let i = 0, iEnd = savedColumnIds.length; i < iEnd; ++i) {
-                    columnId = savedColumnIds[i];
-                    if (enabledColumns.indexOf(columnId) === -1) {
-                        continue;
-                    }
-                    this.columnWidths[columnId] = metadata.columnWidths[columnId];
-                    columnIterator?.(columnId);
-                }
-            }
-            /**
-             * Validates the column distribution strategy on update. This method
-             * is used to determine whether the current distribution strategy metadata
-             * should be invalidated when the table is updated.
-             *
-             * @param newOptions
-             * The new options to validate.
-             */
-            validateOnUpdate(newOptions) {
-                if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'resizing') &&
-                    newOptions.rendering?.columns?.resizing?.mode !== this.type) {
-                    this.invalidated = true;
-                }
-                else if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'distribution') &&
-                    newOptions.rendering?.columns?.distribution !== this.type) {
-                    this.invalidated = true;
-                }
-            }
             /* *
              *
              * Static Methods
@@ -8696,12 +8640,14 @@
                 const colW = resizer.columnStartWidth ?? 0;
                 const minWidth = DistributionStrategy.getMinWidth(column);
                 const nextCol = vp.columns[column.index + 1];
-                const newW = Math.max(colW + diff, minWidth);
+                const newW = Math.round(Math.max(colW + diff, minWidth) * 10) / 10;
                 this.columnWidths[column.id] = newW;
                 this.columnWidthUnits[column.id] = 0; // Always save in px
+                column.update({ width: newW }, false);
                 if (nextCol) {
-                    this.columnWidths[nextCol.id] = Math.max((resizer.nextColumnStartWidth ?? 0) + colW - newW, minWidth);
+                    const newNextW = this.columnWidths[nextCol.id] = Math.round(Math.max((resizer.nextColumnStartWidth ?? 0) + colW - newW, minWidth) * 10) / 10;
                     this.columnWidthUnits[nextCol.id] = 0; // Always save in px
+                    nextCol.update({ width: newNextW }, false);
                 }
             }
             /**
@@ -8725,27 +8671,6 @@
                     occupiedWidth += vp.getWidthFromRatio(width / 100);
                 }
                 return occupiedWidth;
-            }
-            exportMetadata() {
-                return {
-                    ...super.exportMetadata(),
-                    columnWidthUnits: this.columnWidthUnits
-                };
-            }
-            importMetadata(metadata) {
-                super.importMetadata(metadata, (colId) => {
-                    const unit = metadata.columnWidthUnits[colId];
-                    if (defined(unit)) {
-                        this.columnWidthUnits[colId] = unit;
-                    }
-                });
-            }
-            validateOnUpdate(newOptions) {
-                super.validateOnUpdate(newOptions);
-                if (!this.invalidated && (Object.hasOwnProperty.call(newOptions.columnDefaults || {}, 'width') ||
-                    newOptions.columns?.some((col) => Object.hasOwnProperty.call(col || {}, 'width')))) {
-                    this.invalidated = true;
-                }
             }
         }
         /* *
@@ -8992,7 +8917,7 @@
 
         return GridUtils;
     });
-    _registerModule(_modules, 'Grid/Core/Table/ColumnDistribution/FixedDistributionStrategy.js', [_modules['Grid/Core/Table/ColumnDistribution/ColumnDistributionStrategy.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Core/GridUtils.js'], _modules['Core/Utilities.js']], function (DistributionStrategy, Globals, GridUtils, U) {
+    _registerModule(_modules, 'Grid/Core/Table/ColumnDistribution/FixedDistributionStrategy.js', [_modules['Grid/Core/Table/ColumnDistribution/ColumnDistributionStrategy.js'], _modules['Grid/Core/Globals.js'], _modules['Grid/Core/GridUtils.js']], function (DistributionStrategy, Globals, GridUtils) {
         /* *
          *
          *  Fixed Distribution Strategy class
@@ -9008,7 +8933,6 @@
          *
          * */
         const { makeHTMLElement } = GridUtils;
-        const { defined } = U;
         /* *
          *
          *  Class
@@ -9071,8 +8995,9 @@
                 if (!column) {
                     return;
                 }
-                this.columnWidths[column.id] = Math.max((resizer.columnStartWidth || 0) + diff, DistributionStrategy.getMinWidth(column));
+                const width = this.columnWidths[column.id] = Math.round(Math.max((resizer.columnStartWidth || 0) + diff, DistributionStrategy.getMinWidth(column)) * 10) / 10;
                 this.columnWidthUnits[column.id] = 0; // Always save in px
+                column.update({ width }, false);
             }
             /**
              * Creates a mock element to measure the width of the column from the CSS.
@@ -9097,27 +9022,6 @@
                 const result = mock.offsetWidth || 100;
                 mock.remove();
                 return result;
-            }
-            exportMetadata() {
-                return {
-                    ...super.exportMetadata(),
-                    columnWidthUnits: this.columnWidthUnits
-                };
-            }
-            importMetadata(metadata) {
-                super.importMetadata(metadata, (colId) => {
-                    const unit = metadata.columnWidthUnits[colId];
-                    if (defined(unit)) {
-                        this.columnWidthUnits[colId] = unit;
-                    }
-                });
-            }
-            validateOnUpdate(newOptions) {
-                super.validateOnUpdate(newOptions);
-                if (!this.invalidated && (Object.hasOwnProperty.call(newOptions.columnDefaults || {}, 'width') ||
-                    newOptions.columns?.some((col) => Object.hasOwnProperty.call(col || {}, 'width')))) {
-                    this.invalidated = true;
-                }
             }
         }
         /* *
@@ -9149,6 +9053,10 @@
          *  Class
          *
          * */
+        /**
+         * @deprecated
+         * This strategy is deprecated and will be removed in the future.
+         */
         class FullDistributionStrategy extends DistributionStrategy {
             constructor() {
                 /* *
@@ -9196,8 +9104,12 @@
                     newRightW = minWidth;
                     newLeftW = leftColW + rightColW - minWidth;
                 }
-                this.columnWidths[column.id] = vp.getRatioFromWidth(newLeftW);
-                this.columnWidths[nextColumn.id] = vp.getRatioFromWidth(newRightW);
+                const leftW = this.columnWidths[column.id] =
+                    vp.getRatioFromWidth(newLeftW);
+                const rightW = this.columnWidths[nextColumn.id] =
+                    vp.getRatioFromWidth(newRightW);
+                column.update({ width: (leftW * 100).toFixed(4) + '%' }, false);
+                nextColumn.update({ width: (rightW * 100).toFixed(4) + '%' }, false);
             }
             /**
              * The initial width of the column in the full distribution mode. The last
@@ -9248,13 +9160,6 @@
                 const result = this.getInitialFullDistWidth(column, mock);
                 mock.remove();
                 return result;
-            }
-            importMetadata(metadata) {
-                if (Object.keys(metadata.columnWidths).length !==
-                    this.viewport.grid.enabledColumns?.length) {
-                    return;
-                }
-                super.importMetadata(metadata);
             }
         }
         /* *
@@ -10503,8 +10408,7 @@
              * Returns all column names.
              */
             getColumnNames() {
-                const table = this, columnNames = Object.keys(table.columns);
-                return columnNames;
+                return Object.keys(this.columns);
             }
             /**
              * Retrieves all or the given columns.
@@ -13135,7 +13039,7 @@
                 this.viewport = viewport;
                 this.loadData();
                 this.dataType = this.assumeDataType();
-                this.options = merge(grid.options?.columnDefaults ?? {}, grid.columnOptionsMap?.[id] ?? {});
+                this.options = merge(grid.options?.columnDefaults ?? {}, grid.columnOptionsMap?.[id]?.options ?? {});
                 fireEvent(this, 'afterInit');
             }
             /* *
@@ -13165,7 +13069,7 @@
              */
             assumeDataType() {
                 const { grid } = this.viewport;
-                const type = grid.columnOptionsMap?.[this.id]?.dataType ??
+                const type = grid.columnOptionsMap?.[this.id]?.options.dataType ??
                     grid.options?.columnDefaults?.dataType;
                 if (type) {
                     return type;
@@ -13269,6 +13173,19 @@
              */
             format(template) {
                 return Templating.format(template, this, this.viewport.grid);
+            }
+            /**
+             * Updates the column with new options.
+             *
+             * @param newOptions
+             * The new options for the column.
+             *
+             * @param render
+             * Whether to re-render after the update. If `false`, the update will just
+             * extend the options object. Defaults to `true`.
+             */
+            async update(newOptions, render = true) {
+                await this.viewport.grid.updateColumn(this.id, newOptions, render);
             }
         }
         /* *
@@ -13735,8 +13652,7 @@
                 const sortingController = querying.sorting;
                 const a11y = viewport.grid.accessibility;
                 sortingController.setSorting(order, this.column.id);
-                await querying.proceed();
-                viewport.loadPresentationData();
+                await viewport.updateRows();
                 for (const col of viewport.columns) {
                     col.sorting?.addHeaderElementAttributes();
                 }
@@ -14338,8 +14254,63 @@
              */
             render() {
                 super.render();
-                // It may happen that `await` will be needed here in the future.
                 void this.setValue();
+            }
+            /**
+             * Sets the cell value and updates its content with it.
+             *
+             * @param value
+             * The raw value to set. If not provided, it will use the value from the
+             * data table for the current row and column.
+             *
+             * @param updateTable
+             * Whether to update the table after setting the content. Defaults to
+             * `false`, meaning the table will not be updated.
+             */
+            async setValue(value = this.column.data?.[this.row.index], updateTable = false) {
+                this.value = value;
+                if (updateTable && await this.updateDataTable()) {
+                    return;
+                }
+                if (this.content) {
+                    this.content.update();
+                }
+                else {
+                    this.content = this.column.createCellContent(this);
+                }
+                this.htmlElement.setAttribute('data-value', this.value + '');
+                this.setCustomClassName(this.column.options.cells?.className);
+                fireEvent(this, 'afterRender', { target: this });
+            }
+            /**
+             * Updates the the data table so that it reflects the current state of
+             * the grid.
+             *
+             * @returns
+             * A promise that resolves to `true` if the cell triggered all the whole
+             * viewport rows to be updated, or `false` if the only change should be
+             * the cell's content.
+             */
+            async updateDataTable() {
+                if (this.column.data?.[this.row.index] === this.value) {
+                    // Abort if the value is the same as in the data table.
+                    return false;
+                }
+                const vp = this.column.viewport;
+                const { dataTable: originalDataTable } = vp.grid;
+                const rowTableIndex = this.row.id &&
+                    originalDataTable?.getLocalRowIndex(this.row.id);
+                if (!originalDataTable || rowTableIndex === void 0) {
+                    return false;
+                }
+                this.row.data[this.column.id] = this.value;
+                originalDataTable.setCell(this.column.id, rowTableIndex, this.value);
+                vp.grid.querying.shouldBeUpdated = true;
+                if (vp.grid.querying.getModifiers().length < 1) {
+                    return false;
+                }
+                await vp.updateRows();
+                return true;
             }
             initEvents() {
                 this.cellEvents.push(['dblclick', (e) => (this.onDblClick(e))]);
@@ -14437,63 +14408,6 @@
                 super.onKeyDown(e);
             }
             /**
-             * Sets the value & updating content of the cell.
-             *
-             * @param value
-             * The raw value to set. If not provided, it will use the value from the
-             * data table for the current row and column.
-             *
-             * @param updateTable
-             * Whether to update the table after setting the content. Defaults to
-             * `false`, meaning the table will not be updated.
-             */
-            async setValue(value = this.column.data?.[this.row.index], updateTable = false) {
-                this.value = value;
-                const vp = this.column.viewport;
-                if (this.content) {
-                    this.content.update();
-                }
-                else {
-                    this.content = this.column.createCellContent(this);
-                }
-                this.htmlElement.setAttribute('data-value', this.value + '');
-                this.setCustomClassName(this.column.options.cells?.className);
-                fireEvent(this, 'afterRender', { target: this });
-                if (!updateTable) {
-                    return;
-                }
-                const { dataTable: originalDataTable } = vp.grid;
-                // Taken the local row index of the original grid data table, but
-                // in the future it should affect the globally original data table.
-                // (To be done after the DataLayer refinement)
-                const rowTableIndex = this.row.id && originalDataTable?.getLocalRowIndex(this.row.id);
-                if (!originalDataTable || rowTableIndex === void 0) {
-                    return;
-                }
-                this.row.data[this.column.id] = this.value;
-                originalDataTable.setCell(this.column.id, rowTableIndex, this.value);
-                if (vp.grid.querying.willNotModify()) {
-                    // If the data table does not need to be modified, skip the
-                    // data modification and don't update the whole table. It checks
-                    // if the modifiers are globally set. Can be changed in the future
-                    // to check if the modifiers are set for the specific columns.
-                    return;
-                }
-                let focusedRowId;
-                if (vp.focusCursor) {
-                    focusedRowId = vp.dataTable.getOriginalRowIndex(vp.focusCursor[0]);
-                }
-                await vp.grid.querying.proceed(true);
-                vp.loadPresentationData();
-                if (focusedRowId !== void 0 && vp.focusCursor) {
-                    const newRowIndex = vp.dataTable.getLocalRowIndex(focusedRowId);
-                    if (newRowIndex !== void 0) {
-                        vp.rows[newRowIndex - vp.rows[0].index]
-                            ?.cells[vp.focusCursor[1]].htmlElement.focus();
-                    }
-                }
-            }
-            /**
              * Destroys the cell.
              */
             destroy() {
@@ -14588,6 +14502,20 @@
                 this.data = data;
             }
             /**
+             * Updates the row data and its cells with the latest values from the data
+             * table.
+             */
+            update() {
+                this.id = this.viewport.dataTable.getOriginalRowIndex(this.index);
+                this.updateRowAttributes();
+                this.loadData();
+                for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
+                    const cell = this.cells[i];
+                    void cell.setValue();
+                }
+                this.reflow();
+            }
+            /**
              * Adds or removes the hovered CSS class to the row element.
              *
              * @param hovered
@@ -14617,16 +14545,10 @@
             setRowAttributes() {
                 const idx = this.index;
                 const el = this.htmlElement;
-                const a11y = this.viewport.grid.accessibility;
                 el.classList.add(Globals.getClassName('rowElement'));
                 // Index of the row in the presentation data table
                 el.setAttribute('data-row-index', idx);
-                // Index of the row in the original data table (ID)
-                if (this.id !== void 0) {
-                    el.setAttribute('data-row-id', this.id);
-                }
-                // Calculate levels of header, 1 to avoid indexing from 0
-                a11y?.setRowIndex(el, idx + (this.viewport.header?.levels ?? 1) + 1);
+                this.updateRowAttributes();
                 // Indexing from 0, so rows with even index are odd.
                 el.classList.add(Globals.getClassName(idx % 2 ? 'rowEven' : 'rowOdd'));
                 if (this.viewport.grid.hoveredRowIndex === idx) {
@@ -14635,6 +14557,21 @@
                 if (this.viewport.grid.syncedRowIndex === idx) {
                     el.classList.add(Globals.getClassName('syncedRow'));
                 }
+            }
+            /**
+             * Sets the row HTML element attributes that are updateable in the row
+             * lifecycle.
+             */
+            updateRowAttributes() {
+                const a11y = this.viewport.grid.accessibility;
+                const idx = this.index;
+                const el = this.htmlElement;
+                // Index of the row in the original data table (ID)
+                if (this.id !== void 0) {
+                    el.setAttribute('data-row-id', this.id);
+                }
+                // Calculate levels of header, 1 to avoid indexing from 0
+                a11y?.setRowIndex(el, idx + (this.viewport.header?.levels ?? 1) + 1);
             }
             /**
              * Sets the vertical translation of the row. Used for virtual scrolling.
@@ -14732,9 +14669,7 @@
                 }
                 // Load & render rows
                 this.renderRows(this.rowCursor);
-                if (this.rowSettings?.virtualization) {
-                    this.adjustRowHeights();
-                }
+                this.adjustRowHeights();
             }
             /**
              * Renders the rows in the viewport. It is called when the rows need to be
@@ -14916,7 +14851,8 @@
              * the default height.
              */
             adjustRowHeights() {
-                if (this.strictRowHeights) {
+                if (this.strictRowHeights ||
+                    !this.rowSettings?.virtualization) {
                     return;
                 }
                 const { rowCursor: cursor, defaultRowHeight: defaultH } = this;
@@ -14977,9 +14913,7 @@
                 for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
                     rows[i].reflow();
                 }
-                if (this.rowSettings?.virtualization) {
-                    this.adjustRowHeights();
-                }
+                this.adjustRowHeights();
             }
             /**
              * Returns the default height of a row. This method should be called only
@@ -15062,9 +14996,7 @@
                     const vp = this.viewport;
                     vp.columnDistribution.resize(this, diff);
                     vp.reflow();
-                    if (vp.grid.options?.rendering?.rows?.virtualization) {
-                        vp.rowsVirtualizer.adjustRowHeights();
-                    }
+                    vp.rowsVirtualizer.adjustRowHeights();
                     fireEvent(this.draggedColumn, 'afterResize', {
                         target: this.draggedColumn,
                         originalEvent: e
@@ -15333,7 +15265,53 @@
                 }
             }
             /**
-             * Loads the modified data from the data table and renders the rows.
+             * Updates the rows of the table.
+             */
+            async updateRows() {
+                const vp = this;
+                let focusedRowId;
+                if (vp.focusCursor) {
+                    focusedRowId = vp.dataTable.getOriginalRowIndex(vp.focusCursor[0]);
+                }
+                const oldRowsCount = (vp.rows[vp.rows.length - 1]?.index ?? -1) + 1;
+                await vp.grid.querying.proceed();
+                this.dataTable = this.grid.presentationTable;
+                for (const column of this.columns) {
+                    column.loadData();
+                }
+                if (oldRowsCount !== vp.dataTable.rowCount) {
+                    this.updateVirtualization();
+                    this.rowsVirtualizer.rerender();
+                }
+                else {
+                    for (let i = 0, iEnd = this.rows.length; i < iEnd; ++i) {
+                        this.rows[i].update();
+                    }
+                    this.rowsVirtualizer.adjustRowHeights();
+                }
+                if (focusedRowId !== void 0 && vp.focusCursor) {
+                    const newRowIndex = vp.dataTable.getLocalRowIndex(focusedRowId);
+                    if (newRowIndex !== void 0) {
+                        // Scroll to the focused row.
+                        vp.scrollToRow(newRowIndex);
+                        // Focus the cell that was focused before the update.
+                        setTimeout(() => {
+                            if (!defined(vp.focusCursor?.[1])) {
+                                return;
+                            }
+                            vp.rows[newRowIndex - vp.rows[0].index]?.cells[vp.focusCursor[1]].htmlElement.focus();
+                        });
+                    }
+                }
+            }
+            /**
+             * Loads the modified data from the data table and renders the rows. Always
+             * removes all rows and re-renders them, so it's better to use `updateRows`
+             * instead, because it is more performant in some cases.
+             *
+             * @deprecated
+             * Use `updateRows` instead. This method is kept for backward compatibility
+             * reasons, but it will be removed in the next major version.
              */
             loadPresentationData() {
                 this.dataTable = this.grid.presentationTable;
@@ -15441,10 +15419,6 @@
             applyStateMeta(meta) {
                 this.tbodyElement.scrollTop = meta.scrollTop;
                 this.tbodyElement.scrollLeft = meta.scrollLeft;
-                if (!meta.columnDistribution.invalidated) {
-                    const colDistMeta = meta.columnDistribution.exportMetadata();
-                    this.columnDistribution.importMetadata(colDistMeta);
-                }
                 if (meta.focusCursor) {
                     const [rowIndex, columnIndex] = meta.focusCursor;
                     const row = this.rows[rowIndex - this.rows[0].index];
@@ -15859,6 +15833,17 @@
                     (b || 0) > (a || 0) ? 1 :
                         0);
             }
+            static compareFactory(direction, customCompare) {
+                if (customCompare) {
+                    if (direction === 'desc') {
+                        return (a, b) => -customCompare(a, b);
+                    }
+                    return customCompare;
+                }
+                return (direction === 'asc' ?
+                    SortModifier.ascending :
+                    SortModifier.descending);
+            }
             /* *
              *
              *  Constructor
@@ -16032,9 +16017,7 @@
             modifyTable(table, eventDetail) {
                 const modifier = this;
                 modifier.emit({ type: 'modify', detail: eventDetail, table });
-                const columnNames = table.getColumnNames(), rowCount = table.getRowCount(), rowReferences = this.getRowReferences(table), { direction, orderByColumn, orderInColumn } = modifier.options, compare = (direction === 'asc' ?
-                    SortModifier.ascending :
-                    SortModifier.descending), orderByColumnIndex = columnNames.indexOf(orderByColumn), modified = table.modified;
+                const columnNames = table.getColumnNames(), rowCount = table.getRowCount(), rowReferences = this.getRowReferences(table), { direction, orderByColumn, orderInColumn, compare: customCompare } = modifier.options, compare = SortModifier.compareFactory(direction, customCompare), orderByColumnIndex = columnNames.indexOf(orderByColumn), modified = table.modified;
                 if (orderByColumnIndex !== -1) {
                     rowReferences.sort((a, b) => compare(a.row[orderByColumnIndex], b.row[orderByColumnIndex]));
                 }
@@ -16115,16 +16098,11 @@
             /**
              * Constructs the SortingController instance.
              *
-             * @param grid
-             * The data grid instance.
+             * @param querying
+             * The querying controller instance.
              */
-            constructor(grid) {
-                /**
-                 * The flag that indicates if the data should be updated because of the
-                 * change in the sorting options.
-                 */
-                this.shouldBeUpdated = false;
-                this.grid = grid;
+            constructor(querying) {
+                this.querying = querying;
             }
             /* *
             *
@@ -16145,7 +16123,7 @@
             setSorting(order, columnId) {
                 if (this.currentSorting?.columnId !== columnId ||
                     this.currentSorting?.order !== order) {
-                    this.shouldBeUpdated = true;
+                    this.querying.shouldBeUpdated = true;
                     this.currentSorting = {
                         columnId,
                         order
@@ -16157,7 +16135,7 @@
              * Returns the sorting options from the data grid options.
              */
             getSortingOptions() {
-                const grid = this.grid, { columnOptionsMap } = grid;
+                const grid = this.querying.grid, { columnOptionsMap } = grid;
                 if (!columnOptionsMap) {
                     return { order: null };
                 }
@@ -16166,7 +16144,7 @@
                 let foundColumnId;
                 for (let i = columnIDs.length - 1; i > -1; --i) {
                     const columnId = columnIDs[i];
-                    const columnOptions = columnOptionsMap[columnId];
+                    const columnOptions = columnOptionsMap[columnId]?.options || {};
                     const order = columnOptions.sorting?.order;
                     if (order) {
                         if (foundColumnId) {
@@ -16204,12 +16182,14 @@
                     return;
                 }
                 const { columnId, order } = this.currentSorting;
-                if (!order) {
+                if (!order || !columnId) {
                     return;
                 }
                 return new SortModifier({
                     orderByColumn: columnId,
-                    direction: order
+                    direction: order,
+                    compare: this.querying.grid.columnOptionsMap?.[columnId]
+                        ?.options?.sorting?.compare
                 });
             }
         }
@@ -16257,9 +16237,13 @@
             *
             * */
             constructor(grid) {
+                /**
+                 * This flag should be set to `true` if the modifiers should reapply to the
+                 * data table due to some data change or other important reason.
+                 */
+                this.shouldBeUpdated = false;
                 this.grid = grid;
-                this.sorting = new SortingController(grid);
-                /// this.filtering = new FilteringController(grid);
+                this.sorting = new SortingController(this);
             }
             /* *
             *
@@ -16274,10 +16258,7 @@
              * changed.
              */
             async proceed(force = false) {
-                if (force ||
-                    this.sorting.shouldBeUpdated // ||
-                // this.filtering.shouldBeUpdated
-                ) {
+                if (force || this.shouldBeUpdated) {
                     await this.modifyData();
                 }
             }
@@ -16288,12 +16269,14 @@
                 this.sorting.loadOptions();
             }
             /**
-             * Check if the data table does not need to be modified.
+             * Creates a list of modifiers that should be applied to the data table.
              */
-            willNotModify() {
-                return (!this.sorting.modifier
-                // && !this.filtering.modifier
-                );
+            getModifiers() {
+                const modifiers = [];
+                if (this.sorting.modifier) {
+                    modifiers.push(this.sorting.modifier);
+                }
+                return modifiers;
             }
             /**
              * Apply all modifiers to the data table.
@@ -16303,14 +16286,7 @@
                 if (!originalDataTable) {
                     return;
                 }
-                const modifiers = [];
-                // TODO: Implement filtering
-                // if (this.filtering.modifier) {
-                //     modifiers.push(this.filtering.modifier);
-                // }
-                if (this.sorting.modifier) {
-                    modifiers.push(this.sorting.modifier);
-                }
+                const modifiers = this.getModifiers();
                 if (modifiers.length > 0) {
                     const chainModifier = new ChainModifier({}, ...modifiers);
                     const dataTableCopy = originalDataTable.clone();
@@ -16320,8 +16296,7 @@
                 else {
                     this.grid.presentationTable = originalDataTable.modified;
                 }
-                this.sorting.shouldBeUpdated = false;
-                /// this.filtering.shouldBeUpdated = false;
+                this.shouldBeUpdated = false;
             }
         }
         /* *
@@ -16478,10 +16453,10 @@
                 newOptions = merge(newOptions);
                 if (newOptions.columns) {
                     if (oneToOne) {
-                        this.loadColumnOptionsOneToOne(newOptions.columns);
+                        this.setColumnOptionsOneToOne(newOptions.columns);
                     }
                     else {
-                        this.loadColumnOptions(newOptions.columns);
+                        this.setColumnOptions(newOptions.columns);
                     }
                     delete newOptions.columns;
                 }
@@ -16492,14 +16467,17 @@
                 if (!columnOptionsArray) {
                     return;
                 }
-                const columnOptionsObj = {};
+                const columnOptionsMap = {};
                 for (let i = 0, iEnd = columnOptionsArray?.length ?? 0; i < iEnd; ++i) {
-                    columnOptionsObj[columnOptionsArray[i].id] = columnOptionsArray[i];
+                    columnOptionsMap[columnOptionsArray[i].id] = {
+                        index: i,
+                        options: columnOptionsArray[i]
+                    };
                 }
-                this.columnOptionsMap = columnOptionsObj;
+                this.columnOptionsMap = columnOptionsMap;
             }
             /**
-             * Loads the new column options to the userOptions field.
+             * Sets the new column options to the userOptions field.
              *
              * @param newColumnOptions
              * The new column options that should be loaded.
@@ -16508,29 +16486,29 @@
              * Whether to overwrite the existing column options with the new ones.
              * Default is `false`.
              */
-            loadColumnOptions(newColumnOptions, overwrite = false) {
+            setColumnOptions(newColumnOptions, overwrite = false) {
                 if (!this.userOptions.columns) {
                     this.userOptions.columns = [];
                 }
                 const columnOptions = this.userOptions.columns;
                 for (let i = 0, iEnd = newColumnOptions.length; i < iEnd; ++i) {
                     const newOptions = newColumnOptions[i];
-                    const indexInPrevOptions = columnOptions.findIndex((prev) => prev.id === newOptions.id);
+                    const colOptionsIndex = this.columnOptionsMap?.[newOptions.id]?.index ?? -1;
                     // If the new column options contain only the id.
                     if (Object.keys(newOptions).length < 2) {
-                        if (overwrite && indexInPrevOptions !== -1) {
-                            columnOptions.splice(indexInPrevOptions, 1);
+                        if (overwrite && colOptionsIndex !== -1) {
+                            columnOptions.splice(colOptionsIndex, 1);
                         }
                         continue;
                     }
-                    if (indexInPrevOptions === -1) {
+                    if (colOptionsIndex === -1) {
                         columnOptions.push(newOptions);
                     }
                     else if (overwrite) {
-                        columnOptions[indexInPrevOptions] = newOptions;
+                        columnOptions[colOptionsIndex] = newOptions;
                     }
                     else {
-                        columnOptions[indexInPrevOptions] = merge(columnOptions[indexInPrevOptions], newOptions);
+                        merge(true, columnOptions[colOptionsIndex], newOptions);
                     }
                 }
                 if (columnOptions.length < 1) {
@@ -16545,7 +16523,7 @@
              * @param newColumnOptions
              * The new column options that should be loaded.
              */
-            loadColumnOptionsOneToOne(newColumnOptions) {
+            setColumnOptionsOneToOne(newColumnOptions) {
                 const prevColumnOptions = this.userOptions.columns;
                 const columnOptions = [];
                 let prevOptions;
@@ -16589,7 +16567,6 @@
                     newDataTable = true;
                     this.initVirtualization();
                 }
-                this.viewport?.columnDistribution.validateOnUpdate(options);
                 this.querying.loadOptions();
                 // Update locale.
                 const locale = options.lang?.locale;
@@ -16620,7 +16597,7 @@
              * options with the new ones instead of merging them.
              */
             async updateColumn(columnId, options, render = true, overwrite = false) {
-                this.loadColumnOptions([{
+                this.setColumnOptions([{
                         id: columnId,
                         ...options
                     }], overwrite);
@@ -16833,7 +16810,7 @@
                 const result = [];
                 for (let i = 0, iEnd = columnsIncluded.length; i < iEnd; ++i) {
                     columnName = columnsIncluded[i];
-                    if (columnOptionsMap?.[columnName]?.enabled !== false) {
+                    if (columnOptionsMap?.[columnName]?.options?.enabled !== false) {
                         result.push(columnName);
                     }
                 }
@@ -17777,17 +17754,19 @@
              */
             function createEditModeRenderer(column) {
                 const editModeOptions = column.options.cells?.editMode;
-                const editModeRendererTypeName = editModeOptions?.renderer?.type;
-                const staticRendererTypeName = column.options?.cells?.renderer?.type || 'text';
-                if (editModeRendererTypeName) {
-                    return new CellRendererRegistry.types[editModeRendererTypeName](column, editModeOptions?.renderer || {});
+                const selectedEditModeRendererTypeName = editModeOptions?.renderer?.type;
+                const viewRendererTypeName = column.options?.cells?.renderer?.type || 'text';
+                if (selectedEditModeRendererTypeName) {
+                    return new CellRendererRegistry.types[selectedEditModeRendererTypeName](column, editModeOptions?.renderer || {});
                 }
-                const staticRendererType = CellRendererRegistry.types[staticRendererTypeName];
-                let defRenderer = staticRendererType.defaultEditingRenderer;
-                if (typeof defRenderer !== 'string') {
-                    defRenderer = defRenderer[column.dataType];
+                const ViewRendererType = CellRendererRegistry.types[viewRendererTypeName] ||
+                    CellRendererRegistry.types.text;
+                let editModeRendererTypeName = ViewRendererType.defaultEditingRenderer;
+                if (typeof editModeRendererTypeName !== 'string') {
+                    editModeRendererTypeName =
+                        editModeRendererTypeName[column.dataType] || 'textInput';
                 }
-                return new CellRendererRegistry.types[defRenderer](column, defRenderer === staticRendererTypeName ? merge(column.options.cells?.renderer, { disabled: false }) || {} : {});
+                return new CellRendererRegistry.types[editModeRendererTypeName](column, editModeRendererTypeName === viewRendererTypeName ? merge(column.options.cells?.renderer, { disabled: false }) || {} : {});
             }
             /**
              * Callback function called after column initialization.
@@ -20718,6 +20697,174 @@
          * */
 
         return RangeModifier;
+    });
+    _registerModule(_modules, 'Data/Modifiers/FilterModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
+        /* *
+         *
+         *  (c) 2009-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { isFunction, merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Filters out table rows matching a given condition.
+         */
+        class FilterModifier extends DataModifier {
+            /* *
+             *
+             *  Static Functions
+             *
+             * */
+            /**
+             * Compiles a filter condition into a callback function.
+             *
+             * @param {FilterCondition} condition
+             * Condition to compile.
+             */
+            static compile(condition) {
+                if (isFunction(condition)) {
+                    return condition;
+                }
+                const op = condition.operator;
+                switch (op) {
+                    case 'and': {
+                        const subs = condition.conditions.map((c) => this.compile(c));
+                        return (row, table, i) => subs.every((cond) => cond(row, table, i));
+                    }
+                    case 'or': {
+                        const subs = condition.conditions.map((c) => this.compile(c));
+                        return (row, table, i) => subs.some((cond) => cond(row, table, i));
+                    }
+                    case 'not': {
+                        const sub = this.compile(condition.condition);
+                        return (row, table, i) => !sub(row, table, i);
+                    }
+                }
+                const { columnName: col, value } = condition;
+                switch (op) {
+                    case '==':
+                        // eslint-disable-next-line eqeqeq
+                        return (row) => row[col] == value;
+                    case '===':
+                        return (row) => row[col] === value;
+                    case '!=':
+                        // eslint-disable-next-line eqeqeq
+                        return (row) => row[col] != value;
+                    case '!==':
+                        return (row) => row[col] !== value;
+                    case '>':
+                        return (row) => (row[col] || 0) > (value || 0);
+                    case '>=':
+                        return (row) => (row[col] || 0) >= (value || 0);
+                    case '<':
+                        return (row) => (row[col] || 0) < (value || 0);
+                    case '<=':
+                        return (row) => (row[col] || 0) <= (value || 0);
+                }
+                const { ignoreCase } = condition;
+                const str = (val) => {
+                    const s = '' + val;
+                    return (ignoreCase ?? true) ? s.toLowerCase() : s;
+                };
+                switch (op) {
+                    case 'contains':
+                        return (row) => str(row[col]).includes(str(value));
+                    default:
+                        return (row) => str(row[col])[op](str(value));
+                }
+            }
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the filter modifier.
+             *
+             * @param {Partial<FilterModifier.Options>} [options]
+             * Options to configure the filter modifier.
+             */
+            constructor(options) {
+                super();
+                this.options = merge(FilterModifier.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Replaces table rows with filtered rows.
+             *
+             * @param {DataTable} table
+             * Table to modify.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyTable(table, eventDetail) {
+                const modifier = this;
+                modifier.emit({ type: 'modify', detail: eventDetail, table });
+                const { condition } = modifier.options;
+                if (!condition) {
+                    // If no condition is set, return the unmodified table.
+                    return table;
+                }
+                const matchRow = FilterModifier.compile(condition);
+                // This line should be investigated further when reworking Data Layer.
+                const modified = table.modified;
+                const rows = [];
+                const indexes = [];
+                for (let i = 0, iEnd = table.getRowCount(); i < iEnd; ++i) {
+                    const row = table.getRowObject(i);
+                    if (!row) {
+                        continue;
+                    }
+                    if (matchRow(row, table, i)) {
+                        rows.push(row);
+                        indexes.push(modified.getOriginalRowIndex(i));
+                    }
+                }
+                modified.deleteRows();
+                modified.setRows(rows);
+                modified.setOriginalRowIndexes(indexes);
+                modifier.emit({ type: 'afterModify', detail: eventDetail, table });
+                return table;
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Default options for the filter modifier.
+         */
+        FilterModifier.defaultOptions = {
+            type: 'Filter'
+        };
+        DataModifier.registerType('Filter', FilterModifier);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return FilterModifier;
     });
     _registerModule(_modules, 'Grid/Pro/CellRendering/CellRenderer.js', [], function () {
         /* *

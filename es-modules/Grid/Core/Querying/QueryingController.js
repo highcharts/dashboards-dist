@@ -36,9 +36,13 @@ class QueryingController {
     *
     * */
     constructor(grid) {
+        /**
+         * This flag should be set to `true` if the modifiers should reapply to the
+         * data table due to some data change or other important reason.
+         */
+        this.shouldBeUpdated = false;
         this.grid = grid;
-        this.sorting = new SortingController(grid);
-        /// this.filtering = new FilteringController(grid);
+        this.sorting = new SortingController(this);
     }
     /* *
     *
@@ -53,10 +57,7 @@ class QueryingController {
      * changed.
      */
     async proceed(force = false) {
-        if (force ||
-            this.sorting.shouldBeUpdated // ||
-        // this.filtering.shouldBeUpdated
-        ) {
+        if (force || this.shouldBeUpdated) {
             await this.modifyData();
         }
     }
@@ -67,12 +68,14 @@ class QueryingController {
         this.sorting.loadOptions();
     }
     /**
-     * Check if the data table does not need to be modified.
+     * Creates a list of modifiers that should be applied to the data table.
      */
-    willNotModify() {
-        return (!this.sorting.modifier
-        // && !this.filtering.modifier
-        );
+    getModifiers() {
+        const modifiers = [];
+        if (this.sorting.modifier) {
+            modifiers.push(this.sorting.modifier);
+        }
+        return modifiers;
     }
     /**
      * Apply all modifiers to the data table.
@@ -82,14 +85,7 @@ class QueryingController {
         if (!originalDataTable) {
             return;
         }
-        const modifiers = [];
-        // TODO: Implement filtering
-        // if (this.filtering.modifier) {
-        //     modifiers.push(this.filtering.modifier);
-        // }
-        if (this.sorting.modifier) {
-            modifiers.push(this.sorting.modifier);
-        }
+        const modifiers = this.getModifiers();
         if (modifiers.length > 0) {
             const chainModifier = new ChainModifier({}, ...modifiers);
             const dataTableCopy = originalDataTable.clone();
@@ -99,8 +95,7 @@ class QueryingController {
         else {
             this.grid.presentationTable = originalDataTable.modified;
         }
-        this.sorting.shouldBeUpdated = false;
-        /// this.filtering.shouldBeUpdated = false;
+        this.shouldBeUpdated = false;
     }
 }
 /* *

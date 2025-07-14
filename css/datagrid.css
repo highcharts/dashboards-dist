@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.4.0
+ * @license Highcharts Dashboards v3.5.0
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -379,6 +379,11 @@
 .hcg-table.hcg-virtualization thead,
 .highcharts-datagrid-table.highcharts-datagrid-virtualization thead {
     display: block;
+}
+
+.hcg-table thead,
+.highcharts-datagrid-table thead {
+    background-color: var(--ig-header-background);
 }
 
 .hcg-table thead th,

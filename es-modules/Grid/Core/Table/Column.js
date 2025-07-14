@@ -56,7 +56,7 @@ class Column {
         this.viewport = viewport;
         this.loadData();
         this.dataType = this.assumeDataType();
-        this.options = merge(grid.options?.columnDefaults ?? {}, grid.columnOptionsMap?.[id] ?? {});
+        this.options = merge(grid.options?.columnDefaults ?? {}, grid.columnOptionsMap?.[id]?.options ?? {});
         fireEvent(this, 'afterInit');
     }
     /* *
@@ -86,7 +86,7 @@ class Column {
      */
     assumeDataType() {
         const { grid } = this.viewport;
-        const type = grid.columnOptionsMap?.[this.id]?.dataType ??
+        const type = grid.columnOptionsMap?.[this.id]?.options.dataType ??
             grid.options?.columnDefaults?.dataType;
         if (type) {
             return type;
@@ -190,6 +190,19 @@ class Column {
      */
     format(template) {
         return Templating.format(template, this, this.viewport.grid);
+    }
+    /**
+     * Updates the column with new options.
+     *
+     * @param newOptions
+     * The new options for the column.
+     *
+     * @param render
+     * Whether to re-render after the update. If `false`, the update will just
+     * extend the options object. Defaults to `true`.
+     */
+    async update(newOptions, render = true) {
+        await this.viewport.grid.updateColumn(this.id, newOptions, render);
     }
 }
 /* *

@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.4.0 (2025-06-30)
+ * @license Highcharts Dashboards v3.5.0 (2025-07-14)
  * @module dashboards/dashboards
  *
  * (c) 2009-2025 Highsoft AS
@@ -17,6 +17,7 @@ import '../Data/Modifiers/ChainModifier.js';
 import '../Data/Modifiers/InvertModifier.js';
 import '../Data/Modifiers/RangeModifier.js';
 import '../Data/Modifiers/SortModifier.js';
+import '../Data/Modifiers/FilterModifier.js';
 import AST from '../Core/Renderer/HTML/AST.js';
 import DataConnector from '../Data/Connectors/DataConnector.js';
 import Board from '../Dashboards/Board.js';

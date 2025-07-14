@@ -2,8 +2,6 @@ import type { ColumnDistributionType } from '../../Options';
 import type Table from '../Table';
 import type Column from '../Column.js';
 import type ColumnsResizer from '../Actions/ColumnsResizer';
-import type Globals from '../../Globals';
-import type Options from '../../Options';
 /**
  * Represents a column distribution strategy.
  */
@@ -69,31 +67,6 @@ declare abstract class ColumnDistributionStrategy {
      */
     reflow(): void;
     /**
-     * Returns the current column distribution strategy metadata.
-     * @internal
-     */
-    exportMetadata(): ColumnDistributionStrategy.Metadata;
-    /**
-     * Imports the column distribution strategy metadata. Used to restore the
-     * column distribution strategy after the table is destroyed and recreated.
-     *
-     * @param metadata
-     * The metadata to import.
-     *
-     * @param columnIterator
-     * A function that is called for each significant column in the table.
-     */
-    importMetadata(metadata: ColumnDistributionStrategy.Metadata, columnIterator?: (columnId: string) => void): void;
-    /**
-     * Validates the column distribution strategy on update. This method
-     * is used to determine whether the current distribution strategy metadata
-     * should be invalidated when the table is updated.
-     *
-     * @param newOptions
-     * The new options to validate.
-     */
-    validateOnUpdate(newOptions: Globals.DeepPartial<Options>): void;
-    /**
      * Returns the minimum width of the column.
      *
      * @param column
@@ -103,11 +76,5 @@ declare abstract class ColumnDistributionStrategy {
      * The minimum width in pixels.
      */
     protected static getMinWidth(column: Column): number;
-}
-declare namespace ColumnDistributionStrategy {
-    interface Metadata {
-        type: ColumnDistributionType;
-        columnWidths: Record<string, number>;
-    }
 }
 export default ColumnDistributionStrategy;

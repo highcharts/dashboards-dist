@@ -1,8 +1,6 @@
 import type Column from '../Column.js';
 import type ColumnsResizer from '../Actions/ColumnsResizer.js';
-import type Options from '../../Options.js';
 import DistributionStrategy from './ColumnDistributionStrategy.js';
-import Globals from '../../Globals.js';
 declare class FixedDistributionStrategy extends DistributionStrategy {
     readonly type: "fixed";
     /**
@@ -25,13 +23,5 @@ declare class FixedDistributionStrategy extends DistributionStrategy {
      * @returns The initial width of the column.
      */
     private getInitialColumnWidth;
-    exportMetadata(): FixedDistributionStrategy.Metadata;
-    importMetadata(metadata: FixedDistributionStrategy.Metadata): void;
-    validateOnUpdate(newOptions: Globals.DeepPartial<Options>): void;
-}
-declare namespace FixedDistributionStrategy {
-    interface Metadata extends DistributionStrategy.Metadata {
-        columnWidthUnits: Record<string, number>;
-    }
 }
 export default FixedDistributionStrategy;

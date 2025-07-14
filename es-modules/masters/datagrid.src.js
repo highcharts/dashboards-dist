@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.4.0 (2025-06-30)
+ * @license Highcharts Dashboards v3.5.0 (2025-07-14)
  * @module datagrid/datagrid
  *
  * (c) 2009-2025 Highsoft AS
@@ -46,12 +46,14 @@ import '../Data/Modifiers/ChainModifier.js';
 import '../Data/Modifiers/InvertModifier.js';
 import '../Data/Modifiers/RangeModifier.js';
 import '../Data/Modifiers/SortModifier.js';
+import '../Data/Modifiers/FilterModifier.js';
 // Compositions
 import '../Grid/Pro/GridEvents.js';
 import '../Grid/Pro/CellEditing/CellEditingComposition.js';
 import '../Grid/Pro/Dash3Compatibility.js';
 import '../Grid/Pro/Credits/CreditsProComposition.js';
 // Cell Renderers
+import '../Grid/Pro/CellRendering/CellRenderersComposition.js';
 import '../Grid/Pro/CellRendering/Renderers/TextRenderer.js';
 import '../Grid/Pro/CellRendering/Renderers/CheckboxRenderer.js';
 import '../Grid/Pro/CellRendering/Renderers/SelectRenderer.js';

@@ -125,8 +125,7 @@ class ColumnSorting {
         const sortingController = querying.sorting;
         const a11y = viewport.grid.accessibility;
         sortingController.setSorting(order, this.column.id);
-        await querying.proceed();
-        viewport.loadPresentationData();
+        await viewport.updateRows();
         for (const col of viewport.columns) {
             col.sorting?.addHeaderElementAttributes();
         }

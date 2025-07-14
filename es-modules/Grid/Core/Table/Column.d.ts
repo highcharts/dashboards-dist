@@ -120,6 +120,8 @@ declare class Column {
      * The formatted string.
      */
     format(template: string): string;
+    update(options: Column.Options, render?: boolean): void;
+    update(options: Column.Options, render?: true): Promise<void>;
 }
 declare namespace Column {
     type Options = Omit<IndividualColumnOptions, 'id'>;

@@ -66,62 +66,6 @@ class ColumnDistributionStrategy {
         }
         vp.rowsWidth = rowsWidth;
     }
-    /**
-     * Returns the current column distribution strategy metadata.
-     * @internal
-     */
-    exportMetadata() {
-        return {
-            type: this.type,
-            columnWidths: this.columnWidths
-        };
-    }
-    /**
-     * Imports the column distribution strategy metadata. Used to restore the
-     * column distribution strategy after the table is destroyed and recreated.
-     *
-     * @param metadata
-     * The metadata to import.
-     *
-     * @param columnIterator
-     * A function that is called for each significant column in the table.
-     */
-    importMetadata(metadata, columnIterator) {
-        const { enabledColumns } = this.viewport.grid;
-        const savedColumnIds = Object.keys(metadata.columnWidths);
-        if (this.invalidated ||
-            this.type !== metadata.type ||
-            !enabledColumns?.length) {
-            return;
-        }
-        let columnId;
-        for (let i = 0, iEnd = savedColumnIds.length; i < iEnd; ++i) {
-            columnId = savedColumnIds[i];
-            if (enabledColumns.indexOf(columnId) === -1) {
-                continue;
-            }
-            this.columnWidths[columnId] = metadata.columnWidths[columnId];
-            columnIterator?.(columnId);
-        }
-    }
-    /**
-     * Validates the column distribution strategy on update. This method
-     * is used to determine whether the current distribution strategy metadata
-     * should be invalidated when the table is updated.
-     *
-     * @param newOptions
-     * The new options to validate.
-     */
-    validateOnUpdate(newOptions) {
-        if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'resizing') &&
-            newOptions.rendering?.columns?.resizing?.mode !== this.type) {
-            this.invalidated = true;
-        }
-        else if (Object.hasOwnProperty.call(newOptions.rendering?.columns || {}, 'distribution') &&
-            newOptions.rendering?.columns?.distribution !== this.type) {
-            this.invalidated = true;
-        }
-    }
     /* *
      *
      * Static Methods

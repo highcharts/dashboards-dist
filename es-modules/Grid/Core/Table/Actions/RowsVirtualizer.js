@@ -70,9 +70,7 @@ class RowsVirtualizer {
         }
         // Load & render rows
         this.renderRows(this.rowCursor);
-        if (this.rowSettings?.virtualization) {
-            this.adjustRowHeights();
-        }
+        this.adjustRowHeights();
     }
     /**
      * Renders the rows in the viewport. It is called when the rows need to be
@@ -254,7 +252,8 @@ class RowsVirtualizer {
      * the default height.
      */
     adjustRowHeights() {
-        if (this.strictRowHeights) {
+        if (this.strictRowHeights ||
+            !this.rowSettings?.virtualization) {
             return;
         }
         const { rowCursor: cursor, defaultRowHeight: defaultH } = this;
@@ -315,9 +314,7 @@ class RowsVirtualizer {
         for (let i = 0, iEnd = rows.length; i < iEnd; ++i) {
             rows[i].reflow();
         }
-        if (this.rowSettings?.virtualization) {
-            this.adjustRowHeights();
-        }
+        this.adjustRowHeights();
     }
     /**
      * Returns the default height of a row. This method should be called only

@@ -1,6 +1,10 @@
 import type Column from '../Column.js';
 import type ColumnsResizer from '../Actions/ColumnsResizer';
 import DistributionStrategy from './ColumnDistributionStrategy.js';
+/**
+ * @deprecated
+ * This strategy is deprecated and will be removed in the future.
+ */
 declare class FullDistributionStrategy extends DistributionStrategy {
     readonly type: "full";
     private allPreviousWidths;
@@ -29,6 +33,5 @@ declare class FullDistributionStrategy extends DistributionStrategy {
      * @returns The initial width of the column.
      */
     private getInitialColumnWidth;
-    importMetadata(metadata: DistributionStrategy.Metadata): void;
 }
 export default FullDistributionStrategy;

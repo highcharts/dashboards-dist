@@ -106,7 +106,17 @@ declare class Table {
      */
     private updateVirtualization;
     /**
-     * Loads the modified data from the data table and renders the rows.
+     * Updates the rows of the table.
+     */
+    updateRows(): Promise<void>;
+    /**
+     * Loads the modified data from the data table and renders the rows. Always
+     * removes all rows and re-renders them, so it's better to use `updateRows`
+     * instead, because it is more performant in some cases.
+     *
+     * @deprecated
+     * Use `updateRows` instead. This method is kept for backward compatibility
+     * reasons, but it will be removed in the next major version.
      */
     loadPresentationData(): void;
     /**

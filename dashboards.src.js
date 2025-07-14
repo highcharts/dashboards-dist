@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.4.0 (2025-06-30)
+ * @license Highcharts Dashboards v3.5.0 (2025-07-14)
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.4.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.5.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -6610,8 +6610,7 @@
              * Returns all column names.
              */
             getColumnNames() {
-                const table = this, columnNames = Object.keys(table.columns);
-                return columnNames;
+                return Object.keys(this.columns);
             }
             /**
              * Retrieves all or the given columns.
@@ -11051,6 +11050,17 @@
                     (b || 0) > (a || 0) ? 1 :
                         0);
             }
+            static compareFactory(direction, customCompare) {
+                if (customCompare) {
+                    if (direction === 'desc') {
+                        return (a, b) => -customCompare(a, b);
+                    }
+                    return customCompare;
+                }
+                return (direction === 'asc' ?
+                    SortModifier.ascending :
+                    SortModifier.descending);
+            }
             /* *
              *
              *  Constructor
@@ -11224,9 +11234,7 @@
             modifyTable(table, eventDetail) {
                 const modifier = this;
                 modifier.emit({ type: 'modify', detail: eventDetail, table });
-                const columnNames = table.getColumnNames(), rowCount = table.getRowCount(), rowReferences = this.getRowReferences(table), { direction, orderByColumn, orderInColumn } = modifier.options, compare = (direction === 'asc' ?
-                    SortModifier.ascending :
-                    SortModifier.descending), orderByColumnIndex = columnNames.indexOf(orderByColumn), modified = table.modified;
+                const columnNames = table.getColumnNames(), rowCount = table.getRowCount(), rowReferences = this.getRowReferences(table), { direction, orderByColumn, orderInColumn, compare: customCompare } = modifier.options, compare = SortModifier.compareFactory(direction, customCompare), orderByColumnIndex = columnNames.indexOf(orderByColumn), modified = table.modified;
                 if (orderByColumnIndex !== -1) {
                     rowReferences.sort((a, b) => compare(a.row[orderByColumnIndex], b.row[orderByColumnIndex]));
                 }
@@ -11274,6 +11282,174 @@
          * */
 
         return SortModifier;
+    });
+    _registerModule(_modules, 'Data/Modifiers/FilterModifier.js', [_modules['Data/Modifiers/DataModifier.js'], _modules['Core/Utilities.js']], function (DataModifier, U) {
+        /* *
+         *
+         *  (c) 2009-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { isFunction, merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Filters out table rows matching a given condition.
+         */
+        class FilterModifier extends DataModifier {
+            /* *
+             *
+             *  Static Functions
+             *
+             * */
+            /**
+             * Compiles a filter condition into a callback function.
+             *
+             * @param {FilterCondition} condition
+             * Condition to compile.
+             */
+            static compile(condition) {
+                if (isFunction(condition)) {
+                    return condition;
+                }
+                const op = condition.operator;
+                switch (op) {
+                    case 'and': {
+                        const subs = condition.conditions.map((c) => this.compile(c));
+                        return (row, table, i) => subs.every((cond) => cond(row, table, i));
+                    }
+                    case 'or': {
+                        const subs = condition.conditions.map((c) => this.compile(c));
+                        return (row, table, i) => subs.some((cond) => cond(row, table, i));
+                    }
+                    case 'not': {
+                        const sub = this.compile(condition.condition);
+                        return (row, table, i) => !sub(row, table, i);
+                    }
+                }
+                const { columnName: col, value } = condition;
+                switch (op) {
+                    case '==':
+                        // eslint-disable-next-line eqeqeq
+                        return (row) => row[col] == value;
+                    case '===':
+                        return (row) => row[col] === value;
+                    case '!=':
+                        // eslint-disable-next-line eqeqeq
+                        return (row) => row[col] != value;
+                    case '!==':
+                        return (row) => row[col] !== value;
+                    case '>':
+                        return (row) => (row[col] || 0) > (value || 0);
+                    case '>=':
+                        return (row) => (row[col] || 0) >= (value || 0);
+                    case '<':
+                        return (row) => (row[col] || 0) < (value || 0);
+                    case '<=':
+                        return (row) => (row[col] || 0) <= (value || 0);
+                }
+                const { ignoreCase } = condition;
+                const str = (val) => {
+                    const s = '' + val;
+                    return (ignoreCase ?? true) ? s.toLowerCase() : s;
+                };
+                switch (op) {
+                    case 'contains':
+                        return (row) => str(row[col]).includes(str(value));
+                    default:
+                        return (row) => str(row[col])[op](str(value));
+                }
+            }
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            /**
+             * Constructs an instance of the filter modifier.
+             *
+             * @param {Partial<FilterModifier.Options>} [options]
+             * Options to configure the filter modifier.
+             */
+            constructor(options) {
+                super();
+                this.options = merge(FilterModifier.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Functions
+             *
+             * */
+            /**
+             * Replaces table rows with filtered rows.
+             *
+             * @param {DataTable} table
+             * Table to modify.
+             *
+             * @param {DataEvent.Detail} [eventDetail]
+             * Custom information for pending events.
+             *
+             * @return {DataTable}
+             * Table with `modified` property as a reference.
+             */
+            modifyTable(table, eventDetail) {
+                const modifier = this;
+                modifier.emit({ type: 'modify', detail: eventDetail, table });
+                const { condition } = modifier.options;
+                if (!condition) {
+                    // If no condition is set, return the unmodified table.
+                    return table;
+                }
+                const matchRow = FilterModifier.compile(condition);
+                // This line should be investigated further when reworking Data Layer.
+                const modified = table.modified;
+                const rows = [];
+                const indexes = [];
+                for (let i = 0, iEnd = table.getRowCount(); i < iEnd; ++i) {
+                    const row = table.getRowObject(i);
+                    if (!row) {
+                        continue;
+                    }
+                    if (matchRow(row, table, i)) {
+                        rows.push(row);
+                        indexes.push(modified.getOriginalRowIndex(i));
+                    }
+                }
+                modified.deleteRows();
+                modified.setRows(rows);
+                modified.setOriginalRowIndexes(indexes);
+                modifier.emit({ type: 'afterModify', detail: eventDetail, table });
+                return table;
+            }
+        }
+        /* *
+         *
+         *  Static Properties
+         *
+         * */
+        /**
+         * Default options for the filter modifier.
+         */
+        FilterModifier.defaultOptions = {
+            type: 'Filter'
+        };
+        DataModifier.registerType('Filter', FilterModifier);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return FilterModifier;
     });
     _registerModule(_modules, 'Dashboards/Components/ComponentRegistry.js', [], function () {
         /* *
@@ -13271,9 +13447,41 @@
                 this.grid?.viewport?.reflow();
             }
             onTableChanged() {
-                this.grid?.update({
-                    dataTable: this.getFirstConnector()?.table?.modified
-                });
+                const { grid } = this;
+                if (!grid) {
+                    return;
+                }
+                const dataTable = this.getFirstConnector()?.getTable(this.dataTableKey);
+                if (!dataTable?.modified) {
+                    grid.update({ dataTable: void 0 });
+                    return;
+                }
+                if (!grid.options?.header) {
+                    // If the header is not defined, we need to check if the column
+                    // names have changed, so we can update the whole grid. If they
+                    // have not changed, we can just update the rows (more efficient).
+                    const newColumnNames = dataTable.modified.getColumnNames();
+                    const { columnOptionsMap, enabledColumns } = grid;
+                    let index = 0;
+                    for (const newColumn of newColumnNames) {
+                        if (columnOptionsMap[newColumn]?.options?.enabled === false) {
+                            continue;
+                        }
+                        if (enabledColumns?.[index] !== newColumn) {
+                            // If the visible columns have changed,
+                            // update the whole grid.
+                            grid.update({ dataTable: dataTable.modified });
+                            return;
+                        }
+                        index++;
+                    }
+                }
+                grid.dataTable = dataTable?.modified;
+                // Data has changed and the whole grid is not re-rendered, so mark in
+                // the querying that data table was modified.
+                grid.querying.shouldBeUpdated = true;
+                // If the column names have not changed, just update the rows.
+                grid.viewport?.updateRows();
             }
             getEditableOptions() {
                 const componentOptions = this.options;

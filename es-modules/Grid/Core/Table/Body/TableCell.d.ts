@@ -33,6 +33,28 @@ declare class TableCell extends Cell {
      * Renders the cell by appending it to the row and setting its value.
      */
     render(): void;
+    /**
+     * Sets the cell value and updates its content with it.
+     *
+     * @param value
+     * The raw value to set. If not provided, it will use the value from the
+     * data table for the current row and column.
+     *
+     * @param updateTable
+     * Whether to update the table after setting the content. Defaults to
+     * `false`, meaning the table will not be updated.
+     */
+    setValue(value?: DataTable.CellType, updateTable?: boolean): Promise<void>;
+    /**
+     * Updates the the data table so that it reflects the current state of
+     * the grid.
+     *
+     * @returns
+     * A promise that resolves to `true` if the cell triggered all the whole
+     * viewport rows to be updated, or `false` if the only change should be
+     * the cell's content.
+     */
+    private updateDataTable;
     initEvents(): void;
     /**
      * Handles the focus event on the cell.
@@ -73,18 +95,6 @@ declare class TableCell extends Cell {
      * @internal
      */
     onKeyDown(e: KeyboardEvent): void;
-    /**
-     * Sets the value & updating content of the cell.
-     *
-     * @param value
-     * The raw value to set. If not provided, it will use the value from the
-     * data table for the current row and column.
-     *
-     * @param updateTable
-     * Whether to update the table after setting the content. Defaults to
-     * `false`, meaning the table will not be updated.
-     */
-    setValue(value?: DataTable.CellType, updateTable?: boolean): Promise<void>;
     /**
      * Destroys the cell.
      */

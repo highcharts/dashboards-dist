@@ -79,6 +79,20 @@ class TableRow extends Row {
         this.data = data;
     }
     /**
+     * Updates the row data and its cells with the latest values from the data
+     * table.
+     */
+    update() {
+        this.id = this.viewport.dataTable.getOriginalRowIndex(this.index);
+        this.updateRowAttributes();
+        this.loadData();
+        for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
+            const cell = this.cells[i];
+            void cell.setValue();
+        }
+        this.reflow();
+    }
+    /**
      * Adds or removes the hovered CSS class to the row element.
      *
      * @param hovered
@@ -108,16 +122,10 @@ class TableRow extends Row {
     setRowAttributes() {
         const idx = this.index;
         const el = this.htmlElement;
-        const a11y = this.viewport.grid.accessibility;
         el.classList.add(Globals.getClassName('rowElement'));
         // Index of the row in the presentation data table
         el.setAttribute('data-row-index', idx);
-        // Index of the row in the original data table (ID)
-        if (this.id !== void 0) {
-            el.setAttribute('data-row-id', this.id);
-        }
-        // Calculate levels of header, 1 to avoid indexing from 0
-        a11y?.setRowIndex(el, idx + (this.viewport.header?.levels ?? 1) + 1);
+        this.updateRowAttributes();
         // Indexing from 0, so rows with even index are odd.
         el.classList.add(Globals.getClassName(idx % 2 ? 'rowEven' : 'rowOdd'));
         if (this.viewport.grid.hoveredRowIndex === idx) {
@@ -126,6 +134,21 @@ class TableRow extends Row {
         if (this.viewport.grid.syncedRowIndex === idx) {
             el.classList.add(Globals.getClassName('syncedRow'));
         }
+    }
+    /**
+     * Sets the row HTML element attributes that are updateable in the row
+     * lifecycle.
+     */
+    updateRowAttributes() {
+        const a11y = this.viewport.grid.accessibility;
+        const idx = this.index;
+        const el = this.htmlElement;
+        // Index of the row in the original data table (ID)
+        if (this.id !== void 0) {
+            el.setAttribute('data-row-id', this.id);
+        }
+        // Calculate levels of header, 1 to avoid indexing from 0
+        a11y?.setRowIndex(el, idx + (this.viewport.header?.levels ?? 1) + 1);
     }
     /**
      * Sets the vertical translation of the row. Used for virtual scrolling.

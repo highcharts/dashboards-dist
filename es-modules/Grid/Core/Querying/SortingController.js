@@ -31,16 +31,11 @@ class SortingController {
     /**
      * Constructs the SortingController instance.
      *
-     * @param grid
-     * The data grid instance.
+     * @param querying
+     * The querying controller instance.
      */
-    constructor(grid) {
-        /**
-         * The flag that indicates if the data should be updated because of the
-         * change in the sorting options.
-         */
-        this.shouldBeUpdated = false;
-        this.grid = grid;
+    constructor(querying) {
+        this.querying = querying;
     }
     /* *
     *
@@ -61,7 +56,7 @@ class SortingController {
     setSorting(order, columnId) {
         if (this.currentSorting?.columnId !== columnId ||
             this.currentSorting?.order !== order) {
-            this.shouldBeUpdated = true;
+            this.querying.shouldBeUpdated = true;
             this.currentSorting = {
                 columnId,
                 order
@@ -73,7 +68,7 @@ class SortingController {
      * Returns the sorting options from the data grid options.
      */
     getSortingOptions() {
-        const grid = this.grid, { columnOptionsMap } = grid;
+        const grid = this.querying.grid, { columnOptionsMap } = grid;
         if (!columnOptionsMap) {
             return { order: null };
         }
@@ -82,7 +77,7 @@ class SortingController {
         let foundColumnId;
         for (let i = columnIDs.length - 1; i > -1; --i) {
             const columnId = columnIDs[i];
-            const columnOptions = columnOptionsMap[columnId];
+            const columnOptions = columnOptionsMap[columnId]?.options || {};
             const order = columnOptions.sorting?.order;
             if (order) {
                 if (foundColumnId) {
@@ -120,12 +115,14 @@ class SortingController {
             return;
         }
         const { columnId, order } = this.currentSorting;
-        if (!order) {
+        if (!order || !columnId) {
             return;
         }
         return new SortModifier({
             orderByColumn: columnId,
-            direction: order
+            direction: order,
+            compare: this.querying.grid.columnOptionsMap?.[columnId]
+                ?.options?.sorting?.compare
         });
     }
 }

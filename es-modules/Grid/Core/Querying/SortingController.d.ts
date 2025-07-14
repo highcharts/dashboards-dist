@@ -1,5 +1,5 @@
 import type { ColumnSortingOrder } from '../Options.js';
-import Grid from '../Grid.js';
+import QueryingController from './QueryingController.js';
 import SortModifier from '../../../Data/Modifiers/SortModifier.js';
 /**
  * Class that manages one of the data grid querying types - sorting.
@@ -8,7 +8,7 @@ declare class SortingController {
     /**
      * The data grid instance.
      */
-    private grid;
+    private querying;
     /**
      * The current sorting options: column ID and sorting order.
      */
@@ -24,17 +24,12 @@ declare class SortingController {
      */
     modifier?: SortModifier;
     /**
-     * The flag that indicates if the data should be updated because of the
-     * change in the sorting options.
-     */
-    shouldBeUpdated: boolean;
-    /**
      * Constructs the SortingController instance.
      *
-     * @param grid
-     * The data grid instance.
+     * @param querying
+     * The querying controller instance.
      */
-    constructor(grid: Grid);
+    constructor(querying: QueryingController);
     /**
      * Sets the sorting state. If the new sorting state is different than the
      * current one, the `shouldBeUpdated` flag is set to `true`. If the
