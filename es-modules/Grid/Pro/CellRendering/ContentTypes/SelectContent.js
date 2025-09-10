@@ -10,6 +10,7 @@
  *
  *  Authors:
  *  - Dawid Dragula
+ *  - Sebastian Bochan
  *
  * */
 'use strict';
@@ -31,6 +32,9 @@ class SelectContent extends CellContentPro {
      * */
     constructor(cell, renderer, parentElement) {
         super(cell, renderer);
+        /**
+         * Whether to finish the edit after a change.
+         */
         this.finishAfterChange = true;
         /**
          * The HTML option elements representing the options in the select input.
@@ -71,11 +75,22 @@ class SelectContent extends CellContentPro {
      *  Methods
      *
      * */
+    /**
+     * Adds the select element to the parent element.
+     * @param parentElement The parent element to add the select element to.
+     * @returns The select element.
+     */
     add(parentElement = this.cell.htmlElement) {
         const cell = this.cell;
+        const { options } = this.renderer;
         const select = this.select = document.createElement('select');
         select.tabIndex = -1;
         select.name = cell.column.id + '-' + cell.row.id;
+        if (options.attributes) {
+            Object.entries(options.attributes).forEach(([key, value]) => {
+                select.setAttribute(key, value);
+            });
+        }
         this.update();
         parentElement.appendChild(this.select);
         select.addEventListener('change', this.onChange);
@@ -84,6 +99,9 @@ class SelectContent extends CellContentPro {
         this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
         return select;
     }
+    /**
+     * Updates the select element.
+     */
     update() {
         const cell = this.cell;
         const { options } = this.renderer;
@@ -103,6 +121,9 @@ class SelectContent extends CellContentPro {
             this.optionElements.push(optionElement);
         }
     }
+    /**
+     * Destroys the content.
+     */
     destroy() {
         const select = this.select;
         this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
@@ -115,9 +136,15 @@ class SelectContent extends CellContentPro {
         this.optionElements.length = 0;
         select.remove();
     }
+    /**
+     * Gets the raw value of the select element.
+     */
     get rawValue() {
         return this.select.value;
     }
+    /**
+     * Gets the value of the select element.
+     */
     get value() {
         const val = this.select.value;
         switch (this.cell.column.dataType) {
@@ -130,6 +157,10 @@ class SelectContent extends CellContentPro {
                 return '' + val;
         }
     }
+    /**
+     * Gets the main element (select) of the content.
+     * @returns The select element.
+     */
     getMainElement() {
         return this.select;
     }

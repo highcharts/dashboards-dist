@@ -80,18 +80,13 @@ class Cell {
      * Handles the focus event on the cell.
      */
     onFocus() {
-        const vp = this.row.viewport;
-        const focusAnchor = vp.rowsVirtualizer.focusAnchorCell?.htmlElement;
-        focusAnchor?.setAttribute('tabindex', '-1');
+        this.row.viewport.setFocusAnchorCell(this);
     }
     /**
      * Handles the blur event on the cell.
      */
     onBlur() {
-        const vp = this.row.viewport;
-        const focusAnchor = vp.rowsVirtualizer.focusAnchorCell?.htmlElement;
-        focusAnchor?.setAttribute('tabindex', '0');
-        delete vp.focusCursor;
+        delete this.row.viewport.focusCursor;
     }
     /**
      * Handles user keydown on the cell.

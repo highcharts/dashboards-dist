@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.5.0 (2025-07-14)
+ * @license Highcharts Dashboards v3.6.0 (2025-09-10)
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.5.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.6.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -2397,7 +2397,7 @@
                         trustedTypesPolicy.createHTML(markup) :
                         markup, 'text/html');
                 }
-                catch (e) {
+                catch {
                     // There are two cases where this fails:
                     // 1. IE9 and PhantomJS, where the DOMParser only supports parsing
                     //    XML
@@ -3618,11 +3618,10 @@
                 }
                 this.connector = connector;
                 if (connector) {
-                    const dataTableKey = this.component.dataTableKey;
                     const dataTables = connector.dataTables;
-                    if (dataTableKey) {
+                    if (this.options.dataTableKey) {
                         // Match a data table used in this component.
-                        this.setTable(dataTables[dataTableKey]);
+                        this.setTable(dataTables[this.options.dataTableKey]);
                         // Take the first connector data table if id not provided.
                     }
                     else {
@@ -4865,10 +4864,6 @@
                     for (const connectorOptions of connectorOptionsArray) {
                         this.connectorHandlers.push(new ConnectorHandler(this, connectorOptions));
                     }
-                    // Assign the data table key to define the proper dataTable.
-                    this.dataTableKey = isArray(this.options.connector) ?
-                        this.options.connector[0].dataTableKey :
-                        this.options.connector.dataTableKey;
                 }
                 this.editableOptions =
                     new EditableOptions(this, options.editableOptionsBindings);
@@ -5113,9 +5108,10 @@
                 let connectorsHaveChanged = connectorOptions.length !== this.connectorHandlers.length;
                 if (!connectorsHaveChanged) {
                     for (let i = 0, iEnd = connectorOptions.length; i < iEnd; i++) {
-                        const oldConnectorId = this.connectorHandlers[i]?.options.id;
-                        const newConnectorId = connectorOptions[i]?.id;
-                        if (oldConnectorId !== newConnectorId) {
+                        const oldOpt = this.connectorHandlers[i]?.options;
+                        const newOpt = connectorOptions[i];
+                        if (newOpt?.id !== oldOpt?.id ||
+                            newOpt?.dataTableKey !== oldOpt?.dataTableKey) {
                             connectorsHaveChanged = true;
                             break;
                         }
@@ -5131,11 +5127,6 @@
                         this.connectorHandlers.push(new ConnectorHandler(this, options));
                     }
                     await this.initConnectors();
-                }
-                // Assign the data table key to define the proper dataTable.
-                const firstConnectorDataTableKey = connectorOptions[0]?.dataTableKey;
-                if (firstConnectorDataTableKey) {
-                    this.dataTableKey = firstConnectorDataTableKey;
                 }
                 if (shouldRerender || eventObject.shouldForceRerender) {
                     this.render();
@@ -8459,7 +8450,7 @@
                             detail: eventDetail,
                             table
                         });
-                        reject(e);
+                        reject(e instanceof Error ? e : new Error('' + e));
                     }
                 });
             }
@@ -9701,7 +9692,7 @@
                             if (cur === subheaders[i]) {
                                 if (useRowspanHeaders) {
                                     rowspan = 2;
-                                    delete subheaders[i];
+                                    subheaders.splice(i, 1);
                                 }
                                 else {
                                     rowspan = 1;
@@ -10143,7 +10134,6 @@
          */
         JSONConverter.defaultOptions = {
             ...DataConverter.defaultOptions,
-            data: [],
             orientation: 'rows'
         };
         DataConverter.registerType('JSON', JSONConverter);
@@ -10289,7 +10279,6 @@
          *
          * */
         JSONConnector.defaultOptions = {
-            data: [],
             enablePolling: false,
             dataRefreshRate: 0,
             firstRowAsNames: true,
@@ -12968,7 +12957,7 @@
                     return;
                 }
                 const { dataCursor: cursor } = board;
-                const table = this.getFirstConnector()?.getTable(component.dataTableKey);
+                const table = this.connectorHandlers[0]?.presentationTable;
                 const onCellHover = (e) => {
                     if (table) {
                         const cell = e.target;
@@ -13014,7 +13003,7 @@
                 if (!highlightOptions?.enabled) {
                     return;
                 }
-                const table = component.getFirstConnector()?.getTable(component.dataTableKey);
+                const table = component.connectorHandlers[0]?.presentationTable;
                 const handleCursor = (e) => {
                     const cursor = e.cursor;
                     if (cursor.sourceId === component.id ||
@@ -13122,7 +13111,7 @@
                     if (!cursor) {
                         return;
                     }
-                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    const table = component.connectorHandlers?.[0]?.presentationTable;
                     if (!table) {
                         return;
                     }
@@ -13130,7 +13119,7 @@
                     cursor.addListener(table.id, 'series.hide' + groupKey, handleVisibilityChange);
                 };
                 const unregisterCursorListeners = () => {
-                    const table = component.connectorHandlers?.[0]?.connector?.table;
+                    const table = component.connectorHandlers?.[0]?.presentationTable;
                     const { dataCursor: cursor } = board;
                     if (!table) {
                         return;
@@ -13451,7 +13440,7 @@
                 if (!grid) {
                     return;
                 }
-                const dataTable = this.getFirstConnector()?.getTable(this.dataTableKey);
+                const dataTable = this.connectorHandlers[0]?.presentationTable;
                 if (!dataTable?.modified) {
                     grid.update({ dataTable: void 0 });
                     return;
@@ -13515,8 +13504,9 @@
              * @internal
              */
             getOptions() {
-                // Remove the table from the options copy if the connector is set.
                 const optionsCopy = merge(this.options);
+                optionsCopy.gridOptions = this.grid?.getOptions();
+                // Remove the table from the options copy if the connector is set.
                 if (optionsCopy.connector?.id) {
                     delete optionsCopy.gridOptions?.dataTable;
                 }
@@ -13562,7 +13552,7 @@
                 if (!DGN) {
                     throw new Error('Grid not connected.');
                 }
-                const dataTable = this.getFirstConnector()?.getTable(this.dataTableKey), options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
+                const dataTable = this.connectorHandlers[0]?.presentationTable, options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
                 if (dataTable) {
                     gridOptions.dataTable = dataTable.modified;
                 }
@@ -14672,17 +14662,18 @@
                 });
                 for (const connectorHandler of this.connectorHandlers) {
                     const connector = connectorHandler.connector;
+                    const dataTableKey = connectorHandler.options.dataTableKey;
                     if (connector) {
                         connector.on('afterLoad', (e) => {
                             const eventTables = e.tables;
                             let eventTable;
-                            if (this.dataTableKey) {
-                                eventTable = eventTables[this.dataTableKey];
+                            if (dataTableKey) {
+                                eventTable = eventTables[dataTableKey];
                             }
                             else {
                                 eventTable = Object.values(eventTables)[0];
                             }
-                            const table = connector.getTable(this.dataTableKey);
+                            const table = connector.getTable(dataTableKey);
                             table.setColumns(eventTable.getColumns());
                         });
                     }
@@ -14765,7 +14756,7 @@
              * @param connectorHandler Connector handler with data to update.
              */
             onChartUpdate(point, connectorHandler) {
-                const table = connectorHandler.connector?.getTable(this.dataTableKey);
+                const table = connectorHandler.presentationTable;
                 const columnAssignment = connectorHandler.columnAssignment;
                 const seriesId = point.series.options.id;
                 const converter = new DataConverter();
@@ -14843,7 +14834,7 @@
                     let columnAssignment = options.columnAssignment;
                     // Set the new data table based on the data table key.
                     const connector = connectorHandler.connector;
-                    const dataTableKey = this.dataTableKey;
+                    const dataTableKey = connectorHandler.options.dataTableKey;
                     if (connector && dataTableKey) {
                         connectorHandler.setTable(connector.dataTables[dataTableKey]);
                     }
@@ -18912,6 +18903,9 @@
              * setup uses `Highcharts.setOptions` to make the options apply to all
              * charts in the same page.
              *
+             * Some language options, like `months` and `weekdays`, are only used
+             * with non-locale-aware date formats.
+             *
              * ```js
              * Highcharts.setOptions({
              *     lang: {
@@ -18961,7 +18955,7 @@
                  * An array containing the months names. Corresponds to the `%B` format
                  * in `Highcharts.dateFormat()`. Defaults to 'undefined',
                  * meaning the default month names are used according to the
-                 * `lang.locale` setting.
+                 * `lang.locale` or browser settings.
                  *
                  * @type    {Array<string>}
                  */
@@ -18976,23 +18970,25 @@
                  * An array containing the months names in abbreviated form. Corresponds
                  * to the `%b` format in `Highcharts.dateFormat()`. Defaults to
                  * 'undefined', meaning the default short month names are used according
-                 * to the `lang.locale` setting.
+                 * to the `lang.locale` or browser settings.
                  *
                  * @type    {Array<string>}
                  */
                 shortMonths: void 0,
                 /**
-                 * An array containing the weekday names. Defaults to 'undefined',
-                 * meaning the default weekday names are used according to the
-                 * `lang.locale` setting.
+                 * An array containing the weekday names. Corresponds
+                 * to the `%A` format in `Highcharts.dateFormat()`. Defaults to
+                 * 'undefined', meaning the default weekday names are used according to
+                 * the `lang.locale` or browser settings.
                  *
                  * @type    {Array<string>}
                  */
                 weekdays: void 0,
                 /**
-                 * Short week days, starting Sunday. Defaults to 'undefined', meaning
+                 * Short week days, starting Sunday. Corresponds to the `%a` format in
+                 * `Highcharts.dateFormat()`. Defaults to 'undefined', meaning
                  * the default short weekday names are used according to the
-                 * `lang.locale` setting.
+                 * `lang.locale` or browser settings.
                  *
                  * @sample highcharts/lang/shortweekdays/
                  *         Finnish two-letter abbreviations

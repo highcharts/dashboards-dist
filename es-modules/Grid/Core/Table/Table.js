@@ -203,6 +203,7 @@ class Table {
                 this.rows[i].update();
             }
             this.rowsVirtualizer.adjustRowHeights();
+            this.reflow();
         }
         if (focusedRowId !== void 0 && vp.focusCursor) {
             const newRowIndex = vp.dataTable.getLocalRowIndex(focusedRowId);
@@ -339,6 +340,17 @@ class Table {
             const row = this.rows[rowIndex - this.rows[0].index];
             row?.cells[columnIndex]?.htmlElement.focus();
         }
+    }
+    /**
+     * Sets the focus anchor cell.
+     *
+     * @param cell
+     * The cell to set as the focus anchor cell.
+     */
+    setFocusAnchorCell(cell) {
+        this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '-1');
+        this.focusAnchorCell = cell;
+        this.focusAnchorCell.htmlElement.setAttribute('tabindex', '0');
     }
     /**
      * Returns the column with the provided ID.

@@ -111,7 +111,7 @@ class DataGridComponent extends Component {
         if (!grid) {
             return;
         }
-        const dataTable = this.getFirstConnector()?.getTable(this.dataTableKey);
+        const dataTable = this.connectorHandlers[0]?.presentationTable;
         if (!dataTable?.modified) {
             grid.update({ dataTable: void 0 });
             return;
@@ -175,8 +175,9 @@ class DataGridComponent extends Component {
      * @internal
      */
     getOptions() {
-        // Remove the table from the options copy if the connector is set.
         const optionsCopy = merge(this.options);
+        optionsCopy.gridOptions = this.grid?.getOptions();
+        // Remove the table from the options copy if the connector is set.
         if (optionsCopy.connector?.id) {
             delete optionsCopy.gridOptions?.dataTable;
         }
@@ -222,7 +223,7 @@ class DataGridComponent extends Component {
         if (!DGN) {
             throw new Error('Grid not connected.');
         }
-        const dataTable = this.getFirstConnector()?.getTable(this.dataTableKey), options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
+        const dataTable = this.connectorHandlers[0]?.presentationTable, options = this.options, gridOptions = merge({}, options.gridOptions, options.dataGridOptions);
         if (dataTable) {
             gridOptions.dataTable = dataTable.modified;
         }

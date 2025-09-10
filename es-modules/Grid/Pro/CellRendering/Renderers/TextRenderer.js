@@ -55,7 +55,7 @@ class TextRenderer extends CellRenderer {
  */
 TextRenderer.defaultEditingRenderer = {
     string: 'textInput',
-    number: 'textInput',
+    number: 'numberInput',
     'boolean': 'checkbox',
     datetime: 'dateInput'
 };

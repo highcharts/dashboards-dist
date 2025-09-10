@@ -35,7 +35,8 @@ declare namespace CellRenderer {
          * The cell content type.
          *
          * Can be one of the following: `'text'`, `'checkbox'`, `'select'`,
-         * `'textInput'`, `'dateInput'`, `'sparkline'`.
+         * `'textInput'`, `'dateInput'`, `'dateTimeInput'`, `'timeInput'`,
+         * `'numberInput'`, `'sparkline'`.
          *
          * You can also create your own custom renderer by extending the
          * `CellRenderer` class and registering it in the

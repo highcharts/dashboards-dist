@@ -97,7 +97,7 @@ declare class LegendComponent extends AccessibilityComponent {
     /**
      * @private
      */
-    shouldHaveLegendNavigation(): (boolean);
+    shouldHaveLegendNavigation(): boolean;
     /**
      * Clean up
      * @private

@@ -164,6 +164,6 @@ declare namespace Sync {
     /** @internal */
     type OptionsRecord = (Record<(SyncEmitter['id'] | SyncHandler['id']), OptionsEntry>);
     /** @internal */
-    type RawOptionsRecord = (Record<(SyncEmitter['id'] | SyncHandler['id']), undefined | boolean | OptionsEntry>);
+    type RawOptionsRecord = (Record<(SyncEmitter['id'] | SyncHandler['id']), (boolean | OptionsEntry | undefined)>);
 }
 export default Sync;

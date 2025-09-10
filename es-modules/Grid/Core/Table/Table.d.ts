@@ -6,6 +6,7 @@ import TableHeader from './Header/TableHeader.js';
 import Grid from '../Grid.js';
 import RowsVirtualizer from './Actions/RowsVirtualizer.js';
 import ColumnsResizer from './Actions/ColumnsResizer.js';
+import Cell from './Cell.js';
 /**
  * Represents a table viewport of the data grid.
  */
@@ -73,6 +74,11 @@ declare class Table {
      * table cell is not focused.
      */
     focusCursor?: [number, number];
+    /**
+     * The only cell that is to be focusable using tab key - a table focus
+     * entry point.
+     */
+    focusAnchorCell?: Cell;
     /**
      * The flag that indicates if the table rows are virtualized.
      */
@@ -191,6 +197,13 @@ declare class Table {
      * The viewport state metadata.
      */
     applyStateMeta(meta: Table.ViewportStateMetadata): void;
+    /**
+     * Sets the focus anchor cell.
+     *
+     * @param cell
+     * The cell to set as the focus anchor cell.
+     */
+    setFocusAnchorCell(cell: Cell): void;
     /**
      * Returns the column with the provided ID.
      *

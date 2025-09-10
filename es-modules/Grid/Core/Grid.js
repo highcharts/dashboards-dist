@@ -80,6 +80,11 @@ class Grid {
          * @internal
          */
         this.initialContainerHeight = 0;
+        /**
+         * Functions that unregister events attached to the grid's data table,
+         * that need to be removed when the grid is destroyed.
+         */
+        this.dataTableEventDestructors = [];
         this.loadUserOptions(options);
         this.querying = new QueryingController(this);
         this.id = this.options?.id || U.uniqueKey();
@@ -517,16 +522,39 @@ class Grid {
         }
         return result;
     }
+    /**
+     * Loads the data table of the Grid. If the data table is passed as a
+     * reference, it should be used instead of creating a new one.
+     *
+     * @param tableOptions
+     * The data table to load. If not provided, a new data table will be
+     * created.
+     */
     loadDataTable(tableOptions) {
+        // Unregister all events attached to the previous data table.
+        this.dataTableEventDestructors.forEach((fn) => fn());
         // If the table is passed as a reference, it should be used instead of
         // creating a new one.
-        if (tableOptions?.id) {
+        if (tableOptions?.clone) {
             this.dataTable = tableOptions;
             this.presentationTable = this.dataTable.modified;
             return;
         }
-        this.dataTable = this.presentationTable =
+        const dt = this.dataTable = this.presentationTable =
             new DataTable(tableOptions);
+        // If the data table is modified, mark the querying controller to be
+        // updated on the next proceed.
+        [
+            'afterDeleteColumns',
+            'afterDeleteRows',
+            'afterSetCell',
+            'afterSetColumns',
+            'afterSetRows'
+        ].forEach((eventName) => {
+            this.dataTableEventDestructors.push(dt.on(eventName, () => {
+                this.querying.shouldBeUpdated = true;
+            }));
+        });
     }
     /**
      * Extracts all references to columnIds on all levels below defined level
@@ -559,6 +587,7 @@ class Grid {
      */
     destroy() {
         const dgIndex = Grid.grids.findIndex((dg) => dg === this);
+        this.dataTableEventDestructors.forEach((fn) => fn());
         this.viewport?.destroy();
         if (this.container) {
             this.container.innerHTML = AST.emptyHTML;

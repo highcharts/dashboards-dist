@@ -123,11 +123,10 @@ class ConnectorHandler {
         }
         this.connector = connector;
         if (connector) {
-            const dataTableKey = this.component.dataTableKey;
             const dataTables = connector.dataTables;
-            if (dataTableKey) {
+            if (this.options.dataTableKey) {
                 // Match a data table used in this component.
-                this.setTable(dataTables[dataTableKey]);
+                this.setTable(dataTables[this.options.dataTableKey]);
                 // Take the first connector data table if id not provided.
             }
             else {

@@ -99,6 +99,8 @@ declare namespace Validator {
         datetime: RuleDefinition;
         notEmpty: RuleDefinition;
         number: RuleDefinition;
+        ignoreCaseUnique: RuleDefinition;
+        unique: RuleDefinition;
     }
     /**
      * Type of rule: `notEmpty`, `number` or `boolean`.

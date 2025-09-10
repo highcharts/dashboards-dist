@@ -10,6 +10,7 @@
  *
  *  Authors:
  *  - Dawid Dragula
+ *  - Sebastian Bochan
  *
  * */
 'use strict';
@@ -32,6 +33,9 @@ class TextInputContent extends CellContentPro {
      * */
     constructor(cell, renderer, parentElement) {
         super(cell, renderer);
+        /**
+         * Whether to finish the edit after a change.
+         */
         this.finishAfterChange = true;
         this.onChange = (e) => {
             if (this.changeHandler) {
@@ -71,11 +75,22 @@ class TextInputContent extends CellContentPro {
      *  Methods
      *
      * */
+    /**
+     * Adds the input element to the parent element.
+     * @param parentElement The parent element to add the input element to.
+     * @returns The input element.
+     */
     add(parentElement = this.cell.htmlElement) {
         const cell = this.cell;
         const input = this.input = document.createElement('input');
+        const { options } = this.renderer;
         input.tabIndex = -1;
         input.name = cell.column.id + '-' + cell.row.id;
+        if (options.attributes) {
+            Object.entries(options.attributes).forEach(([key, value]) => {
+                input.setAttribute(key, value);
+            });
+        }
         this.update();
         parentElement.appendChild(this.input);
         input.addEventListener('change', this.onChange);
@@ -84,14 +99,23 @@ class TextInputContent extends CellContentPro {
         this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
         return input;
     }
+    /**
+     * Updates the input element.
+     */
     update() {
         const { options } = this.renderer;
         this.input.value = this.convertToInputValue();
         this.input.disabled = !!options.disabled;
     }
+    /**
+     * Gets the raw value of the input element.
+     */
     get rawValue() {
         return this.input.value;
     }
+    /**
+     * Gets the value of the input element.
+     */
     get value() {
         const val = this.input.value;
         switch (this.cell.column.dataType) {
@@ -117,9 +141,16 @@ class TextInputContent extends CellContentPro {
         const val = this.cell.value;
         return defined(val) ? '' + val : '';
     }
+    /**
+     * Gets the main element (input) of the content.
+     * @returns The input element.
+     */
     getMainElement() {
         return this.input;
     }
+    /**
+     * Destroys the content.
+     */
     destroy() {
         const input = this.input;
         this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);

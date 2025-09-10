@@ -1,5 +1,4 @@
 import type { RowsSettings } from '../../Options';
-import type Cell from '../Cell';
 import Table from '../Table.js';
 /**
  * Represents a virtualized rows renderer for the data grid.
@@ -32,11 +31,6 @@ declare class RowsVirtualizer {
      * flickering loops when scrolling to the last row.
      */
     private preventScroll;
-    /**
-     * The only cell that is to be focusable using tab key - a table focus
-     * entry point.
-     */
-    focusAnchorCell?: Cell;
     /**
      * Rendering row settings.
      */

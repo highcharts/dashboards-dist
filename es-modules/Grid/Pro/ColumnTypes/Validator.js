@@ -221,6 +221,23 @@ class Validator {
             validate: ({ rawValue }) => (rawValue === 'true' || rawValue === 'false' ||
                 Number(rawValue) === 1 || Number(rawValue) === 0),
             notification: 'Value has to be a boolean.'
+        },
+        ignoreCaseUnique: {
+            validate: function ({ rawValue }) {
+                const columnData = this.column.data;
+                const isDuplicate = columnData?.some((value) => String(value).toLowerCase() ===
+                    String(rawValue).toLowerCase());
+                return !isDuplicate;
+            },
+            notification: 'Value must be unique within this column (case-insensitive).'
+        },
+        unique: {
+            validate: function ({ rawValue }) {
+                const columnData = this.column.data;
+                const isDuplicate = columnData?.some((value) => value === rawValue);
+                return !isDuplicate;
+            },
+            notification: 'Value must be unique within this column (case-sensitive).'
         }
     };
     /**

@@ -44,12 +44,12 @@ var CreditsLiteComposition;
         const credits = new Credits(this);
         const containerStyle = credits.containerElement.style;
         // Apply static styles
-        containerStyle.setProperty('display', 'inline-block', 'important');
+        containerStyle.setProperty('display', 'flex', 'important');
         containerStyle.setProperty('padding', '5px 5px 0px 5px', 'important');
-        containerStyle.setProperty('text-align', 'right', 'important');
+        containerStyle.setProperty('flex-direction', 'row-reverse', 'important');
         // Create an observer that check credits modifications
         creditsObserver = new MutationObserver(() => {
-            if (!credits.containerElement.querySelector('.hcg-logo-wrapper')) {
+            if (!credits.containerElement.querySelector('.hcg-credits')) {
                 credits.render();
             }
         });

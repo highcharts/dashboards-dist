@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.5.0 (2025-07-14)
+ * @license Highcharts Dashboards v3.6.0 (2025-09-10)
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -62,7 +62,7 @@
              *  Constants
              *
              * */
-            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.5.0', Globals.win = (typeof window !== 'undefined' ?
+            Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '3.6.0', Globals.win = (typeof window !== 'undefined' ?
                 window :
                 {}), // eslint-disable-line node/no-unsupported-features/es-builtins
             Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -2397,7 +2397,7 @@
                         trustedTypesPolicy.createHTML(markup) :
                         markup, 'text/html');
                 }
-                catch (e) {
+                catch {
                     // There are two cases where this fails:
                     // 1. IE9 and PhantomJS, where the DOMParser only supports parsing
                     //    XML
@@ -5129,6 +5129,9 @@
              * setup uses `Highcharts.setOptions` to make the options apply to all
              * charts in the same page.
              *
+             * Some language options, like `months` and `weekdays`, are only used
+             * with non-locale-aware date formats.
+             *
              * ```js
              * Highcharts.setOptions({
              *     lang: {
@@ -5178,7 +5181,7 @@
                  * An array containing the months names. Corresponds to the `%B` format
                  * in `Highcharts.dateFormat()`. Defaults to 'undefined',
                  * meaning the default month names are used according to the
-                 * `lang.locale` setting.
+                 * `lang.locale` or browser settings.
                  *
                  * @type    {Array<string>}
                  */
@@ -5193,23 +5196,25 @@
                  * An array containing the months names in abbreviated form. Corresponds
                  * to the `%b` format in `Highcharts.dateFormat()`. Defaults to
                  * 'undefined', meaning the default short month names are used according
-                 * to the `lang.locale` setting.
+                 * to the `lang.locale` or browser settings.
                  *
                  * @type    {Array<string>}
                  */
                 shortMonths: void 0,
                 /**
-                 * An array containing the weekday names. Defaults to 'undefined',
-                 * meaning the default weekday names are used according to the
-                 * `lang.locale` setting.
+                 * An array containing the weekday names. Corresponds
+                 * to the `%A` format in `Highcharts.dateFormat()`. Defaults to
+                 * 'undefined', meaning the default weekday names are used according to
+                 * the `lang.locale` or browser settings.
                  *
                  * @type    {Array<string>}
                  */
                 weekdays: void 0,
                 /**
-                 * Short week days, starting Sunday. Defaults to 'undefined', meaning
+                 * Short week days, starting Sunday. Corresponds to the `%a` format in
+                 * `Highcharts.dateFormat()`. Defaults to 'undefined', meaning
                  * the default short weekday names are used according to the
-                 * `lang.locale` setting.
+                 * `lang.locale` or browser settings.
                  *
                  * @sample highcharts/lang/shortweekdays/
                  *         Finnish two-letter abbreviations
@@ -8882,7 +8887,7 @@
                     return new DOMParser().parseFromString(text, 'text/html')
                         .body.textContent || '';
                 }
-                catch (error) {
+                catch {
                     return '';
                 }
             }
@@ -9370,7 +9375,7 @@
                             detail: eventDetail,
                             table
                         });
-                        reject(e);
+                        reject(e instanceof Error ? e : new Error('' + e));
                     }
                 });
             }
@@ -13408,18 +13413,13 @@
              * Handles the focus event on the cell.
              */
             onFocus() {
-                const vp = this.row.viewport;
-                const focusAnchor = vp.rowsVirtualizer.focusAnchorCell?.htmlElement;
-                focusAnchor?.setAttribute('tabindex', '-1');
+                this.row.viewport.setFocusAnchorCell(this);
             }
             /**
              * Handles the blur event on the cell.
              */
             onBlur() {
-                const vp = this.row.viewport;
-                const focusAnchor = vp.rowsVirtualizer.focusAnchorCell?.htmlElement;
-                focusAnchor?.setAttribute('tabindex', '0');
-                delete vp.focusCursor;
+                delete this.row.viewport.focusCursor;
             }
             /**
              * Handles user keydown on the cell.
@@ -13802,9 +13802,7 @@
                     this.initColumnSorting();
                 }
                 this.setCustomClassName(options.header?.className);
-                fireEvent(this, 'afterRender', {
-                    target: column
-                });
+                fireEvent(this, 'afterRender', { column });
             }
             reflow() {
                 const th = this.htmlElement;
@@ -13842,7 +13840,7 @@
                 }
                 fireEvent(this, 'click', {
                     originalEvent: e,
-                    target: this.column
+                    column: this.column
                 });
             }
             /**
@@ -14305,7 +14303,6 @@
                 }
                 this.row.data[this.column.id] = this.value;
                 originalDataTable.setCell(this.column.id, rowTableIndex, this.value);
-                vp.grid.querying.shouldBeUpdated = true;
                 if (vp.grid.querying.getModifiers().length < 1) {
                     return false;
                 }
@@ -14839,11 +14836,10 @@
                         });
                     }
                 }
-                // Reset the focus anchor cell
-                this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '-1');
-                const firstVisibleRow = rows[rowCursor - rows[0].index];
-                this.focusAnchorCell = firstVisibleRow?.cells[0];
-                this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '0');
+                // Set the focus anchor cell
+                if (!vp.focusCursor || !vp.focusAnchorCell?.row.rendered) {
+                    vp.setFocusAnchorCell(rows[rowCursor - rows[0].index].cells[0]);
+                }
             }
             /**
              * Adjusts the heights of the rows based on the current scroll position.
@@ -14858,6 +14854,9 @@
                 const { rowCursor: cursor, defaultRowHeight: defaultH } = this;
                 const { rows, tbodyElement } = this.viewport;
                 const rowsLn = rows.length;
+                if (rowsLn < 1) {
+                    return;
+                }
                 let translateBuffer = rows[0].getDefaultTopOffset();
                 for (let i = 0; i < rowsLn; ++i) {
                     const row = rows[i];
@@ -15288,6 +15287,7 @@
                         this.rows[i].update();
                     }
                     this.rowsVirtualizer.adjustRowHeights();
+                    this.reflow();
                 }
                 if (focusedRowId !== void 0 && vp.focusCursor) {
                     const newRowIndex = vp.dataTable.getLocalRowIndex(focusedRowId);
@@ -15424,6 +15424,17 @@
                     const row = this.rows[rowIndex - this.rows[0].index];
                     row?.cells[columnIndex]?.htmlElement.focus();
                 }
+            }
+            /**
+             * Sets the focus anchor cell.
+             *
+             * @param cell
+             * The cell to set as the focus anchor cell.
+             */
+            setFocusAnchorCell(cell) {
+                this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '-1');
+                this.focusAnchorCell = cell;
+                this.focusAnchorCell.htmlElement.setAttribute('tabindex', '0');
             }
             /**
              * Returns the column with the provided ID.
@@ -16185,11 +16196,13 @@
                 if (!order || !columnId) {
                     return;
                 }
+                const grid = this.querying.grid;
                 return new SortModifier({
                     orderByColumn: columnId,
                     direction: order,
-                    compare: this.querying.grid.columnOptionsMap?.[columnId]
-                        ?.options?.sorting?.compare
+                    compare: grid.columnOptionsMap?.[columnId]?.options
+                        ?.sorting?.compare ||
+                        grid.options?.columnDefaults?.sorting?.compare
                 });
             }
         }
@@ -16379,6 +16392,11 @@
                  * @internal
                  */
                 this.initialContainerHeight = 0;
+                /**
+                 * Functions that unregister events attached to the grid's data table,
+                 * that need to be removed when the grid is destroyed.
+                 */
+                this.dataTableEventDestructors = [];
                 this.loadUserOptions(options);
                 this.querying = new QueryingController(this);
                 this.id = this.options?.id || U.uniqueKey();
@@ -16816,16 +16834,39 @@
                 }
                 return result;
             }
+            /**
+             * Loads the data table of the Grid. If the data table is passed as a
+             * reference, it should be used instead of creating a new one.
+             *
+             * @param tableOptions
+             * The data table to load. If not provided, a new data table will be
+             * created.
+             */
             loadDataTable(tableOptions) {
+                // Unregister all events attached to the previous data table.
+                this.dataTableEventDestructors.forEach((fn) => fn());
                 // If the table is passed as a reference, it should be used instead of
                 // creating a new one.
-                if (tableOptions?.id) {
+                if (tableOptions?.clone) {
                     this.dataTable = tableOptions;
                     this.presentationTable = this.dataTable.modified;
                     return;
                 }
-                this.dataTable = this.presentationTable =
+                const dt = this.dataTable = this.presentationTable =
                     new DataTable(tableOptions);
+                // If the data table is modified, mark the querying controller to be
+                // updated on the next proceed.
+                [
+                    'afterDeleteColumns',
+                    'afterDeleteRows',
+                    'afterSetCell',
+                    'afterSetColumns',
+                    'afterSetRows'
+                ].forEach((eventName) => {
+                    this.dataTableEventDestructors.push(dt.on(eventName, () => {
+                        this.querying.shouldBeUpdated = true;
+                    }));
+                });
             }
             /**
              * Extracts all references to columnIds on all levels below defined level
@@ -16858,6 +16899,7 @@
              */
             destroy() {
                 const dgIndex = Grid.grids.findIndex((dg) => dg === this);
+                this.dataTableEventDestructors.forEach((fn) => fn());
                 this.viewport?.destroy();
                 if (this.container) {
                     this.container.innerHTML = AST.emptyHTML;
@@ -17384,10 +17426,13 @@
                 'afterRender'
             ].forEach((name) => {
                 addEvent(HeaderCellClass, name, (e) => {
-                    const column = e.target;
+                    const { column } = e;
+                    if (!column) {
+                        return;
+                    }
                     const headerEvent = column.options?.header?.events?.[name] ||
                         // Backward compatibility
-                        column.viewport?.grid?.options?.events?.header?.[name];
+                        column.viewport.grid.options?.events?.header?.[name];
                     headerEvent?.call(column);
                 });
             });
@@ -17965,8 +18010,10 @@
                 if (!this.textElement) {
                     this.textElement = this.renderAnchor();
                 }
-                if (text && href) {
+                if (text) {
                     setHTMLContent(this.textElement, text);
+                }
+                if (href) {
                     this.textElement.setAttribute('href', href || '');
                 }
                 if (grid.descriptionElement) {
@@ -17981,6 +18028,7 @@
                     className: Globals.getClassName('creditsText')
                 }, this.containerElement);
                 anchorElement.setAttribute('target', '_blank');
+                anchorElement.setAttribute('alt', 'Highcharts logo');
                 return anchorElement;
             }
             /**
@@ -18008,11 +18056,7 @@
          */
         Credits.defaultOptions = {
             enabled: true,
-            // eslint-disable-next-line no-console
-            text: `<picture class="hcg-logo-wrapper">
-                    <source srcset="https://assets.highcharts.com/grid/logo_darkx2.png 2x, https://assets.highcharts.com/grid/logo_dark.png 1x" media="(prefers-color-scheme: dark)">
-                    <img src="https://assets.highcharts.com/grid/logo_light.png" srcset="https://assets.highcharts.com/grid/logo_lightx2.png 2x, https://assets.highcharts.com/grid/logo_light.png 1x" alt="Highcharts logo" style="height: 20px !important; width: auto !important; display: inline-block !important;">
-                </picture>`,
+            text: '',
             href: 'https://www.highcharts.com',
             position: 'bottom'
         };
@@ -18412,6 +18456,23 @@
                     validate: ({ rawValue }) => (rawValue === 'true' || rawValue === 'false' ||
                         Number(rawValue) === 1 || Number(rawValue) === 0),
                     notification: 'Value has to be a boolean.'
+                },
+                ignoreCaseUnique: {
+                    validate: function ({ rawValue }) {
+                        const columnData = this.column.data;
+                        const isDuplicate = columnData?.some((value) => String(value).toLowerCase() ===
+                            String(rawValue).toLowerCase());
+                        return !isDuplicate;
+                    },
+                    notification: 'Value must be unique within this column (case-insensitive).'
+                },
+                unique: {
+                    validate: function ({ rawValue }) {
+                        const columnData = this.column.data;
+                        const isDuplicate = columnData?.some((value) => value === rawValue);
+                        return !isDuplicate;
+                    },
+                    notification: 'Value must be unique within this column (case-sensitive).'
                 }
             };
             /**
@@ -19719,7 +19780,7 @@
                             if (cur === subheaders[i]) {
                                 if (useRowspanHeaders) {
                                     rowspan = 2;
-                                    delete subheaders[i];
+                                    subheaders.splice(i, 1);
                                 }
                                 else {
                                     rowspan = 1;
@@ -20161,7 +20222,6 @@
          */
         JSONConverter.defaultOptions = {
             ...DataConverter.defaultOptions,
-            data: [],
             orientation: 'rows'
         };
         DataConverter.registerType('JSON', JSONConverter);
@@ -20307,7 +20367,6 @@
          *
          * */
         JSONConnector.defaultOptions = {
-            data: [],
             enablePolling: false,
             dataRefreshRate: 0,
             firstRowAsNames: true,
@@ -20962,7 +21021,7 @@
          */
         TextRenderer.defaultEditingRenderer = {
             string: 'textInput',
-            number: 'textInput',
+            number: 'numberInput',
             'boolean': 'checkbox',
             datetime: 'dateInput'
         };
@@ -21040,6 +21099,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         /* *
@@ -21087,16 +21147,22 @@
              * */
             add(parentElement = this.cell.htmlElement) {
                 const cell = this.cell;
-                this.input = document.createElement('input');
-                this.input.tabIndex = -1;
-                this.input.type = 'checkbox';
-                this.input.name = cell.column.id + '-' + cell.row.id;
+                const { options } = this.renderer;
+                const input = this.input = document.createElement('input');
+                input.tabIndex = -1;
+                input.type = 'checkbox';
+                input.name = cell.column.id + '-' + cell.row.id;
+                if (options.attributes) {
+                    Object.entries(options.attributes).forEach(([key, value]) => {
+                        input.setAttribute(key, value);
+                    });
+                }
                 this.update();
                 parentElement.appendChild(this.input);
-                this.input.classList.add(Globals.classNamePrefix + 'field-auto-width');
-                this.input.addEventListener('change', this.onChange);
-                this.input.addEventListener('keydown', this.onKeyDown);
-                this.input.addEventListener('blur', this.onBlur);
+                input.classList.add(Globals.classNamePrefix + 'field-auto-width');
+                input.addEventListener('change', this.onChange);
+                input.addEventListener('keydown', this.onKeyDown);
+                input.addEventListener('blur', this.onBlur);
                 this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
                 return this.input;
             }
@@ -21155,6 +21221,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         const { merge } = U;
@@ -21217,6 +21284,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         /* *
@@ -21235,6 +21303,9 @@
              * */
             constructor(cell, renderer, parentElement) {
                 super(cell, renderer);
+                /**
+                 * Whether to finish the edit after a change.
+                 */
                 this.finishAfterChange = true;
                 /**
                  * The HTML option elements representing the options in the select input.
@@ -21275,11 +21346,22 @@
              *  Methods
              *
              * */
+            /**
+             * Adds the select element to the parent element.
+             * @param parentElement The parent element to add the select element to.
+             * @returns The select element.
+             */
             add(parentElement = this.cell.htmlElement) {
                 const cell = this.cell;
+                const { options } = this.renderer;
                 const select = this.select = document.createElement('select');
                 select.tabIndex = -1;
                 select.name = cell.column.id + '-' + cell.row.id;
+                if (options.attributes) {
+                    Object.entries(options.attributes).forEach(([key, value]) => {
+                        select.setAttribute(key, value);
+                    });
+                }
                 this.update();
                 parentElement.appendChild(this.select);
                 select.addEventListener('change', this.onChange);
@@ -21288,6 +21370,9 @@
                 this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
                 return select;
             }
+            /**
+             * Updates the select element.
+             */
             update() {
                 const cell = this.cell;
                 const { options } = this.renderer;
@@ -21307,6 +21392,9 @@
                     this.optionElements.push(optionElement);
                 }
             }
+            /**
+             * Destroys the content.
+             */
             destroy() {
                 const select = this.select;
                 this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
@@ -21319,9 +21407,15 @@
                 this.optionElements.length = 0;
                 select.remove();
             }
+            /**
+             * Gets the raw value of the select element.
+             */
             get rawValue() {
                 return this.select.value;
             }
+            /**
+             * Gets the value of the select element.
+             */
             get value() {
                 const val = this.select.value;
                 switch (this.cell.column.dataType) {
@@ -21334,6 +21428,10 @@
                         return '' + val;
                 }
             }
+            /**
+             * Gets the main element (select) of the content.
+             * @returns The select element.
+             */
             getMainElement() {
                 return this.select;
             }
@@ -21359,6 +21457,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         const { merge } = U;
@@ -21422,6 +21521,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         const { defined } = U;
@@ -21441,6 +21541,9 @@
              * */
             constructor(cell, renderer, parentElement) {
                 super(cell, renderer);
+                /**
+                 * Whether to finish the edit after a change.
+                 */
                 this.finishAfterChange = true;
                 this.onChange = (e) => {
                     if (this.changeHandler) {
@@ -21480,11 +21583,22 @@
              *  Methods
              *
              * */
+            /**
+             * Adds the input element to the parent element.
+             * @param parentElement The parent element to add the input element to.
+             * @returns The input element.
+             */
             add(parentElement = this.cell.htmlElement) {
                 const cell = this.cell;
                 const input = this.input = document.createElement('input');
+                const { options } = this.renderer;
                 input.tabIndex = -1;
                 input.name = cell.column.id + '-' + cell.row.id;
+                if (options.attributes) {
+                    Object.entries(options.attributes).forEach(([key, value]) => {
+                        input.setAttribute(key, value);
+                    });
+                }
                 this.update();
                 parentElement.appendChild(this.input);
                 input.addEventListener('change', this.onChange);
@@ -21493,14 +21607,23 @@
                 this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
                 return input;
             }
+            /**
+             * Updates the input element.
+             */
             update() {
                 const { options } = this.renderer;
                 this.input.value = this.convertToInputValue();
                 this.input.disabled = !!options.disabled;
             }
+            /**
+             * Gets the raw value of the input element.
+             */
             get rawValue() {
                 return this.input.value;
             }
+            /**
+             * Gets the value of the input element.
+             */
             get value() {
                 const val = this.input.value;
                 switch (this.cell.column.dataType) {
@@ -21526,9 +21649,16 @@
                 const val = this.cell.value;
                 return defined(val) ? '' + val : '';
             }
+            /**
+             * Gets the main element (input) of the content.
+             * @returns The input element.
+             */
             getMainElement() {
                 return this.input;
             }
+            /**
+             * Destroys the content.
+             */
             destroy() {
                 const input = this.input;
                 this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
@@ -21559,6 +21689,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         const { merge } = U;
@@ -21608,10 +21739,10 @@
 
         return TextInputRenderer;
     });
-    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/DateInputContent.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js']], function (CellContentPro) {
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/DateInputContentBase.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js']], function (CellContentPro) {
         /* *
          *
-         *  Date Input Cell Content class
+         *  Date Input Cell Content Base class
          *
          *  (c) 2020-2025 Highsoft AS
          *
@@ -21629,9 +21760,9 @@
          *
          * */
         /**
-         * Represents a date input type of cell content.
+         * Represents a date/time/datetime input type of cell content.
          */
-        class DateInputContent extends CellContentPro {
+        class DateInputContentBase extends CellContentPro {
             /* *
              *
              *  Constructor
@@ -21639,6 +21770,9 @@
              * */
             constructor(cell, renderer, parentElement) {
                 super(cell, renderer);
+                /**
+                 * Whether to finish the edit after a change.
+                 */
                 this.finishAfterChange = false;
                 this.onChange = (e) => {
                     this.changeHandler?.(e);
@@ -21672,6 +21806,7 @@
                         e.preventDefault();
                     }
                 };
+                this.options = renderer.options;
                 this.input = this.add(parentElement);
             }
             /* *
@@ -21679,12 +21814,22 @@
              *  Methods
              *
              * */
+            /**
+             * Adds the input element to the parent element.
+             * @param parentElement The parent element to add the input element to.
+             * @returns The input element.
+             */
             add(parentElement = this.cell.htmlElement) {
-                const cell = this.cell;
+                const { cell, options } = this;
                 const input = this.input = document.createElement('input');
                 input.tabIndex = -1;
-                input.type = 'date';
+                input.type = this.getInputType();
                 input.name = cell.column.id + '-' + cell.row.id;
+                if (options.attributes) {
+                    Object.entries(options.attributes).forEach(([key, value]) => {
+                        input.setAttribute(key, value);
+                    });
+                }
                 this.update();
                 parentElement.appendChild(input);
                 input.addEventListener('change', this.onChange);
@@ -21693,21 +21838,36 @@
                 this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
                 return this.input;
             }
+            /**
+             * Updates the input element.
+             */
             update() {
                 const input = this.input;
-                const { options } = this.renderer;
                 input.value = this.convertToInputValue();
-                input.disabled = !!options.disabled;
+                input.disabled = !!this.options.disabled;
             }
+            /**
+             * Gets the raw value of the input element.
+             */
             get rawValue() {
                 return this.input.value;
             }
+            /**
+             * Gets the value of the input element.
+             */
             get value() {
-                return new Date(this.input.value).getTime();
+                return new Date(`${this.input.value}Z`).getTime();
             }
+            /**
+             * Gets the main element (input) of the content.
+             * @returns The input element.
+             */
             getMainElement() {
                 return this.input;
             }
+            /**
+             * Destroys the content.
+             */
             destroy() {
                 const input = this.input;
                 this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
@@ -21716,12 +21876,45 @@
                 input.removeEventListener('change', this.onChange);
                 input.remove();
             }
-            /**
-             * Converts the cell value to a string for the input.
-             */
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DateInputContentBase;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/DateInputContent.js', [_modules['Grid/Pro/CellRendering/ContentTypes/DateInputContentBase.js']], function (DateInputContentBase) {
+        /* *
+         *
+         *  Date Input Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *  - Sebastian Bochan
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a date input type of cell content.
+         */
+        class DateInputContent extends DateInputContentBase {
+            getInputType() {
+                return 'date';
+            }
             convertToInputValue() {
-                const time = this.cell.column.viewport.grid.time;
-                return time.dateFormat('%Y-%m-%d', Number(this.cell.value || 0));
+                return this.cell.column.viewport.grid.time.dateFormat('%Y-%m-%d', Number(this.cell.value || 0));
             }
         }
         /* *
@@ -21745,6 +21938,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         const { merge } = U;
@@ -21794,6 +21988,211 @@
 
         return DateInputRenderer;
     });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/DateTimeInputContent.js', [_modules['Grid/Pro/CellRendering/ContentTypes/DateInputContentBase.js']], function (DateInputContentBase) {
+        /* *
+         *
+         *  DateTime Input Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a datetime input type of cell content.
+         */
+        class DateTimeInputContent extends DateInputContentBase {
+            getInputType() {
+                return 'datetime-local';
+            }
+            convertToInputValue() {
+                return this.cell.column.viewport.grid.time.dateFormat('%Y-%m-%dT%H:%M:%S', Number(this.cell.value || 0));
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DateTimeInputContent;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/DateTimeInputRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Pro/CellRendering/ContentTypes/DateTimeInputContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, DateTimeInputContent, U) {
+        /* *
+         *
+         *  Date Time Input Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Select in a column..
+         */
+        class DateTimeInputRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column, options) {
+                super(column);
+                this.options = merge(DateTimeInputRenderer.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell, parentElement) {
+                return new DateTimeInputContent(cell, this, parentElement);
+            }
+        }
+        /**
+         * The default edit mode renderer type name for this view renderer.
+         */
+        DateTimeInputRenderer.defaultEditingRenderer = 'dateTimeInput';
+        /**
+         * Default options for the date input renderer.
+         */
+        DateTimeInputRenderer.defaultOptions = {
+            type: 'dateTimeInput'
+        };
+        CellRendererRegistry.registerRenderer('dateTimeInput', DateTimeInputRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return DateTimeInputRenderer;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/TimeInputContent.js', [_modules['Grid/Pro/CellRendering/ContentTypes/DateInputContentBase.js']], function (DateInputContentBase) {
+        /* *
+         *
+         *  Time Input Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a time input type of cell content.
+         */
+        class TimeInputContent extends DateInputContentBase {
+            getInputType() {
+                return 'time';
+            }
+            get value() {
+                return new Date(`1970-01-01T${this.input.value}Z`).getTime();
+            }
+            convertToInputValue() {
+                return this.cell.column.viewport.grid.time.dateFormat('%H:%M:%S', Number(this.cell.value || 0));
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TimeInputContent;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/TimeInputRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Pro/CellRendering/ContentTypes/TimeInputContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, TimeInputContent, U) {
+        /* *
+         *
+         *  Time Input Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Dawid Dragula
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Select in a column..
+         */
+        class TimeInputRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column, options) {
+                super(column);
+                this.options = merge(TimeInputRenderer.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell, parentElement) {
+                return new TimeInputContent(cell, this, parentElement);
+            }
+        }
+        /**
+         * The default edit mode renderer type name for this view renderer.
+         */
+        TimeInputRenderer.defaultEditingRenderer = 'timeInput';
+        /**
+         * Default options for the time input renderer.
+         */
+        TimeInputRenderer.defaultOptions = {
+            type: 'timeInput'
+        };
+        CellRendererRegistry.registerRenderer('timeInput', TimeInputRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return TimeInputRenderer;
+    });
     _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/SparklineContent.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js'], _modules['Grid/Core/Globals.js'], _modules['Core/Utilities.js']], function (CellContentPro, Globals, U) {
         /* *
          *
@@ -21807,6 +22206,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         const { defined, merge } = U;
@@ -21962,6 +22362,7 @@
          *
          *  Authors:
          *  - Dawid Dragula
+         *  - Sebastian Bochan
          *
          * */
         const { merge } = U;
@@ -22034,6 +22435,226 @@
          * */
 
         return SparklineRenderer;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/ContentTypes/NumberInputContent.js', [_modules['Grid/Pro/CellRendering/CellContentPro.js'], _modules['Core/Utilities.js']], function (CellContentPro, U) {
+        /* *
+         *
+         *  Text Input Cell Content class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *
+         * */
+        const { defined } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Represents a text input type of cell content.
+         */
+        class NumberInputContent extends CellContentPro {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(cell, renderer, parentElement) {
+                super(cell, renderer);
+                /**
+                 * Whether to finish the edit after a change.
+                 */
+                this.finishAfterChange = false;
+                this.dblClickHandler = (e) => {
+                    e.stopPropagation();
+                    this.input.focus();
+                };
+                this.onChange = (e) => {
+                    if (this.changeHandler) {
+                        this.changeHandler(e);
+                        return;
+                    }
+                    void this.cell.setValue(this.value, true);
+                };
+                this.onKeyDown = (e) => {
+                    e.stopPropagation();
+                    if (this.keyDownHandler) {
+                        this.keyDownHandler(e);
+                        return;
+                    }
+                    if (e.key === 'Escape') {
+                        this.input.value = this.convertToInputValue();
+                        this.cell.htmlElement.focus();
+                        return;
+                    }
+                    if (e.key === 'Enter') {
+                        this.cell.htmlElement.focus();
+                    }
+                };
+                this.onBlur = (e) => {
+                    this.blurHandler?.(e);
+                };
+                this.onCellKeyDown = (e) => {
+                    if (e.key === ' ') {
+                        this.input.focus();
+                        e.preventDefault();
+                    }
+                };
+                this.input = this.add(parentElement);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            /**
+             * Adds the input element to the parent element.
+             * @param parentElement The parent element to add the input element to.
+             * @returns The input element.
+             */
+            add(parentElement = this.cell.htmlElement) {
+                const cell = this.cell;
+                const input = this.input = document.createElement('input');
+                const { options } = this.renderer;
+                input.type = 'number';
+                input.tabIndex = -1;
+                input.name = cell.column.id + '-' + cell.row.id;
+                if (options.attributes) {
+                    Object.entries(options.attributes).forEach(([key, value]) => {
+                        input.setAttribute(key, value);
+                    });
+                }
+                this.update();
+                parentElement.appendChild(this.input);
+                input.addEventListener('change', this.onChange);
+                input.addEventListener('keydown', this.onKeyDown);
+                input.addEventListener('blur', this.onBlur);
+                input.addEventListener('dblclick', this.dblClickHandler);
+                this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
+                return input;
+            }
+            /**
+             * Updates the input element.
+             */
+            update() {
+                const { options } = this.renderer;
+                this.input.value = this.convertToInputValue();
+                this.input.disabled = !!options.disabled;
+            }
+            /**
+             * Gets the raw value of the input element.
+             */
+            get rawValue() {
+                return this.input.value;
+            }
+            /**
+             * Gets the number value of the input element.
+             */
+            get value() {
+                return +this.input.value;
+            }
+            /**
+             * Converts the cell value to a string for the input.
+             */
+            convertToInputValue() {
+                const val = this.cell.value;
+                return defined(val) ? '' + val : '';
+            }
+            /**
+             * Gets the main element (input) of the content.
+             * @returns The input element.
+             */
+            getMainElement() {
+                return this.input;
+            }
+            /**
+             * Destroys the content.
+             */
+            destroy() {
+                const input = this.input;
+                this.cell.htmlElement.removeEventListener('keydown', this.onCellKeyDown);
+                input.removeEventListener('blur', this.onBlur);
+                input.removeEventListener('keydown', this.onKeyDown);
+                input.removeEventListener('change', this.onChange);
+                input.remove();
+            }
+        }
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return NumberInputContent;
+    });
+    _registerModule(_modules, 'Grid/Pro/CellRendering/Renderers/NumberInputRenderer.js', [_modules['Grid/Pro/CellRendering/CellRenderer.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js'], _modules['Grid/Pro/CellRendering/ContentTypes/NumberInputContent.js'], _modules['Core/Utilities.js']], function (CellRenderer, CellRendererRegistry, NumberInputContent, U) {
+        /* *
+         *
+         *  Date Input Cell Renderer class
+         *
+         *  (c) 2020-2025 Highsoft AS
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
+         *
+         *  Authors:
+         *  - Sebastian Bochan
+         *
+         * */
+        const { merge } = U;
+        /* *
+         *
+         *  Class
+         *
+         * */
+        /**
+         * Renderer for the Select in a column..
+         */
+        class NumberInputRenderer extends CellRenderer {
+            /* *
+             *
+             *  Constructor
+             *
+             * */
+            constructor(column, options) {
+                super(column);
+                this.options = merge(NumberInputRenderer.defaultOptions, options);
+            }
+            /* *
+             *
+             *  Methods
+             *
+             * */
+            render(cell, parentElement) {
+                return new NumberInputContent(cell, this, parentElement);
+            }
+        }
+        /**
+         * The default edit mode renderer type name for this view renderer.
+         */
+        NumberInputRenderer.defaultEditingRenderer = 'numberInput';
+        /**
+         * Default options for the date input renderer.
+         */
+        NumberInputRenderer.defaultOptions = {
+            type: 'numberInput'
+        };
+        CellRendererRegistry.registerRenderer('numberInput', NumberInputRenderer);
+        /* *
+         *
+         *  Default Export
+         *
+         * */
+
+        return NumberInputRenderer;
     });
     _registerModule(_modules, 'masters/datagrid.src.js', [_modules['Core/Renderer/HTML/AST.js'], _modules['Core/Templating.js'], _modules['Grid/Core/Table/ColumnDistribution/ColumnDistribution.js'], _modules['Data/Connectors/DataConnector.js'], _modules['Data/Converters/DataConverter.js'], _modules['Data/DataCursor.js'], _modules['Grid/Core/Grid.js'], _modules['Data/Modifiers/DataModifier.js'], _modules['Data/DataPool.js'], _modules['Data/DataTable.js'], _modules['Grid/Core/Defaults.js'], _modules['Grid/Core/Globals.js'], _modules['Accessibility/HighContrastMode.js'], _modules['Core/Utilities.js'], _modules['Grid/Core/Table/Table.js'], _modules['Grid/Core/Table/Column.js'], _modules['Grid/Core/Table/Header/HeaderCell.js'], _modules['Grid/Core/Table/Body/TableCell.js'], _modules['Grid/Pro/GridEvents.js'], _modules['Grid/Pro/CellEditing/CellEditingComposition.js'], _modules['Grid/Pro/Dash3Compatibility.js'], _modules['Grid/Pro/Credits/CreditsProComposition.js'], _modules['Grid/Pro/ColumnTypes/ValidatorComposition.js'], _modules['Grid/Pro/CellRendering/CellRenderersComposition.js'], _modules['Grid/Pro/CellRendering/CellRendererRegistry.js']], function (AST, Templating, ColumnDistribution, DataConnector, DataConverter, DataCursor, _Grid, DataModifier, DataPool, DataTable, Defaults, Globals, whcm, Utilities, Table, Column, HeaderCell, TableCell, GridEvents, CellEditingComposition, Dash3Compatibility, CreditsProComposition, ValidatorComposition, CellRenderersComposition, CellRendererRegistry) {
 

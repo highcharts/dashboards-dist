@@ -107,7 +107,6 @@ class TableCell extends Cell {
         }
         this.row.data[this.column.id] = this.value;
         originalDataTable.setCell(this.column.id, rowTableIndex, this.value);
-        vp.grid.querying.shouldBeUpdated = true;
         if (vp.grid.querying.getModifiers().length < 1) {
             return false;
         }

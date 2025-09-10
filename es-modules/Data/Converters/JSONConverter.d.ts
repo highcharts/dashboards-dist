@@ -53,7 +53,7 @@ declare namespace JSONConverter {
      */
     interface Options extends DataConverter.Options {
         columnNames?: Array<string> | ColumnNamesOptions;
-        data: Data;
+        data?: Data;
         orientation: 'columns' | 'rows';
     }
     type Data = Array<Array<number | string> | Record<string, number | string>>;

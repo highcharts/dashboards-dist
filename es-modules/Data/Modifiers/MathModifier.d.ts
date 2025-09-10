@@ -18,7 +18,7 @@ declare class MathModifier extends DataModifier {
     static readonly defaultOptions: MathModifierOptions;
     constructor(options: Partial<MathModifierOptions>);
     options: MathModifierOptions;
-    modifyTable<T extends DataTable>(table: T, eventDetail?: (DataEvent.Detail | undefined)): T;
+    modifyTable<T extends DataTable>(table: T, eventDetail?: DataEvent.Detail): T;
     /**
      * Process a column by replacing formula strings with calculated values.
      *

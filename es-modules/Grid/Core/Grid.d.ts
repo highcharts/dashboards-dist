@@ -4,7 +4,6 @@ import Accessibility from './Accessibility/Accessibility.js';
 import DataTable from '../../Data/DataTable.js';
 import Table from './Table/Table.js';
 import QueryingController from './Querying/QueryingController.js';
-import Globals from './Globals.js';
 import TimeBase from '../../Shared/TimeBase.js';
 /**
  * A base class for the Grid.
@@ -156,6 +155,11 @@ declare class Grid {
      */
     id: string;
     /**
+     * Functions that unregister events attached to the grid's data table,
+     * that need to be removed when the grid is destroyed.
+     */
+    private dataTableEventDestructors;
+    /**
      * Constructs a new Grid.
      *
      * @param renderTo
@@ -285,6 +289,14 @@ declare class Grid {
      * grid, in the correct order.
      */
     private getEnabledColumnIDs;
+    /**
+     * Loads the data table of the Grid. If the data table is passed as a
+     * reference, it should be used instead of creating a new one.
+     *
+     * @param tableOptions
+     * The data table to load. If not provided, a new data table will be
+     * created.
+     */
     private loadDataTable;
     /**
      * Extracts all references to columnIds on all levels below defined level
@@ -339,7 +351,7 @@ declare class Grid {
      * @returns
      * Grid options.
      */
-    getOptions(onlyUserOptions?: boolean): Globals.DeepPartial<Options>;
+    getOptions(onlyUserOptions?: boolean): Partial<Options>;
     /**
      * Returns the current Grid options.
      *

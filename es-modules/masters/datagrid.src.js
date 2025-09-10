@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.5.0 (2025-07-14)
+ * @license Highcharts Dashboards v3.6.0 (2025-09-10)
  * @module datagrid/datagrid
  *
  * (c) 2009-2025 Highsoft AS
@@ -59,7 +59,10 @@ import '../Grid/Pro/CellRendering/Renderers/CheckboxRenderer.js';
 import '../Grid/Pro/CellRendering/Renderers/SelectRenderer.js';
 import '../Grid/Pro/CellRendering/Renderers/TextInputRenderer.js';
 import '../Grid/Pro/CellRendering/Renderers/DateInputRenderer.js';
+import '../Grid/Pro/CellRendering/Renderers/DateTimeInputRenderer.js';
+import '../Grid/Pro/CellRendering/Renderers/TimeInputRenderer.js';
 import '../Grid/Pro/CellRendering/Renderers/SparklineRenderer.js';
+import '../Grid/Pro/CellRendering/Renderers/NumberInputRenderer.js';
 /* *
  *
  *  Namespace

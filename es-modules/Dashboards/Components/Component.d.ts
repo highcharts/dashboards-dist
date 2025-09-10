@@ -111,10 +111,6 @@ declare abstract class Component {
      */
     id: string;
     /**
-     * Reference to the specific connector data table.
-     */
-    dataTableKey?: string;
-    /**
      * An array of options marked as editable by the UI.
      *
      */

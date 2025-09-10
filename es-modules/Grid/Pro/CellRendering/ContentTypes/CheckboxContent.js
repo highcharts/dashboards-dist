@@ -10,6 +10,7 @@
  *
  *  Authors:
  *  - Dawid Dragula
+ *  - Sebastian Bochan
  *
  * */
 'use strict';
@@ -60,16 +61,22 @@ class CheckboxContent extends CellContentPro {
      * */
     add(parentElement = this.cell.htmlElement) {
         const cell = this.cell;
-        this.input = document.createElement('input');
-        this.input.tabIndex = -1;
-        this.input.type = 'checkbox';
-        this.input.name = cell.column.id + '-' + cell.row.id;
+        const { options } = this.renderer;
+        const input = this.input = document.createElement('input');
+        input.tabIndex = -1;
+        input.type = 'checkbox';
+        input.name = cell.column.id + '-' + cell.row.id;
+        if (options.attributes) {
+            Object.entries(options.attributes).forEach(([key, value]) => {
+                input.setAttribute(key, value);
+            });
+        }
         this.update();
         parentElement.appendChild(this.input);
-        this.input.classList.add(Globals.classNamePrefix + 'field-auto-width');
-        this.input.addEventListener('change', this.onChange);
-        this.input.addEventListener('keydown', this.onKeyDown);
-        this.input.addEventListener('blur', this.onBlur);
+        input.classList.add(Globals.classNamePrefix + 'field-auto-width');
+        input.addEventListener('change', this.onChange);
+        input.addEventListener('keydown', this.onKeyDown);
+        input.addEventListener('blur', this.onBlur);
         this.cell.htmlElement.addEventListener('keydown', this.onCellKeyDown);
         return this.input;
     }

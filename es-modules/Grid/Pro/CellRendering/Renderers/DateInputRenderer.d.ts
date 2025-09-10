@@ -1,4 +1,5 @@
 import type Column from '../../../Core/Table/Column';
+import type DateInputRendererBase from './DateInputRendererBase';
 import type TableCell from '../../../Core/Table/Body/TableCell';
 import type { EditModeRenderer } from '../../CellEditing/CellEditMode';
 import type { EditModeRendererTypeName } from '../../CellEditing/CellEditingComposition';
@@ -24,12 +25,8 @@ declare namespace DateInputRenderer {
     /**
      * Options to control the date input renderer content.
      */
-    interface Options extends CellRenderer.Options {
+    interface Options extends DateInputRendererBase.Options {
         type: 'dateInput';
-        /**
-         * Whether the date input is disabled.
-         */
-        disabled?: boolean;
     }
 }
 declare module '../CellRendererType' {

@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards Layout 3.5.0 (2025-07-14)
+ * @license Highcharts Dashboards Layout 3.6.0 (2025-09-10)
  *
  * (c) 2009-2025 Highsoft AS
  *
@@ -4057,7 +4057,7 @@
                 /**
                  * URL from which the icons will be fetched.
                  */
-                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.5.0/gfx/dashboards-icons/';
+                this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.6.0/gfx/dashboards-icons/';
                 this.iconsURLPrefix =
                     (options && options.iconsURLPrefix) || this.iconsURLPrefix;
                 this.options = merge(

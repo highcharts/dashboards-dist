@@ -46,6 +46,11 @@ declare class Pointer {
     chartPosition?: Pointer.ChartPositionObject;
     hasDragged: number;
     hasPinched?: boolean;
+    /**
+     * Indicates if there has beeen a movement larger than ~4px during
+     * a pinch event
+     */
+    hasPinchMoved?: boolean;
     hasPointerCapture?: boolean;
     hasZoom?: boolean;
     initiated?: boolean;

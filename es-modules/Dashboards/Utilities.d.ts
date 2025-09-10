@@ -61,7 +61,7 @@ declare function addEvent<T>(el: (D.Class<T> | T), type: string, fn: (Utilities.
 *         The merged object. If the first argument is true, the return is the
 *         same as the second argument.
 */
-declare function merge<T extends Object>(a: (true | T | undefined), ...n: Array<unknown>): T;
+declare function merge<T extends object>(a: (true | T | undefined), ...n: Array<unknown>): T;
 /**
  * Returns a deep copy of an argument. It differs from `merge` in that it copies
  * also arrays.

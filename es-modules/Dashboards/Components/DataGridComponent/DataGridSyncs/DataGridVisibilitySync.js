@@ -43,7 +43,7 @@ const syncPair = {
             if (!cursor) {
                 return;
             }
-            const table = component.connectorHandlers?.[0]?.connector?.table;
+            const table = component.connectorHandlers?.[0]?.presentationTable;
             if (!table) {
                 return;
             }
@@ -51,7 +51,7 @@ const syncPair = {
             cursor.addListener(table.id, 'series.hide' + groupKey, handleVisibilityChange);
         };
         const unregisterCursorListeners = () => {
-            const table = component.connectorHandlers?.[0]?.connector?.table;
+            const table = component.connectorHandlers?.[0]?.presentationTable;
             const { dataCursor: cursor } = board;
             if (!table) {
                 return;

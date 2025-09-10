@@ -135,9 +135,7 @@ class HeaderCell extends Cell {
             this.initColumnSorting();
         }
         this.setCustomClassName(options.header?.className);
-        fireEvent(this, 'afterRender', {
-            target: column
-        });
+        fireEvent(this, 'afterRender', { column });
     }
     reflow() {
         const th = this.htmlElement;
@@ -175,7 +173,7 @@ class HeaderCell extends Cell {
         }
         fireEvent(this, 'click', {
             originalEvent: e,
-            target: this.column
+            column: this.column
         });
     }
     /**

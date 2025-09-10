@@ -30,6 +30,16 @@ declare namespace CheckboxRenderer {
          * Whether the checkbox is disabled.
          */
         disabled?: boolean;
+        /**
+         * Attributes to control the checkbox.
+         */
+        attributes?: CheckboxAttributes;
+    }
+    /**
+     * Attributes to control the checkbox.
+     */
+    interface CheckboxAttributes {
+        checked?: boolean;
     }
 }
 declare module '../CellRendererType' {

@@ -7,6 +7,9 @@ import CellContentPro from '../CellContentPro.js';
  * Represents a select type of cell content.
  */
 declare class SelectContent extends CellContentPro implements EditModeContent {
+    /**
+     * Whether to finish the edit after a change.
+     */
     finishAfterChange: boolean;
     blurHandler?: (e: FocusEvent) => void;
     keyDownHandler?: (e: KeyboardEvent) => void;
@@ -20,11 +23,32 @@ declare class SelectContent extends CellContentPro implements EditModeContent {
      */
     private optionElements;
     constructor(cell: TableCell, renderer: SelectRenderer, parentElement?: HTMLElement);
+    /**
+     * Adds the select element to the parent element.
+     * @param parentElement The parent element to add the select element to.
+     * @returns The select element.
+     */
     protected add(parentElement?: HTMLElement): HTMLSelectElement;
+    /**
+     * Updates the select element.
+     */
     update(): void;
+    /**
+     * Destroys the content.
+     */
     destroy(): void;
+    /**
+     * Gets the raw value of the select element.
+     */
     get rawValue(): string;
+    /**
+     * Gets the value of the select element.
+     */
     get value(): DataTable.CellType;
+    /**
+     * Gets the main element (select) of the content.
+     * @returns The select element.
+     */
     getMainElement(): HTMLSelectElement;
     private readonly onChange;
     private readonly onKeyDown;

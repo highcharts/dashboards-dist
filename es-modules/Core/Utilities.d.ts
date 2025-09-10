@@ -700,7 +700,7 @@ declare namespace Utilities {
         (value: T, index: number): unknown;
     }
     interface ObjectEachCallback<TObject, TContext> {
-        (this: TContext, value: TObject[keyof TObject], key: keyof TObject, obj: TObject): void;
+        (this: TContext, value: TObject[keyof TObject], key: Extract<keyof TObject, string>, obj: TObject): void;
     }
     interface OffsetObject {
         height: number;

@@ -240,11 +240,10 @@ class RowsVirtualizer {
                 });
             }
         }
-        // Reset the focus anchor cell
-        this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '-1');
-        const firstVisibleRow = rows[rowCursor - rows[0].index];
-        this.focusAnchorCell = firstVisibleRow?.cells[0];
-        this.focusAnchorCell?.htmlElement.setAttribute('tabindex', '0');
+        // Set the focus anchor cell
+        if (!vp.focusCursor || !vp.focusAnchorCell?.row.rendered) {
+            vp.setFocusAnchorCell(rows[rowCursor - rows[0].index].cells[0]);
+        }
     }
     /**
      * Adjusts the heights of the rows based on the current scroll position.
@@ -259,6 +258,9 @@ class RowsVirtualizer {
         const { rowCursor: cursor, defaultRowHeight: defaultH } = this;
         const { rows, tbodyElement } = this.viewport;
         const rowsLn = rows.length;
+        if (rowsLn < 1) {
+            return;
+        }
         let translateBuffer = rows[0].getDefaultTopOffset();
         for (let i = 0; i < rowsLn; ++i) {
             const row = rows[i];

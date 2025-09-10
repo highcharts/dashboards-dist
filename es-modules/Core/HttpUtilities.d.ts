@@ -4,7 +4,7 @@ export interface AjaxErrorCallbackFunction {
 }
 export interface AjaxSettingsObject {
     data?: (string | JSON.Type | JSON.Builder | JSON);
-    dataType?: ('json' | 'text' | 'xml' | 'octet' | string);
+    dataType?: string;
     error?: AjaxErrorCallbackFunction;
     headers?: Record<string, string>;
     responseType?: ('arraybuffer' | 'blob' | 'document' | 'json' | 'text');

@@ -67,8 +67,10 @@ class Credits {
         if (!this.textElement) {
             this.textElement = this.renderAnchor();
         }
-        if (text && href) {
+        if (text) {
             setHTMLContent(this.textElement, text);
+        }
+        if (href) {
             this.textElement.setAttribute('href', href || '');
         }
         if (grid.descriptionElement) {
@@ -83,6 +85,7 @@ class Credits {
             className: Globals.getClassName('creditsText')
         }, this.containerElement);
         anchorElement.setAttribute('target', '_blank');
+        anchorElement.setAttribute('alt', 'Highcharts logo');
         return anchorElement;
     }
     /**
@@ -110,11 +113,7 @@ class Credits {
  */
 Credits.defaultOptions = {
     enabled: true,
-    // eslint-disable-next-line no-console
-    text: `<picture class="hcg-logo-wrapper">
-            <source srcset="https://assets.highcharts.com/grid/logo_darkx2.png 2x, https://assets.highcharts.com/grid/logo_dark.png 1x" media="(prefers-color-scheme: dark)">
-            <img src="https://assets.highcharts.com/grid/logo_light.png" srcset="https://assets.highcharts.com/grid/logo_lightx2.png 2x, https://assets.highcharts.com/grid/logo_light.png 1x" alt="Highcharts logo" style="height: 20px !important; width: auto !important; display: inline-block !important;">
-        </picture>`,
+    text: '',
     href: 'https://www.highcharts.com',
     position: 'bottom'
 };

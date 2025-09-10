@@ -141,10 +141,6 @@ class Component {
             for (const connectorOptions of connectorOptionsArray) {
                 this.connectorHandlers.push(new ConnectorHandler(this, connectorOptions));
             }
-            // Assign the data table key to define the proper dataTable.
-            this.dataTableKey = isArray(this.options.connector) ?
-                this.options.connector[0].dataTableKey :
-                this.options.connector.dataTableKey;
         }
         this.editableOptions =
             new EditableOptions(this, options.editableOptionsBindings);
@@ -389,9 +385,10 @@ class Component {
         let connectorsHaveChanged = connectorOptions.length !== this.connectorHandlers.length;
         if (!connectorsHaveChanged) {
             for (let i = 0, iEnd = connectorOptions.length; i < iEnd; i++) {
-                const oldConnectorId = this.connectorHandlers[i]?.options.id;
-                const newConnectorId = connectorOptions[i]?.id;
-                if (oldConnectorId !== newConnectorId) {
+                const oldOpt = this.connectorHandlers[i]?.options;
+                const newOpt = connectorOptions[i];
+                if (newOpt?.id !== oldOpt?.id ||
+                    newOpt?.dataTableKey !== oldOpt?.dataTableKey) {
                     connectorsHaveChanged = true;
                     break;
                 }
@@ -407,11 +404,6 @@ class Component {
                 this.connectorHandlers.push(new ConnectorHandler(this, options));
             }
             await this.initConnectors();
-        }
-        // Assign the data table key to define the proper dataTable.
-        const firstConnectorDataTableKey = connectorOptions[0]?.dataTableKey;
-        if (firstConnectorDataTableKey) {
-            this.dataTableKey = firstConnectorDataTableKey;
         }
         if (shouldRerender || eventObject.shouldForceRerender) {
             this.render();

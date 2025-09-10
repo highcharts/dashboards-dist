@@ -83,10 +83,13 @@ function compose(ColumnClass, HeaderCellClass, TableCellClass) {
         'afterRender'
     ].forEach((name) => {
         addEvent(HeaderCellClass, name, (e) => {
-            const column = e.target;
+            const { column } = e;
+            if (!column) {
+                return;
+            }
             const headerEvent = column.options?.header?.events?.[name] ||
                 // Backward compatibility
-                column.viewport?.grid?.options?.events?.header?.[name];
+                column.viewport.grid.options?.events?.header?.[name];
             headerEvent?.call(column);
         });
     });
