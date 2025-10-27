@@ -56,7 +56,7 @@ function jsonSupportFor(obj) {
  */
 function toJSON(obj) {
     const options = merge(obj.options);
-    options.dataTable = DataTableHelper.toJSON(obj.table);
+    options.dataTable = DataTableHelper.toJSON(obj.getTable());
     return {
         $class: 'Data.JSONConnector',
         options

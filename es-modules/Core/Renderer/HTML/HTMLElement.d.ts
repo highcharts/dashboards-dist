@@ -3,8 +3,8 @@ import type CSSObject from '../CSSObject';
 import type { HTMLDOMElement } from '../DOMElementType';
 import type SVGRenderer from '../SVG/SVGRenderer.js';
 import SVGElement from '../SVG/SVGElement.js';
-declare module '../SVG/SVGRendererLike' {
-    interface SVGRendererLike {
+declare module '../SVG/SVGRendererBase' {
+    interface SVGRendererBase {
         /** @requires Core/Renderer/HTML/HTMLElement */
         html(str: string, x: number, y: number): HTMLElement;
     }

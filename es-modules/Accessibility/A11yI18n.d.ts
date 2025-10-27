@@ -1,7 +1,7 @@
 import type Time from '../Core/Time';
 import Chart from '../Core/Chart/Chart.js';
-declare module '../Core/Chart/ChartLike' {
-    interface ChartLike extends A11yI18nComposition.ChartComposition {
+declare module '../Core/Chart/ChartBase' {
+    interface ChartBase extends A11yI18nComposition.ChartComposition {
     }
 }
 declare namespace A11yI18nComposition {

@@ -43,7 +43,7 @@ class EditMode {
     /**
      * Edit mode constructor.
      * @internal
-      *
+     *
      * @param board
      * Board instance
      *
@@ -524,12 +524,30 @@ class EditMode {
             // For the custom layout
             board.container.insertBefore(tools.container, board.container.firstChild);
         }
-        // Create context menu button
+        // Create context a menu button or edit mode toggle
         if (options.contextMenu && options.contextMenu.enabled) {
-            tools.contextButtonElement = EditRenderer.renderContextButton(tools.container, editMode);
-            // Init contextMenu if doesn't exist.
-            if (!editMode.tools.contextMenu) {
-                editMode.tools.contextMenu = new EditContextMenu(editMode.board.container, editMode.options.contextMenu || {}, editMode);
+            if (options.contextMenu.items?.length) {
+                tools.contextButtonElement = EditRenderer.renderContextButton(tools.container, editMode);
+                // Init contextMenu if doesn't exist.
+                if (!editMode.tools.contextMenu) {
+                    editMode.tools.contextMenu = new EditContextMenu(editMode.board.container, editMode.options.contextMenu || {}, editMode);
+                }
+            }
+            else {
+                // Render the edit mode toggle when no items are provided
+                tools.standaloneEditToggle =
+                    EditRenderer.renderToggle(tools.container, {
+                        id: EditContextMenu.items.editMode.id,
+                        name: EditContextMenu.items.editMode.id,
+                        className: EditGlobals.classNames.editStandaloneToggle,
+                        title: editMode.lang.editMode,
+                        value: editMode.isActive(),
+                        lang: editMode.lang,
+                        langKey: 'editMode',
+                        onchange() {
+                            editMode.toggleEditMode();
+                        }
+                    });
             }
         }
         // Create add component button

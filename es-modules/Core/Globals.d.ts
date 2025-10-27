@@ -1,11 +1,8 @@
 import type ButtonThemeObject from './Renderer/SVG/ButtonThemeObject';
-import type GlobalsLike from './GlobalsLike';
+import type GlobalsBase from './GlobalsBase';
 declare global {
     type AnyRecord = Record<string, any>;
     type ArrowFunction = (...args: any) => any;
-    type DeepPartial<T> = {
-        [K in keyof T]?: (T[K] | DeepPartial<T[K]>);
-    };
     type ExtractArrayType<T> = T extends (infer U)[] ? U : never;
     type FunctionNamesOf<T> = keyof FunctionsOf<T>;
     type FunctionsOf<T> = {
@@ -109,5 +106,5 @@ declare global {
         }
     }
 }
-declare const _default: GlobalsLike;
+declare const _default: GlobalsBase;
 export default _default;

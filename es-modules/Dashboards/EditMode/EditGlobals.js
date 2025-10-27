@@ -69,6 +69,7 @@ const EditGlobals = {
         editToolsBtn: PREFIX + 'tools-btn',
         editTools: PREFIX + 'tools',
         editGridItems: PREFIX + 'grid-items',
+        editStandaloneToggle: PREFIX + 'standalone-toggle',
         // Confirmation popup
         confirmationPopup: PREFIX + 'confirmation-popup',
         popupButtonContainer: PREFIX + 'confirmation-popup-button-container',
@@ -147,7 +148,7 @@ const EditGlobals = {
             HTML: 'HTML',
             row: 'Row',
             Highcharts: 'Highcharts',
-            DataGrid: 'DataGrid',
+            Grid: 'Grid',
             KPI: 'KPI'
         }
     }

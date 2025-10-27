@@ -8,11 +8,6 @@ import type DataTable from './DataTable';
  * @name Data.DataCursor
  */
 declare class DataCursor {
-    /**
-     * Semantic version string of the DataCursor class.
-     * @internal
-     */
-    static readonly version: string;
     constructor(stateMap?: DataCursor.StateMap);
     /**
      * Contains arguments currently in use of an emitting loop.

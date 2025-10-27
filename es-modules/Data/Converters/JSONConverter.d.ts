@@ -1,5 +1,5 @@
 import type DataEvent from '../DataEvent';
-import type { JSONBeforeParseCallbackFunction, ColumnNamesOptions } from '../Connectors/JSONConnectorOptions';
+import type JSONConverterOptions from './JSONConverterOptions';
 import DataConverter from './DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -11,25 +11,24 @@ declare class JSONConverter extends DataConverter {
     /**
      * Default options
      */
-    protected static readonly defaultOptions: JSONConverter.Options;
+    protected static readonly defaultOptions: JSONConverterOptions;
     /**
      * Constructs an instance of the JSON parser.
      *
-     * @param {JSONConverter.UserOptions} [options]
+     * @param {Partial<JSONConverterOptions>} [options]
      * Options for the JSON parser.
      */
-    constructor(options?: JSONConverter.UserOptions);
-    private columns;
+    constructor(options?: Partial<JSONConverterOptions>);
+    private headerColumnIds;
     private headers;
     /**
      * Options for the DataConverter.
      */
-    readonly options: JSONConverter.Options;
-    private table;
+    readonly options: JSONConverterOptions;
     /**
      * Initiates parsing of JSON structure.
      *
-     * @param {JSONConverter.UserOptions}[options]
+     * @param {Partial<JSONConverterOptions>}[options]
      * Options for the parser
      *
      * @param {DataEvent.Detail} [eventDetail]
@@ -38,35 +37,59 @@ declare class JSONConverter extends DataConverter {
      * @emits JSONConverter#parse
      * @emits JSONConverter#afterParse
      */
-    parse(options: JSONConverter.UserOptions, eventDetail?: DataEvent.Detail): void;
+    parse(options: Partial<JSONConverterOptions>, eventDetail?: DataEvent.Detail): DataTable.ColumnCollection;
     /**
-     * Handles converting the parsed data to a table.
+     * Helper for parsing data in 'columns' orientation.
      *
-     * @return {DataTable}
-     * Table from the parsed CSV.
+     * @param {DataTable.BasicColumn[]} [columnsArray]
+     * Array of columns.
+     *
+     * @param {unknown[]} [data]
+     * Array of data elements.
+     *
+     * @param {Boolean} [firstRowAsNames]
+     * Defines row as names.
+     *
+     * @param {Array<string>} [columnIds]
+     * Column ids to retrieve.
+     *
+     * @return {void}
      */
-    getTable(): DataTable;
-}
-declare namespace JSONConverter {
+    private parseColumnsOrientation;
     /**
-     * Options for the JSON parser that are compatible with ClassJSON
+     * Helper for parsing data in 'rows' orientation.
+     *
+     * @param {DataTable.BasicColumn[]} [columnsArray]
+     * Array of columns.
+     *
+     * Helper for parsing data in 'rows' orientation.
+     *
+     * @param {unknown[]} [data]
+     * Array of data elements.
+     *
+     * @param {Boolean} [firstRowAsNames]
+     * Defines row as names.
+     *
+     * @param {Array<string>} [columnIds]
+     * Column ids to retrieve.
+     *
+     * @return {DataTable.BasicColumn[]}
+     * Parsed columns.
      */
-    interface Options extends DataConverter.Options {
-        columnNames?: Array<string> | ColumnNamesOptions;
-        data?: Data;
-        orientation: 'columns' | 'rows';
-    }
-    type Data = Array<Array<number | string> | Record<string, number | string>>;
+    private parseRowsOrientation;
     /**
-     * Options that are not compatible with ClassJSON
+     * Extracts a row from an object, using columnIds if provided.
+     *
+     * @param {Record<string, string|number>} [rowObj]
+     * Set of props.
+     *
+     * @param {Array<string>} [columnIds]
+     * Column ids to retrieve.
+     *
+     * @return {Array<string | number>}
+     * Row converted to array.
      */
-    interface SpecialOptions {
-        beforeParse?: JSONBeforeParseCallbackFunction;
-    }
-    /**
-     * Available options of the JSONConverter.
-     */
-    type UserOptions = Partial<(Options & SpecialOptions)>;
+    private convertItemToRow;
 }
 declare module './DataConverterType' {
     interface DataConverterTypes {

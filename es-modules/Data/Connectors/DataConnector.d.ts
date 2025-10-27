@@ -1,30 +1,13 @@
 import type { DataConnectorTypes } from './DataConnectorType';
 import type { DataConnectorOptions, MetaColumn, Metadata } from './DataConnectorOptions';
 import type DataEvent from '../DataEvent';
-import type { DataModifierTypeOptions } from '../Modifiers/DataModifierType';
-import type DataTableOptions from '../DataTableOptions';
-import type { JSONBeforeParseCallbackFunction } from './JSONConnectorOptions';
-import type { CSVBeforeParseCallbackFunction } from './CSVConnectorOptions';
-import type { GoogleSheetsBeforeParseCallbackFunction } from './GoogleSheetsConnectorOptions';
 import type DataConverterType from '../Converters/DataConverterType';
 import DataConverter from '../Converters/DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
  * Abstract class providing an interface for managing a DataConnector.
- *
- * @private
  */
-declare abstract class DataConnector implements DataEvent.Emitter {
-    /**
-     * Constructor for the connector class.
-     *
-     * @param {DataConnector.UserOptions} [options]
-     * Options to use in the connector.
-     *
-     * @param {Array<DataTableOptions>} [dataTables]
-     * Multiple connector data tables options.
-     */
-    constructor(options?: DataConnector.UserOptions, dataTables?: Array<DataTableOptions>);
+declare abstract class DataConnector implements DataEvent.Emitter<DataConnector.Event> {
     /**
      * The DataConverter responsible for handling conversion of provided data to
      * a DataConnector.
@@ -34,32 +17,45 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      * Metadata to describe the connector and the content of columns.
      */
     readonly metadata: Metadata;
-    private _polling?;
-    /**
-     * Poll timer ID, if active.
-     */
-    get polling(): boolean;
-    /**
-     * Gets the first data table.
-     *
-     * @return {DataTable}
-     * The data table instance.
-     */
-    get table(): DataTable;
     /**
      * Tables managed by this DataConnector instance.
      */
-    dataTables: Record<string, DataTable>;
+    readonly dataTables: Record<string, DataTable>;
+    /**
+     * The options of the connector.
+     */
+    readonly options: DataConnectorOptions;
+    /**
+     * ID of the polling timeout.
+     */
+    private _polling?;
+    /**
+     * Whether the connector is currently polling for new data.
+     */
+    get polling(): boolean;
     /**
      * The polling controller used to abort the request when data polling stops.
      * It gets assigned when data polling starts.
      */
     pollingController?: AbortController;
     /**
-     * Helper flag for detecting whether the data connector is loaded.
-     * @internal
+     * Constructor for the connector class.
+     *
+     * @param {DataConnectorOptions} [options]
+     * Options to use in the connector.
      */
-    loaded: boolean;
+    constructor(options: DataConnectorOptions);
+    /**
+     * Returns a single data table instance based on the provided key.
+     * Otherwise, returns the first data table.
+     *
+     * @param {string} [key]
+     * The data table key.
+     *
+     * @return {DataTable}
+     * The data table instance.
+     */
+    getTable(key?: string): DataTable;
     /**
      * Method for adding metadata for a single column.
      *
@@ -78,45 +74,27 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      */
     describeColumns(columns: Record<string, MetaColumn>): void;
     /**
-     * Emits an event on the connector to all registered callbacks of this
-     * event.
-     *
-     * @param {DataConnector.Event} [e]
-     * Event object containing additional event information.
-     */
-    emit<E extends DataEvent>(e: E): void;
-    /**
      * Returns the order of columns.
      *
-     * @param {boolean} [usePresentationState]
-     * Whether to use the column order of the presentation state of the table.
-     *
-     * @return {Array<string>|undefined}
+     * @return {string[] | undefined}
      * Order of columns.
      */
-    getColumnOrder(usePresentationState?: boolean): (Array<string> | undefined);
-    /**
-     * Returns a single data table instance based on the provided key.
-     * Otherwise, returns the first data table.
-     *
-     * @param {string} [key]
-     * The data table key.
-     *
-     * @return {DataTable}
-     * The data table instance.
-     */
-    getTable(key?: string): DataTable;
+    getColumnOrder(): (string[] | undefined);
     /**
      * Retrieves the columns of the dataTable,
      * applies column order from meta.
      *
-     * @param {boolean} [usePresentationOrder]
-     * Whether to use the column order of the presentation state of the table.
-     *
      * @return {Highcharts.DataTableColumnCollection}
-     * An object with the properties `columnNames` and `columnValues`
+     * An object with the properties `columnIds` and `columnValues`
      */
-    getSortedColumns(usePresentationOrder?: boolean): DataTable.ColumnCollection;
+    getSortedColumns(): DataTable.ColumnCollection;
+    /**
+     * Sets the index and order of columns.
+     *
+     * @param {Array<string>} columnIds
+     * Order of columns.
+     */
+    setColumnOrder(columnIds: Array<string>): void;
     /**
      * The default load method, which fires the `afterLoad` event
      *
@@ -127,36 +105,10 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      */
     load(): Promise<this>;
     /**
-     * Registers a callback for a specific connector event.
-     *
-     * @param {string} type
-     * Event type as a string.
-     *
-     * @param {DataEventEmitter.Callback} callback
-     * Function to register for the connector callback.
-     *
-     * @return {Function}
-     * Function to unregister callback from the connector event.
+     * Applies the data modifiers to the data tables according to the
+     * connector data tables options.
      */
-    on<E extends DataEvent>(type: E['type'], callback: DataEvent.Callback<this, E>): Function;
-    /**
-     * The default save method, which fires the `afterSave` event.
-     *
-     * @return {Promise<DataConnector>}
-     * The saved connector.
-     *
-     * @emits DataConnector#afterSave
-     * @emits DataConnector#saveError
-     */
-    save(): Promise<this>;
-    /**
-     * Sets the index and order of columns.
-     *
-     * @param {Array<string>} columnNames
-     * Order of columns.
-     */
-    setColumnOrder(columnNames: Array<string>): void;
-    setModifierOptions(modifierOptions?: DataModifierTypeOptions, tablesOptions?: DataTableOptions[]): Promise<this>;
+    applyTableModifiers(): Promise<this>;
     /**
      * Starts polling new data after the specific time span in milliseconds.
      *
@@ -169,15 +121,28 @@ declare abstract class DataConnector implements DataEvent.Emitter {
      */
     stopPolling(): void;
     /**
-     * Retrieves metadata from a single column.
+     * Emits an event on the connector to all registered callbacks of this
+     * event.
      *
-     * @param {string} name
-     * The identifier for the column that should be described
-     *
-     * @return {DataConnector.MetaColumn|undefined}
-     * Returns a MetaColumn object if found.
+     * @param {DataConnector.Event} e
+     * Event object containing additional event information.
      */
-    whatIs(name: string): (MetaColumn | undefined);
+    emit(e: DataConnector.Event): void;
+    /**
+     * Registers a callback for a specific connector event.
+     *
+     * @param type
+     * Event type.
+     *
+     * @param callback
+     * Function to register for the connector callback.
+     *
+     * @return {Function}
+     * Function to unregister callback from the connector event.
+     */
+    on<T extends DataConnector.Event['type']>(type: T, callback: DataEvent.Callback<this, Extract<DataConnector.Event, {
+        type: T;
+    }>>): Function;
     /**
      * Iterates over the dataTables and initiates the corresponding converters.
      * Updates the dataTables and assigns the first converter.
@@ -195,45 +160,23 @@ declare abstract class DataConnector implements DataEvent.Emitter {
 }
 declare namespace DataConnector {
     /**
-     * The event object that is provided on errors within DataConnector.
-     */
-    interface ErrorEvent extends Event {
-        type: ('loadError');
-        error: (string | Error);
-    }
-    /**
-     * The default event object for a DataConnector.
+     * The event type that is provided on events within DataConnector.
      */
     interface Event extends DataEvent {
-        readonly tables: Record<string, DataTable>;
+        readonly type: 'loadError' | 'load' | 'afterLoad';
+        readonly error?: string | Error;
     }
-    /**
-     * The event object that is provided on load events within DataConnector.
-     */
-    interface LoadEvent extends Event {
-        type: ('load' | 'afterLoad');
-    }
-    /**
-     * Option of the DataConnector.
-     */
-    type UserOptions = Partial<DataConnectorOptions>;
-    /**
-     * A custom callback function that parses the data before it's being parsed
-     * to the data table format inside the converter.
-     * Supported connectors are: JSON, CSV and Google Google Sheets.
-     */
-    type BeforeParseCallbackFunction = JSONBeforeParseCallbackFunction | CSVBeforeParseCallbackFunction | GoogleSheetsBeforeParseCallbackFunction;
     /**
      * Creates a specific converter combining the dataTable options.
      */
     interface CreateConverterFunction {
-        (key: string, table: DataTable): DataConverterType;
+        (key: string): DataConverterType;
     }
     /**
      * Runs the converter parse method with the specific data type.
      */
     interface ParseDataFunction<T> {
-        (converter: DataConverterType, data: T): void;
+        (converter: DataConverterType, data: T): DataTable.ColumnCollection;
     }
     /**
      * Registry as a record object with connector names and their class.

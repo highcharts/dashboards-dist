@@ -6,15 +6,16 @@ import type BBoxObject from '../Renderer/BBoxObject';
 import type { CSSObject, CursorValue } from '../Renderer/CSSObject';
 import type { EventCallback } from '../Callback';
 import type { NumberFormatterCallbackFunction, Options } from '../Options';
-import type ChartLike from './ChartLike';
+import type ChartBase from './ChartBase';
 import type ChartOptions from './ChartOptions';
 import type { ChartPanningOptions, ChartZoomingOptions } from './ChartOptions';
 import type ColorAxis from '../Axis/Color/ColorAxis';
+import type { DeepPartial } from '../../Shared/Types';
+import type { HTMLDOMElement } from '../Renderer/DOMElementType';
 import type Point from '../Series/Point';
 import type PointerEvent from '../PointerEvent';
 import type SeriesOptions from '../Series/SeriesOptions';
 import type { SeriesTypeOptions } from '../Series/SeriesType';
-import type { HTMLDOMElement } from '../Renderer/DOMElementType';
 import Axis from '../Axis/Axis.js';
 import Pointer from '../Pointer.js';
 import Series from '../Series/Series.js';
@@ -22,15 +23,15 @@ import SVGElement from '../Renderer/SVG/SVGElement';
 import SVGRenderer from '../Renderer/SVG/SVGRenderer.js';
 import Time from '../Time.js';
 import { AxisCollectionKey } from '../Axis/AxisOptions';
-declare module '../Axis/AxisLike' {
-    interface AxisLike {
+declare module '../Axis/AxisBase' {
+    interface AxisBase {
         extKey?: string;
         index?: number;
         touched?: boolean;
     }
 }
-declare module './ChartLike' {
-    interface ChartLike {
+declare module './ChartBase' {
+    interface ChartBase {
         resetZoomButton?: SVGElement;
         pan(e: PointerEvent, panning: boolean | ChartPanningOptions): void;
         showResetZoom(): void;
@@ -54,13 +55,13 @@ declare module '../Options' {
         title?: Chart.TitleOptions;
     }
 }
-declare module '../Series/PointLike' {
-    interface PointLike {
+declare module '../Series/PointBase' {
+    interface PointBase {
         touched?: boolean;
     }
 }
-declare module '../Series/SeriesLike' {
-    interface SeriesLike {
+declare module '../Series/SeriesBase' {
+    interface SeriesBase {
         index?: number;
         touched?: boolean;
     }
@@ -116,7 +117,6 @@ declare class Chart {
     };
     credits?: SVGElement;
     caption?: SVGElement;
-    dataLabelsGroup?: SVGElement;
     eventOptions: Record<string, EventCallback<Series, Event>>;
     hasCartesianSeries?: boolean;
     hasLoaded?: boolean;
@@ -195,7 +195,7 @@ declare class Chart {
      */
     init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction): void;
     /**
-     * Internal function to unitialize an individual series.
+     * Internal function to initialize an individual series.
      *
      * @private
      * @function Highcharts.Chart#initSeries
@@ -631,6 +631,11 @@ declare class Chart {
      */
     warnIfA11yModuleNotLoaded(): void;
     /**
+     * Emit console warning if the highcharts.css file is not loaded.
+     * @private
+     */
+    warnIfCSSNotLoaded(): void;
+    /**
      * Add a series to the chart after render time. Note that this method should
      * never be used when adding data synchronously at chart render time, as it
      * adds expense to the calculations and rendering. When adding data at the
@@ -896,7 +901,7 @@ declare class Chart {
      */
     transform(params: Chart.ChartTransformParams): boolean;
 }
-interface Chart extends ChartLike {
+interface Chart extends ChartBase {
     callbacks: Array<Chart.CallbackFunction>;
     collectionsWithInit: Record<string, [Function, Array<any>?]>;
     collectionsWithUpdate: Array<string>;
@@ -934,6 +939,7 @@ declare namespace Chart {
         selection?: Pointer.SelectEventObject;
         from?: Partial<BBoxObject>;
         trigger?: string;
+        allowResetButton?: boolean;
         hasZoomed?: boolean;
     }
     interface CreateAxisOptionsObject {

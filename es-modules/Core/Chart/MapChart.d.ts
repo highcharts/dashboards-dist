@@ -6,8 +6,8 @@ import type Options from '../Options';
 import type SVGPath from '../Renderer/SVG/SVGPath';
 import Chart from './Chart.js';
 import '../../Maps/MapSymbols.js';
-declare module './ChartLike' {
-    interface ChartLike {
+declare module './ChartBase' {
+    interface ChartBase {
         mapView?: MapView;
     }
 }

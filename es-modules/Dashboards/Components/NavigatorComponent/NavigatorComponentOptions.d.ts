@@ -40,10 +40,6 @@ export interface Options extends Component.Options {
      */
     columnAssignment?: Record<string, string | null>;
     /**
-     * @deprecated
-     */
-    columnAssignments?: Record<string, string | null>;
-    /**
      * Connector options
      */
     connector?: Component.ConnectorOptions;
@@ -97,7 +93,7 @@ export interface SyncOptions extends Sync.RawOptionsRecord {
      */
     crossfilter?: boolean | CrossfilterSyncOptions;
     /**
-     * Extremes sync is available for Highcharts, KPI, DataGrid and
+     * Extremes sync is available for Highcharts, KPI, Grid and
      * Navigator components. Sets a common range of displayed data. For the
      * KPI Component sets the last value.
      *

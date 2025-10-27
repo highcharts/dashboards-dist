@@ -1,7 +1,8 @@
+import type { DeepPartial } from '../Shared/Types';
 import type { DefaultOptions, Options } from './Options';
 import Time from './Time.js';
-declare module './GlobalsLike' {
-    interface GlobalsLike {
+declare module './GlobalsBase' {
+    interface GlobalsBase {
         defaultOptions: DefaultOptions;
         time: Time;
     }

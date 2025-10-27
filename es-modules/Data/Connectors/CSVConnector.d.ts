@@ -1,7 +1,5 @@
 import type DataEvent from '../DataEvent';
 import type CSVConnectorOptions from './CSVConnectorOptions';
-import type Types from '../../Shared/Types';
-import type DataTableOptions from '../DataTableOptions';
 import CSVConverter from '../Converters/CSVConverter.js';
 import DataConnector from './DataConnector.js';
 /**
@@ -14,14 +12,10 @@ declare class CSVConnector extends DataConnector {
     /**
      * Constructs an instance of CSVConnector.
      *
-     * @param {CSVConnector.UserOptions} [options]
+     * @param {Partial<CSVConnectorOptions>} [options]
      * Options for the connector and converter.
-     *
-     * @param {Array<DataTableOptions>} [dataTables]
-     * Multiple connector data tables options.
-     *
      */
-    constructor(options?: CSVConnector.UserOptions, dataTables?: Array<DataTableOptions>);
+    constructor(options?: Partial<CSVConnectorOptions>);
     /**
      * Options related to the handling of the CSV DataConnector,
      * i.e. source, fetching, polling
@@ -31,6 +25,14 @@ declare class CSVConnector extends DataConnector {
      * The attached parser, which can be replaced in the constructor
      */
     converter?: CSVConverter;
+    /**
+     * Overrides the DataConnector method. Emits an event on the connector to
+     * all registered callbacks of this event.
+     *
+     * @param {CSVConnector.Event} e
+     * Event object containing additional event information.
+     */
+    emit(e: CSVConnector.Event): void;
     /**
      * Initiates the loading of the CSV source to the connector
      *
@@ -49,23 +51,9 @@ declare namespace CSVConnector {
     /**
      * Event objects fired from CSVConnector events.
      */
-    type Event = (ErrorEvent | LoadEvent);
-    /**
-     * The event object that is provided on errors within CSVConnector.
-     */
-    interface ErrorEvent extends DataConnector.ErrorEvent {
-        csv?: string;
+    interface Event extends DataConnector.Event {
+        readonly csv?: string;
     }
-    /**
-     * The event object that is provided on load events within CSVConnector.
-     */
-    interface LoadEvent extends DataConnector.LoadEvent {
-        csv?: string;
-    }
-    /**
-     * Available options for constructor of the CSVConnector.
-     */
-    type UserOptions = Types.DeepPartial<CSVConnectorOptions>;
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

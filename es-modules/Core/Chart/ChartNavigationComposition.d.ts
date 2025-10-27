@@ -9,8 +9,8 @@
  * */
 import type Chart from './Chart';
 import type NavigationOptions from '../../Extensions/Exporting/NavigationOptions';
-declare module './ChartLike' {
-    interface ChartLike {
+declare module './ChartBase' {
+    interface ChartBase {
         navigation?: ChartNavigationComposition.Additions;
     }
 }

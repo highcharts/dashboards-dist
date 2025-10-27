@@ -1,4 +1,4 @@
-import type Globals from '../../Globals';
+import type { DeepPartial } from '../../../Shared/Types';
 import type Options from './KPIComponentOptions';
-declare const KPIComponentDefaults: Globals.DeepPartial<Options>;
+declare const KPIComponentDefaults: DeepPartial<Options>;
 export default KPIComponentDefaults;

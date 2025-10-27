@@ -37,7 +37,7 @@ declare namespace DataEvent {
     /**
      * Describes methods to attach callbacks to events of a class instance.
      */
-    interface Emitter {
+    interface Emitter<E extends DataEvent> {
         /**
          * Registered events managed by Highcharts utility functions.
          */
@@ -46,10 +46,10 @@ declare namespace DataEvent {
          * Emits an event on the class instance to all registered callbacks of
          * this event.
          *
-         * @param {DataEvent} detail
-         * Detail object containing event information.
+         * @param e
+         * Event object containing additional event information.
          */
-        emit<E extends DataEvent>(e: E): void;
+        emit(e: E): void;
         /**
          * Registers a callback for a specific event.
          *
@@ -62,14 +62,20 @@ declare namespace DataEvent {
          * @return {Function}
          * Function to unregister callback from the event.
          */
-        on<E extends DataEvent>(type: E['type'], callback: Callback<this, E>): Function;
+        on<T extends E['type']>(type: T, callback: Callback<this, Extract<E, {
+            type: T;
+        }>>): Function;
     }
-    /** @internal */
+    /**
+     * Object to manage an event.
+     */
     interface HCEventObject {
         fn: Callback<unknown, DataEvent>;
         order?: number;
     }
-    /** @internal */
+    /**
+     * Collection of events managed by Highcharts utility functions.
+     */
     type HCEventsCollection = (Record<string, Array<HCEventObject>>);
 }
 export default DataEvent;

@@ -118,8 +118,8 @@ class AccordionMenu {
         let currentLevel = this.changedOptions;
         let currentChartOptionsLevel;
         let currentOldChartOptionsBufferLevel;
-        let currentDataGridOptionsLevel;
-        let currentOldDataGridOptionsBufferLevel;
+        let currentGridOptionsLevel;
+        let currentOldGridOptionsBufferLevel;
         if (pathLength === 0 && propertyPath[0] === 'chartOptions') {
             try {
                 const parsedValue = JSON.parse(value);
@@ -137,25 +137,25 @@ class AccordionMenu {
             }
             currentLevel = currentLevel[key];
             if (key === 'gridOptions') {
-                const realGridOptions = this.component.dataGrid?.options;
+                const realGridOptions = this.component.grid?.options;
                 if (realGridOptions) {
                     const oldOptionsBuffer = this.oldOptionsBuffer;
                     if (!oldOptionsBuffer.gridOptions) {
                         oldOptionsBuffer.gridOptions = {};
                     }
-                    currentOldDataGridOptionsBufferLevel =
+                    currentOldGridOptionsBufferLevel =
                         oldOptionsBuffer.gridOptions;
-                    currentDataGridOptionsLevel = realGridOptions;
+                    currentGridOptionsLevel = realGridOptions;
                 }
             }
-            else if (currentDataGridOptionsLevel &&
-                currentOldDataGridOptionsBufferLevel) {
-                currentDataGridOptionsLevel = currentDataGridOptionsLevel[key];
-                if (currentOldDataGridOptionsBufferLevel[key] === void 0) {
-                    currentOldDataGridOptionsBufferLevel[key] = {};
+            else if (currentGridOptionsLevel &&
+                currentOldGridOptionsBufferLevel) {
+                currentGridOptionsLevel = currentGridOptionsLevel[key];
+                if (currentOldGridOptionsBufferLevel[key] === void 0) {
+                    currentOldGridOptionsBufferLevel[key] = {};
                 }
-                currentOldDataGridOptionsBufferLevel =
-                    currentOldDataGridOptionsBufferLevel[key];
+                currentOldGridOptionsBufferLevel =
+                    currentOldGridOptionsBufferLevel[key];
             }
             if (key === 'chartOptions') {
                 const realChartOptions = this.component.chart?.options;

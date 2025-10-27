@@ -33,7 +33,7 @@ declare class DataTableCore {
     readonly autoId: boolean;
     readonly columns: Record<string, DataTable.Column>;
     readonly id: string;
-    modified: DataTableCore;
+    modified?: this;
     rowCount: number;
     protected versionTag: string;
     /**
@@ -63,42 +63,42 @@ declare class DataTableCore {
      * Fetches the given column by the canonical column name. Simplified version
      * of the full `DataTable.getRow` method, always returning by reference.
      *
-     * @param {string} columnName
+     * @param {string} columnId
      * Name of the column to get.
      *
      * @return {Highcharts.DataTableColumn|undefined}
      * A copy of the column, or `undefined` if not found.
      */
-    getColumn(columnName: string, asReference?: true): (DataTable.Column | undefined);
+    getColumn(columnId: string, asReference?: true): (DataTable.Column | undefined);
     /**
      * Retrieves all or the given columns. Simplified version of the full
      * `DataTable.getColumns` method, always returning by reference.
      *
-     * @param {Array<string>} [columnNames]
-     * Column names to retrieve.
+     * @param {Array<string>} [columnIds]
+     * Column ids to retrieve.
      *
      * @return {Highcharts.DataTableColumnCollection}
      * Collection of columns. If a requested column was not found, it is
      * `undefined`.
      */
-    getColumns(columnNames?: Array<string>, asReference?: true): DataTable.ColumnCollection;
+    getColumns(columnIds?: Array<string>, asReference?: true): DataTable.ColumnCollection;
     /**
      * Retrieves the row at a given index.
      *
      * @param {number} rowIndex
      * Row index to retrieve. First row has index 0.
      *
-     * @param {Array<string>} [columnNames]
+     * @param {Array<string>} [columnIds]
      * Column names to retrieve.
      *
      * @return {Record<string, number|string|undefined>|undefined}
      * Returns the row values, or `undefined` if not found.
      */
-    getRow(rowIndex: number, columnNames?: Array<string>): (DataTable.Row | undefined);
+    getRow(rowIndex: number, columnIds?: Array<string>): (DataTable.Row | undefined);
     /**
      * Sets cell values for a column. Will insert a new column, if not found.
      *
-     * @param {string} columnName
+     * @param {string} columnId
      * Column name to set.
      *
      * @param {Highcharts.DataTableColumn} [column]
@@ -113,7 +113,7 @@ declare class DataTableCore {
      * @emits #setColumns
      * @emits #afterSetColumns
      */
-    setColumn(columnName: string, column?: DataTable.Column, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
+    setColumn(columnId: string, column?: DataTable.Column, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
     /**
      * Sets cell values for multiple columns. Will insert new columns, if not
      * found. Simplified version of the full `DataTableCore.setColumns`, limited
@@ -153,5 +153,13 @@ declare class DataTableCore {
      * @emits #afterSetRows
      */
     setRow(row: DataTable.RowObject, rowIndex?: number, insert?: boolean, eventDetail?: DataEvent.Detail): void;
+    /**
+     * Returns the medified (clone) or the original data table if the modified
+     * one does not exist.
+     *
+     * @return {Highcharts.DataTableCore}
+     * The medified (clone) or the original data table.
+     */
+    getModified(): this;
 }
 export default DataTableCore;

@@ -7,11 +7,6 @@ import EditMode from '../EditMode/EditMode';
  * Class providing a resizing functionality.
  */
 declare class Resizer {
-    /**
-     * Creates a new instance of the Resizer class based on JSON.
-     * @internal
-     */
-    static fromJSON(editMode: EditMode, json: Resizer.JSON): Resizer | undefined;
     protected static readonly defaultOptions: Resizer.Options;
     /**
      * Constructor for the Resizer class.
@@ -69,11 +64,6 @@ declare class Resizer {
      */
     tempSiblingsWidth: Array<Cell>;
     /**
-     * Reference to ResizeObserver, which allows running 'unobserve'.
-     * @internal
-     */
-    private resizeObserver?;
-    /**
      * Add Snap - create snaps and add events.
      *
      */
@@ -117,14 +107,6 @@ declare class Resizer {
      * Destroy resizer
      */
     destroy(): void;
-    /**
-     * Converts the class instance to a class JSON.
-     * @internal
-     *
-     * @return {Resizer.JSON}
-     * Class JSON of this Resizer instance.
-     */
-    toJSON(): Resizer.JSON;
 }
 interface Resizer {
     mouseDownSnapX?: Function;
@@ -206,10 +188,6 @@ declare namespace Resizer {
          * Height of the element in pixels.
          */
         height?: number;
-    }
-    /** @internal */
-    interface HTMLDOMElementEvents extends HTMLDOMElement {
-        hcEvents: Record<string, Array<Function>>;
     }
     interface JSON extends Serializable.JSON<'Dashboards.Action.Resizer'> {
         options: JSONOptions;

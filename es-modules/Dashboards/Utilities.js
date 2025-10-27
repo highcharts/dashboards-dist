@@ -14,11 +14,6 @@
  *
  * */
 'use strict';
-/* *
- *
- *  Imports
- *
- * */
 import D from './Globals.js';
 const { doc, supportsPassiveEvents } = D;
 import U from '../Core/Utilities.js';

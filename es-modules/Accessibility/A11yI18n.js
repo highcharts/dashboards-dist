@@ -147,7 +147,7 @@ var A11yI18nComposition;
      * If negative, the function will subtract the number from the length of the
      * array.  Use this to stop iterating before the array ends.  Example:
      *
-     * - Format: 'List contains: {#each(myArray, -1) }and {myArray[-1]}.'
+     * - Format: 'List contains: {#each(myArray, -1), }and {myArray[-1]}.'
      *
      * - Context: { myArray: [0, 1, 2, 3] }
      *

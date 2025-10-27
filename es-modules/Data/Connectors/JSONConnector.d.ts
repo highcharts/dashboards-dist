@@ -1,7 +1,6 @@
 import type DataEvent from '../DataEvent';
-import type Types from '../../Shared/Types';
 import type JSONConnectorOptions from './JSONConnectorOptions';
-import type DataTableOptions from '../DataTableOptions';
+import type { JSONData } from '../Converters/JSONConverterOptions';
 import DataConnector from './DataConnector.js';
 import JSONConverter from '../Converters/JSONConverter.js';
 /**
@@ -14,13 +13,10 @@ declare class JSONConnector extends DataConnector {
     /**
      * Constructs an instance of JSONConnector.
      *
-     * @param {JSONConnector.UserOptions} [options]
+     * @param {Partial<JSONConnectorOptions>} [options]
      * Options for the connector and converter.
-     *
-     * @param {Array<DataTableOptions>} [dataTables]
-     * Multiple connector data tables options.
      */
-    constructor(options?: JSONConnector.UserOptions, dataTables?: Array<DataTableOptions>);
+    constructor(options?: Partial<JSONConnectorOptions>);
     /**
      * Options related to the handling of the JSON DataConnector,
      * i.e. source, fetching, polling
@@ -30,6 +26,14 @@ declare class JSONConnector extends DataConnector {
      * The attached parser that converts the data format to the table.
      */
     converter?: JSONConverter;
+    /**
+     * Overrides the DataConnector method. Emits an event on the connector to
+     * all registered callbacks of this event.
+     *
+     * @param {JSONConnector.Event} e
+     * Event object containing additional event information.
+     */
+    emit(e: JSONConnector.Event): void;
     /**
      * Initiates the loading of the JSON source to the connector
      *
@@ -48,23 +52,9 @@ declare namespace JSONConnector {
     /**
      * Event objects fired from JSONConnector events.
      */
-    type Event = (ErrorEvent | LoadEvent);
-    /**
-     * The event object that is provided on errors within JSONConnector.
-     */
-    interface ErrorEvent extends DataConnector.ErrorEvent {
-        data?: JSONConverter.Data;
+    interface Event extends DataConnector.Event {
+        readonly data?: JSONData;
     }
-    /**
-     * The event object that is provided on load events within JSONConnector.
-     */
-    interface LoadEvent extends DataConnector.LoadEvent {
-        data?: JSONConverter.Data;
-    }
-    /**
-     * Available options for constructor of the JSONConnector.
-     */
-    type UserOptions = Types.DeepPartial<JSONConnectorOptions>;
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

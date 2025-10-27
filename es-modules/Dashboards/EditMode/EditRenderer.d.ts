@@ -1,37 +1,6 @@
 import type MenuItem from './Menu/MenuItem.js';
 import type CSSObject from '../../Core/Renderer/CSSObject';
-import type EditMode from './EditMode.js';
 import EditGlobals from './EditGlobals.js';
-/**
- * Function to create a context button.
- * @internal
- *
- * @param parentElement
- * The element to which the new element should be appended.
- *
- * @param editMode
- * EditMode instance.
- *
- * @returns
- * Context button element.
- */
-declare function renderContextButton(parentNode: HTMLElement, editMode: EditMode): HTMLElement | undefined;
-/**
- * Creates the collapsable header element.
- * @internal
- *
- * @param parentElement
- * The HTMLElement to which the element should be rendered to.
- *
- * @param options
- * Nested header options.
- *
- * @returns the outer element and content in the collapsable div.
- */
-declare function renderCollapseHeader(parentElement: HTMLElement, options: NestedHeaderFormFieldOptions): {
-    outerElement: HTMLElement;
-    content: HTMLElement;
-};
 /**
  * Function to create select element.
  *

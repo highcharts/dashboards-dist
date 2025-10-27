@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v3.6.0 (2025-09-10)
+ * @license Highcharts Dashboards v@product.version@ (@product.date@)
  * @module dashboards/dashboards
  *
  * (c) 2009-2025 Highsoft AS
@@ -18,6 +18,14 @@ import '../Data/Modifiers/InvertModifier.js';
 import '../Data/Modifiers/RangeModifier.js';
 import '../Data/Modifiers/SortModifier.js';
 import '../Data/Modifiers/FilterModifier.js';
+// Import SerializeHelper modules to register them
+import '../Dashboards/SerializeHelper/CSVConnectorHelper.js';
+import '../Dashboards/SerializeHelper/DataConverterHelper.js';
+import '../Dashboards/SerializeHelper/DataCursorHelper.js';
+import '../Dashboards/SerializeHelper/DataTableHelper.js';
+import '../Dashboards/SerializeHelper/GoogleSheetsConnectorHelper.js';
+import '../Dashboards/SerializeHelper/HTMLTableConnectorHelper.js';
+import '../Dashboards/SerializeHelper/JSONConnectorHelper.js';
 import AST from '../Core/Renderer/HTML/AST.js';
 import DataConnector from '../Data/Connectors/DataConnector.js';
 import Board from '../Dashboards/Board.js';
@@ -29,11 +37,12 @@ import DataConverter from '../Data/Converters/DataConverter.js';
 import DataModifier from '../Data/Modifiers/DataModifier.js';
 import DataTable from '../Data/DataTable.js';
 import Globals from '../Dashboards/Globals.js';
-import GridPlugin from '../Dashboards/Plugins/DataGridPlugin.js';
+import GridPlugin from '../Dashboards/Plugins/GridPlugin.js';
 import HighchartsPlugin from '../Dashboards/Plugins/HighchartsPlugin.js';
 import PluginHandler from '../Dashboards/PluginHandler.js';
 import Sync from '../Dashboards/Components/Sync/Sync.js';
 import Utilities from '../Dashboards/Utilities.js';
+import CoreUtilities from '../Core/Utilities.js';
 /* *
  *
  *  Namespace
@@ -56,11 +65,12 @@ G.DataCursor = DataCursor;
 G.DataModifier = DataModifier;
 G.DataPool = DataPool;
 G.DataTable = DataTable;
-G.DataGridPlugin = GridPlugin;
 G.GridPlugin = GridPlugin;
 G.HighchartsPlugin = HighchartsPlugin;
 G.PluginHandler = PluginHandler;
 G.Sync = Sync;
+// Extend with Core utilities
+CoreUtilities.extend(G, CoreUtilities);
 /* *
  *
  *  Classic Export

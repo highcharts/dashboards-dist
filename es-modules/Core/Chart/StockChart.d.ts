@@ -8,13 +8,13 @@ import type SVGElement from '../Renderer/SVG/SVGElement';
 import type SVGPath from '../Renderer/SVG/SVGPath';
 import type SVGRenderer from '../Renderer/SVG/SVGRenderer';
 import Chart from '../Chart/Chart.js';
-declare module '../Axis/AxisLike' {
-    interface AxisLike {
+declare module '../Axis/AxisBase' {
+    interface AxisBase {
         crossLabel?: SVGElement;
     }
 }
-declare module './ChartLike' {
-    interface ChartLike {
+declare module './ChartBase' {
+    interface ChartBase {
         _labelPanes?: Record<string, Axis>;
         fixedRange?: number;
         setFixedRange(range: number | undefined): void;
@@ -25,14 +25,14 @@ declare module '../Options' {
         isStock?: boolean;
     }
 }
-declare module '../Series/SeriesLike' {
-    interface SeriesLike {
+declare module '../Series/SeriesBase' {
+    interface SeriesBase {
         clipBox?: BBoxObject;
         forceCropping(): boolean | undefined;
     }
 }
-declare module '../Renderer/SVG/SVGRendererLike' {
-    interface SVGRendererLike {
+declare module '../Renderer/SVG/SVGRendererBase' {
+    interface SVGRendererBase {
         crispPolyLine(points: SVGPath, width: number): SVGPath;
     }
 }

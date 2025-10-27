@@ -4,7 +4,6 @@ import type { Chart, Options as ChartOptions, Highcharts as H } from '../../Plug
 import type { ColumnAssignmentOptions, ConstructorType, Options } from './HighchartsComponentOptions';
 import type SidebarPopup from '../../EditMode/SidebarPopup';
 import Component from '../Component.js';
-import Globals from '../../Globals.js';
 import ConnectorHandler from '../../Components/ConnectorHandler';
 /**
  *
@@ -21,7 +20,7 @@ declare class HighchartsComponent extends Component {
     /**
      * Default options of the Highcharts component.
      */
-    static defaultOptions: Partial<Component.Options> & Globals.DeepPartial<Options>;
+    static defaultOptions: Partial<Component.Options> & import("../../../Shared/Types").DeepPartial<Options>;
     /**
      * A full set of chart options used by the chart.
      * [Highcharts API](https://api.highcharts.com/highcharts/)
@@ -87,12 +86,6 @@ declare class HighchartsComponent extends Component {
      */
     private onChartUpdate;
     /**
-     * Internal method for handling option updates.
-     *
-     * @internal
-     */
-    private setOptions;
-    /**
      * Handles updating via options.
      * @param options
      * The options to apply.
@@ -126,7 +119,7 @@ declare class HighchartsComponent extends Component {
     destroy(): void;
     /**
      * Creates default mapping when columnAssignment is not declared.
-     * @param  { Array<string>} columnNames all columns returned from dataTable.
+     * @param  { Array<string>} columnIds all columns returned from dataTable.
      *
      * @returns
      * The record of mapping
@@ -152,15 +145,6 @@ declare class HighchartsComponent extends Component {
      */
     private registerChartEvents;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
-    /**
-     * Get the HighchartsComponent component's options.
-     * @returns
-     * HighchartsComponent component's options.
-     *
-     * @internal
-     *
-     */
-    getOptions(): Partial<Options>;
     /**
      * Retrieves editable options for the chart.
      *

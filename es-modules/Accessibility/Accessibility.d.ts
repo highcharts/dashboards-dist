@@ -19,8 +19,8 @@ import ProxyProvider from './ProxyProvider.js';
 import RangeSelectorComponent from './Components/RangeSelectorComponent.js';
 import SeriesComponent from './Components/SeriesComponent/SeriesComponent.js';
 import ZoomComponent from './Components/ZoomComponent.js';
-declare module '../Core/Chart/ChartLike' {
-    interface ChartLike {
+declare module '../Core/Chart/ChartBase' {
+    interface ChartBase {
         a11yDirty?: boolean;
         accessibility?: Accessibility;
         types?: Array<string>;

@@ -20,9 +20,10 @@ import DataTable from '../../../Data/DataTable.js';
 import Globals from '../../Globals.js';
 import HighchartsSyncs from './HighchartsSyncs/HighchartsSyncs.js';
 import HighchartsComponentDefaults from './HighchartsComponentDefaults.js';
-import DU from '../../Utilities.js';
+import DataConverterUtils from '../../../Data/Converters/DataConverterUtils.js';
 import U from '../../../Core/Utilities.js';
 const { createElement, diffObjects, isString, merge, splat } = U;
+import DU from '../../Utilities.js';
 const { deepClone } = DU;
 /* *
  *
@@ -62,24 +63,6 @@ class HighchartsComponent extends Component {
             { chart: {} }), {
             tooltip: {} // Temporary fix for #18876
         });
-        for (const connectorHandler of this.connectorHandlers) {
-            const connector = connectorHandler.connector;
-            const dataTableKey = connectorHandler.options.dataTableKey;
-            if (connector) {
-                connector.on('afterLoad', (e) => {
-                    const eventTables = e.tables;
-                    let eventTable;
-                    if (dataTableKey) {
-                        eventTable = eventTables[dataTableKey];
-                    }
-                    else {
-                        eventTable = Object.values(eventTables)[0];
-                    }
-                    const table = connector.getTable(dataTableKey);
-                    table.setColumns(eventTable.getColumns());
-                });
-            }
-        }
         this.innerResizeTimeouts = [];
     }
     onTableChanged() {
@@ -162,27 +145,27 @@ class HighchartsComponent extends Component {
         const columnAssignment = connectorHandler.columnAssignment;
         const seriesId = point.series.options.id;
         const converter = new DataConverter();
-        const valueToSet = converter.asNumber(point.y);
+        const valueToSet = DataConverterUtils.asNumber(point.y, converter.decimalRegExp);
         if (!table) {
             return;
         }
-        let columnName;
+        let columnId;
         if (columnAssignment && seriesId) {
             const data = columnAssignment.find((s) => s.seriesId === seriesId)?.data;
             if (isString(data)) {
-                columnName = data;
+                columnId = data;
             }
             else if (Array.isArray(data)) {
-                columnName = data[1];
+                columnId = data[1];
             }
             else if (data) {
-                columnName = data.y ?? data.value;
+                columnId = data.y ?? data.value;
             }
         }
-        if (!columnName) {
-            columnName = seriesId ?? point.series.name;
+        if (!columnId) {
+            columnId = seriesId ?? point.series.name;
         }
-        table.setCell(columnName, point.index, valueToSet);
+        table.setCell(columnId, point.index, valueToSet);
     }
     /**
      * Internal method for handling option updates.
@@ -241,7 +224,7 @@ class HighchartsComponent extends Component {
                 connectorHandler.setTable(connector.dataTables[dataTableKey]);
             }
             if (!columnAssignment && connectorHandler.presentationTable) {
-                columnAssignment = this.getDefaultColumnAssignment(connectorHandler.presentationTable.getColumnNames(), connectorHandler.presentationTable);
+                columnAssignment = this.getDefaultColumnAssignment(connectorHandler.presentationTable.getColumnIds(), connectorHandler.presentationTable);
             }
             if (columnAssignment) {
                 connectorHandler.columnAssignment = columnAssignment;
@@ -283,7 +266,7 @@ class HighchartsComponent extends Component {
             !connectorHandler.presentationTable) {
             return;
         }
-        const table = connectorHandler.presentationTable.modified;
+        const table = connectorHandler.presentationTable.getModified();
         const modifierOptions = connectorHandler.presentationTable.getModifier()?.options;
         const columnAssignment = connectorHandler.columnAssignment ?? [];
         // Create the series or update the existing ones.
@@ -310,27 +293,27 @@ class HighchartsComponent extends Component {
                 if (column) {
                     seriesOptions.data = column.slice();
                 }
-                adjustDraggableOptions((columnName) => (columnName === dataStructure));
+                adjustDraggableOptions((columnId) => (columnId === dataStructure));
             }
             else if (Array.isArray(dataStructure)) {
                 const seriesTable = new DataTable({
                     columns: table.getColumns(dataStructure)
                 });
                 seriesOptions.data = seriesTable.getRows();
-                adjustDraggableOptions((columnName) => (dataStructure.some((name) => name === columnName)));
+                adjustDraggableOptions((columnId) => (dataStructure.some((name) => name === columnId)));
             }
             else {
                 const keys = Object.keys(dataStructure);
-                const columnNames = [];
+                const columnIds = [];
                 for (let j = 0, jEnd = keys.length; j < jEnd; ++j) {
-                    columnNames.push(dataStructure[keys[j]]);
+                    columnIds.push(dataStructure[keys[j]]);
                 }
                 const seriesTable = new DataTable({
-                    columns: table.getColumns(columnNames)
+                    columns: table.getColumns(columnIds)
                 });
                 seriesOptions.keys = keys;
                 seriesOptions.data = seriesTable.getRows();
-                adjustDraggableOptions((columnName) => (columnNames.some((name) => name === columnName)));
+                adjustDraggableOptions((columnId) => (columnIds.some((name) => name === columnId)));
             }
             if (!series) {
                 chart.addSeries({
@@ -367,7 +350,7 @@ class HighchartsComponent extends Component {
     }
     /**
      * Creates default mapping when columnAssignment is not declared.
-     * @param  { Array<string>} columnNames all columns returned from dataTable.
+     * @param  { Array<string>} columnIds all columns returned from dataTable.
      *
      * @returns
      * The record of mapping
@@ -375,22 +358,22 @@ class HighchartsComponent extends Component {
      * @private
      *
      */
-    getDefaultColumnAssignment(columnNames = [], presentationTable) {
+    getDefaultColumnAssignment(columnIds = [], presentationTable) {
         const result = [];
-        const firstColumn = presentationTable.getColumn(columnNames[0]);
+        const firstColumn = presentationTable.getColumn(columnIds[0]);
         if (firstColumn && isString(firstColumn[0])) {
-            for (let i = 1, iEnd = columnNames.length; i < iEnd; ++i) {
+            for (let i = 1, iEnd = columnIds.length; i < iEnd; ++i) {
                 result.push({
-                    seriesId: columnNames[i],
-                    data: [columnNames[0], columnNames[i]]
+                    seriesId: columnIds[i],
+                    data: [columnIds[0], columnIds[i]]
                 });
             }
             return result;
         }
-        for (let i = 0, iEnd = columnNames.length; i < iEnd; ++i) {
+        for (let i = 0, iEnd = columnIds.length; i < iEnd; ++i) {
             result.push({
-                seriesId: columnNames[i],
-                data: columnNames[i]
+                seriesId: columnIds[i],
+                data: columnIds[i]
             });
         }
         return result;
@@ -476,7 +459,6 @@ class HighchartsComponent extends Component {
     getOptionsOnDrop(sidebar) {
         const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
         let options = {
-            cell: '',
             type: 'Highcharts',
             chartOptions: {
                 chart: {

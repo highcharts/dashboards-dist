@@ -1,4 +1,4 @@
-import type Globals from '../Globals';
+import type { AnyRecord } from '../../Shared/Types';
 import Serializable from '../Serializable.js';
 /**
  * Contains presentation information like column order, usually in relation to a
@@ -33,7 +33,7 @@ declare class SharedComponentState implements Serializable<SharedComponentState,
      * Array of column names in order.
      */
     getColumnOrder(): Array<string>;
-    getColumnVisibility(columnName: string): boolean | undefined;
+    getColumnVisibility(columnId: string): boolean | undefined;
     /**
      * Returns a function for `Array.sort` to change the order of an array of
      * column names. Unknown column names come last.
@@ -69,7 +69,7 @@ declare class SharedComponentState implements Serializable<SharedComponentState,
      * @param {DataEventEmitter.Detail} [eventDetail]
      * Custom information for pending events.
      */
-    setColumnOrder(columnOrder: Array<string>, eventDetail?: Globals.AnyRecord): void;
+    setColumnOrder(columnOrder: Array<string>, eventDetail?: AnyRecord): void;
     setColumnVisibility(columnVisibility: Record<string, boolean>, eventDetail?: {}): void;
     setHiddenRows(rowIndexes: number[], hidden?: boolean): void;
     getHiddenRows(): number[];
@@ -77,25 +77,6 @@ declare class SharedComponentState implements Serializable<SharedComponentState,
     getHoverPoint(): (SharedComponentState.PresentationHoverPointType | undefined);
     getSelection(): SharedComponentState.SelectionObjectType;
     setSelection(selection: SharedComponentState.SelectionObjectType, reset?: boolean, eventDetail?: {}): void;
-    /**
-     * Converts JSON to a presentation state.
-     * @internal
-     *
-     * @param {DataPresentationState.ClassJSON} json
-     * JSON (usually with a $class property) to convert.
-     *
-     * @return {DataPresentationState}
-     * Class instance from the JSON.
-     */
-    fromJSON(json: SharedComponentState.JSON): SharedComponentState;
-    /**
-     * Converts the presentation state to JSON.
-     * @internal
-     *
-     * @return {SharedComponentState.JSON}
-     * JSON of this class instance.
-     */
-    toJSON(): SharedComponentState.JSON;
 }
 /**
  * Additionally provided types for events and JSON conversion.
@@ -116,8 +97,8 @@ declare namespace SharedComponentState {
         (a: string, b: string): number;
     }
     interface HoverPointEventDetails {
-        detail?: Globals.AnyRecord;
-        isDataGrid?: boolean;
+        detail?: AnyRecord;
+        isGrid?: boolean;
         sender?: string;
     }
     /**
@@ -129,36 +110,36 @@ declare namespace SharedComponentState {
      */
     interface ColumnOrderEvent {
         type: ColumnOrderEventType;
-        detail?: Globals.AnyRecord;
+        detail?: AnyRecord;
         newColumnOrder: Array<string>;
         oldColumnOrder: Array<string>;
     }
     interface ColumnVisibilityEvent {
         type: ColumnVisibilityEventType;
-        detail?: Globals.AnyRecord;
+        detail?: AnyRecord;
         visibilityMap: Record<string, boolean>;
     }
     interface HiddenRowEvent {
         type: ('afterSetHiddenRows');
-        detail?: Globals.AnyRecord;
+        detail?: AnyRecord;
         hiddenRows: number[];
     }
     interface PointHoverEvent {
         type: HoverPointEventType;
-        detail?: Globals.AnyRecord;
+        detail?: AnyRecord;
         hoverPoint?: PresentationHoverPointType;
         hoverRow?: HTMLElement;
     }
     type ColumnVisibilityType = Record<string, boolean>;
     type SelectionObjectType = Record<string, {
-        columnName?: string;
+        columnId?: string;
         min?: number;
         max?: number;
     }>;
-    type PresentationHoverPointType = Partial<Globals.AnyRecord>;
+    type PresentationHoverPointType = Partial<AnyRecord>;
     interface SelectionEvent {
         type: selectionEventType;
-        detail?: Globals.AnyRecord;
+        detail?: AnyRecord;
         reset: boolean;
         selection: Record<string, {
             min?: number | undefined;

@@ -29,7 +29,9 @@ declare class FilterModifier extends DataModifier {
      */
     readonly options: FilterModifierOptions;
     /**
-     * Replaces table rows with filtered rows.
+     * Filters out table rows matching a given condition. If the given table
+     * does not have defined a `modified` property, the filtering is applied
+     * in-place on the original table rather than on a `modified` copy.
      *
      * @param {DataTable} table
      * Table to modify.
@@ -38,9 +40,10 @@ declare class FilterModifier extends DataModifier {
      * Custom information for pending events.
      *
      * @return {DataTable}
-     * Table with `modified` property as a reference.
+     * Table with `modified` property as a reference or modified table, if
+     * `modified` property of the original table is undefined.
      */
-    modifyTable<T extends DataTable>(table: T, eventDetail?: DataEvent.Detail): T;
+    modifyTable(table: DataTable, eventDetail?: DataEvent.Detail): DataTable;
 }
 declare module './DataModifierType' {
     interface DataModifierTypes {

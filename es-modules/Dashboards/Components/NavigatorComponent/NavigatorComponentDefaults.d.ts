@@ -1,4 +1,4 @@
-import type Globals from '../../Globals';
+import type { DeepPartial } from '../../../Shared/Types';
 import type Options from './NavigatorComponentOptions';
-declare const NavigatorComponentDefaults: Globals.DeepPartial<Options>;
+declare const NavigatorComponentDefaults: DeepPartial<Options>;
 export default NavigatorComponentDefaults;

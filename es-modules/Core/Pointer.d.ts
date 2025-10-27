@@ -8,8 +8,8 @@ import type { PointerEvent } from './PointerEvent';
 import type Series from './Series/Series';
 import type SVGElement from './Renderer/SVG/SVGElement';
 import SVGAttributes from './Renderer/SVG/SVGAttributes';
-declare module './Chart/ChartLike' {
-    interface ChartLike {
+declare module './Chart/ChartBase' {
+    interface ChartBase {
         cancelClick?: boolean;
         hoverPoint?: Point;
         hoverPoints?: Array<Point>;
@@ -62,7 +62,6 @@ declare class Pointer {
     res?: boolean;
     runChartClick?: boolean;
     selectionMarker?: SVGElement;
-    tooltipTimeout?: number;
     eventsToUnbind: Array<Function>;
     unDocMouseMove?: Function;
     zoomHor?: boolean;

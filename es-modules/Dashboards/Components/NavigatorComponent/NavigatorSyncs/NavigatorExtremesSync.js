@@ -14,7 +14,7 @@
 import DataModifier from '../../../../Data/Modifiers/DataModifier.js';
 import NavigatorSyncUtils from './NavigatorSyncUtils.js';
 import U from '../../../../Core/Utilities.js';
-const { Range: RangeModifier } = DataModifier.types;
+const { Filter: FilterModifier } = DataModifier.types;
 const { addEvent, pick, defined } = U;
 /* *
  *
@@ -32,7 +32,7 @@ const syncPair = {
         const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
         const afterSetExtremes = (extremes) => {
             if (component.connectorHandlers?.[0]?.connector) {
-                const table = component.connectorHandlers[0].connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
+                const table = component.connectorHandlers[0].connector.getTable(), dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
                 dataCursor.emitCursor(table, {
                     type: 'position',
                     column: filterColumn,
@@ -66,9 +66,9 @@ const syncPair = {
             if (!component.connectorHandlers?.[0]?.connector) {
                 return;
             }
-            const table = component.connectorHandlers[0].connector.table;
+            const table = component.connectorHandlers[0].connector.getTable();
             // Assume first column with unique keys as fallback
-            let extremesColumn = table.getColumnNames()[0], maxIndex = table.getRowCount(), minIndex = 0;
+            let extremesColumn = table.getColumnIds()[0], maxIndex = table.getRowCount(), minIndex = 0;
             if (cursor.type === 'range') {
                 maxIndex = cursor.lastRow;
                 minIndex = cursor.firstRow;
@@ -86,21 +86,17 @@ const syncPair = {
             }
             const modifier = table.getModifier();
             if (typeof extremesColumn === 'string' &&
-                modifier instanceof RangeModifier) {
-                const ranges = modifier.options.ranges, min = table.getCell(extremesColumn, minIndex), max = table.getCell(extremesColumn, maxIndex);
+                modifier instanceof FilterModifier) {
+                const min = table.getCell(extremesColumn, minIndex);
+                const max = table.getCell(extremesColumn, maxIndex);
                 if (defined(max) && defined(min)) {
-                    NavigatorSyncUtils.unsetRangeOptions(ranges, extremesColumn);
-                    ranges.unshift({
-                        column: extremesColumn,
-                        maxValue: max,
-                        minValue: min
-                    });
-                    table.setModifier(modifier);
+                    NavigatorSyncUtils.setRangeOptions(modifier.options, extremesColumn, min, max);
+                    void table.setModifier(modifier);
                 }
             }
         };
         const registerCursorListeners = () => {
-            const table = component.connectorHandlers?.[0]?.connector?.table;
+            const table = component.connectorHandlers?.[0]?.connector?.getTable();
             if (table) {
                 dataCursor.addListener(table.id, 'xAxis.extremes' + groupKey, extremesListener);
                 dataCursor.addListener(table.id, 'xAxis.extremes.max' + groupKey, extremesListener);
@@ -108,7 +104,7 @@ const syncPair = {
             }
         };
         const unregisterCursorListeners = () => {
-            const table = component.connectorHandlers?.[0]?.connector?.table;
+            const table = component.connectorHandlers?.[0]?.connector?.getTable();
             if (table) {
                 dataCursor.removeListener(table.id, 'xAxis.extremes' + groupKey, extremesListener);
                 dataCursor.removeListener(table.id, 'xAxis.extremes.max' + groupKey, extremesListener);

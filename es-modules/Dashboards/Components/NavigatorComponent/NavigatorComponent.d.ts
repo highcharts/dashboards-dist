@@ -50,11 +50,6 @@ declare class NavigatorComponent extends Component {
      */
     getColumnAssignment(): [string, string];
     /**
-     * Gets the component's options.
-     * @internal
-     */
-    getOptions(): Partial<Options>;
-    /**
      * Gets the extremes of the navigator's x-axis.
      */
     getAxisExtremes(): [number, number] | [string, string];

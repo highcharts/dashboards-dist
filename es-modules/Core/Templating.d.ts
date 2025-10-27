@@ -69,7 +69,7 @@ declare function dateFormat(format: string, timestamp: number, upperCaseFirst?: 
  *        replaced by its value.
  *
  * @param {Highcharts.Chart} [owner]
- *        A `Chart` or `DataGrid` instance used to get numberFormatter and time.
+ *        A `Chart` or `Grid` instance used to get numberFormatter and time.
  *
  * @return {string}
  *         The formatted string.

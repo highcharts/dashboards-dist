@@ -1,24 +1,24 @@
 {
-    "name": "@highcharts/dashboards",
-    "description": "Highcharts Dashboards framework",
-    "homepage": "https://www.highcharts.com/products/dashboards/",
-    "version": "3.6.0",
-    "author": "Highsoft AS <support@highcharts.com> (http://www.highcharts.com/about)",
-    "bugs": "https://github.com/highcharts/highcharts/issues",
-    "license": "https://www.highcharts.com/license",
-    "repository": "https://github.com/highcharts/dashboards-dist.git",
-    "main": "dashboards.js",
-    "types": "dashboards.d.ts",
-    "keywords": [
-        "chart",
-        "dashboard",
-        "data",
-        "graph",
-        "grid",
-        "table",
-        "visualization"
-    ],
-    "peerDependencies": {
-        "highcharts": ">=10.0.0"
-    }
+  "name": "@highcharts/dashboards",
+  "description": "Highcharts Dashboards framework",
+  "homepage": "https://www.highcharts.com/products/dashboards/",
+  "version": "4.0.0-rc.1",
+  "author": "Highsoft AS <support@highcharts.com> (http://www.highcharts.com/about)",
+  "bugs": "https://github.com/highcharts/highcharts/issues",
+  "license": "https://www.highcharts.com/license",
+  "repository": "https://github.com/highcharts/dashboards-dist.git",
+  "main": "dashboards.js",
+  "types": "dashboards.d.ts",
+  "keywords": [
+    "chart",
+    "dashboard",
+    "data",
+    "graph",
+    "grid",
+    "table",
+    "visualization"
+  ],
+  "peerDependencies": {
+    "highcharts": ">=10.0.0"
+  }
 }

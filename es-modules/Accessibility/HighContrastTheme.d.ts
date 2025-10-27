@@ -1,4 +1,5 @@
 import type ColorType from '../Core/Color/ColorType';
+import type { DeepPartial } from '../Shared/Types';
 import type Options from '../Core/Options';
 declare module '../Core/Series/DataLabelOptions' {
     interface DataLabelOptions {

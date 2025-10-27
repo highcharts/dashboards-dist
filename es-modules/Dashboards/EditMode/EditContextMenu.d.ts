@@ -1,35 +1,4 @@
-import MenuItem from './Menu/MenuItem.js';
 import Menu from './Menu/Menu.js';
-import EditMode from './EditMode.js';
-import { HTMLDOMElement } from '../../Core/Renderer/DOMElementType.js';
-/**
- * Class to create context menu.
- * @internal
- */
-declare class EditContextMenu extends Menu {
-    protected static readonly defaultOptions: EditContextMenu.Options;
-    /**
-     * Default Context menu items.
-     */
-    static items: Record<string, MenuItem.Options> & {
-        editMode: {
-            id: string;
-            type: string;
-            getValue: (item: MenuItem) => boolean;
-            setValue: (item: MenuItem, value: boolean) => void;
-            langKey: string;
-            events: {
-                click: (this: MenuItem) => void;
-            };
-        };
-    };
-    constructor(parentElement: HTMLElement, options: EditContextMenu.Options, editMode: EditMode);
-    editMode: EditMode;
-    options: EditContextMenu.Options;
-    initEvents(): void;
-    setVisible(visible: boolean): void;
-    updatePosition(ctxButton?: HTMLDOMElement, x?: number, y?: number): void;
-}
 declare namespace EditContextMenu {
     /**
      * Options for the context menu.

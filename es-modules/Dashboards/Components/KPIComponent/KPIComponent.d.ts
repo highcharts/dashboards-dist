@@ -1,6 +1,6 @@
 import type Board from '../../Board';
 import type Cell from '../../Layout/Cell';
-import type { Chart, Options as ChartOptions, Highcharts as H } from '../../Plugins/HighchartsTypes';
+import type { Chart, Options as ChartOptions } from '../../Plugins/HighchartsTypes';
 import type Options from './KPIComponentOptions';
 import type SidebarPopup from '../../EditMode/SidebarPopup';
 import type Types from '../../../Shared/Types';
@@ -18,12 +18,10 @@ import PRODUCT from '../../../Data/Formula/Functions/PRODUCT.js';
  *
  */
 declare class KPIComponent extends Component {
-    /** @internal */
-    static charter?: H;
     /**
      * Default options of the KPI component.
      */
-    static defaultOptions: Partial<Component.Options> & import("../../Globals").default.DeepPartial<Options>;
+    static defaultOptions: Partial<Component.Options> & Types.DeepPartial<Options>;
     /**
      * Predefined sync config for the KPI component.
      */
@@ -88,12 +86,6 @@ declare class KPIComponent extends Component {
      */
     options: Options;
     /**
-     * HTML element where the value is created.
-     *
-     * @internal
-     */
-    value: HTMLElement;
-    /**
      * The HTML element where the subtitle is created.
      */
     subtitle: HTMLElement;
@@ -106,12 +98,6 @@ declare class KPIComponent extends Component {
      */
     chart?: Chart;
     /**
-     * Previous value of KPI.
-     *
-     * @internal
-     */
-    private prevValue?;
-    /**
      * Creates a KPI component in the cell.
      *
      * @param cell
@@ -121,8 +107,6 @@ declare class KPIComponent extends Component {
      * The options for the component.
      */
     constructor(cell: Cell, options: Partial<Options>, board?: Board);
-    /** @internal */
-    load(): Promise<this>;
     resize(width?: number | string | null, height?: number | string | null): this;
     render(): this;
     /**
@@ -133,23 +117,9 @@ declare class KPIComponent extends Component {
      */
     update(options: Partial<Options>, shouldRerender?: boolean): Promise<void>;
     /**
-     * @internal
-     */
-    onTableChanged(): void;
-    /**
      * Destroys the highcharts component.
      */
     destroy(): void;
-    /**
-     * Gets a proper value, according to the provided formula option.
-     *
-     * @returns
-     * The formula value. Can be a number internally, or a string from the
-     * callback function.
-     *
-     * @internal
-     */
-    private getFormulaValue;
     /**
      * Gets the default value that should be displayed in the KPI.
      *
@@ -164,60 +134,8 @@ declare class KPIComponent extends Component {
      * The value to display in the KPI.
      */
     setValue(value?: number | string | undefined): void;
-    /**
-     * Handles updating chart point value.
-     *
-     * @internal
-     */
-    linkValueToChart(value?: number | string | undefined): void;
-    /**
-     * Handles updating elements via options
-     *
-     * @internal
-     */
-    private updateElements;
-    /**
-     * Gets KPI subtitle text.
-     *
-     * @returns
-     * The subtitle's text.
-     *
-     * @internal
-     */
-    private getSubtitle;
-    /**
-     * Gets CSS class name of the KPI subtitle.
-     *
-     * @returns
-     * The name of class.
-     *
-     * @internal
-     */
-    private getSubtitleClassName;
-    /**
-     * Applies title's color according to the threshold.
-     *
-     * @returns
-     * Hex of color.
-     *
-     * @internal
-     */
-    private getValueColor;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
-    /**
-     * Get the KPI component's options.
-     * @returns
-     * KPI component's options.
-     *
-     * @internal
-     *
-     */
-    getOptions(): Partial<Options>;
 }
 declare namespace KPIComponent {
-    /** @internal */
-    type ComponentType = KPIComponent;
-    /** @internal */
-    type FormulaType = keyof typeof KPIComponent.formulaFunctions;
 }
 export default KPIComponent;

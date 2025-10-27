@@ -1,3 +1,4 @@
+import type { AnyRecord } from '../Shared/Types';
 import D from './Globals.js';
 /**
  * Add an event listener.
@@ -125,7 +126,7 @@ declare function error(code: number | string, stop?: boolean): void;
  *
  * @return {void}
  */
-declare function fireEvent<T>(el: T, type: string, eventArguments?: (D.AnyRecord | Event), defaultFunction?: (Utilities.EventCallback<T> | Function)): void;
+declare function fireEvent<T>(el: T, type: string, eventArguments?: (AnyRecord | Event), defaultFunction?: (Utilities.EventCallback<T> | Function)): void;
 /**
  * Remove an event that was added with {@link Highcharts#addEvent}.
  *
@@ -147,7 +148,7 @@ declare function fireEvent<T>(el: T, type: string, eventArguments?: (D.AnyRecord
 declare function removeEvent<T>(el: (D.Class<T> | T), type?: string, fn?: (Utilities.EventCallback<T> | Function)): void;
 declare namespace Utilities {
     interface EventCallback<T> {
-        (this: T, eventArguments: (D.AnyRecord | Event)): (boolean | void);
+        (this: T, eventArguments: (AnyRecord | Event)): (boolean | void);
     }
     interface EventWrapperObject<T> {
         fn: EventCallback<T>;

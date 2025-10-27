@@ -1,4 +1,4 @@
-import type Globals from '../../Globals';
+import type { DeepPartial } from '../../../Shared/Types';
 import type Options from './HighchartsComponentOptions';
-declare const HighchartsComponentDefaults: Globals.DeepPartial<Options>;
+declare const HighchartsComponentDefaults: DeepPartial<Options>;
 export default HighchartsComponentDefaults;

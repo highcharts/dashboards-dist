@@ -14,7 +14,7 @@
 import DataModifier from '../../../../Data/Modifiers/DataModifier.js';
 import NavigatorSyncUtils from './NavigatorSyncUtils.js';
 import U from '../../../../Core/Utilities.js';
-const { Range: RangeModifier } = DataModifier.types;
+const { Filter: FilterModifier } = DataModifier.types;
 const { addEvent } = U;
 /* *
  *
@@ -34,18 +34,25 @@ const syncPair = {
         const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
         const afterSetExtremes = async (extremes) => {
             if (component.connectorHandlers?.[0]?.connector) {
-                const table = component.connectorHandlers[0].connector.table, dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
+                const table = component.connectorHandlers[0].connector.getTable(), dataCursor = component.board.dataCursor, filterColumn = component.getColumnAssignment()[0], [min, max] = component.getAxisExtremes();
                 let modifier = table.getModifier();
-                if (modifier instanceof RangeModifier) {
-                    NavigatorSyncUtils.setRangeOptions(modifier.options.ranges, filterColumn, min, max);
+                if (modifier instanceof FilterModifier) {
+                    NavigatorSyncUtils.setRangeOptions(modifier.options, filterColumn, min, max);
                 }
                 else {
-                    modifier = new RangeModifier({
-                        ranges: [{
-                                column: filterColumn,
-                                maxValue: max,
-                                minValue: min
-                            }]
+                    modifier = new FilterModifier({
+                        condition: {
+                            operator: 'and',
+                            conditions: [{
+                                    columnId: filterColumn,
+                                    operator: '>=',
+                                    value: min
+                                }, {
+                                    columnId: filterColumn,
+                                    operator: '<=',
+                                    value: max
+                                }]
+                        }
                     });
                 }
                 await table.setModifier(modifier);

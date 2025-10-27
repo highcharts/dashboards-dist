@@ -149,7 +149,6 @@ class HTMLComponent extends Component {
     }
     getOptionsOnDrop() {
         return {
-            cell: '',
             type: 'HTML',
             elements: [{
                     tagName: 'span',
@@ -158,6 +157,7 @@ class HTMLComponent extends Component {
         };
     }
     /**
+     * Constructs the HTML tree.
      * @internal
      */
     constructTree() {

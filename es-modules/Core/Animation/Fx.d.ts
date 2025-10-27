@@ -1,5 +1,5 @@
 import type AnimationOptions from './AnimationOptions';
-import type FxLike from './FxLike';
+import type FxBase from './FxBase';
 import type { HTMLDOMElement } from '../Renderer/DOMElementType';
 import type HTMLElement from '../Renderer/HTML/HTMLElement';
 import type SVGElement from '../Renderer/SVG/SVGElement';
@@ -117,7 +117,7 @@ declare class Fx {
      */
     strokeSetter(): void;
 }
-interface Fx extends FxLike {
+interface Fx extends FxBase {
 }
 declare namespace Fx {
     interface Timer {
