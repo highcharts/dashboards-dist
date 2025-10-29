@@ -1,6 +1,6 @@
 import type DataEvent from '../DataEvent';
 import type HTMLTableConnectorOptions from './HTMLTableConnectorOptions';
-import type Types from '../../Shared/Types';
+import type HTMLTableConverterOptions from '../Converters/HTMLTableConverterOptions';
 import DataConnector from './DataConnector.js';
 import HTMLTableConverter from '../Converters/HTMLTableConverter.js';
 /**
@@ -13,10 +13,10 @@ declare class HTMLTableConnector extends DataConnector {
     /**
      * Constructs an instance of HTMLTableConnector.
      *
-     * @param {HTMLTableConnector.UserOptions} [options]
+     * @param {HTMLTableConnector.CombinedHTMLTableConnectorOptions} [options]
      * Options for the connector and converter.
      */
-    constructor(options?: HTMLTableConnector.UserOptions);
+    constructor(options?: HTMLTableConnector.CombinedHTMLTableConnectorOptions);
     /**
      * Options for the HTMLTable dataconnector
      * @todo this should not include parsing options
@@ -51,11 +51,8 @@ declare namespace HTMLTableConnector {
     /**
      * Type for event object fired from HTMLTableConnector
      */
-    type Event = (ErrorEvent | LoadEvent);
-    /**
-     * Provided event object on errors within HTMLTableConnector
-     */
-    type ErrorEvent = DataConnector.ErrorEvent;
+    interface Event extends DataConnector.Event {
+    }
     /**
      * Options for exporting the connector as an HTML table
      */
@@ -66,19 +63,11 @@ declare namespace HTMLTableConnector {
         useLocalDecimalPoint?: boolean;
         useMultiLevelHeaders?: boolean;
         useRowspanHeaders?: boolean;
-        usePresentationOrder?: boolean;
     }
     /**
-     * Provided event object on load events within HTMLTableConnector
+     * Options of the HTMLTable connector and converter.
      */
-    interface LoadEvent extends DataConnector.LoadEvent {
-        tableElement?: (HTMLElement | null);
-    }
-    /**
-     * Available options for constructor and converter of the
-     * HTMLTableConnector.
-     */
-    type UserOptions = (Types.DeepPartial<HTMLTableConnectorOptions> & HTMLTableConverter.UserOptions);
+    type CombinedHTMLTableConnectorOptions = Partial<HTMLTableConnectorOptions> & HTMLTableConverterOptions;
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

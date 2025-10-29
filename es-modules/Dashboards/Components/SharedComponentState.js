@@ -59,8 +59,8 @@ class SharedComponentState {
     getColumnOrder() {
         return (this.columnOrder || []).slice();
     }
-    getColumnVisibility(columnName) {
-        return this.columnVisibilityMap[columnName];
+    getColumnVisibility(columnId) {
+        return this.columnVisibilityMap[columnId];
     }
     /**
      * Returns a function for `Array.sort` to change the order of an array of
@@ -163,15 +163,15 @@ class SharedComponentState {
         return this.hiddenRowIndexes;
     }
     setHoverPoint(point, eventDetail) {
-        const isDataGrid = eventDetail && eventDetail.isDataGrid;
-        this.hoverPoint = isDataGrid ? void 0 : point;
+        const isGrid = eventDetail && eventDetail.isGrid;
+        this.hoverPoint = isGrid ? void 0 : point;
         if (point instanceof HTMLElement) {
-            this.hoverRow = isDataGrid ? point : void 0;
+            this.hoverRow = isGrid ? point : void 0;
         }
         this.emit({
             type: 'afterHoverPointChange',
-            hoverPoint: isDataGrid ? void 0 : this.hoverPoint,
-            hoverRow: isDataGrid ? this.hoverRow : void 0,
+            hoverPoint: isGrid ? void 0 : this.hoverPoint,
+            hoverRow: isGrid ? this.hoverRow : void 0,
             detail: eventDetail
         });
     }

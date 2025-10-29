@@ -1,7 +1,8 @@
 import type DataEvent from './DataEvent';
 import type DataModifier from './Modifiers/DataModifier';
 import type DataTableOptions from './DataTableOptions';
-import type Types from '../Shared/Types';
+import type { DataTableValue } from './DataTableOptions';
+import type { TypedArray } from '../Shared/Types';
 import DataTableCore from './DataTableCore.js';
 /**
  * Class to manage columns and rows in a table structure. It provides methods
@@ -14,51 +15,12 @@ import DataTableCore from './DataTableCore.js';
  * @param {Highcharts.DataTableOptions} [options]
  * Options to initialize the new DataTable instance.
  */
-declare class DataTable extends DataTableCore implements DataEvent.Emitter {
-    /**
-     * Null state for a row record. In some cases, a row in a table may not
-     * contain any data or may be invalid. In these cases, a null state can be
-     * used to indicate that the row record is empty or invalid.
-     *
-     * @name Highcharts.DataTable.NULL
-     * @type {Highcharts.DataTableRowObject}
-     *
-     * @see {@link Highcharts.DataTable.isNull} for a null test.
-     *
-     * @example
-     * table.setRows([DataTable.NULL, DataTable.NULL], 10);
-     */
-    static readonly NULL: DataTable.RowObject;
-    /**
-     * Semantic version string of the DataTable class.
-     * @internal
-     */
-    static readonly version: string;
-    /**
-     * Tests whether a row contains only `null` values or is equal to
-     * DataTable.NULL. If all columns have `null` values, the function returns
-     * `true`. Otherwise, it returns `false` to indicate that the row contains
-     * at least one non-null value.
-     *
-     * @function Highcharts.DataTable.isNull
-     *
-     * @param {Highcharts.DataTableRow|Highcharts.DataTableRowObject} row
-     * Row to test.
-     *
-     * @return {boolean}
-     * Returns `true`, if the row contains only null, otherwise `false`.
-     *
-     * @example
-     * if (DataTable.isNull(row)) {
-     *   // handle null row
-     * }
-     */
-    static isNull(row: (DataTable.Row | DataTable.RowObject)): boolean;
+declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataTable.Event> {
     constructor(options?: DataTableOptions);
     private modifier?;
     private localRowIndexes?;
-    modified: DataTable;
     private originalRowIndexes?;
+    metadata?: Record<string, DataTableValue>;
     /**
      * Returns a clone of this table. The cloned table is completely independent
      * of the original, and any changes made to the clone will not affect
@@ -84,7 +46,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      *
      * @function Highcharts.DataTable#deleteColumns
      *
-     * @param {Array<string>} [columnNames]
+     * @param {Array<string>} [columnIds]
      * Names of columns to delete. If no array is provided, all
      * columns will be deleted.
      *
@@ -97,11 +59,11 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @emits #deleteColumns
      * @emits #afterDeleteColumns
      */
-    deleteColumns(columnNames?: Array<string>, eventDetail?: DataEvent.Detail): (DataTable.ColumnCollection | undefined);
+    deleteColumns(columnIds?: Array<string>, eventDetail?: DataEvent.Detail): (DataTable.ColumnCollection | undefined);
     /**
      * Deletes the row index references. This is useful when the original table
      * is deleted, and the references are no longer needed. This table is
-     * then considered an original table or a table that has the same row's
+     * then considered an original table or a table that has the same rows
      * order as the original table.
      */
     deleteRowIndexReferences(): void;
@@ -135,13 +97,13 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @param {DataTable.Event} e
      * Event object with event information.
      */
-    emit<E extends DataEvent>(e: E): void;
+    emit(e: DataTable.Event): void;
     /**
      * Fetches a single cell value.
      *
      * @function Highcharts.DataTable#getCell
      *
-     * @param {string} columnName
+     * @param {string} columnId
      * Column name of the cell to retrieve.
      *
      * @param {number} rowIndex
@@ -150,55 +112,35 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @return {Highcharts.DataTableCellType|undefined}
      * Returns the cell value or `undefined`.
      */
-    getCell(columnName: string, rowIndex: number): (DataTable.CellType | undefined);
+    getCell(columnId: string, rowIndex: number): (DataTable.CellType | undefined);
     /**
-     * Fetches a cell value for the given row as a boolean.
+     * Fetches the given column by the canonical column name.
+     * This function is a simplified wrap of {@link getColumns}.
      *
-     * @function Highcharts.DataTable#getCellAsBoolean
+     * @function Highcharts.DataTable#getColumn
      *
-     * @param {string} columnName
-     * Column name to fetch.
+     * @param {string} columnId
+     * Name of the column to get.
      *
-     * @param {number} rowIndex
-     * Row index to fetch.
+     * @param {boolean} [asReference]
+     * Whether to return the column as a readonly reference.
      *
-     * @return {boolean}
-     * Returns the cell value of the row as a boolean.
+     * @return {Highcharts.DataTableColumn|undefined}
+     * A copy of the column, or `undefined` if not found.
      */
-    getCellAsBoolean(columnName: string, rowIndex: number): boolean;
-    getCellAsNumber(columnName: string, rowIndex: number, useNaN: true): number;
-    getCellAsNumber(columnName: string, rowIndex: number, useNaN?: false): (number | null);
+    getColumn(columnId: string, asReference?: boolean): (DataTable.Column | undefined);
     /**
-     * Fetches a cell value for the given row as a string.
+     * Fetches all column IDs.
      *
-     * @function Highcharts.DataTable#getCellAsString
-     *
-     * @param {string} columnName
-     * Column name to fetch.
-     *
-     * @param {number} rowIndex
-     * Row index to fetch.
-     *
-     * @return {string}
-     * Returns the cell value of the row as a string.
-     */
-    getCellAsString(columnName: string, rowIndex: number): string;
-    getColumn(columnName: string, asReference?: boolean): (DataTable.Column | undefined);
-    getColumn(columnName: string, asReference: true): (DataTable.Column | undefined);
-    getColumnAsNumbers(columnName: string, useNaN: true): Array<number>;
-    getColumnAsNumbers(columnName: string, useNaN?: false): Array<(number | null)>;
-    /**
-     * Fetches all column names.
-     *
-     * @function Highcharts.DataTable#getColumnNames
+     * @function Highcharts.DataTable#getColumnIds
      *
      * @return {Array<string>}
-     * Returns all column names.
+     * Returns all column IDs.
      */
-    getColumnNames(): Array<string>;
-    getColumns(columnNames?: Array<string>, asReference?: boolean): DataTable.ColumnCollection;
-    getColumns(columnNames: (Array<string> | undefined), asReference: true): Record<string, DataTable.Column>;
-    getColumns(columnNames: (Array<string> | undefined), asReference: false, asBasicColumns: true): Record<string, DataTable.BasicColumn>;
+    getColumnIds(): Array<string>;
+    getColumns(columnIds?: Array<string>, asReference?: boolean): DataTable.ColumnCollection;
+    getColumns(columnIds: (Array<string> | undefined), asReference: true): Record<string, DataTable.Column>;
+    getColumns(columnIds: (Array<string> | undefined), asReference: false, asBasicColumns: true): Record<string, DataTable.BasicColumn>;
     /**
      * Takes the original row index and returns the local row index in the
      * modified table for which this function is called.
@@ -211,11 +153,12 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      */
     getLocalRowIndex(originalRowIndex: number): (number | undefined);
     /**
-     * Retrieves the modifier for the table.
-     * @private
+     * Returns the modifier associated with this table, if any.
      *
      * @return {Highcharts.DataModifier|undefined}
      * Returns the modifier or `undefined`.
+     *
+     * @private
      */
     getModifier(): (DataModifier | undefined);
     /**
@@ -238,13 +181,13 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @param {number} rowIndex
      * Row index to retrieve. First row has index 0.
      *
-     * @param {Array<string>} [columnNames]
+     * @param {Array<string>} [columnIds]
      * Column names in order to retrieve.
      *
      * @return {Highcharts.DataTableRow}
      * Returns the row values, or `undefined` if not found.
      */
-    getRow(rowIndex: number, columnNames?: Array<string>): (DataTable.Row | undefined);
+    getRow(rowIndex: number, columnIds?: Array<string>): (DataTable.Row | undefined);
     /**
      * Returns the number of rows in this table.
      *
@@ -259,7 +202,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      *
      * @function Highcharts.DataTable#getRowIndexBy
      *
-     * @param {string} columnName
+     * @param {string} columnId
      * Column to search in.
      *
      * @param {Highcharts.DataTableCellType} cellValue
@@ -271,7 +214,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @return {number|undefined}
      * Index of the first row matching the cell value.
      */
-    getRowIndexBy(columnName: string, cellValue: DataTable.CellType, rowIndexOffset?: number): (number | undefined);
+    getRowIndexBy(columnId: string, cellValue: DataTable.CellType, rowIndexOffset?: number): (number | undefined);
     /**
      * Retrieves the row at a given index. This function is a simplified wrap of
      * {@link getRowObjects}.
@@ -281,15 +224,15 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @param {number} rowIndex
      * Row index.
      *
-     * @param {Array<string>} [columnNames]
+     * @param {Array<string>} [columnIds]
      * Column names and their order to retrieve.
      *
      * @return {Highcharts.DataTableRowObject}
      * Returns the row values, or `undefined` if not found.
      */
-    getRowObject(rowIndex: number, columnNames?: Array<string>): (DataTable.RowObject | undefined);
+    getRowObject(rowIndex: number, columnIds?: Array<string>): (DataTable.RowObject | undefined);
     /**
-     * Fetches all or a number of rows.
+     * Fetches all or a number of rows as an object.
      *
      * @function Highcharts.DataTable#getRowObjects
      *
@@ -299,15 +242,15 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @param {number} [rowCount]
      * Number of rows to fetch. Defaults to maximal number of rows.
      *
-     * @param {Array<string>} [columnNames]
+     * @param {Array<string>} [columnIds]
      * Column names and their order to retrieve.
      *
      * @return {Highcharts.DataTableRowObject}
      * Returns retrieved rows.
      */
-    getRowObjects(rowIndex?: number, rowCount?: number, columnNames?: Array<string>): (Array<DataTable.RowObject>);
+    getRowObjects(rowIndex?: number, rowCount?: number, columnIds?: Array<string>): (Array<DataTable.RowObject>);
     /**
-     * Fetches all or a number of rows.
+     * Fetches all or a number of rows as an array.
      *
      * @function Highcharts.DataTable#getRows
      *
@@ -317,13 +260,13 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @param {number} [rowCount]
      * Number of rows to fetch. Defaults to maximal number of rows.
      *
-     * @param {Array<string>} [columnNames]
+     * @param {Array<string>} [columnIds]
      * Column names and their order to retrieve.
      *
      * @return {Highcharts.DataTableRow}
      * Returns retrieved rows.
      */
-    getRows(rowIndex?: number, rowCount?: number, columnNames?: Array<string>): (Array<DataTable.Row>);
+    getRows(rowIndex?: number, rowCount?: number, columnIds?: Array<string>): (Array<DataTable.Row>);
     /**
      * Returns the unique version tag of the current state of the table.
      *
@@ -334,23 +277,23 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      */
     getVersionTag(): string;
     /**
-     * Checks for given column names.
+     * Determines whether all specified column names exist in the table.
      *
      * @function Highcharts.DataTable#hasColumns
      *
-     * @param {Array<string>} columnNames
+     * @param {Array<string>} columnIds
      * Column names to check.
      *
      * @return {boolean}
      * Returns `true` if all columns have been found, otherwise `false`.
      */
-    hasColumns(columnNames: Array<string>): boolean;
+    hasColumns(columnIds: Array<string>): boolean;
     /**
-     * Searches for a specific cell value.
+     * Checks if any row in the specified column contains the given cell value.
      *
      * @function Highcharts.DataTable#hasRowWith
      *
-     * @param {string} columnName
+     * @param {string} columnId
      * Column to search in.
      *
      * @param {Highcharts.DataTableCellType} cellValue
@@ -359,9 +302,11 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @return {boolean}
      * True, if a row has been found, otherwise false.
      */
-    hasRowWith(columnName: string, cellValue: DataTable.CellType): boolean;
+    hasRowWith(columnId: string, cellValue: DataTable.CellType): boolean;
     /**
-     * Registers a callback for a specific event.
+     * Registers a callback function to be executed when a specific event is
+     * emitted. To stop listening to the event, call the function returned by
+     * this method.
      *
      * @function Highcharts.DataTable#on
      *
@@ -374,30 +319,34 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @return {Function}
      * Function to unregister callback from the event.
      */
-    on<E extends DataEvent>(type: E['type'], callback: DataEvent.Callback<this, E>): Function;
+    on<T extends DataTable.Event['type']>(type: T, callback: DataEvent.Callback<this, Extract<DataTable.Event, {
+        type: T;
+    }>>): Function;
     /**
-     * Renames a column of cell values.
+     * Changes the ID of an existing column to a new ID, effectively renaming
+     * the column.
      *
-     * @function Highcharts.DataTable#renameColumn
+     * @function Highcharts.DataTable#changeColumnId
      *
-     * @param {string} columnName
-     * Name of the column to be renamed.
+     * @param {string} columnId
+     * Id of the column to be changed.
      *
-     * @param {string} newColumnName
-     * New name of the column. An existing column with the same name will be
-     * replaced.
+     * @param {string} newColumnId
+     * New id of the column.
      *
      * @return {boolean}
      * Returns `true` if successful, `false` if the column was not found.
      */
-    renameColumn(columnName: string, newColumnName: string): boolean;
+    changeColumnId(columnId: string, newColumnId: string): boolean;
     /**
-     * Sets a cell value based on the row index and column.  Will
-     * insert a new column, if not found.
+     * Sets the value of a specific cell identified by column ID and row index.
+     * If the column does not exist, it will be created. If the row index is
+     * beyond the current row count, the table will be expanded to accommodate
+     * the new cell.
      *
      * @function Highcharts.DataTable#setCell
      *
-     * @param {string} columnName
+     * @param {string} columnId
      * Column name to set.
      *
      * @param {number|undefined} rowIndex
@@ -412,10 +361,10 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @emits #setCell
      * @emits #afterSetCell
      */
-    setCell(columnName: string, rowIndex: number, cellValue: DataTable.CellType, eventDetail?: DataEvent.Detail): void;
+    setCell(columnId: string, rowIndex: number, cellValue: DataTable.CellType, eventDetail?: DataEvent.Detail): void;
     /**
-     * Sets cell values for multiple columns. Will insert new columns, if not
-     * found.
+     * Replaces or updates multiple columns in the table with new data. If a
+     * column does not exist, it will be created and added to the table.
      *
      * @function Highcharts.DataTable#setColumns
      *
@@ -439,7 +388,11 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      */
     setColumns(columns: DataTable.ColumnCollection, rowIndex?: number, eventDetail?: DataEvent.Detail, typeAsOriginal?: boolean): void;
     /**
-     * Sets or unsets the modifier for the table.
+     * Assigns a new data modifier to the table.
+     *
+     * This method does not modify the table directly. Instead, it sets the
+     * `.modified` property of the table with a modified copy of this table,
+     * as produced by the modifier.
      *
      * @param {Highcharts.DataModifier} [modifier]
      * Modifier to set, or `undefined` to unset.
@@ -453,7 +406,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter {
      * @emits #setModifier
      * @emits #afterSetModifier
      */
-    setModifier(modifier?: DataModifier, eventDetail?: DataEvent.Detail): Promise<this>;
+    setModifier(modifier?: DataModifier, eventDetail?: DataEvent.Detail): Promise<DataTable>;
     /**
      * Sets the original row indexes for the table. It is used to keep the
      * reference to the original rows when modifying the table.
@@ -531,13 +484,13 @@ declare namespace DataTable {
     /**
      * Array of table cells in vertical expansion.
      */
-    type Column = BasicColumn | Types.TypedArray;
+    type Column = BasicColumn | TypedArray;
     /**
      * Collection of columns, where the key is the column name and
      * the value is an array of column values.
      */
     interface ColumnCollection {
-        [columnName: string]: Column;
+        [columnId: string]: Column;
     }
     /**
      * Event object for cell-related events.
@@ -545,7 +498,7 @@ declare namespace DataTable {
     interface CellEvent extends DataEvent {
         readonly type: ('setCell' | 'afterSetCell');
         readonly cellValue: DataTable.CellType;
-        readonly columnName: string;
+        readonly columnId: string;
         readonly rowIndex: number;
     }
     /**
@@ -561,7 +514,7 @@ declare namespace DataTable {
     interface ColumnEvent extends DataEvent {
         readonly type: ('deleteColumns' | 'afterDeleteColumns' | 'setColumns' | 'afterSetColumns');
         readonly columns?: ColumnCollection;
-        readonly columnNames: Array<string>;
+        readonly columnIds: Array<string>;
         readonly rowIndex?: number;
     }
     /**

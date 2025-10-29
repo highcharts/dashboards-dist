@@ -57,7 +57,7 @@ class SidebarPopup extends BaseForm {
          * Options used in the sidebar.
          */
         this.options = {
-            components: ['HTML', 'row', 'Highcharts', 'DataGrid', 'KPI']
+            components: ['HTML', 'row', 'Highcharts', 'Grid', 'KPI']
         };
         /**
          * Whether the sidebar is visible.
@@ -272,7 +272,7 @@ class SidebarPopup extends BaseForm {
         });
         dragDrop.onCellDragEnd(newCell);
         const options = merge(componentOptions, {
-            cell: newCell.id
+            renderTo: newCell.id
         });
         const componentPromise = Bindings.addComponent(options, sidebar.editMode.board, newCell);
         sidebar.editMode.setEditOverlay(!this.editMode.options.settings?.enabled);
@@ -452,7 +452,7 @@ SidebarPopup.addRow = {
         }
         void Bindings.addComponent({
             type: 'HTML',
-            cell: cellId,
+            renderTo: cellId,
             className: 'highcharts-dashboards-component-placeholder',
             html: `
                     <h2> Placeholder </h2>

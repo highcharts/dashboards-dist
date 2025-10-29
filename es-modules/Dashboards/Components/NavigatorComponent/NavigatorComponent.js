@@ -15,6 +15,7 @@ import Component from '../Component.js';
 import Globals from '../../Globals.js';
 import NavigatorComponentDefaults from './NavigatorComponentDefaults.js';
 import NavigatorSyncs from './NavigatorSyncs/NavigatorSyncs.js';
+import NavigatorSyncUtils from './NavigatorSyncs/NavigatorSyncUtils.js';
 import U from '../../../Core/Utilities.js';
 const { diffObjects, isNumber, isString, merge, pick } = U;
 /* *
@@ -92,8 +93,7 @@ class NavigatorComponent extends Component {
      * Navigator column assignment.
      */
     getColumnAssignment() {
-        const columnAssignment = this.options.columnAssignment ??
-            this.options.columnAssignments ?? {};
+        const columnAssignment = this.options.columnAssignment ?? {};
         let columnsAssignment;
         for (const column of Object.keys(columnAssignment)) {
             columnsAssignment = columnAssignment[column];
@@ -103,7 +103,7 @@ class NavigatorComponent extends Component {
         }
         const connector = this.getFirstConnector();
         if (connector) {
-            const columns = connector.table.getColumnNames();
+            const columns = connector.getTable().getColumnIds();
             if (columns.length) {
                 return [columns[0], 'y'];
             }
@@ -177,7 +177,7 @@ class NavigatorComponent extends Component {
         const chart = this.chart;
         const connector = this.getFirstConnector();
         if (connector) {
-            const table = connector.table, column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
+            const table = connector.getTable(), column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
             let data;
             if (this.sync.syncConfig.crossfilter?.enabled) {
                 data = this.generateCrossfilterData();
@@ -199,7 +199,7 @@ class NavigatorComponent extends Component {
      */
     generateCrossfilterData() {
         const crossfilterOptions = this.sync.syncConfig.crossfilter;
-        const table = this.getFirstConnector()?.table;
+        const table = this.getFirstConnector()?.getTable();
         const columnValues = table?.getColumn(this.getColumnAssignment()[0], true) || [];
         if (!table || columnValues.length < 1 || !crossfilterOptions) {
             return [];
@@ -230,12 +230,15 @@ class NavigatorComponent extends Component {
         uniqueXValues.sort((a, b) => (pick(a, NaN) < pick(b, NaN) ? -1 : a === b ? 0 : 1));
         let filteredValues;
         const modifierOptions = table.getModifier()?.options;
-        if (crossfilterOptions.affectNavigator && modifierOptions) {
-            const appliedRanges = [], rangedColumns = [], { ranges } = modifierOptions;
+        if (crossfilterOptions.affectNavigator &&
+            modifierOptions?.type === 'Filter') {
+            const appliedRanges = [];
+            const rangedColumns = [];
+            const ranges = NavigatorSyncUtils.toRange(modifierOptions);
             for (let i = 0, iEnd = ranges.length; i < iEnd; i++) {
-                if (ranges[i].column !== this.getColumnAssignment()[0]) {
+                if (ranges[i].columnId !== this.getColumnAssignment()[0]) {
                     appliedRanges.push(ranges[i]);
-                    rangedColumns.push(table.getColumn(ranges[i].column, true) || []);
+                    rangedColumns.push(table.getColumn(ranges[i].columnId, true) || []);
                 }
             }
             filteredValues = [];

@@ -10,7 +10,7 @@ declare class HTMLComponent extends Component {
     /**
      * Default options of the HTML component.
      */
-    static defaultOptions: Partial<Component.Options> & import("../../Globals.js").default.DeepPartial<Options>;
+    static defaultOptions: Partial<Component.Options> & import("../../../Shared/Types.js").DeepPartial<Options>;
     /**
      * Predefined sync config for HTML component.
      */
@@ -33,8 +33,6 @@ declare class HTMLComponent extends Component {
      * The options for the component.
      */
     constructor(cell: Cell, options: Partial<Options>);
-    /** @internal */
-    load(): Promise<this>;
     render(): this;
     resize(width?: number | string | null, height?: number | string | null): this;
     /**
@@ -45,25 +43,6 @@ declare class HTMLComponent extends Component {
      */
     update(options: Partial<Options>, shouldRerender?: boolean): Promise<void>;
     getOptionsOnDrop(): Partial<Options>;
-    /**
-     * @internal
-     */
-    private constructTree;
-    /**
-     * When HTML definition is a string, it needs to be parsed to AST.
-     *
-     * @internal
-     */
-    private getElementsFromString;
-    /**
-     * Get the HTML component's options.
-     * @returns
-     * HTML component's options.
-     *
-     * @internal
-     *
-     */
-    getOptions(): Partial<Options>;
     /**
      * Retrieves editable options for the HTML component.
      */
@@ -90,16 +69,8 @@ declare class HTMLComponent extends Component {
      * The HTML node to serialize.
      */
     private serializeNode;
-    /**
-     * @internal
-     */
-    onTableChanged(e: Component.EventTypes): void;
 }
 declare namespace HTMLComponent {
-    /** @internal */
-    type ComponentType = HTMLComponent;
-    /** @internal */
-    type HTMLComponentEvents = Component.EventTypes;
 }
 declare module '../ComponentType' {
     interface ComponentTypeRegistry {

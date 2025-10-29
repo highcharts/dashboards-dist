@@ -4,8 +4,8 @@ import type { HTMLDOMElement } from '../../Core/Renderer/DOMElementType';
  * Internal types.
  * @private
  */
-declare module '../../Core/Chart/ChartLike' {
-    interface ChartLike {
+declare module '../../Core/Chart/ChartBase' {
+    interface ChartBase {
         announcerContainer?: HTMLDOMElement;
     }
 }

@@ -59,15 +59,6 @@ class Cell extends GUIElement {
         const parentContainer = document.getElementById(options.parentContainerId || '') ||
             row.container;
         const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
-        let cellHeight;
-        if (options.height) {
-            if (typeof options.height === 'number') {
-                cellHeight = options.height + 'px';
-            }
-            else {
-                cellHeight = options.height;
-            }
-        }
         this.container = this.getElementContainer({
             render: row.layout.board.guiEnabled,
             parentContainer: parentContainer,
@@ -79,7 +70,7 @@ class Cell extends GUIElement {
             element: cellElement,
             elementId: options.id,
             style: merge(layoutOptions.style, rowOptions.style, options.style, {
-                height: cellHeight
+                height: this.height
             })
         });
         // Nested layout
@@ -203,12 +194,10 @@ class Cell extends GUIElement {
                         cell.container.style.flex !== '0 0 ' + cellWidth) {
                         cell.container.style.flex = '0 0 ' + cellWidth;
                     }
-                    cell.options.width = cellWidth;
                 }
             }
             if (height) {
-                cell.options.height = cell.container.style.height =
-                    height + 'px';
+                cell.height = cell.container.style.height = height + 'px';
             }
             if (editMode) {
                 editMode.hideContextPointer();
@@ -288,7 +277,7 @@ class Cell extends GUIElement {
      * Checks if a valid cell instance.
      */
     function isCell(cell) {
-        return cell instanceof Cell;
+        return (!!cell && 'row' in cell && cell.type === 'cell');
     }
     Cell.isCell = isCell;
 })(Cell || (Cell = {}));

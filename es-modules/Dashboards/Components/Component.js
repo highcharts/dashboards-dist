@@ -125,7 +125,7 @@ class Component {
          * @internal
          * */
         this.innerResizeTimeouts = [];
-        const renderTo = options.renderTo || options.cell;
+        const renderTo = options.renderTo;
         this.board = board || cell?.row?.layout?.board || {};
         this.parentElement =
             cell?.container || document.querySelector('#' + renderTo);

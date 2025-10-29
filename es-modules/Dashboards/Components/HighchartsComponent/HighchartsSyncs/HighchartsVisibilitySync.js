@@ -30,7 +30,7 @@ const syncPair = {
         if (!board || !chart) {
             return;
         }
-        const table = connector?.table;
+        const table = connector?.getTable();
         if (table) { // Has a connector
             const { dataCursor: cursor } = board;
             const { series } = chart;
@@ -115,7 +115,7 @@ const syncPair = {
             if (!dataCursor) {
                 return;
             }
-            const table = component.connectorHandlers?.[0]?.connector?.table;
+            const table = component.connectorHandlers?.[0]?.connector?.getTable();
             if (!table) {
                 return;
             }
@@ -123,7 +123,7 @@ const syncPair = {
             dataCursor.addListener(table.id, 'series.hide' + groupKey, handleHide);
         };
         const unregisterCursorListeners = () => {
-            const table = component.connectorHandlers?.[0]?.connector?.table;
+            const table = component.connectorHandlers?.[0]?.connector?.getTable();
             if (table) {
                 board.dataCursor.removeListener(table.id, 'series.show' + groupKey, handleShow);
                 board.dataCursor.removeListener(table.id, 'series.hide' + groupKey, handleHide);

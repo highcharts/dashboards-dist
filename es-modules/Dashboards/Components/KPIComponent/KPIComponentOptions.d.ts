@@ -1,12 +1,10 @@
 import type Component from '../Component';
 import type CSSObject from '../../../Core/Renderer/CSSObject';
-import type DataTable from '../../../Data/DataTable';
-import type TextOptions from '../TextOptions';
 import type KPIComponent from './KPIComponent';
 import type { Options as HighchartsOptions } from '../../Plugins/HighchartsTypes';
 import Sync from '../Sync/Sync';
 export interface Options extends Component.Options {
-    columnName: string;
+    columnId: string;
     /**
      * Connector options
      */
@@ -146,20 +144,6 @@ export interface LinkedValueToOptions {
      */
     seriesIndex?: number;
 }
-/** @internal */
-export interface SubtitleOptions extends TextOptions {
-    type?: SubtitleType;
-}
-/** @internal */
-export type SubtitleType = 'text' | 'diff' | 'diffpercent';
-/** @internal */
-export interface ValueFormatterCallbackFunction {
-    (this: KPIComponent, value: (number | string)): string;
-}
-/** @internal */
-export interface FormulaCallbackFunction {
-    (this: KPIComponent, values: DataTable.Column): (string | number);
-}
 /**
  * Sync options available for the KPI component.
  *
@@ -172,7 +156,7 @@ export interface FormulaCallbackFunction {
  */
 export interface SyncOptions extends Sync.RawOptionsRecord {
     /**
-     * Extremes sync is available for Highcharts, KPI, DataGrid and
+     * Extremes sync is available for Highcharts, KPI, Grid and
      * Navigator components. Sets a common range of displayed data. For the
      * KPI Component sets the last value.
      *

@@ -1,8 +1,8 @@
 import type Chart from './Chart/Chart';
 import type Position3DObject from './Renderer/Position3DObject';
 import type PositionObject from './Renderer/PositionObject';
-declare module './Chart/ChartLike' {
-    interface ChartLike {
+declare module './Chart/ChartBase' {
+    interface ChartBase {
         scale3d?: number;
     }
 }

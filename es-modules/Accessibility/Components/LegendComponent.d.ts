@@ -9,13 +9,13 @@ declare module '../../Core/Legend/LegendItem' {
         a11yProxyElement?: ProxyElement;
     }
 }
-declare module '../../Core/Series/PointLike' {
-    interface PointLike {
+declare module '../../Core/Series/PointBase' {
+    interface PointBase {
         a11yProxyElement?: ProxyElement;
     }
 }
-declare module '../../Core/Series/SeriesLike' {
-    interface SeriesLike {
+declare module '../../Core/Series/SeriesBase' {
+    interface SeriesBase {
         a11yProxyElement?: ProxyElement;
     }
 }

@@ -31,7 +31,7 @@ declare namespace ColumnUtils {
      * @param {boolean} asSubarray
      * If column is a typed array, return a subarray instead of a new array. It
      * is faster `O(1)`, but the entire buffer will be kept in memory until all
-     * views to it are destroyed. Default is `false`.
+     * views of it are destroyed. Default is `false`.
      *
      * @return {DataTable.Column}
      * Modified column.
@@ -67,5 +67,21 @@ declare namespace ColumnUtils {
      * @private
      */
     function splice(column: DataTable.Column, start: number, deleteCount: number, removedAsSubarray?: boolean, items?: DataTable.CellType[] | Types.TypedArray): SpliceResult<DataTable.Column>;
+    /**
+     * Converts a cell value to a number.
+     *
+     * @param {DataTable.CellType} value
+     * Cell value to convert to a number.
+     *
+     * @param {boolean} useNaN
+     * If `true`, returns `NaN` for non-numeric values; if `false`,
+     * returns `null` instead.
+     *
+     * @return {number | null}
+     * Number or `null` if the value is not a number.
+     *
+     * @private
+     */
+    function convertToNumber(value?: DataTable.CellType, useNaN?: boolean): number | null;
 }
 export default ColumnUtils;

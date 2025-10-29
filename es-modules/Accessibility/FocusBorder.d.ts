@@ -3,8 +3,8 @@ import type { DOMElementType } from '../Core/Renderer/DOMElementType';
 import type SVGAttributes from '../Core/Renderer/SVG/SVGAttributes';
 import Chart from '../Core/Chart/Chart.js';
 import SVGElement from '../Core/Renderer/SVG/SVGElement.js';
-declare module '../Core/Chart/ChartLike' {
-    interface ChartLike {
+declare module '../Core/Chart/ChartBase' {
+    interface ChartBase {
         focusElement?: SVGElement;
         /** @requires modules/accessibility */
         renderFocusBorder(): void;
@@ -12,8 +12,8 @@ declare module '../Core/Chart/ChartLike' {
         setFocusToElement(svgElement: SVGElement, focusElement?: DOMElementType): void;
     }
 }
-declare module '../Core/Renderer/SVG/SVGElementLike' {
-    interface SVGElementLike {
+declare module '../Core/Renderer/SVG/SVGElementBase' {
+    interface SVGElementBase {
         focusBorder?: SVGElement;
         /** @requires modules/accessibility */
         addFocusBorder(margin: number, attribs: SVGAttributes): void;

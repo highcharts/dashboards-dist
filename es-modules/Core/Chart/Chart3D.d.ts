@@ -1,17 +1,16 @@
 import type ColorType from '../Color/ColorType';
-import type Options from '../Options';
 import type Position3DObject from '../Renderer/Position3DObject';
 import type SVGElement3D from '../Renderer/SVG/SVGElement3D';
 import Chart from './Chart.js';
 import Fx from '../Animation/Fx.js';
 import Series from '../Series/Series.js';
-declare module '../Animation/FxLike' {
-    interface FxLike {
+declare module '../Animation/FxBase' {
+    interface FxBase {
         matrixSetter?(): void;
     }
 }
-declare module '../Chart/ChartLike' {
-    interface ChartLike {
+declare module '../Chart/ChartBase' {
+    interface ChartBase {
         chart3d?: Chart3D.Additions;
         frameShapes?: Record<string, SVGElement3D>;
         is3d(): boolean;
@@ -19,20 +18,18 @@ declare module '../Chart/ChartLike' {
 }
 declare module '../Chart/ChartOptions' {
     interface ChartOptions {
-        options3d?: Options;
+        options3d?: ChartOptions3D;
     }
 }
-declare module '../Options' {
-    interface Options {
-        alpha?: number;
-        axisLabelPosition?: ('auto' | null);
-        beta?: number;
-        depth?: number;
-        enabled?: boolean;
-        fitToPlot?: boolean;
-        frame?: Chart3D.FrameOptions;
-        viewDistance?: number;
-    }
+interface ChartOptions3D {
+    alpha?: number;
+    axisLabelPosition?: ('auto' | null);
+    beta?: number;
+    depth?: number;
+    enabled?: boolean;
+    fitToPlot?: boolean;
+    frame?: Chart3D.FrameOptions;
+    viewDistance?: number;
 }
 declare namespace Chart3D {
     interface Composition extends Chart {

@@ -1,12 +1,12 @@
 import type Accessibility from './Accessibility';
 import type ColorType from '../Core/Color/ColorType';
-declare module '../Core/Chart/ChartLike' {
-    interface ChartLike {
+declare module '../Core/Chart/ChartBase' {
+    interface ChartBase {
         highContrastModeActive?: boolean;
     }
 }
-declare module '../Core/Series/PointLike' {
-    interface PointLike {
+declare module '../Core/Series/PointBase' {
+    interface PointBase {
         borderColor?: ColorType;
     }
 }

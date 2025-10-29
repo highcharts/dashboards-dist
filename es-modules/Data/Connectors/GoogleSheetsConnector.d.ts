@@ -1,7 +1,5 @@
 import type DataEvent from '../DataEvent';
 import type GoogleSheetsConnectorOptions from './GoogleSheetsConnectorOptions';
-import type Types from '../../Shared/Types';
-import type DataTableOptions from '../DataTableOptions';
 import DataConnector from './DataConnector.js';
 import GoogleSheetsConverter from '../Converters/GoogleSheetsConverter.js';
 /**
@@ -13,19 +11,23 @@ declare class GoogleSheetsConnector extends DataConnector {
     /**
      * Constructs an instance of GoogleSheetsConnector
      *
-     * @param {GoogleSheetsConnector.UserOptions} [options]
+     * @param {Partial<GoogleSheetsConnectorOptions>} [options]
      * Options for the connector and converter.
-     *
-     * @param {Array<DataTableOptions>} [dataTables]
-     * Multiple connector data tables options.
-     *
      */
-    constructor(options?: GoogleSheetsConnector.UserOptions, dataTables?: Array<DataTableOptions>);
+    constructor(options: Partial<GoogleSheetsConnectorOptions>);
     readonly options: GoogleSheetsConnectorOptions;
     /**
      * The attached converter, which can be replaced in the constructor
      */
     converter?: GoogleSheetsConverter;
+    /**
+     * Overrides the DataConnector method. Emits an event on the connector to
+     * all registered callbacks of this event.
+     *
+     * @param {GoogleSheetsConnector.Event} e
+     * Event object containing additional event information.
+     */
+    emit(e: GoogleSheetsConnector.Event): void;
     /**
      * Loads data from a Google Spreadsheet.
      *
@@ -38,18 +40,12 @@ declare class GoogleSheetsConnector extends DataConnector {
     load(eventDetail?: DataEvent.Detail): Promise<this>;
 }
 declare namespace GoogleSheetsConnector {
-    type Event = (ErrorEvent | LoadEvent);
-    type ErrorEvent = DataConnector.ErrorEvent;
+    interface Event extends DataConnector.Event {
+        readonly url?: string;
+    }
     interface FetchURLOptions {
-        onlyColumnNames?: boolean;
+        onlyColumnIds?: boolean;
     }
-    interface LoadEvent extends DataConnector.LoadEvent {
-        readonly url: string;
-    }
-    /**
-     * Available options for constructor of the GoogleSheetsConnector.
-     */
-    type UserOptions = Types.DeepPartial<GoogleSheetsConnectorOptions>;
     /**
      * Creates GoogleSheets API v4 URL.
      * @private

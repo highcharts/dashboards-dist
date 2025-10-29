@@ -1,13 +1,11 @@
 import type Component from './Components/Component';
 import type ComponentType from './Components/ComponentType';
 import type DataPoolOptions from '../Data/DataPoolOptions';
+import type { DeepPartial } from '../Shared/Types';
 import type EditMode from './EditMode/EditMode';
-import type Fullscreen from './EditMode/Fullscreen';
 import Bindings from './Actions/Bindings.js';
-import DashboardsAccessibility from './Accessibility/DashboardsAccessibility.js';
 import DataCursor from '../Data/DataCursor.js';
 import DataPool from '../Data/DataPool.js';
-import Globals from './Globals.js';
 import Layout from './Layout/Layout.js';
 /**
  * Class that represents a dashboard.
@@ -25,7 +23,7 @@ import Layout from './Layout/Layout.js';
  *          }]
  *      },
  *      components: [{
- *          cell: 'dashboard-col-0',
+ *          renderTo: 'dashboard-col-0',
  *          type: 'Highcharts',
  *          chartOptions: {
  *              series: [{
@@ -65,151 +63,43 @@ declare class Board {
      */
     static board(renderTo: (string | globalThis.HTMLElement), options: Board.Options, async: true): Promise<Board>;
     /**
-     * Creates a dashboard with components like charts, tables, and HTML
-     * elements.
-     *
-     * @internal
-     * @param renderTo
-     * The DOM element to render to, or its id.
-     *
-     * @param options
-     * The options for the dashboard.
-     */
-    protected constructor(renderTo: (string | HTMLElement), options: Board.Options);
-    /**
-     * The accessibility module for the dashboard.
-     * @internal
-     * */
-    a11y: DashboardsAccessibility;
-    /**
-     * The container referenced by the `renderTo` option when creating the
-     * dashboard.
-     * @internal
-     * */
-    boardWrapper: HTMLElement;
-    /**
      * The main container for the dashboard. Created inside the element
      * specified by user when creating the dashboard.
-     * */
+     */
     container: HTMLElement;
     /**
-     * All types of components available in the dashboard.
-     * @internal
+     * The data cursor instance used for emitting events on the data.
      */
-    componentTypes: import("./Components/ComponentType").ComponentTypeRegistry;
-    /**
-     * The data cursor instance used for interacting with the data.
-     * @internal
-     * */
     dataCursor: DataCursor;
     /**
      * The data pool instance with all the connectors.
-     * */
+     */
     dataPool: DataPool;
     /**
-     * The edit mode instance. Used to handle editing the dashboard.
-     * @internal
-     * */
-    editMode?: EditMode;
-    /**
-     * The fullscreen instance. Controls the fullscreen mode.
-     * @internal
-     * */
-    fullscreen?: Fullscreen;
-    /**
-     * Flag to determine if the GUI is enabled.
-     * @internal
-     * */
-    guiEnabled?: boolean;
-    /**
-     * Flag to determine if the EditMode is enabled.
-     * @internal
-     * */
-    editModeEnabled?: boolean;
-    /**
      * The unique id of the dashboard, it is generated automatically.
-     * */
+     */
     readonly id: string;
     /**
      * Index of the board in the global boards array. Allows to access the
      * specific one when having multiple dashboards.
-     * */
+     */
     readonly index: number;
     /**
      * An array of generated layouts.
-     * */
+     */
     layouts: Array<Layout>;
     /**
-     * The wrapper for the layouts.
-     * @internal
-     * */
-    layoutsWrapper?: globalThis.HTMLElement;
-    /**
      * An array of mounted components on the dashboard.
-     * */
+     */
     mountedComponents: Array<Bindings.MountedComponent>;
     /**
      * The options for the dashboard.
-     * */
+     */
     options: Board.Options;
     /**
      * Reference to ResizeObserver, which allows running 'unobserve'.
-     * @internal
      */
     private resizeObserver?;
-    /**
-     * Init the layouts and components on the dashboard.
-     *
-     * @internal
-     * @param async Whether to initialize the dashboard asynchronously. When
-     * false or undefined the function returns the dashboard instance.
-     *  instance.
-     *
-     * @returns
-     * Board instance
-     */
-    protected init(async?: boolean): Board;
-    /**
-     * Init the layouts and components on the dashboard, and attaches connectors
-     * if they are defined on component level.
-     *
-     * @internal
-     * @param async Whether to initialize the dashboard asynchronously. When
-     * true, the function returns a promise that resolves with the dashboard
-     *  instance.
-     *
-     * @returns
-     * A promise that resolves with the dashboard instance.
-     */
-    protected init(async: true): Promise<Board>;
-    /**
-     * Initializes the events.
-     * @internal
-     */
-    private initEvents;
-    /**
-     * Initialize the container for the dashboard.
-     * @internal
-     *
-     * @param renderTo
-     * The DOM element to render to, or its id.
-     */
-    private initContainer;
-    /**
-     * Inits creating a layouts and setup the EditMode tools.
-     * @internal
-     *
-     */
-    private initEditMode;
-    /**
-     * Set the components from options.
-     * @internal
-     *
-     * @param components
-     * An array of component options.
-     *
-     */
-    setComponents(components: Array<Partial<ComponentType['options']>>): Array<Promise<Component | void>>;
     /**
      * Destroy the whole dashboard, its layouts and elements.
      */
@@ -226,7 +116,7 @@ declare class Board {
      * @returns
      * Dashboards options.
      */
-    getOptions(): Globals.DeepPartial<Board.Options>;
+    getOptions(): DeepPartial<Board.Options>;
     /**
      * Get a Dashboards component by its identifier.
      *
@@ -280,7 +170,7 @@ declare namespace Board {
          *
          * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/components/custom-component | Custom component}
          *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/grid-component/grid-options | Datagrid component}
+         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/grid-component/grid-options | grid component}
          *
          **/
         components?: Array<Partial<ComponentType['options']>>;

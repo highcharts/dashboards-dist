@@ -1,14 +1,13 @@
 import type { DataConverterTypes } from './DataConverterType';
 import type DataEvent from '../DataEvent';
-import type DataConnector from '../Connectors/DataConnector';
-import type { ColumnNamesOptions } from '../Connectors/JSONConnectorOptions';
+import type { ColumnIdsOptions } from '../Connectors/JSONConnectorOptions';
 import DataTable from '../DataTable.js';
 /**
  * Base class providing an interface and basic methods for a DataConverter
  *
  * @private
  */
-declare class DataConverter implements DataEvent.Emitter {
+declare class DataConverter implements DataEvent.Emitter<DataConverter.Event> {
     /**
      * Default options
      */
@@ -27,61 +26,21 @@ declare class DataConverter implements DataEvent.Emitter {
     /**
      * Regular expression used in the trim method to change a decimal point.
      */
-    protected decimalRegExp?: RegExp;
+    decimalRegExp?: RegExp;
     /**
      * Options for the DataConverter.
      */
     readonly options: DataConverter.Options;
     /**
-     * Converts a value to a boolean.
-     *
-     * @param {DataConverter.Type} value
-     * Value to convert.
-     *
-     * @return {boolean}
-     * Converted value as a boolean.
-     */
-    asBoolean(value: DataConverter.Type): boolean;
-    /**
-     * Converts a value to a Date.
-     *
-     * @param {DataConverter.Type} value
-     * Value to convert.
-     *
-     * @return {globalThis.Date}
-     * Converted value as a Date.
-     */
-    asDate(value: DataConverter.Type): Date;
-    /**
-     * Casts a string value to it's guessed type
+     * Converts a string value based on its guessed type.
      *
      * @param {*} value
      * The value to examine.
      *
-     * @return {number|string|Date}
+     * @return {number | string | Date}
      * The converted value.
      */
-    asGuessedType(value: unknown): (number | string | Date);
-    /**
-     * Converts a value to a number.
-     *
-     * @param {DataConverter.Type} value
-     * Value to convert.
-     *
-     * @return {number}
-     * Converted value as a number.
-     */
-    asNumber(value: DataConverter.Type): number;
-    /**
-     * Converts a value to a string.
-     *
-     * @param {DataConverter.Type} value
-     * Value to convert.
-     *
-     * @return {string}
-     * Converted value as a string.
-     */
-    asString(value: DataConverter.Type): string;
+    convertByType(value: DataConverter.Type): number | string | Date;
     /**
      * Tries to guess the date format
      *  - Check if either month candidate exceeds 12
@@ -91,7 +50,7 @@ declare class DataConverter implements DataEvent.Emitter {
      * data is the data to deduce a format based on
      * @private
      *
-     * @param {Array<string>} data
+     * @param {string[]} data
      * Data to check the format.
      *
      * @param {number} limit
@@ -100,41 +59,14 @@ declare class DataConverter implements DataEvent.Emitter {
      * @param {boolean} save
      * Whether to save the date format in the converter options.
      */
-    deduceDateFormat(data: Array<string>, limit?: (number | null), save?: boolean): string;
+    deduceDateFormat(data: string[], limit?: number | null, save?: boolean): string;
     /**
      * Emits an event on the DataConverter instance.
      *
      * @param {DataConverter.Event} [e]
      * Event object containing additional event data
      */
-    emit<E extends DataEvent>(e: E): void;
-    /**
-     * Initiates the data exporting. Should emit `exportError` on failure.
-     *
-     * @param {DataConnector} connector
-     * Connector to export from.
-     *
-     * @param {DataConverter.Options} [options]
-     * Options for the export.
-     */
-    export(connector: DataConnector, options?: DataConverter.Options): string;
-    /**
-     * Getter for the data table.
-     *
-     * @return {DataTable}
-     * Table of parsed data.
-     */
-    getTable(): DataTable;
-    /**
-     * Guesses the potential type of a string value for parsing CSV etc.
-     *
-     * @param {*} value
-     * The value to examine.
-     *
-     * @return {'number'|'string'|'Date'}
-     * Type string, either `string`, `Date`, or `number`.
-     */
-    guessType(value: unknown): ('number' | 'string' | 'Date');
+    emit(e: DataConverter.Event): void;
     /**
      * Registers a callback for a specific event.
      *
@@ -147,14 +79,9 @@ declare class DataConverter implements DataEvent.Emitter {
      * @return {Function}
      * Function to unregister callback from the modifier event.
      */
-    on<E extends DataEvent>(type: E['type'], callback: DataEvent.Callback<this, E>): Function;
-    /**
-     * Initiates the data parsing. Should emit `parseError` on failure.
-     *
-     * @param {DataConverter.UserOptions} options
-     * Options of the DataConverter.
-     */
-    parse(options: DataConverter.UserOptions): void;
+    on<T extends DataConverter.Event['type']>(type: T, callback: DataEvent.Callback<this, Extract<DataConverter.Event, {
+        type: T;
+    }>>): Function;
     /**
      * Parse a date and return it as a number.
      *
@@ -166,19 +93,6 @@ declare class DataConverter implements DataEvent.Emitter {
      * to use to parse date values.
      */
     parseDate(value: string, dateFormatProp?: string): number;
-    /**
-     * Trim a string from whitespaces.
-     *
-     * @param {string} str
-     * String to trim.
-     *
-     * @param {boolean} [inside=false]
-     * Remove all spaces between numbers.
-     *
-     * @return {string}
-     * Trimed string
-     */
-    trim(str: string, inside?: boolean): string;
 }
 /**
  * Additionally provided types for events and conversion.
@@ -190,9 +104,9 @@ declare namespace DataConverter {
      */
     interface Event extends DataEvent {
         readonly type: ('export' | 'afterExport' | 'exportError' | 'parse' | 'afterParse' | 'parseError');
-        readonly columns: Array<DataTable.Column>;
-        readonly error?: (string | Error);
-        readonly headers: string[] | ColumnNamesOptions;
+        readonly columns: DataTable.Column[];
+        readonly error?: string | Error;
+        readonly headers: string[] | ColumnIdsOptions;
     }
     interface DateFormatCallbackFunction {
         (match: ReturnType<string['match']>): number;
@@ -207,19 +121,13 @@ declare namespace DataConverter {
      */
     interface Options {
         dateFormat?: string;
-        alternativeFormat?: string;
         decimalPoint?: string;
-        startRow: number;
-        endRow: number;
-        startColumn: number;
-        endColumn: number;
         firstRowAsNames: boolean;
         /**
          * A function to parse string representations of dates into JavaScript
          * timestamps. If not set, the default implementation will be used.
          */
         parseDate?: DataConverter.ParseDateFunction;
-        switchRowsAndColumns: boolean;
     }
     /**
      * A function to parse string representations of dates
@@ -256,19 +164,5 @@ declare namespace DataConverter {
      * their is already a converter registered with this key.
      */
     function registerType<T extends keyof DataConverterTypes>(key: T, DataConverterClass: DataConverterTypes[T]): boolean;
-    /**
-     * Converts an array of columns to a table instance. Second dimension of the
-     * array are the row cells.
-     *
-     * @param {Array<DataTable.Column>} [columns]
-     * Array to convert.
-     *
-     * @param {Array<string>} [headers]
-     * Column names to use.
-     *
-     * @return {DataTable}
-     * Table instance from the arrays.
-     */
-    function getTableFromColumns(columns?: Array<DataTable.Column>, headers?: Array<string>): DataTable;
 }
 export default DataConverter;

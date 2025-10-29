@@ -1,10 +1,9 @@
-import type Globals from './Globals';
-import Board from './Board.js';
-import Sync from './Components/Sync/Sync.js';
-import ComponentRegistry from './Components/ComponentRegistry.js';
+import type { AnyRecord } from '../Shared/Types';
 declare namespace PluginHandler {
-    interface DashboardsPlugin<T = (Globals.AnyRecord | undefined)> {
-        /** @internal */
+    interface DashboardsPlugin<T = (AnyRecord | undefined)> {
+        /**
+         * Custom properties of the plugin
+         */
         custom: T;
         /**
          * Maximal version of plugin that is compatible with dashboard
@@ -18,28 +17,7 @@ declare namespace PluginHandler {
          * Name of plugin
          */
         name: string;
-        /** @internal */
-        onRegister: PluginHandler.EventCallback;
-        /** @internal */
-        onUnregister: PluginHandler.EventCallback;
     }
-    /** @internal */
-    interface Event {
-        ComponentRegistry: typeof ComponentRegistry;
-        Board: typeof Board;
-        Sync: typeof Sync;
-        revision: number;
-    }
-    /** @internal */
-    type EventCallback = (e: Event) => void;
-    /** @internal */
-    const registry: Record<string, DashboardsPlugin>;
-    /**
-     * Revision of the Dashboard plugin API.
-     *
-     * @internal
-     */
-    const revision: number;
     /**
      * Adds a dashboard plugin.
      *

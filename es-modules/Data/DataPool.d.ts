@@ -1,50 +1,40 @@
 import type DataEvent from './DataEvent';
-import type { DataPoolOptions, DataPoolConnectorOptions } from './DataPoolOptions.js';
-import type DataTable from './DataTable.js';
 import type DataConnectorType from './Connectors/DataConnectorType';
+import type { DataConnectorTypeOptions } from './Connectors/DataConnectorType';
+import type DataPoolOptions from './DataPoolOptions';
 /**
  * Data pool to load connectors on-demand.
  *
  * @class
  * @name Data.DataPool
  *
- * @param {Data.DataPoolOptions} options
+ * @param {DataPoolOptions} options
  * Pool options with all connectors.
  */
-declare class DataPool implements DataEvent.Emitter {
-    /**
-     * Semantic version string of the DataPool class.
-     * @internal
-     */
-    static readonly version: string;
-    constructor(options?: (DataPoolOptions | undefined));
+declare class DataPool implements DataEvent.Emitter<DataPool.Event> {
+    protected static readonly defaultOptions: DataPoolOptions;
     /**
      * Internal dictionary with the connectors and their IDs.
-     * @private
      */
     protected readonly connectors: Record<string, DataConnectorType>;
     /**
      * Pool options with all connectors.
-     *
-     * @name Data.DataPool#options
-     * @type {Data.DataPoolOptions}
      */
     readonly options: DataPoolOptions;
     /**
      * Internal dictionary with the promise resolves waiting for connectors to
      * be done loading.
-     * @private
      */
-    protected readonly waiting: Record<string, Array<[Function, Function]>>;
+    protected readonly waiting: Record<string, [Function, Function][]>;
+    constructor(options?: DataPoolOptions);
     /**
      * Emits an event on this data pool to all registered callbacks of the given
      * event.
-     * @private
      *
      * @param {DataTable.Event} e
      * Event object with event information.
      */
-    emit<E extends DataEvent>(e: E): void;
+    emit(e: DataPool.Event): void;
     /**
      * Loads the connector.
      *
@@ -74,22 +64,10 @@ declare class DataPool implements DataEvent.Emitter {
      * @param {string} connectorId
      * ID of the connector.
      *
-     * @return {DataPoolConnectorOptions|undefined}
+     * @return {DataConnectorTypeOptions | undefined}
      * Returns the options of the connector, or `undefined` if not found.
      */
-    protected getConnectorOptions(connectorId: string): (DataPoolConnectorOptions | undefined);
-    /**
-     * Loads the connector table.
-     *
-     * @function Data.DataPool#getConnectorTable
-     *
-     * @param {string} connectorId
-     * ID of the connector.
-     *
-     * @return {Promise<Data.DataTable>}
-     * Returns the connector table.
-     */
-    getConnectorTable(connectorId: string): Promise<DataTable>;
+    protected getConnectorOptions(connectorId: string): DataConnectorTypeOptions | undefined;
     /**
      * Tests whether the connector has never been requested.
      *
@@ -102,7 +80,8 @@ declare class DataPool implements DataEvent.Emitter {
      */
     isNewConnector(connectorId: string): boolean;
     /**
-     * Creates and loads the connector.
+     * Instantiates the connector class for the given options and loads its
+     * data.
      *
      * @private
      *
@@ -112,7 +91,7 @@ declare class DataPool implements DataEvent.Emitter {
      * @return {Promise<Data.DataConnectorType>}
      * Returns the connector.
      */
-    protected loadConnector(options: DataPoolConnectorOptions): Promise<DataConnectorType>;
+    protected loadConnector(options: DataConnectorTypeOptions): Promise<DataConnectorType>;
     /**
      * Cancels all data connectors pending requests.
      */
@@ -131,19 +110,21 @@ declare class DataPool implements DataEvent.Emitter {
      * @return {Function}
      * Function to unregister callback from the event.
      */
-    on<E extends DataEvent>(type: E['type'], callback: DataEvent.Callback<this, E>): Function;
+    on<T extends DataPool.Event['type']>(type: T, callback: DataEvent.Callback<this, Extract<DataPool.Event, {
+        type: T;
+    }>>): Function;
     /**
      * Sets connector options under the specified `options.id`.
      *
-     * @param {Data.DataPoolConnectorOptions} options
+     * @param options
      * Connector options to set.
      */
-    setConnectorOptions(options: DataPoolConnectorOptions): void;
+    setConnectorOptions(options: DataConnectorTypeOptions): void;
 }
 declare namespace DataPool {
     interface Event {
         type: ('load' | 'afterLoad' | 'setConnectorOptions' | 'afterSetConnectorOptions');
-        options: DataPoolConnectorOptions;
+        options: DataConnectorTypeOptions;
     }
 }
 export default DataPool;

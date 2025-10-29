@@ -1,6 +1,5 @@
 import type DataEvent from '../DataEvent';
-import type DataConnector from '../Connectors/DataConnector';
-import type { CSVBeforeParseCallbackFunction } from '../Connectors/CSVConnectorOptions';
+import type CSVConverterOptions from './CSVConverterOptions';
 import DataConverter from './DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -12,15 +11,14 @@ declare class CSVConverter extends DataConverter {
     /**
      * Default options
      */
-    protected static readonly defaultOptions: CSVConverter.Options;
+    protected static readonly defaultOptions: CSVConverterOptions;
     /**
      * Constructs an instance of the CSV parser.
      *
-     * @param {CSVConverter.UserOptions} [options]
+     * @param {Partial<CSVConverterOptions>} [options]
      * Options for the CSV parser.
      */
-    constructor(options?: CSVConverter.UserOptions);
-    private columns;
+    constructor(options?: Partial<CSVConverterOptions>);
     private headers;
     private dataTypes;
     private guessedItemDelimiter?;
@@ -28,75 +26,35 @@ declare class CSVConverter extends DataConverter {
     /**
      * Options for the DataConverter.
      */
-    readonly options: CSVConverter.Options;
+    readonly options: CSVConverterOptions;
     /**
-     * Creates a CSV string from the datatable on the connector instance.
+     * Parses the CSV string into a DataTable column collection.
+     * Handles line and item delimiters, optional header row, and
+     * applies pre-processing if a beforeParse callback is provided.
      *
-     * @param {DataConnector} connector
-     * Connector instance to export from.
-     *
-     * @param {CSVConverter.Options} [options]
-     * Options used for the export.
-     *
-     * @return {string}
-     * CSV string from the connector table.
-     */
-    export(connector: DataConnector, options?: CSVConverter.Options): string;
-    /**
-     * Initiates parsing of CSV
-     *
-     * @param {CSVConverter.UserOptions}[options]
-     * Options for the parser
-     *
+     * @param {Partial<CSVConverterOptions>} [options]
+     * Options for the parser.
      * @param {DataEvent.Detail} [eventDetail]
      * Custom information for pending events.
+     * @return {DataTable.ColumnCollection}
+     * The parsed column collection.
      *
      * @emits CSVDataParser#parse
      * @emits CSVDataParser#afterParse
      */
-    parse(options: CSVConverter.UserOptions, eventDetail?: DataEvent.Detail): void;
+    parse(options: Partial<CSVConverterOptions>, eventDetail?: DataEvent.Detail): DataTable.ColumnCollection;
     /**
-     * Internal method that parses a single CSV row
+     * Parses a single CSV row string into columns, handling delimiters,
+     * quoted values, data type inference, and column range selection.
      */
     private parseCSVRow;
     /**
      * Internal method that guesses the delimiter from the first
      * 13 lines of the CSV
-     * @param {Array<string>} lines
+     * @param {string[]} lines
      * The CSV, split into lines
      */
     private guessDelimiter;
-    /**
-     * Handles converting the parsed data to a table.
-     *
-     * @return {DataTable}
-     * Table from the parsed CSV.
-     */
-    getTable(): DataTable;
-}
-declare namespace CSVConverter {
-    /**
-     * Options for the CSV parser that are compatible with ClassJSON
-     */
-    interface Options extends DataConverter.Options {
-        csv?: string;
-        decimalPoint?: string;
-        itemDelimiter?: string;
-        lineDelimiter: string;
-        useLocalDecimalPoint?: boolean;
-        usePresentationOrder?: boolean;
-    }
-    /**
-     * Options that are not compatible with ClassJSON
-     */
-    interface SpecialOptions {
-        beforeParse?: CSVBeforeParseCallbackFunction;
-        decimalRegex?: RegExp;
-    }
-    /**
-     * Available options of the CSVConverter.
-     */
-    type UserOptions = Partial<(Options & SpecialOptions)>;
 }
 declare module './DataConverterType' {
     interface DataConverterTypes {

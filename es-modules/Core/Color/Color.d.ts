@@ -1,5 +1,5 @@
 import type ColorString from './ColorString';
-import type { ColorLike, ColorType } from './ColorType';
+import type { ColorBase, ColorType } from './ColorType';
 /**
  * Handle color operations. Some object methods are chainable.
  *
@@ -9,7 +9,7 @@ import type { ColorLike, ColorType } from './ColorType';
  * @param {Highcharts.ColorType} input
  * The input color.
  */
-declare class Color implements ColorLike {
+declare class Color implements ColorBase {
     /**
      * Collection of named colors. Can be extended from the outside by adding
      * colors to Highcharts.Color.names.

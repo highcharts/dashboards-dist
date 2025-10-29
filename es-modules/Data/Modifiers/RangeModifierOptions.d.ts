@@ -8,33 +8,15 @@ export interface RangeModifierOptions extends DataModifierOptions {
      */
     type: 'Range';
     /**
-     * If set to true, multiple ranges will add up instead of reduce.
+     * Zero-based index at which to start the range. If not set, the range
+     * starts at the beginning of the table.
      */
-    additive?: boolean;
+    start?: number;
     /**
-     * Value ranges to include in the result.
+     * Zero-based index at which to end the range. The row at this index
+     * is not included in the range. If not set, the range ends at the end of
+     * the table.
      */
-    ranges: Array<RangeModifierRangeOptions>;
-    /**
-     * If set to true, it will also compare the value type.
-     */
-    strict?: boolean;
-}
-/**
- * Options to configure a range.
- */
-export interface RangeModifierRangeOptions {
-    /**
-     * Column containing the values to filter.
-     */
-    column: string;
-    /**
-     * Maximum including value (`<=` operator).
-     */
-    maxValue: (boolean | number | string);
-    /**
-     * Minimum including value (`>=` operator).
-     */
-    minValue: (boolean | number | string);
+    end?: number;
 }
 export default RangeModifierOptions;

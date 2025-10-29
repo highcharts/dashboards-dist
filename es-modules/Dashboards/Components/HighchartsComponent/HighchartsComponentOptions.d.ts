@@ -49,14 +49,6 @@ export interface Options extends Component.Options {
      */
     chartID?: string;
     /**
-     * @deprecated
-     * This option is deprecated and does not work anymore.
-     *
-     * Use [`connector.columnAssignment`](Dashboards_Components_HighchartsComponent_HighchartsComponentOptions.ConnectorOptions#columnAssignment) instead.
-     *
-    */
-    columnAssignment?: Record<string, string | Record<string, string>>;
-    /**
      * Defines which elements should be synced.
      * ```
      * Example:
@@ -173,7 +165,7 @@ export interface ColumnAssignmentOptions {
  */
 export interface SyncOptions extends Sync.RawOptionsRecord {
     /**
-     * Extremes sync is available for Highcharts, KPI, DataGrid and
+     * Extremes sync is available for Highcharts, KPI, Grid and
      * Navigator components. Sets a common range of displayed data. For the
      * KPI Component sets the last value.
      *
@@ -185,7 +177,7 @@ export interface SyncOptions extends Sync.RawOptionsRecord {
      */
     extremes?: boolean | Sync.OptionsEntry;
     /**
-     * Highlight sync is available for Highcharts and DataGrid components.
+     * Highlight sync is available for Highcharts and Grid components.
      * It allows to highlight hovered corresponding rows in the table and
      * chart points.
      *
@@ -197,7 +189,7 @@ export interface SyncOptions extends Sync.RawOptionsRecord {
      */
     highlight?: boolean | HighchartsHighlightSyncOptions;
     /**
-     * Visibility sync is available for Highcharts and DataGrid components.
+     * Visibility sync is available for Highcharts and Grid components.
      * Synchronizes the visibility of data from a hidden/shown series.
      *
      * Try it:

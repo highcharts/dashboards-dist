@@ -1,4 +1,5 @@
 import type A11yOptions from './A11yOptions';
+import type { DeepPartial } from '../../Shared/Types';
 /**
  * Formatter callback for the accessibility announcement.
  *

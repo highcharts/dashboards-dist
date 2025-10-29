@@ -8,18 +8,18 @@ import type SizeObject from './Renderer/SizeObject';
 import type SVGElement from './Renderer/SVG/SVGElement';
 import type SVGRenderer from './Renderer/SVG/SVGRenderer';
 import type TooltipOptions from './TooltipOptions';
-declare module './Chart/ChartLike' {
-    interface ChartLike {
+declare module './Chart/ChartBase' {
+    interface ChartBase {
         tooltip?: Tooltip;
     }
 }
-declare module './Series/PointLike' {
-    interface PointLike {
+declare module './Series/PointBase' {
+    interface PointBase {
         isHeader?: boolean;
     }
 }
-declare module './Series/SeriesLike' {
-    interface SeriesLike {
+declare module './Series/SeriesBase' {
+    interface SeriesBase {
         noSharedTooltip?: boolean;
         tt?: SVGElement;
     }

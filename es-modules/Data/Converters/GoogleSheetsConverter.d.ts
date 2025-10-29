@@ -1,5 +1,5 @@
 import type DataEvent from '../DataEvent';
-import type { GoogleSheetsBeforeParseCallbackFunction } from '../Connectors/GoogleSheetsConnectorOptions';
+import type GoogleSheetsConverterOptions from './GoogleSheetsConverterOptions';
 import DataConverter from './DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -11,24 +11,23 @@ declare class GoogleSheetsConverter extends DataConverter {
     /**
      * Default options
      */
-    protected static readonly defaultOptions: GoogleSheetsConverter.Options;
+    protected static readonly defaultOptions: GoogleSheetsConverterOptions;
     /**
      * Constructs an instance of the GoogleSheetsConverter.
      *
-     * @param {GoogleSheetsConverter.UserOptions} [options]
+     * @param {Partial<GoogleSheetsConverterOptions>} [options]
      * Options for the GoogleSheetsConverter.
      */
-    constructor(options?: GoogleSheetsConverter.UserOptions);
-    private columns;
+    constructor(options?: Partial<GoogleSheetsConverterOptions>);
     private header;
     /**
      * Options for the DataConverter.
      */
-    readonly options: GoogleSheetsConverter.Options;
+    readonly options: GoogleSheetsConverterOptions;
     /**
      * Initiates the parsing of the Google Sheet
      *
-     * @param {GoogleSheetsConverter.UserOptions}[options]
+     * @param {Partial<GoogleSheetsConverterOptions>}[options]
      * Options for the parser
      *
      * @param {DataEvent.Detail} [eventDetail]
@@ -37,39 +36,7 @@ declare class GoogleSheetsConverter extends DataConverter {
      * @emits GoogleSheetsParser#parse
      * @emits GoogleSheetsParser#afterParse
      */
-    parse(options: GoogleSheetsConverter.UserOptions, eventDetail?: DataEvent.Detail): (boolean | undefined);
-    /**
-     * Handles converting the parsed data to a table.
-     *
-     * @return {DataTable}
-     * Table from the parsed Google Sheet
-     */
-    getTable(): DataTable;
-}
-declare namespace GoogleSheetsConverter {
-    /**
-     * Options of the GoogleSheetsConverter.
-     */
-    interface Options extends DataConverter.Options {
-        json?: GoogleSpreadsheetJSON;
-    }
-    /**
-     * Google's spreadsheet format.
-     */
-    interface GoogleSpreadsheetJSON {
-        majorDimension: ('COLUMNS' | 'ROWS');
-        values: Array<Array<(boolean | null | number | string | undefined)>>;
-    }
-    /**
-     * Options that are not compatible with ClassJSON
-     */
-    interface SpecialOptions {
-        beforeParse?: GoogleSheetsBeforeParseCallbackFunction;
-    }
-    /**
-     * Available options of the GoogleSheetsConverter.
-     */
-    type UserOptions = Partial<(Options & SpecialOptions)>;
+    parse(options: Partial<GoogleSheetsConverterOptions>, eventDetail?: DataEvent.Detail): DataTable.ColumnCollection;
 }
 declare module './DataConverterType' {
     interface DataConverterTypes {

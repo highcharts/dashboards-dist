@@ -1,5 +1,6 @@
 import type DataEvent from '../DataEvent';
 import type DataConnector from '../Connectors/DataConnector';
+import type HTMLTableConverterOptions from './HTMLTableConverterOptions';
 import DataConverter from './DataConverter.js';
 import DataTable from '../DataTable.js';
 /**
@@ -11,20 +12,19 @@ declare class HTMLTableConverter extends DataConverter {
     /**
      * Default options
      */
-    protected static readonly defaultOptions: HTMLTableConverter.Options;
+    protected static readonly defaultOptions: HTMLTableConverterOptions;
     /**
      * Constructs an instance of the HTMLTableConverter.
      *
-     * @param {HTMLTableConverter.UserOptions} [options]
+     * @param {Partial<HTMLTableConverterOptions>} [options]
      * Options for the HTMLTableConverter.
      */
-    constructor(options?: HTMLTableConverter.UserOptions);
-    private columns;
+    constructor(options?: Partial<HTMLTableConverterOptions>);
     private headers;
     /**
      * Options for the DataConverter.
      */
-    readonly options: HTMLTableConverter.Options;
+    readonly options: HTMLTableConverterOptions;
     tableElement?: HTMLElement;
     tableElementID?: string;
     /**
@@ -40,7 +40,7 @@ declare class HTMLTableConverter extends DataConverter {
      * @return {string}
      * HTML from the current dataTable.
      */
-    export(connector: DataConnector, options?: HTMLTableConverter.Options): string;
+    export(connector: DataConnector, options?: Partial<HTMLTableConverterOptions>): string;
     /**
      * Get table cell markup from row data.
      */
@@ -52,7 +52,7 @@ declare class HTMLTableConverter extends DataConverter {
     /**
      * Initiates the parsing of the HTML table
      *
-     * @param {HTMLTableConverter.UserOptions}[options]
+     * @param {Partial<HTMLTableConverterOptions>}[options]
      * Options for the parser
      *
      * @param {DataEvent.Detail} [eventDetail]
@@ -62,33 +62,7 @@ declare class HTMLTableConverter extends DataConverter {
      * @emits CSVDataParser#afterParse
      * @emits HTMLTableParser#parseError
      */
-    parse(options: HTMLTableConverter.UserOptions, eventDetail?: DataEvent.Detail): void;
-    /**
-     * Handles converting the parsed data to a table.
-     *
-     * @return {DataTable}
-     * Table from the parsed HTML table
-     */
-    getTable(): DataTable;
-}
-declare namespace HTMLTableConverter {
-    /**
-     * Options for the parser compatible with ClassJSON
-     */
-    interface Options extends DataConverter.Options {
-        decimalPoint?: string;
-        exportIDColumn?: boolean;
-        tableCaption?: string;
-        tableElement?: (HTMLElement | null);
-        useLocalDecimalPoint?: boolean;
-        useMultiLevelHeaders?: boolean;
-        useRowspanHeaders?: boolean;
-        usePresentationOrder?: boolean;
-    }
-    /**
-     * Available options of the HTMLTableConverter.
-     */
-    type UserOptions = Partial<Options>;
+    parse(options: Partial<HTMLTableConverterOptions>, eventDetail?: DataEvent.Detail): DataTable.ColumnCollection;
 }
 declare module './DataConverterType' {
     interface DataConverterTypes {

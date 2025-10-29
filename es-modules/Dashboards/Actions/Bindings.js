@@ -56,13 +56,13 @@ var Bindings;
     async function addComponent(options, board, cell) {
         const optionsStates = options.states;
         const optionsEvents = options.events;
-        const renderTo = options.renderTo || options.cell;
+        const renderTo = options.renderTo;
         if (!renderTo) {
             // eslint-disable-next-line no-console
             console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
             return;
         }
-        if (board.mountedComponents.filter((el) => ((el.options.renderTo || el.options.cell) === renderTo)).length > 0) {
+        if (board.mountedComponents.filter((el) => el.options.renderTo === renderTo).length > 0) {
             // eslint-disable-next-line no-console
             console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
             return;

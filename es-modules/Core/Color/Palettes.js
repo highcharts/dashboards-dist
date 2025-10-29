@@ -18,6 +18,6 @@ const SeriesPalettes = {
         '#fa4b42',
         '#feb56a',
         '#91e8e1'
-    ]
+    ],
 };
 export default SeriesPalettes;

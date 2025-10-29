@@ -1,13 +1,7 @@
-import type DataModifier from '../../Data/Modifiers/DataModifier';
 import Component from './Component';
 import DataTable from '../../Data/DataTable.js';
 declare module '../../Data/Connectors/DataConnector' {
     export default interface DataConnector {
-        /**
-         * Components that are fed by the connector.
-         * @internal
-         */
-        components?: Component[];
     }
 }
 /**
@@ -31,31 +25,6 @@ declare class ConnectorHandler {
      * The component that the connector is tied to.
      */
     component: Component;
-    /**
-     * The interval for rendering the component on data changes.
-     * @internal
-     */
-    private tableEventTimeout?;
-    /**
-     * Event listeners tied to the current DataTable. Used for rerendering the
-     * component on data changes.
-     *
-     * @internal
-     */
-    private tableEvents;
-    /**
-     * DataModifier that is applied on top of modifiers set on the DataStore.
-     *
-     * @internal
-     */
-    presentationModifier?: DataModifier;
-    /**
-     * The table being presented, either a result of the above or a way to
-     * modify the table via events.
-     *
-     * @internal
-     */
-    presentationTable?: DataTable;
     /**
      * Helper flag for detecting whether the connector handler has been
      * destroyed, used to check and prevent further operations if the connector
@@ -95,22 +64,6 @@ declare class ConnectorHandler {
      */
     setConnector(connector?: Component.ConnectorTypes): Component;
     /**
-     * Adds event listeners to data table.
-     * @param table
-     * Data table that is source of data.
-     * @internal
-     */
-    private setupTableListeners;
-    /**
-     * Remove event listeners in data table.
-     *
-     * @param table
-     * The connector data table (data source).
-     *
-     * @internal
-     */
-    private clearTableListeners;
-    /**
      * Adds the component to the provided connector.
      * Starts the connector polling if inactive and one component is provided.
      */
@@ -131,11 +84,6 @@ declare class ConnectorHandler {
      * The new options to update.
      */
     updateOptions(newOptions: ConnectorHandler.ConnectorOptions): void;
-    /**
-     * Destroys the connector handler.
-     * @internal
-     */
-    destroy(): void;
 }
 declare namespace ConnectorHandler {
     /**
@@ -144,24 +92,10 @@ declare namespace ConnectorHandler {
      */
     interface ConnectorOptions {
         /**
-         * Whether to allow the transfer of data changes back to the connector
-         * source.
-         *
-         * @internal
-         */
-        allowSave?: boolean;
-        /**
          * The id of the connector configuration in the data pool of the
          * dashboard.
          */
         id: string;
-        /**
-         * The modifier to apply to the data table before presenting it. This
-         * can be changed to be an open, documented option in the future.
-         *
-         * @internal
-         */
-        presentationModifier?: DataModifier;
         /**
          * Reference to the specific connector data table.
          */

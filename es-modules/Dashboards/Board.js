@@ -46,7 +46,7 @@ const { merge, addEvent, error, objectEach, uniqueKey } = U;
  *          }]
  *      },
  *      components: [{
- *          cell: 'dashboard-col-0',
+ *          renderTo: 'dashboard-col-0',
  *          type: 'Highcharts',
  *          chartOptions: {
  *              series: [{

@@ -1,12 +1,12 @@
 import type DataEvent from '../DataEvent';
+import type DataModifierEvent from './DataModifierEvent';
 import type DataModifierOptions from './DataModifierOptions';
 import type DataTable from '../DataTable';
 import type { DataModifierTypes } from './DataModifierType';
 /**
  * Abstract class to provide an interface for modifying a table.
- *
  */
-declare abstract class DataModifier implements DataEvent.Emitter {
+declare abstract class DataModifier implements DataEvent.Emitter<DataModifierEvent> {
     /**
      * Modifier options.
      */
@@ -32,9 +32,11 @@ declare abstract class DataModifier implements DataEvent.Emitter {
      * @param {DataModifier.Event} [e]
      * Event object containing additonal event information.
      */
-    emit<E extends DataEvent>(e: E): void;
+    emit<E extends DataModifierEvent>(e: E): void;
     /**
-     * Returns a modified copy of the given table.
+     * Modifies the given table and sets its `modified` property as a reference
+     * to the modified table. If `modified` property does not exist on the
+     * original table, it's always created.
      *
      * @param {Highcharts.DataTable} table
      * Table to modify.
@@ -45,73 +47,11 @@ declare abstract class DataModifier implements DataEvent.Emitter {
      * @return {Promise<Highcharts.DataTable>}
      * Table with `modified` property as a reference.
      */
-    modify<T extends DataTable>(table: T, eventDetail?: DataEvent.Detail): Promise<T>;
+    modify(table: DataTable, eventDetail?: DataEvent.Detail): Promise<DataTable>;
     /**
-     * Applies partial modifications of a cell change to the property `modified`
-     * of the given modified table.
-     *
-     * @param {Highcharts.DataTable} table
-     * Modified table.
-     *
-     * @param {string} columnName
-     * Column name of changed cell.
-     *
-     * @param {number|undefined} rowIndex
-     * Row index of changed cell.
-     *
-     * @param {Highcharts.DataTableCellType} cellValue
-     * Changed cell value.
-     *
-     * @param {Highcharts.DataTableEventDetail} [eventDetail]
-     * Custom information for pending events.
-     *
-     * @return {Highcharts.DataTable}
-     * Table with `modified` property as a reference.
-     */
-    modifyCell<T extends DataTable>(table: T, columnName: string, rowIndex: number, cellValue: DataTable.CellType, eventDetail?: DataEvent.Detail): T;
-    /**
-     * Applies partial modifications of column changes to the property
-     * `modified` of the given table.
-     *
-     * @param {Highcharts.DataTable} table
-     * Modified table.
-     *
-     * @param {Highcharts.DataTableColumnCollection} columns
-     * Changed columns as a collection, where the keys are the column names.
-     *
-     * @param {number} [rowIndex=0]
-     * Index of the first changed row.
-     *
-     * @param {Highcharts.DataTableEventDetail} [eventDetail]
-     * Custom information for pending events.
-     *
-     * @return {Highcharts.DataTable}
-     * Table with `modified` property as a reference.
-     */
-    modifyColumns<T extends DataTable>(table: T, columns: DataTable.ColumnCollection, rowIndex: number, eventDetail?: DataEvent.Detail): T;
-    /**
-     * Applies partial modifications of row changes to the property `modified`
-     * of the given table.
-     *
-     * @param {Highcharts.DataTable} table
-     * Modified table.
-     *
-     * @param {Array<(Highcharts.DataTableRow|Highcharts.DataTableRowObject)>} rows
-     * Changed rows.
-     *
-     * @param {number} [rowIndex]
-     * Index of the first changed row.
-     *
-     * @param {Highcharts.DataTableEventDetail} [eventDetail]
-     * Custom information for pending events.
-     *
-     * @return {Highcharts.DataTable}
-     * Table with `modified` property as a reference.
-     */
-    modifyRows<T extends DataTable>(table: T, rows: Array<(DataTable.Row | DataTable.RowObject)>, rowIndex: number, eventDetail?: DataEvent.Detail): T;
-    /**
-     * Applies modifications of row changes to the property `modified` of the
-     * given table.
+     * Creates a modified copy of the given table and sets its `modified`
+     * property as a reference to the modified table. If `modified` property
+     * does not exist, the original table is changed.
      *
      * @param {Highcharts.DataTable} table
      * Table to modify.
@@ -120,9 +60,10 @@ declare abstract class DataModifier implements DataEvent.Emitter {
      * Custom information for pending events.
      *
      * @return {Highcharts.DataTable}
-     * Table with `modified` property as a reference.
+     * Table with `modified` property as a reference or modified table, if
+     * `modified` property of the original table is undefined.
      */
-    abstract modifyTable<T extends DataTable>(table: T, eventDetail?: DataEvent.Detail): T;
+    abstract modifyTable(table: DataTable, eventDetail?: DataEvent.Detail): DataTable;
     /**
      * Registers a callback for a specific modifier event.
      *
@@ -135,7 +76,9 @@ declare abstract class DataModifier implements DataEvent.Emitter {
      * @return {Function}
      * Function to unregister callback from the modifier event.
      */
-    on<E extends DataEvent>(type: E['type'], callback: DataEvent.Callback<this, E>): Function;
+    on<T extends DataModifierEvent['type']>(type: T, callback: DataEvent.Callback<this, Extract<DataModifierEvent, {
+        type: T;
+    }>>): Function;
 }
 /**
  * Additionally provided types for modifier events and options.

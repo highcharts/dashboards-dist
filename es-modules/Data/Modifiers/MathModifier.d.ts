@@ -18,7 +18,7 @@ declare class MathModifier extends DataModifier {
     static readonly defaultOptions: MathModifierOptions;
     constructor(options: Partial<MathModifierOptions>);
     options: MathModifierOptions;
-    modifyTable<T extends DataTable>(table: T, eventDetail?: DataEvent.Detail): T;
+    modifyTable(table: DataTable, eventDetail?: DataEvent.Detail): DataTable;
     /**
      * Process a column by replacing formula strings with calculated values.
      *
@@ -27,8 +27,8 @@ declare class MathModifier extends DataModifier {
      * @param {Highcharts.DataTable} table
      * Table to extract column from and use as reference.
      *
-     * @param {string} columnName
-     * Name of column to process.
+     * @param {string} columnId
+     * Id of column to process.
      *
      * @param {number} rowIndex
      * Row index to start the replacing process from.
@@ -36,7 +36,7 @@ declare class MathModifier extends DataModifier {
      * @return {Highcharts.DataTableColumn}
      * Returns the processed table column.
      */
-    protected processColumn(table: DataTable, columnName: string, rowIndex?: number): DataTable.Column;
+    protected processColumn(table: DataTable, columnId: string, rowIndex?: number): DataTable.Column;
     /**
      * Process a column by replacing cell values with calculated values from a
      * given formula.

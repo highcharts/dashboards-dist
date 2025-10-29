@@ -1,6 +1,7 @@
 import type AxisType from './Axis/AxisType';
 import type Chart from './Chart/Chart';
 import type CSSObject from './Renderer/CSSObject';
+import type { DeepPartial } from '../Shared/Types';
 import type { DOMElementType, HTMLDOMElement } from './Renderer/DOMElementType';
 import type EventCallback from './EventCallback';
 import type HTMLAttributes from './Renderer/HTML/HTMLAttributes';

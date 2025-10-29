@@ -38,6 +38,7 @@ declare namespace EditGlobals {
         dropdownIcon: string;
         editGridItems: string;
         editModeEnabled: string;
+        editStandaloneToggle: string;
         editOverlay: string;
         editOverlayActive: string;
         editSidebar: string;
@@ -218,9 +219,9 @@ declare namespace EditGlobals {
          */
         Highcharts: string;
         /**
-         * @default 'DataGrid'
+         * @default 'Grid'
          */
-        DataGrid: string;
+        Grid: string;
         /**
          * @default 'KPI'
          */
