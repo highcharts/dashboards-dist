@@ -2,6 +2,7 @@ import type Board from '../../Board';
 import type Cell from '../../Layout/Cell';
 import type { Grid, GridNamespace } from '../../Plugins/GridTypes';
 import type { Options } from './GridComponentOptions';
+import type { EventTypes as ComponentEventTypes } from '../Component';
 import Component from '../Component.js';
 import SidebarPopup from '../../EditMode/SidebarPopup';
 /**
@@ -12,7 +13,7 @@ declare class GridComponent extends Component {
     /**
      * Predefined sync config for the Grid Component.
      */
-    static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
+    static predefinedSyncConfig: import("../Sync/Sync").PredefinedSyncConfig;
     /**
      * The namespace of the Grid Component.
      */
@@ -20,7 +21,7 @@ declare class GridComponent extends Component {
     /**
      * The default options for the Grid Component.
      */
-    static defaultOptions: Partial<Component.Options> & import("../../../Shared/Types").DeepPartial<Options>;
+    static defaultOptions: Partial<import("../Component").Options> & import("../../../Shared/Types").DeepPartial<Options>;
     /**
      * The Grid that is rendered in the Grid Component.
      */
@@ -51,10 +52,8 @@ declare class GridComponent extends Component {
      */
     private constructGrid;
 }
-declare namespace GridComponent {
-    /** @private */
-    type ComponentType = GridComponent;
-    /** @private */
-    type ChartComponentEvents = Component.EventTypes;
-}
+/** @private */
+export type ComponentType = GridComponent;
+/** @private */
+export type ChartComponentEvents = ComponentEventTypes;
 export default GridComponent;

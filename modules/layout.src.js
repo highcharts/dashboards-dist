@@ -1,11 +1,13 @@
+// SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards Layout 4.0.0 (2025-10-29)
+ * @license Highcharts Dashboards Layout 4.1.0 (2026-01-21)
  * @module dashboards/modules/layout
  * @requires dashboards
  *
- * (c) 2009-2025 Highsoft AS
+ * (c) 2009-2026 Highsoft AS
  *
- * License: www.highcharts.com/license
+ * A commercial license may be required depending on use.
+ * See www.highcharts.com/license
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -112,11 +114,11 @@ var dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default 
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/EditGlobals.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -270,11 +272,11 @@ const EditGlobals = {
 ;// ./code/dashboards/es-modules/Dashboards/Layout/GUIElement.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -381,7 +383,7 @@ class GUIElement {
     /**
      * Create or get existing HTML element as a GUIElement container.
      *
-     * @param {GUIElement.ContainerOptions} options
+     * @param {GetElementContainerOptions} options
      * Options.
      *
      * @returns
@@ -466,11 +468,11 @@ class GUIElement {
 ;// ./code/dashboards/es-modules/Dashboards/Layout/Cell.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -505,7 +507,7 @@ class Cell extends Layout_GUIElement {
      * @param {Row} row
      * Reference to the row instance.
      *
-     * @param {Cell.Options} options
+     * @param {Options} options
      * Options for the cell.
      *
      * @param {HTMLElement} cellElement
@@ -588,7 +590,14 @@ class Cell extends Layout_GUIElement {
      *
      */
     getOptions() {
-        return this.options;
+        const cell = this;
+        if (cell.options.layout && cell.nestedLayout) {
+            return {
+                ...cell.options,
+                layout: cell.nestedLayout.getOptions()
+            };
+        }
+        return cell.options;
     }
     changeVisibility(setVisible = true) {
         super.changeVisibility(setVisible);
@@ -733,20 +742,12 @@ class Cell extends Layout_GUIElement {
         return Layout_GUIElement.getPercentageWidth(width) || '';
     }
 }
-/* *
- *
- *  Namespace
- *
- * */
-(function (Cell) {
-    /**
-     * Checks if a valid cell instance.
-     */
-    function isCell(cell) {
-        return (!!cell && 'row' in cell && cell.type === 'cell');
-    }
-    Cell.isCell = isCell;
-})(Cell || (Cell = {}));
+/**
+ * Checks if a valid cell instance.
+ */
+function isCell(cell) {
+    return (!!cell && 'row' in cell && cell.type === 'cell');
+}
 /* *
  *
  *  Default Export
@@ -757,11 +758,11 @@ class Cell extends Layout_GUIElement {
 ;// ./code/dashboards/es-modules/Dashboards/Layout/CellHTML.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -791,7 +792,7 @@ class CellHTML extends Layout_GUIElement {
     /**
      * Constructs an instance of the CellHTML class.
      *
-     * @param {Cell.Options} options
+     * @param {Options} options
      * Options for the cell.
      */
     constructor(options) {
@@ -833,18 +834,15 @@ class CellHTML extends Layout_GUIElement {
 }
 /* *
  *
- *  Namespace
+ *  Type Declarations
  *
  * */
-(function (CellHTML) {
-    /**
-     * Checks if a valid cell HTML instance.
-     */
-    function isCellHTML(cellHTML) {
-        return cellHTML instanceof CellHTML;
-    }
-    CellHTML.isCellHTML = isCellHTML;
-})(CellHTML || (CellHTML = {}));
+/**
+ * Checks if a valid cell HTML instance.
+ */
+function isCellHTML(cellHTML) {
+    return cellHTML instanceof CellHTML;
+}
 /* *
  *
  *  Default Export
@@ -855,11 +853,11 @@ class CellHTML extends Layout_GUIElement {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/EditRenderer.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -1356,11 +1354,11 @@ const EditRenderer = {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/Menu/MenuItem.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -1482,11 +1480,11 @@ MenuItem.defaultOptions = {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/Menu/MenuItemBindings.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -1520,11 +1518,11 @@ const MenuItemBindings = {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/Menu/Menu.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -1648,11 +1646,11 @@ Menu.items = Menu_MenuItemBindings;
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/Toolbar/EditToolbar.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -1731,11 +1729,11 @@ class EditToolbar {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/Toolbar/CellEditToolbar.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -1776,7 +1774,7 @@ class CellEditToolbar extends Toolbar_EditToolbar {
                         const dragDrop = cellEditToolbar.editMode.dragDrop;
                         if (dragDrop &&
                             cellEditToolbar.cell &&
-                            Layout_Cell.isCell(cellEditToolbar.cell)) {
+                            isCell(cellEditToolbar.cell)) {
                             dragDrop.onDragStart(e, cellEditToolbar.cell);
                         }
                     }
@@ -1821,6 +1819,23 @@ class CellEditToolbar extends Toolbar_EditToolbar {
                 }
             }
         });
+        if (options.viewFullscreen?.enabled) {
+            items.push({
+                id: 'viewFullscreen',
+                type: 'icon',
+                className: EditMode_EditGlobals.classNames.viewFullscreen,
+                icon: iconURLPrefix + 'fullscreen.svg',
+                events: {
+                    click: function () {
+                        const fullScreen = this.menu.parent.editMode.board.fullscreen;
+                        const container = this.menu.parent.cell.container.firstElementChild;
+                        if (fullScreen) {
+                            fullScreen.toggle(container);
+                        }
+                    }
+                }
+            });
+        }
         return items;
     }
     /* *
@@ -1907,8 +1922,10 @@ class CellEditToolbar extends Toolbar_EditToolbar {
     }
     onCellDestroy() {
         const toolbar = this;
-        if (toolbar.cell && Layout_Cell.isCell(toolbar.cell)) {
+        if (toolbar.cell && isCell(toolbar.cell)) {
             const row = toolbar.cell.row;
+            const board = toolbar.editMode.board;
+            const editMode = toolbar.editMode;
             const cellId = toolbar.cell.id;
             // Disable row highlight.
             toolbar.cell.row.setHighlight();
@@ -1916,21 +1933,20 @@ class CellEditToolbar extends Toolbar_EditToolbar {
             toolbar.cell.destroy();
             toolbar.cell = void 0;
             // Hide row and cell toolbars.
-            toolbar.editMode.hideToolbars(['cell', 'row']);
+            editMode.hideToolbars(['cell', 'row']);
             // Disable resizer.
-            toolbar.editMode.resizer?.disableResizer();
+            editMode.resizer?.disableResizer();
             // Call cellResize dashboard event.
             if (row && row.cells && row.cells.length) {
-                CellEditToolbar_fireEvent(toolbar.editMode.board, 'cellResize', {
+                CellEditToolbar_fireEvent(board, 'cellResize', {
                     cell: row.cells[0]
                 });
                 CellEditToolbar_fireEvent(row, 'cellChange', { cell: row.cells[0], row });
-                CellEditToolbar_fireEvent(toolbar.editMode, 'layoutChanged', {
-                    type: 'cellDestroyed',
-                    target: cellId,
-                    board: toolbar.editMode.board
-                });
             }
+            CellEditToolbar_fireEvent(editMode, 'cellDestroyed', {
+                target: cellId,
+                board: board
+            });
         }
     }
     resetEditedCell() {
@@ -1985,11 +2001,11 @@ CellEditToolbar.defaultOptions = {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/Toolbar/RowEditToolbar.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -2170,11 +2186,11 @@ var dashboards_AST_commonjs_dashboards_AST_commonjs2_dashboards_AST_root_Dashboa
 ;// ./code/dashboards/es-modules/Shared/BaseForm.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
@@ -2298,11 +2314,11 @@ class BaseForm {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/ConfirmationPopup.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -2457,11 +2473,11 @@ class ConfirmationPopup extends Shared_BaseForm {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/AccordionMenu.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Pawel Lysy
@@ -2663,6 +2679,7 @@ class AccordionMenu {
             return this.renderNested(parentNode, options, component);
         }
         const renderFunction = EditMode_EditRenderer.getRendererFunction(options.type);
+        const lang = (component.board?.editMode || EditMode_EditGlobals).lang;
         if (!renderFunction) {
             return;
         }
@@ -2671,6 +2688,7 @@ class AccordionMenu {
             iconsURLPrefix: this.iconsURLPrefix,
             value: component.getEditableOptionValue(options.propertyPath),
             enabledOnOffLabels: options.type === 'toggle',
+            lang,
             onchange: (value) => this.updateOptions(options.propertyPath || [], value)
         });
     }
@@ -2820,11 +2838,11 @@ var dashboards_ComponentRegistry_commonjs_dashboards_ComponentRegistry_commonjs2
 ;// ./code/dashboards/es-modules/Dashboards/Actions/Bindings.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -2841,173 +2859,162 @@ var dashboards_ComponentRegistry_commonjs_dashboards_ComponentRegistry_commonjs2
 const { addEvent: Bindings_addEvent, fireEvent: Bindings_fireEvent } = (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default());
 /* *
  *
- *  Namespace
+ *  Functions
  *
  * */
-var Bindings;
-(function (Bindings) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    function getGUIElement(idOrElement, parentElement) {
-        let guiElement;
-        if (typeof idOrElement === 'string' &&
-            document.querySelectorAll('#' + idOrElement).length > 1) {
-            // eslint-disable-next-line no-console
-            console.warn(`Multiple cells have identical ID %c${idOrElement}%c, potentially leading to unexpected behavior. \nEnsure that each cell has a unique ID on the page.`, 'font-weight: bold', '');
-        }
-        const container = parentElement ?
-            parentElement.querySelector('#' + idOrElement) :
-            document.getElementById(idOrElement);
-        if (container !== null) {
-            Bindings_fireEvent(container, 'bindedGUIElement', {}, function (e) {
-                guiElement = e.guiElement;
-            });
-        }
-        return guiElement;
+function getGUIElement(idOrElement, parentElement) {
+    let guiElement;
+    if (typeof idOrElement === 'string' &&
+        document.querySelectorAll('#' + idOrElement).length > 1) {
+        // eslint-disable-next-line no-console
+        console.warn(`Multiple cells have identical ID %c${idOrElement}%c, potentially leading to unexpected behavior. \nEnsure that each cell has a unique ID on the page.`, 'font-weight: bold', '');
     }
-    async function addComponent(options, board, cell) {
-        const optionsStates = options.states;
-        const optionsEvents = options.events;
-        const renderTo = options.renderTo;
-        if (!renderTo) {
-            // eslint-disable-next-line no-console
-            console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
-            return;
-        }
-        if (board.mountedComponents.filter((el) => el.options.renderTo === renderTo).length > 0) {
-            // eslint-disable-next-line no-console
-            console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
-            return;
-        }
-        cell = cell || Bindings.getCell(renderTo, board.container);
-        const componentContainer = cell?.container || document.querySelector('#' + renderTo);
-        if (!componentContainer || !options.type) {
-            // eslint-disable-next-line no-console
-            console.error(`The component is unable to find the HTML cell element %c${renderTo}%c to render the content.`, 'font-weight: bold', '');
-            return;
-        }
-        let ComponentClass = (dashboards_ComponentRegistry_commonjs_dashboards_ComponentRegistry_commonjs2_dashboards_ComponentRegistry_root_Dashboards_ComponentRegistry_default()).types[options.type];
-        if (!ComponentClass) {
-            // eslint-disable-next-line no-console
-            console.error(`The component's type %c${options.type}%c does not exist.`, 'font-weight: bold', '');
-            if (cell) {
-                ComponentClass =
-                    (dashboards_ComponentRegistry_commonjs_dashboards_ComponentRegistry_commonjs2_dashboards_ComponentRegistry_root_Dashboards_ComponentRegistry_default()).types['HTML'];
-                options.title = {
-                    text: board.editMode?.lang.errorMessage ||
-                        'Something went wrong',
-                    className: (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNamePrefix + 'component-title-error ' +
-                        (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNamePrefix + 'component-title'
-                };
-            }
-        }
-        const component = new ComponentClass(cell, options, board);
-        const promise = component.load()['catch']((e) => {
-            // eslint-disable-next-line no-console
-            console.error(e);
-            component.update({
-                connector: {
-                    id: ''
-                },
-                title: {
-                    text: board.editMode?.lang.errorMessage ||
-                        'Something went wrong',
-                    className: (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNamePrefix + 'component-title-error ' +
-                        (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNamePrefix + 'component-title'
-                }
-            });
+    const container = parentElement ?
+        parentElement.querySelector('#' + idOrElement) :
+        document.getElementById(idOrElement);
+    if (container !== null) {
+        Bindings_fireEvent(container, 'bindedGUIElement', {}, function (e) {
+            guiElement = e.guiElement;
         });
+    }
+    return guiElement;
+}
+async function addComponent(options, board, cell) {
+    const optionsStates = options.states;
+    const optionsEvents = options.events;
+    const renderTo = options.renderTo;
+    if (!renderTo) {
+        // eslint-disable-next-line no-console
+        console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
+        return;
+    }
+    if (board.mountedComponents.filter((el) => el.options.renderTo === renderTo).length > 0) {
+        // eslint-disable-next-line no-console
+        console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
+        return;
+    }
+    cell = cell || Bindings.getCell(renderTo, board.container);
+    const componentContainer = cell?.container || document.querySelector('#' + renderTo);
+    if (!componentContainer || !options.type) {
+        // eslint-disable-next-line no-console
+        console.error(`The component is unable to find the HTML cell element %c${renderTo}%c to render the content.`, 'font-weight: bold', '');
+        return;
+    }
+    let ComponentClass = (dashboards_ComponentRegistry_commonjs_dashboards_ComponentRegistry_commonjs2_dashboards_ComponentRegistry_root_Dashboards_ComponentRegistry_default()).types[options.type];
+    if (!ComponentClass) {
+        // eslint-disable-next-line no-console
+        console.error(`The component's type %c${options.type}%c does not exist.`, 'font-weight: bold', '');
         if (cell) {
-            component.setCell(cell);
-            cell.mountedComponent = component;
+            ComponentClass =
+                (dashboards_ComponentRegistry_commonjs_dashboards_ComponentRegistry_commonjs2_dashboards_ComponentRegistry_root_Dashboards_ComponentRegistry_default()).types['HTML'];
+            options.title = {
+                text: board.editMode?.lang.errorMessage ||
+                    'Something went wrong',
+                className: (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNamePrefix + 'component-title-error ' +
+                    (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNamePrefix + 'component-title'
+            };
         }
-        board.mountedComponents.push({
-            options: options,
-            component: component,
-            cell: cell || new Layout_CellHTML({
-                id: renderTo,
-                container: componentContainer,
-                mountedComponent: component
-            })
+    }
+    const component = new ComponentClass(cell, options, board);
+    const promise = component.load()['catch']((e) => {
+        // eslint-disable-next-line no-console
+        console.error(e);
+        component.update({
+            connector: {
+                id: ''
+            },
+            title: {
+                text: board.editMode?.lang.errorMessage ||
+                    'Something went wrong',
+                className: (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNamePrefix + 'component-title-error ' +
+                    (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNamePrefix + 'component-title'
+            }
         });
+    });
+    if (cell) {
+        component.setCell(cell);
+        cell.mountedComponent = component;
+    }
+    board.mountedComponents.push({
+        options: options,
+        component: component,
+        cell: cell || new Layout_CellHTML({
+            id: renderTo,
+            container: componentContainer,
+            mountedComponent: component
+        })
+    });
+    if (cell &&
+        optionsStates?.active?.enabled &&
+        optionsStates?.active?.isActive) {
+        cell.setActiveState();
+        component.isActive = true;
+    }
+    Bindings_fireEvent(component, 'mount');
+    // Events
+    Bindings_addEvent(componentContainer, 'click', () => {
+        // Call the component's click callback
+        if (optionsEvents && optionsEvents.click) {
+            optionsEvents.click.call(component);
+        }
+        // Default behavior
         if (cell &&
-            optionsStates?.active?.enabled &&
-            optionsStates?.active?.isActive) {
+            component &&
+            componentContainer &&
+            optionsStates?.active?.enabled) {
             cell.setActiveState();
             component.isActive = true;
         }
-        Bindings_fireEvent(component, 'mount');
-        // Events
-        Bindings_addEvent(componentContainer, 'click', () => {
-            // Call the component's click callback
-            if (optionsEvents && optionsEvents.click) {
-                optionsEvents.click.call(component);
-            }
-            // Default behavior
-            if (cell &&
-                component &&
-                componentContainer &&
-                optionsStates?.active?.enabled) {
-                cell.setActiveState();
-                component.isActive = true;
-            }
-        });
-        // States
-        if (optionsStates?.hover?.enabled) {
-            componentContainer.classList.add((dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNames.cellHover);
-        }
-        Bindings_fireEvent(component, 'afterLoad');
-        return promise;
+    });
+    // States
+    if (optionsStates?.hover?.enabled) {
+        componentContainer.classList.add((dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNames.cellHover);
     }
-    Bindings.addComponent = addComponent;
-    function getCell(idOrElement, parentElement) {
-        const cell = getGUIElement(idOrElement, parentElement);
-        if (!(cell && cell.getType() === 'cell')) {
-            return;
-        }
-        return cell;
+    Bindings_fireEvent(component, 'afterLoad');
+    return promise;
+}
+function getCell(idOrElement, parentElement) {
+    const cell = getGUIElement(idOrElement, parentElement);
+    if (!(cell && cell.getType() === 'cell')) {
+        return;
     }
-    Bindings.getCell = getCell;
-    function getRow(idOrElement, parentElement) {
-        const row = getGUIElement(idOrElement, parentElement);
-        if (!(row && row.getType() === 'row')) {
-            return;
-        }
-        return row;
+    return cell;
+}
+function getRow(idOrElement, parentElement) {
+    const row = getGUIElement(idOrElement, parentElement);
+    if (!(row && row.getType() === 'row')) {
+        return;
     }
-    Bindings.getRow = getRow;
-    function getLayout(idOrElement, parentElement) {
-        const layout = getGUIElement(idOrElement, parentElement);
-        if (!(layout && layout.getType() === 'layout')) {
-            return;
-        }
-        return layout;
+    return row;
+}
+function getLayout(idOrElement, parentElement) {
+    const layout = getGUIElement(idOrElement, parentElement);
+    if (!(layout && layout.getType() === 'layout')) {
+        return;
     }
-    Bindings.getLayout = getLayout;
-})(Bindings || (Bindings = {}));
+    return layout;
+}
 /* *
  *
  *  Default Export
  *
  * */
+const Bindings = {
+    addComponent,
+    getCell,
+    getLayout,
+    getRow
+};
 /* harmony default export */ const Actions_Bindings = (Bindings);
 
 ;// ./code/dashboards/es-modules/Dashboards/Layout/Row.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -3048,7 +3055,7 @@ class Row extends Layout_GUIElement {
      * @param {Layout} layout
      * Reference to the layout instance.
      *
-     * @param {Row.Options} options
+     * @param {Options} options
      * Options for the row.
      *
      * @param {HTMLElement} rowElement
@@ -3104,7 +3111,7 @@ class Row extends Layout_GUIElement {
     /**
      * Add a new Cell instance to the row cells array.
      *
-     * @param {Cell.Options} [options]
+     * @param {CellOptions} [options]
      * Options for the row cell.
      *
      * @param {HTMLElement} [cellElement]
@@ -3134,13 +3141,17 @@ class Row extends Layout_GUIElement {
     destroy() {
         const row = this;
         const { layout } = row;
-        // Copy to avoid problem with index when shifting array of cells during
-        // the destroy.
-        const rowCells = [...row.cells];
+        const board = row.layout.board;
+        const editMode = board.editMode;
         // Destroy cells.
-        for (let i = 0, iEnd = rowCells?.length; i < iEnd; ++i) {
-            if (rowCells[i]) {
-                rowCells[i].destroy();
+        if (row.cells) {
+            // Copy to avoid problem with index when shifting array of cells
+            // during the destroy.
+            const rowCells = [...row.cells];
+            for (let i = 0, iEnd = rowCells.length; i < iEnd; ++i) {
+                if (rowCells[i]) {
+                    rowCells[i].destroy();
+                }
             }
         }
         if (row.layout) {
@@ -3150,6 +3161,10 @@ class Row extends Layout_GUIElement {
                 layout.destroy();
             }
         }
+        Row_fireEvent(editMode, 'rowDestroyed', {
+            target: row,
+            board: board
+        });
     }
     /**
      * Get the row's options.
@@ -3293,11 +3308,11 @@ class Row extends Layout_GUIElement {
 ;// ./code/dashboards/es-modules/Dashboards/Layout/Layout.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -3326,7 +3341,7 @@ class Layout extends Layout_GUIElement {
      * @param {Dashboard} board
      * Reference to the dashboard instance.
      *
-     * @param {Layout.Options} options
+     * @param {Options} options
      * Options for the layout.
      */
     constructor(board, options, parentCell) {
@@ -3390,7 +3405,7 @@ class Layout extends Layout_GUIElement {
     /**
      * Add a new Row instance to the layout rows array.
      *
-     * @param {Row.Options} options
+     * @param {RowOptions} options
      * Options of a row.
      *
      * @param {HTMLElement} rowElement
@@ -3516,11 +3531,11 @@ class Layout extends Layout_GUIElement {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/SidebarPopup.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  Pawel Lysy
@@ -3652,7 +3667,7 @@ class SidebarPopup extends Shared_BaseForm {
             editMode.resizer.disableResizer();
         }
         // Remove highlight from the row.
-        if (Layout_Cell.isCell(editMode.editCellContext) &&
+        if (isCell(editMode.editCellContext) &&
             editMode.editCellContext.row) {
             editMode.editCellContext.row.setHighlight();
         }
@@ -3816,7 +3831,7 @@ class SidebarPopup extends Shared_BaseForm {
         if (editMode.isEditOverlayActive) {
             editMode.setEditOverlay(true);
         }
-        if (Layout_Cell.isCell(editCellContext) && editCellContext.row) {
+        if (isCell(editCellContext) && editCellContext.row) {
             editMode.showToolbars(['cell', 'row'], editCellContext);
             editCellContext.row.setHighlight(true);
             editCellContext.setHighlight(true);
@@ -3824,7 +3839,7 @@ class SidebarPopup extends Shared_BaseForm {
                 editMode.resizer.setSnapPositions(editMode.editCellContext);
             }
         }
-        else if (Layout_CellHTML.isCellHTML(editCellContext) && editMode.cellToolbar) {
+        else if (isCellHTML(editCellContext) && editMode.cellToolbar) {
             editMode.cellToolbar.showToolbar(editCellContext);
             editCellContext.setHighlight();
         }
@@ -3989,11 +4004,11 @@ SidebarPopup.addRow = {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/EditContextMenu.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -4131,11 +4146,11 @@ EditContextMenu.items = EditContextMenu_merge(Menu_Menu.items, {
 ;// ./code/dashboards/es-modules/Dashboards/Actions/ContextDetection.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -4238,11 +4253,11 @@ class ContextDetection {
 ;// ./code/dashboards/es-modules/Dashboards/Actions/DragDrop.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -4274,7 +4289,7 @@ class DragDrop {
      * @param {EditMode} editMode
      * The parent editMode reference.
      *
-     * @param {DragDrop.Options} options
+     * @param {Options} options
      * Options for the DragDrop.
      */
     constructor(editMode, options) {
@@ -4454,7 +4469,7 @@ class DragDrop {
      * @param {PointerEvent} e
      * Mouse event.
      *
-     * @param {ContextDetection.ContextDetails} contextDetails
+     * @param {ContextDetails} contextDetails
      * Context details (cell, side)
      */
     onRowDrag(e, contextDetails) {
@@ -4523,7 +4538,7 @@ class DragDrop {
      * @param {PointerEvent} e
      * Mouse event.
      *
-     * @param {ContextDetection.ContextDetails} contextDetails
+     * @param {ContextDetails} contextDetails
      * Context details (cell, side)
      */
     onCellDrag(e, contextDetails) {
@@ -4543,7 +4558,7 @@ class DragDrop {
      * @param {PointerEvent} e
      * Mouse event.
      *
-     * @param {ContextDetection.ContextDetails} context
+     * @param {ContextDetails} context
      * Context details (cell, side)
      */
     onCellDragCellCtx(e, context) {
@@ -4762,7 +4777,7 @@ class Resizer {
      * @param {EditMode} editMode
      * The parent editMode reference.
      *
-     * @param {Resizer.Options} options
+     * @param {Options} options
      * Options for the Resizer.
      */
     constructor(editMode, options) {
@@ -5027,7 +5042,7 @@ class Resizer {
      * Converts the class instance to a class JSON.
      * @internal
      *
-     * @return {Resizer.JSON}
+     * @return {JSON}
      * Class JSON of this Resizer instance.
      */
     toJSON() {
@@ -5066,11 +5081,11 @@ Resizer.defaultOptions = {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/EditMode.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -5133,7 +5148,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.6.0/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.1.0/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = EditMode_merge(
@@ -5148,6 +5163,9 @@ class EditMode {
                 icon: this.iconsURLPrefix + 'menu.svg'
             },
             dragDrop: {
+                enabled: true
+            },
+            viewFullscreen: {
                 enabled: true
             },
             enabled: true,
@@ -5196,7 +5214,7 @@ class EditMode {
                 className: EditMode_EditGlobals.classNames.editOverlay
             }, {}, board.container);
             this.isEditOverlayActive = false;
-            board.fullscreen = new Dashboards.Fullscreen(board);
+            board.fullscreen = new (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).win.Dashboards.Fullscreen(board);
             if (this.customHTMLMode) {
                 board.container.classList.add((dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNames.boardContainer);
             }
@@ -5394,7 +5412,7 @@ class EditMode {
      */
     setCellEvents(cell) {
         const editMode = this;
-        if (Layout_CellHTML.isCellHTML(cell)) {
+        if (isCellHTML(cell)) {
             EditMode_addEvent(cell.container, 'mouseenter', function () {
                 if (editMode.isContextDetectionActive) {
                     editMode.mouseCellContext = cell;
@@ -5465,7 +5483,7 @@ class EditMode {
         // Hide toolbars.
         editMode.hideToolbars();
         // Remove highlight from the context row if exists.
-        if (this.editCellContext && Layout_Cell.isCell(this.editCellContext)) {
+        if (this.editCellContext && isCell(this.editCellContext)) {
             this.editCellContext.row?.setHighlight();
         }
         // TODO all buttons should be deactivated.
@@ -5695,8 +5713,8 @@ class EditMode {
     setEditCellContext(editCellContext, oldEditCellContext) {
         const editMode = this;
         const oldContext = oldEditCellContext;
-        if (Layout_CellHTML.isCellHTML(editCellContext) ||
-            Layout_CellHTML.isCellHTML(oldContext)) {
+        if (isCellHTML(editCellContext) ||
+            isCellHTML(oldContext)) {
             editMode.editCellContext = editCellContext;
             editMode.cellToolbar?.showToolbar(editCellContext);
         }
@@ -5775,11 +5793,11 @@ class EditMode {
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/Fullscreen.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -5810,19 +5828,24 @@ class Fullscreen {
     * */
     /**
      * Toggles displaying the board in fullscreen mode.
+     *
+     * @param container
+     * The container to be displayed in fullscreen mode.
      */
-    toggle() {
+    toggle(container) {
         const fullscreen = this, isOpen = this.isOpen;
-        fullscreen[isOpen ? 'close' : 'open']();
+        fullscreen[isOpen ? 'close' : 'open'](container);
     }
     /**
      * Display board in fullscreen.
      */
-    open() {
+    open(container) {
         if (this.isOpen) {
             return;
         }
-        const fullscreen = this, board = fullscreen.board;
+        const fullscreen = this;
+        const board = fullscreen.board;
+        const elementToFullscreen = container || board.boardWrapper;
         // Handle exitFullscreen() method when user clicks 'Escape' button.
         const unbindChange = Fullscreen_addEvent(board.boardWrapper.ownerDocument, // Dashboard's document
         'fullscreenchange', function () {
@@ -5838,7 +5861,7 @@ class Fullscreen {
         fullscreen.unbindFullscreenEvent = () => {
             unbindChange();
         };
-        const promise = board.boardWrapper.requestFullscreen();
+        const promise = elementToFullscreen.requestFullscreen();
         promise['catch'](() => {
             throw new Error('Full screen is not supported.');
         });
@@ -5847,7 +5870,8 @@ class Fullscreen {
      * Stops displaying the dashboard in fullscreen mode.
      */
     close() {
-        const fullscreen = this, board = fullscreen.board;
+        const fullscreen = this;
+        const board = fullscreen.board;
         // Don't fire exitFullscreen() when user exited using 'Escape' button.
         if (fullscreen.isOpen &&
             board.boardWrapper.ownerDocument instanceof Document) {

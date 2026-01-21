@@ -1,4 +1,4 @@
-import type EventCallback from '../../Core/EventCallback';
+import type { EventCallback } from '../../Core/Callback';
 import DOMElementType from '../../Core/Renderer/DOMElementType';
 import U from '../../Core/Utilities.js';
 interface ElementsFocusEventRemovers {

@@ -10,11 +10,11 @@ declare class HTMLComponent extends Component {
     /**
      * Default options of the HTML component.
      */
-    static defaultOptions: Partial<Component.Options> & import("../../../Shared/Types.js").DeepPartial<Options>;
+    static defaultOptions: Partial<import("../Component").Options> & import("../../../Shared/Types.js").DeepPartial<Options>;
     /**
      * Predefined sync config for HTML component.
      */
-    static predefinedSyncConfig: import("../Sync/Sync.js").default.PredefinedSyncConfig;
+    static predefinedSyncConfig: import("../Sync/Sync.js").PredefinedSyncConfig;
     /**
      * Array of HTML elements, declared as string or node.
      */
@@ -69,8 +69,6 @@ declare class HTMLComponent extends Component {
      * The HTML node to serialize.
      */
     private serializeNode;
-}
-declare namespace HTMLComponent {
 }
 declare module '../ComponentType' {
     interface ComponentTypeRegistry {

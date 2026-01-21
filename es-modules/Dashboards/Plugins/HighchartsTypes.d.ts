@@ -1,13 +1,11 @@
 import type * as H from 'highcharts';
-export declare namespace Axis {
-    interface ExtremesObject {
-        dataMax: number;
-        dataMin: number;
-        max: number;
-        min: number;
-        userMax?: number;
-        userMin?: number;
-    }
+export interface AxisExtremesObject {
+    dataMax: number;
+    dataMin: number;
+    max: number;
+    min: number;
+    userMax?: number;
+    userMin?: number;
 }
 export type Axis = H.Axis;
 export type AxisOptions = H.AxisOptions;

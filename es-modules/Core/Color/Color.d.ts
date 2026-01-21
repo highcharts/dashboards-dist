@@ -1,4 +1,3 @@
-import type ColorString from './ColorString';
 import type { ColorBase, ColorType } from './ColorType';
 /**
  * Handle color operations. Some object methods are chainable.
@@ -10,28 +9,6 @@ import type { ColorBase, ColorType } from './ColorType';
  * The input color.
  */
 declare class Color implements ColorBase {
-    /**
-     * Collection of named colors. Can be extended from the outside by adding
-     * colors to Highcharts.Color.names.
-     * @private
-     */
-    static names: Record<string, ColorString>;
-    /**
-     * Collection of parsers. This can be extended from the outside by pushing
-     * parsers to `Color.parsers`.
-     * @private
-     */
-    static parsers: {
-        regex: RegExp;
-        parse: (result: RegExpExecArray) => Color.RGBA;
-    }[];
-    /**
-     * Whether to use CSS `color-mix` for color handling (brightening,
-     * tweening). This can be disabled from the outside.
-     * @private
-     */
-    static useColorMix: boolean;
-    static readonly None: Color;
     /**
      * Creates a color instance out of a color string or object.
      *
@@ -45,9 +22,24 @@ declare class Color implements ColorBase {
      */
     static parse(input?: ColorType): Color;
     constructor(input: ColorType);
+    /**
+     * The original input color. This can be a color string, a gradient object,
+     * or a pattern object.
+     * @name Highcharts.Color#input
+     * @type {Highcharts.ColorType}
+     */
     input: ColorType;
-    output?: string;
+    /**
+     * The RGBA color components, if the color is a solid color.
+     * @name Highcharts.Color#rgba
+     * @type {Highcharts.RGBA}
+     */
     rgba: Color.RGBA;
+    /**
+     * The gradient stops, if the color is a gradient.
+     * @name Highcharts.Color#stops
+     * @type {Array<Highcharts.Color>|undefined}
+     */
     stops?: Array<Color>;
     /**
      * Return the color or gradient stops in the specified format

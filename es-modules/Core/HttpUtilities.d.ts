@@ -1,17 +1,63 @@
 import type JSON from './JSON';
+/**
+ * Callback function for Ajax errors.
+ *
+ * @callback Highcharts.AjaxErrorCallbackFunction
+ *
+ * @param {XMLHttpRequest} request
+ * The XHR object.
+ *
+ * @param {string|Error} error
+ * The error message.
+ */
 export interface AjaxErrorCallbackFunction {
     (request: XMLHttpRequest, error: (string | Error)): void;
 }
 export interface AjaxSettingsObject {
+    /**
+     * The payload to send.
+     */
     data?: (string | JSON.Type | JSON.Builder | JSON);
+    /**
+     * The data type expected.
+     */
     dataType?: string;
+    /**
+     * Function to call on error.
+     */
     error?: AjaxErrorCallbackFunction;
+    /**
+     * The headers; keyed on header name.
+     */
     headers?: Record<string, string>;
+    /**
+     * The response type.
+     */
     responseType?: ('arraybuffer' | 'blob' | 'document' | 'json' | 'text');
+    /**
+     * Function to call on success.
+     */
     success?: AjaxSuccessCallbackFunction;
+    /**
+     * The HTTP method to use. For example GET or POST.
+     */
     type?: ('get' | 'post' | 'update' | 'delete');
+    /**
+     * The URL to call.
+     */
     url: string;
 }
+/**
+ * Callback function for Ajax success.
+ *
+ * @callback Highcharts.AjaxSuccessCallbackFunction
+ *
+ * @param {string|Highcharts.JSONType} response
+ * The response from the Ajax call.
+ *
+ * @param {XMLHttpRequest} xhr
+ * The XHR object.
+ */
 export interface AjaxSuccessCallbackFunction {
     (response: (string | JSON.Type), xhr: XMLHttpRequest): void;
 }
@@ -39,23 +85,14 @@ declare function ajax(settings: AjaxSettingsObject): (false | undefined);
  * instead.
  */
 declare function getJSON(url: string, success: AjaxSuccessCallbackFunction): void;
-/**
- * The post utility.
- *
- * @private
- * @function Highcharts.post
- *
- * @param {string} url
- * Post URL.
- * @param {Object} data
- * Post data.
- * @param {RequestInit} [fetchOptions]
- * Additional attributes for the post request.
- */
-declare function post(url: string, data: Record<string, any>, fetchOptions?: RequestInit): Promise<void>;
-declare const HttpUtilities: {
+interface HttpUtilities {
     ajax: typeof ajax;
     getJSON: typeof getJSON;
-    post: typeof post;
-};
+}
+/**
+ * Utility functions for Ajax.
+ * @class
+ * @name Highcharts.HttpUtilities
+ */
+declare const HttpUtilities: HttpUtilities;
 export default HttpUtilities;

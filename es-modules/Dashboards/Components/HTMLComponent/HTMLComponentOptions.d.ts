@@ -1,10 +1,10 @@
-import type Component from '../Component';
+import type { ConnectorOptions as ComponentConnectorOptions, Options as ComponentOptions } from '../Component';
 import type AST from '../../../Core/Renderer/HTML/AST';
-export interface Options extends Component.Options {
+export interface Options extends ComponentOptions {
     /**
      * Connector options
      */
-    connector?: Component.ConnectorOptions;
+    connector?: ComponentConnectorOptions;
     /**
      * Array of HTML elements, declared as string or node.
      * ```

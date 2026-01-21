@@ -1,12 +1,10 @@
 import type InvertModifierOptions from '../../Data/Modifiers/InvertModifierOptions';
-import type JSON from '../JSON';
+import type { JSONObject } from '../JSON';
 import InvertModifier from '../../Data/Modifiers/InvertModifier';
-import Serializable from '../Serializable.js';
-declare namespace InvertModifierHelper {
-    interface JSON extends Serializable.JSON<'Data.InvertModifier'> {
-        options: OptionsJSON;
-    }
-    type OptionsJSON = (JSON.Object & InvertModifierOptions);
+import type { Helper as SerializableHelper, JSON as SerializableJSON } from '../Serializable';
+export interface JSON extends SerializableJSON<'Data.InvertModifier'> {
+    options: OptionsJSON;
 }
-declare const InvertModifierHelper: Serializable.Helper<InvertModifier, InvertModifierHelper.JSON>;
+export type OptionsJSON = (JSONObject & InvertModifierOptions);
+declare const InvertModifierHelper: SerializableHelper<InvertModifier, JSON>;
 export default InvertModifierHelper;

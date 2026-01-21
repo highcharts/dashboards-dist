@@ -1,10 +1,8 @@
 import type DataTableOptions from '../../Data/DataTableOptions';
-import type JSON from '../JSON';
+import type { JSONArray, JSONPrimitive } from '../JSON';
 import DataTable from '../../Data/DataTable.js';
-import Serializable from '../Serializable.js';
-declare namespace DataTableHelper {
-    type ColumnJSON = JSON.Array<JSON.Primitive>;
-    type JSON = (Serializable.JSON<'Data.DataTable'> & DataTableOptions);
-}
-declare const DataTableHelper: Serializable.Helper<DataTable, DataTableHelper.JSON>;
+import type { Helper as SerializableHelper, JSON as SerializableJSON } from '../Serializable';
+export type ColumnJSON = JSONArray<JSONPrimitive>;
+export type JSON = (SerializableJSON<'Data.DataTable'> & DataTableOptions);
+declare const DataTableHelper: SerializableHelper<DataTable, JSON>;
 export default DataTableHelper;

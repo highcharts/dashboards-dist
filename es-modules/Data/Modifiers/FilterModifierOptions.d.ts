@@ -1,5 +1,6 @@
 import type DataModifierOptions from './DataModifierOptions';
 import type DataTable from '../DataTable';
+import type { CellType as DataTableCellType, RowObject as DataTableRowObject } from '../DataTable';
 /**
  * Condition that uses an universal comparison operators.
  */
@@ -16,7 +17,7 @@ export interface ComparisonCondition {
     /**
      * Value to compare the cell with.
      */
-    value: DataTable.CellType;
+    value: DataTableCellType;
 }
 /**
  * Condition that uses string comparison operators.
@@ -80,7 +81,7 @@ export interface LogicalSingleCondition {
  * @param rowIndex
  * Index of the row in the table.
  */
-export type CallbackCondition = (row: DataTable.RowObject, table: DataTable, rowIndex: number) => boolean;
+export type CallbackCondition = (row: DataTableRowObject, table: DataTable, rowIndex: number) => boolean;
 /**
  * Serializable condition that can be used to filter rows in a table.
  */

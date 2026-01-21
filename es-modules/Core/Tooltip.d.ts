@@ -4,7 +4,6 @@ import type Pointer from './Pointer';
 import type PointerEvent from './PointerEvent';
 import type PositionObject from './Renderer/PositionObject';
 import type Series from './Series/Series';
-import type SizeObject from './Renderer/SizeObject';
 import type SVGElement from './Renderer/SVG/SVGElement';
 import type SVGRenderer from './Renderer/SVG/SVGRenderer';
 import type TooltipOptions from './TooltipOptions';
@@ -47,44 +46,87 @@ declare module './Series/SeriesOptions' {
 declare class Tooltip {
     constructor(chart: Chart, options: TooltipOptions, pointer: Pointer);
     allowShared: boolean;
+    /**
+     * Chart of the tooltip.
+     *
+     * @readonly
+     * @name Highcharts.Tooltip#chart
+     * @type {Highcharts.Chart}
+     */
     chart: Chart;
+    /**
+     * Reference to the tooltip's container, when
+     * [Highcharts.Tooltip#outside] is set to true, otherwise it's undefined.
+     *
+     * @name Highcharts.Tooltip#container
+     * @type {Highcharts.HTMLDOMElement|undefined}
+     */
     container?: globalThis.HTMLElement;
-    crosshairs: Array<null>;
     distance: number;
     followPointer?: boolean;
     hideTimer?: number;
-    isHidden: boolean;
     isSticky: boolean;
     label?: SVGElement;
     len?: number;
+    /**
+     * Used tooltip options.
+     *
+     * @readonly
+     * @name Highcharts.Tooltip#options
+     * @type {Highcharts.TooltipOptions}
+     */
     options: TooltipOptions;
+    /**
+     * Whether to allow the tooltip to render outside the chart's SVG
+     * element box. By default (false), the tooltip is rendered within the
+     * chart's SVG element, which results in the tooltip being aligned
+     * inside the chart area.
+     *
+     * @readonly
+     * @name Highcharts.Tooltip#outside
+     * @type {boolean}
+     *
+     * @todo
+     * Split tooltip does not support outside in the first iteration. Should
+     * not be too complicated to implement.
+     */
     outside: boolean;
+    /**
+     * The pointer instance.
+     *
+     * @readonly
+     * @name Highcharts.Tooltip#pointer
+     * @type {Highcharts.Pointer}
+     */
     pointer: Pointer;
+    /**
+     * Reference to the tooltip's renderer, when
+     * [Highcharts.Tooltip#outside] is set to true, otherwise it's undefined.
+     *
+     * @name Highcharts.Tooltip#renderer
+     * @type {Highcharts.SVGRenderer|undefined}
+     */
     renderer?: SVGRenderer;
+    /**
+     * When the tooltip is shared, the entire plot area will capture mouse
+     * movement or touch events.
+     *
+     * @readonly
+     * @name Highcharts.Tooltip#shared
+     * @type {boolean|undefined}
+     */
     shared?: boolean;
+    /**
+     * True, if the tooltip is split into one label per series, with the
+     * header close to the axis.
+     *
+     * @readonly
+     * @name Highcharts.Tooltip#split
+     * @type {boolean|undefined}
+     */
     split?: boolean;
     tracker?: SVGElement;
     tt?: SVGElement;
-    /**
-     * Build the body (lines) of the tooltip by iterating over the items and
-     * returning one entry for each item, abstracting this functionality allows
-     * to easily overwrite and extend it.
-     *
-     * @private
-     * @function Highcharts.Tooltip#bodyFormatter
-     */
-    bodyFormatter(points: Array<Point>): Array<string>;
-    /**
-     * Destroy the single tooltips in a split tooltip.
-     * If the tooltip is active then it is not destroyed, unless forced to.
-     *
-     * @private
-     * @function Highcharts.Tooltip#cleanSplit
-     *
-     * @param {boolean} [force]
-     * Force destroy all tooltips.
-     */
-    cleanSplit(force?: boolean): void;
     /**
      * In case no user defined formatter is given, this will be used. Note that
      * the context here is an object holding point, series, x, y etc.
@@ -105,14 +147,6 @@ declare class Tooltip {
      */
     destroy(): void;
     /**
-     * Extendable method to get the anchor position of the tooltip
-     * from a point or set of points
-     *
-     * @private
-     * @function Highcharts.Tooltip#getAnchor
-     */
-    getAnchor(points: (Point | Array<Point>), mouseEvent?: PointerEvent): Array<number>;
-    /**
      * Get the CSS class names for the tooltip's label. Styles the label
      * by `colorIndex` or user-defined CSS.
      *
@@ -131,12 +165,6 @@ declare class Tooltip {
      * Tooltip label
      */
     getLabel({ anchorX, anchorY }?: Partial<SVGElement>): SVGElement;
-    /**
-     * Get the total area available area to place the tooltip
-     *
-     * @private
-     */
-    getPlayingField(): SizeObject;
     /**
      * Place the tooltip in a chart without spilling over and not covering the
      * point itself.
@@ -157,13 +185,6 @@ declare class Tooltip {
      */
     getPosition(boxWidth: number, boxHeight: number, point: Tooltip.PositionerPointObject | Point): PositionObject;
     /**
-     * Place the tooltip when `position.fixed` is true. This is called both for
-     * single tooltips, and for partial tooltips when `split`.
-     *
-     * @private
-     */
-    getFixedPosition(boxWidth: number, boxHeight: number, point: Point | Tooltip.PositionerPointObject): PositionObject;
-    /**
      * Hides the tooltip with a fade out animation.
      *
      * @function Highcharts.Tooltip#hide
@@ -174,35 +195,7 @@ declare class Tooltip {
      *        the fade out animation.
      */
     hide(delay?: number): void;
-    /**
-     * Initialize tooltip.
-     *
-     * @private
-     * @function Highcharts.Tooltip#init
-     *
-     * @param {Highcharts.Chart} chart
-     *        The chart instance.
-     *
-     * @param {Highcharts.TooltipOptions} options
-     *        Tooltip options.
-     */
-    init(chart: Chart, options: TooltipOptions): void;
     shouldStickOnContact(pointerEvent?: PointerEvent): boolean;
-    /**
-     * Moves the tooltip with a soft animation to a new position.
-     *
-     * @private
-     * @function Highcharts.Tooltip#move
-     *
-     * @param {number} x
-     *
-     * @param {number} y
-     *
-     * @param {number} anchorX
-     *
-     * @param {number} anchorY
-     */
-    move(x: number, y: number, anchorX: number, anchorY: number): void;
     /**
      * Refresh the tooltip's text and position.
      *
@@ -217,38 +210,6 @@ declare class Tooltip {
      */
     refresh(pointOrPoints: (Point | Array<Point>), mouseEvent?: PointerEvent): void;
     /**
-     * Render the split tooltip. Loops over each point's text and adds
-     * a label next to the point, then uses the distribute function to
-     * find best non-overlapping positions.
-     *
-     * @private
-     * @function Highcharts.Tooltip#renderSplit
-     *
-     * @param {string|Array<(boolean|string)>} labels
-     *
-     * @param {Array<Highcharts.Point>} points
-     */
-    renderSplit(labels: (string | Array<(boolean | string)>), points: Array<Point>): void;
-    /**
-     * If the `stickOnContact` option is active, this will add a tracker shape.
-     *
-     * @private
-     * @function Highcharts.Tooltip#drawTracker
-     */
-    private drawTracker;
-    /**
-     * @private
-     */
-    styledModeFormat(formatString: string): string;
-    /**
-     * Format the footer/header of the tooltip
-     * #3397: abstraction to enable formatting of footer and header
-     *
-     * @private
-     * @function Highcharts.Tooltip#headerFooterFormatter
-     */
-    headerFooterFormatter(point: Point, isFooter?: boolean): string;
-    /**
      * Updates the tooltip with the provided tooltip options.
      *
      * @function Highcharts.Tooltip#update
@@ -257,15 +218,6 @@ declare class Tooltip {
      *        The tooltip options to update.
      */
     update(options: TooltipOptions): void;
-    /**
-     * Find the new position and perform the move
-     *
-     * @private
-     * @function Highcharts.Tooltip#updatePosition
-     *
-     * @param {Highcharts.Point} point
-     */
-    updatePosition(point: Tooltip.PositionerPointObject): void;
 }
 declare namespace Tooltip {
     interface FormatterCallbackFunction {
@@ -289,9 +241,5 @@ declare namespace Tooltip {
         ttBelow?: boolean;
     }
     type ShapeValue = ('callout' | 'circle' | 'rect');
-    /**
-     * @private
-     */
-    function compose(PointerClass: typeof Pointer): void;
 }
 export default Tooltip;

@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -101,9 +101,9 @@ class NavigatorComponent extends Component {
                 return [column, columnsAssignment];
             }
         }
-        const connector = this.getFirstConnector();
-        if (connector) {
-            const columns = connector.getTable().getColumnIds();
+        const table = this.getDataTable();
+        if (table) {
+            const columns = table.getColumnIds();
             if (columns.length) {
                 return [columns[0], 'y'];
             }
@@ -175,9 +175,9 @@ class NavigatorComponent extends Component {
     /** @private */
     renderNavigator() {
         const chart = this.chart;
-        const connector = this.getFirstConnector();
-        if (connector) {
-            const table = connector.getTable(), column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
+        const table = this.getDataTable();
+        if (table) {
+            const column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
             let data;
             if (this.sync.syncConfig.crossfilter?.enabled) {
                 data = this.generateCrossfilterData();
@@ -199,7 +199,7 @@ class NavigatorComponent extends Component {
      */
     generateCrossfilterData() {
         const crossfilterOptions = this.sync.syncConfig.crossfilter;
-        const table = this.getFirstConnector()?.getTable();
+        const table = this.getDataTable();
         const columnValues = table?.getColumn(this.getColumnAssignment()[0], true) || [];
         if (!table || columnValues.length < 1 || !crossfilterOptions) {
             return [];

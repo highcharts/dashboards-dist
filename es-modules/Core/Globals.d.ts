@@ -1,4 +1,3 @@
-import type ButtonThemeObject from './Renderer/SVG/ButtonThemeObject';
 import type GlobalsBase from './GlobalsBase';
 declare global {
     type AnyRecord = Record<string, any>;
@@ -35,16 +34,6 @@ declare global {
         webkitHidden: boolean;
     }
     interface Element {
-        /**
-         * @private
-         * @requires Core/Renderer/SVG/SVGElement
-         */
-        gradient?: string;
-        /**
-         * @private
-         * @requires Core/Renderer/SVG/SVGElement
-         */
-        radialReference?: Array<number>;
         setAttribute(qualifiedName: string, value: (boolean | number | string)): void;
         /** @deprecated */
         currentStyle?: ElementCSSInlineStyle;
@@ -63,14 +52,18 @@ declare global {
         parentNode: HTMLElement;
     }
     interface Math {
+        /**
+         * Easing definition
+         *
+         * @param pos
+         * Current position, ranging from 0 to 1.
+         *
+         * @return
+         * Ease result
+         */
         easeInOutSine(pos: number): number;
     }
     interface SVGElement {
-        /**
-         * @private
-         * @requires Core/Renderer/SVG/SVGElement
-         */
-        cutHeight?: number;
         parentNode: SVGElement;
     }
     interface TouchList {
@@ -84,21 +77,6 @@ declare global {
         webkitAudioContext?: typeof AudioContext;
         /** @deprecated */
         webkitURL?: typeof URL;
-    }
-    interface GlobalOptions {
-        buttonTheme: ButtonThemeObject;
-        /** @deprecated */
-        canvasToolsURL?: string;
-        /** @deprecated */
-        Date?: Function;
-        /** @deprecated */
-        getTimezoneOffset?: Function;
-        /** @deprecated */
-        timezone?: string;
-        /** @deprecated */
-        timezoneOffset?: number;
-        /** @deprecated */
-        useUTC?: boolean;
     }
     namespace Intl {
         interface DateTimeFormat {

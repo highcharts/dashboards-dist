@@ -1,10 +1,11 @@
 /* *
  *
- *  (c) 2015-2025 Oystein Moseng
+ *  (c) 2015-2026 Highsoft AS
+ *  Author: Oystein Moseng
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Mixin for downloading content in the browser
  *
@@ -33,7 +34,7 @@ const domurl = win.URL || win.webkitURL || win;
 /**
  * Convert base64 dataURL to Blob if supported, otherwise returns undefined.
  *
- * @private
+ * @internal
  * @function Highcharts.dataURLtoBlob
  *
  * @param {string} dataURL
@@ -42,7 +43,7 @@ const domurl = win.URL || win.webkitURL || win;
  * @return {string | undefined}
  * Blob.
  */
-function dataURLtoBlob(dataURL) {
+export function dataURLtoBlob(dataURL) {
     const parts = dataURL
         .replace(/filename=.*;/, '')
         .match(/data:([^;]*)(;base64)?,([A-Z+\d\/]+)/i);
@@ -65,7 +66,7 @@ function dataURLtoBlob(dataURL) {
 /**
  * Download a data URL in the browser. Can also take a blob as first param.
  *
- * @private
+ * @internal
  * @function Highcharts.downloadURL
  *
  * @param {string | global.URL} dataURL
@@ -73,7 +74,7 @@ function dataURLtoBlob(dataURL) {
  * @param {string} filename
  * The name of the resulting file (w/extension).
  */
-function downloadURL(dataURL, filename) {
+export function downloadURL(dataURL, filename) {
     const nav = win.navigator, a = doc.createElement('a');
     // IE specific blob implementation
     // Don't use for normal dataURLs
@@ -124,13 +125,13 @@ function downloadURL(dataURL, filename) {
 /**
  * Asynchronously downloads a script from a provided location.
  *
- * @private
+ * @internal
  * @function Highcharts.getScript
  *
  * @param {string} scriptLocation
  * The location for the script to fetch.
  */
-function getScript(scriptLocation) {
+export function getScript(scriptLocation) {
     return new Promise((resolve, reject) => {
         const head = doc.getElementsByTagName('head')[0], script = doc.createElement('script');
         // Set type and location for the script
@@ -153,7 +154,7 @@ function getScript(scriptLocation) {
 /**
  * Get a blob object from content, if blob is supported.
  *
- * @private
+ * @internal
  * @function Highcharts.getBlobFromContent
  *
  * @param {string} content
@@ -167,7 +168,7 @@ function getScript(scriptLocation) {
  * @requires modules/exporting
  * @requires modules/export-data
  */
-function getBlobFromContent(content, type) {
+export function getBlobFromContent(content, type) {
     const nav = win.navigator, domurl = win.URL || win.webkitURL || win;
     try {
         // MS specific
@@ -189,10 +190,12 @@ function getBlobFromContent(content, type) {
  *  Default Export
  *
  * */
+/** @internal */
 const DownloadURL = {
     dataURLtoBlob,
     downloadURL,
     getBlobFromContent,
     getScript
 };
+/** @internal */
 export default DownloadURL;

@@ -1,11 +1,11 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type SortModifierOptions from './SortModifierOptions';
 import DataModifier from './DataModifier.js';
-import DataTable from '../DataTable.js';
+import DataTable, { type Row as DataTableRow } from '../DataTable.js';
 /** @private */
 interface SortRowReference {
     index: number;
-    row: DataTable.Row;
+    row: DataTableRow;
 }
 /**
  * Sort table rows according to values of a column.
@@ -22,7 +22,7 @@ declare class SortModifier extends DataModifier {
     /**
      * Constructs an instance of the sort modifier.
      *
-     * @param {Partial<SortDataModifier.Options>} [options]
+     * @param {Partial<SortModifierOptions>} [options]
      * Options to configure the sort modifier.
      */
     constructor(options?: Partial<SortModifierOptions>);
@@ -35,16 +35,11 @@ declare class SortModifier extends DataModifier {
      * @param {Highcharts.DataTable} table
      * Table with rows to reference.
      *
-     * @return {Array<SortModifier.RowReference>}
+     * @return {Array<SortRowReference>}
      * Array of row references.
      */
     protected getRowReferences(table: DataTable): Array<SortRowReference>;
-    modifyTable(table: DataTable, eventDetail?: DataEvent.Detail): DataTable;
-}
-/**
- * Additionally provided types for modifier events and options.
- */
-declare namespace SortModifier {
+    modifyTable(table: DataTable, eventDetail?: DataEventDetail): DataTable;
 }
 declare module './DataModifierType' {
     interface DataModifierTypes {

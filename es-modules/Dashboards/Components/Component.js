@@ -1,20 +1,21 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
  *  - Wojciech Chmiel
  *  - Gøran Slettemark
  *  - Sophie Bremer
+ *  - Dawid Dragula
  *
  * */
 'use strict';
-import Cell from '../Layout/Cell.js';
+import { isCell } from '../Layout/Cell.js';
 import CallbackRegistry from '../CallbackRegistry.js';
 import ConnectorHandler from './ConnectorHandler.js';
 import EditableOptions from './EditableOptions.js';
@@ -33,15 +34,7 @@ const { deepClone, uniqueKey } = DU;
  *
  * */
 /**
- *
- * Abstract Class of component.
- *
- * @internal
- *
- */
-/**
- * Abstract Class of component.
- * @internal
+ * Abstract class of component.
  */
 class Component {
     /* *
@@ -50,15 +43,17 @@ class Component {
      *
      * */
     /**
-     *
      * Creates HTML text element like header or title
      *
      * @param tagName
      * HTML tag name used as wrapper of text like `h2` or `p`.
+     *
      * @param elementName
      * Name of element
+     *
      * @param textOptions
      * The options for the component
+     *
      * @returns
      * HTML object when title is created, otherwise undefined
      *
@@ -95,35 +90,31 @@ class Component {
      */
     constructor(cell, options, board) {
         /**
-         * The connector handlers for the component.
+         * The connector handlers for the component. They are used to handle the
+         * connector options and data tables.
          */
         this.connectorHandlers = [];
         /**
          * Registry of callbacks registered on the component. Used in the Highcharts
          * component to keep track of chart events.
-         *
          * @internal
          */
         this.callbackRegistry = new CallbackRegistry();
         /**
          * Event listeners tied to the parent cell. Used for rendering/resizing the
          * component on interactions.
-         *
          * @internal
          */
         this.cellListeners = [];
         /**
          * Timeouts for calls to `Component.resizeTo()`.
-         *
          * @internal
-        /* *
          */
         this.resizeTimeouts = [];
         /**
          * Timeouts for resizing the content. I.e. `chart.setSize()`.
-         *
          * @internal
-         * */
+         */
         this.innerResizeTimeouts = [];
         const renderTo = options.renderTo;
         this.board = board || cell?.row?.layout?.board || {};
@@ -163,12 +154,12 @@ class Component {
         if (cell) {
             this.attachCellListeners();
             this.on('update', () => {
-                if (Cell.isCell(this.cell)) {
+                if (isCell(this.cell)) {
                     this.cell.setLoadingState();
                 }
             });
             this.on('afterRender', () => {
-                if (Cell.isCell(this.cell)) {
+                if (isCell(this.cell)) {
                     this.cell.setLoadingState(false);
                 }
             });
@@ -192,13 +183,36 @@ class Component {
      * Returns the first connector of the component if it exists.
      *
      * @internal
+     * @deprecated
      */
     getFirstConnector() {
         return this.connectorHandlers[0]?.connector;
     }
     /**
-     * Setup listeners on cell/other things up the chain
+     * Returns the data table connected to the component by the `connectorId`
+     * and `dataTableKey`. If both args are undefined, the first data table is
+     * returned.
      *
+     * @param connectorId
+     * The id of the connector.
+     *
+     * @param dataTableKey
+     * The key of the data table within the connector.
+     *
+     * @returns
+     * The data table, or undefined if no matching handler is found.
+     */
+    getDataTable(connectorId, dataTableKey) {
+        for (const handler of this.connectorHandlers) {
+            if ((!connectorId ||
+                handler.options.id === connectorId) && (!dataTableKey ||
+                handler.options.dataTableKey === dataTableKey)) {
+                return handler.dataTable;
+            }
+        }
+    }
+    /**
+     * Setup listeners on cell/other things up the chain
      * @internal
      */
     attachCellListeners() {
@@ -210,7 +224,7 @@ class Component {
             }
         }
         if (this.cell &&
-            Cell.isCell(this.cell) &&
+            isCell(this.cell) &&
             Object.keys(this.cell).length) {
             const board = this.cell.row.layout.board;
             this.cellListeners.push(
@@ -234,8 +248,10 @@ class Component {
     }
     /**
      * Set a parent cell.
+     *
      * @param cell
      * Instance of a cell.
+     *
      * @param resize
      * Flag that allow to resize the component.
      *
@@ -271,6 +287,7 @@ class Component {
      *
      * @returns
      * Current height as number.
+     *
      * @internal
      */
     getContentHeight() {
@@ -285,10 +302,12 @@ class Component {
     }
     /**
      * Resize the component
+     *
      * @param width
      * The width to set the component to.
      * Can be pixels, a percentage string or null.
      * Null will unset the style
+     *
      * @param height
      * The height to set the component to.
      * Can be pixels, a percentage string or null.
@@ -315,8 +334,10 @@ class Component {
      * It's a temporary alternative for the `resize` method. It sets the strict
      * pixel height for the component so that the content can be distributed in
      * the right way, without looping the resizers in the content and container.
+     *
      * @param width
      * The width to set the component to.
+     *
      * @param height
      * The height to set the component to.
      */
@@ -343,6 +364,7 @@ class Component {
     }
     /**
      * Adjusts size of component to parent's cell size when animation is done.
+     *
      * @param element
      * HTML element that is resized.
      */
@@ -363,6 +385,7 @@ class Component {
     }
     /**
      * Handles updating via options.
+     *
      * @param newOptions
      * The options to apply.
      *
@@ -385,14 +408,19 @@ class Component {
         let connectorsHaveChanged = connectorOptions.length !== this.connectorHandlers.length;
         if (!connectorsHaveChanged) {
             for (let i = 0, iEnd = connectorOptions.length; i < iEnd; i++) {
-                const oldOpt = this.connectorHandlers[i]?.options;
-                const newOpt = connectorOptions[i];
-                if (newOpt?.id !== oldOpt?.id ||
-                    newOpt?.dataTableKey !== oldOpt?.dataTableKey) {
+                const oldOptions = this.connectorHandlers[i]?.options;
+                const newOptions = connectorOptions[i];
+                // Check if the connector id has changed.
+                if (oldOptions.id !== newOptions.id) {
                     connectorsHaveChanged = true;
                     break;
                 }
-                this.connectorHandlers[i].updateOptions(connectorOptions[i]);
+                // Check if the data table key has changed.
+                if (oldOptions.dataTableKey !== newOptions.dataTableKey) {
+                    connectorsHaveChanged = true;
+                    break;
+                }
+                this.connectorHandlers[i].updateOptions(newOptions);
             }
         }
         if (connectorsHaveChanged) {
@@ -552,7 +580,20 @@ class Component {
         removeEvent(this);
         this.element.remove();
     }
-    /** @internal */
+    /**
+     * Adds an event listener to the component.
+     *
+     * @param type
+     * The type of event to listen for.
+     *
+     * @param callback
+     * The callback to call when the event is triggered.
+     *
+     * @returns
+     * The function to remove the event listener.
+     *
+     * @internal
+     */
     on(type, callback) {
         return addEvent(this, type, callback);
     }
@@ -610,7 +651,7 @@ class Component {
 }
 /* *
  *
- *  Properties
+ *  Static Properties
  *
  * */
 /** @internal */

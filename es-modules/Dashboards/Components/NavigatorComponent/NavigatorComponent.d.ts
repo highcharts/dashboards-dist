@@ -15,7 +15,7 @@ declare class NavigatorComponent extends Component {
     /**
      * Predefined sync configuration for the Navigator component.
      */
-    static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
+    static predefinedSyncConfig: import("../Sync/Sync").PredefinedSyncConfig;
     constructor(cell: Cell, options: Options);
     /**
      * Reference to the navigator chart.

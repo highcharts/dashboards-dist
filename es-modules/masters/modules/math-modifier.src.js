@@ -1,11 +1,13 @@
+// SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards Math @product.version@ (@product.date@)
+ * @license Highcharts Dashboards Math 4.1.0 (2026-01-21)
  * @module dashboards/modules/math-modifier
  * @requires dashboards
  *
- * (c) 2009-2025 Highsoft AS
+ * (c) 2009-2026 Highsoft AS
  *
- * License: www.highcharts.com/license
+ * A commercial license may be required depending on use.
+ * See www.highcharts.com/license
  */
 'use strict';
 /* *

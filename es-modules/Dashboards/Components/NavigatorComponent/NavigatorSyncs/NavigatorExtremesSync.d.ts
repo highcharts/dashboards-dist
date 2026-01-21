@@ -1,6 +1,6 @@
-import type Sync from '../../Sync/Sync';
+import type { OptionsEntry, SyncPair } from '../../Sync/Sync';
 declare const _default: {
-    defaultOptions: Sync.OptionsEntry;
-    syncPair: Sync.SyncPair;
+    defaultOptions: OptionsEntry;
+    syncPair: SyncPair;
 };
 export default _default;

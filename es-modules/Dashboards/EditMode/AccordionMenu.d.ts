@@ -1,5 +1,5 @@
 import type Component from '../Components/Component';
-import type EditableOptions from '../Components/EditableOptions';
+import type { Options as EditableOption } from '../Components/EditableOptions';
 /**
  * Accordion menu class.
  */
@@ -52,7 +52,7 @@ declare class AccordionMenu {
      * @param component
      * the component for which the menu should be rendered.
      */
-    renderAccordion(options: EditableOptions.Options, parentNode: HTMLElement, component: Component): void;
+    renderAccordion(options: EditableOption, parentNode: HTMLElement, component: Component): void;
     /**
      * Render nested menu for the component.
      *
@@ -65,7 +65,7 @@ declare class AccordionMenu {
      * @param component
      * The component instance for the options should be rendered
      */
-    renderNested(parentElement: HTMLElement, options: EditableOptions.Options, component: Component): void;
+    renderNested(parentElement: HTMLElement, options: EditableOption, component: Component): void;
     /**
      * Closes the sidebar discarding changes. If there are any changes, it will
      * show a confirmation popup. If no changes, it will close the sidebar.

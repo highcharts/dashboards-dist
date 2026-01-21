@@ -1,6 +1,4 @@
 import type { HTMLDOMElement } from '../Renderer/DOMElementType';
-import type MapPoint from '../../Series/Map/MapPoint';
-import type MapPointer from '../../Maps/MapPointer';
 import type MapView from '../../Maps/MapView';
 import type Options from '../Options';
 import type SVGPath from '../Renderer/SVG/SVGPath';
@@ -71,11 +69,18 @@ declare class MapChart extends Chart {
      *        Keep this chart position stationary if possible.
      */
     mapZoom(howMuch?: number, xProjected?: number, yProjected?: number, chartX?: number, chartY?: number): void;
+    /**
+     * A wrapper for the chart's update function that will additionally run
+     * recommendMapView on chart.map change.
+     *
+     * @function Highcharts.MapChart#update
+     *
+     * @param {Highcharts.Options} options
+     *        The chart options.
+     */
     update(options: Partial<Options>): void;
 }
 interface MapChart extends Chart {
-    hoverPoint?: MapPoint;
-    pointer: MapPointer;
 }
 declare namespace MapChart {
     /**

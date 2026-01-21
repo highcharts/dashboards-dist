@@ -1,4 +1,4 @@
-import type DataEvent from './DataEvent';
+import type { DataEventCallback, DataEventEmitter } from './DataEvent';
 import type DataConnectorType from './Connectors/DataConnectorType';
 import type { DataConnectorTypeOptions } from './Connectors/DataConnectorType';
 import type DataPoolOptions from './DataPoolOptions';
@@ -11,7 +11,7 @@ import type DataPoolOptions from './DataPoolOptions';
  * @param {DataPoolOptions} options
  * Pool options with all connectors.
  */
-declare class DataPool implements DataEvent.Emitter<DataPool.Event> {
+declare class DataPool implements DataEventEmitter<Event> {
     protected static readonly defaultOptions: DataPoolOptions;
     /**
      * Internal dictionary with the connectors and their IDs.
@@ -31,10 +31,10 @@ declare class DataPool implements DataEvent.Emitter<DataPool.Event> {
      * Emits an event on this data pool to all registered callbacks of the given
      * event.
      *
-     * @param {DataTable.Event} e
+     * @param {DataTableEvent} e
      * Event object with event information.
      */
-    emit(e: DataPool.Event): void;
+    emit(e: Event): void;
     /**
      * Loads the connector.
      *
@@ -110,21 +110,14 @@ declare class DataPool implements DataEvent.Emitter<DataPool.Event> {
      * @return {Function}
      * Function to unregister callback from the event.
      */
-    on<T extends DataPool.Event['type']>(type: T, callback: DataEvent.Callback<this, Extract<DataPool.Event, {
+    on<T extends Event['type']>(type: T, callback: DataEventCallback<this, Extract<Event, {
         type: T;
     }>>): Function;
-    /**
-     * Sets connector options under the specified `options.id`.
-     *
-     * @param options
-     * Connector options to set.
-     */
-    setConnectorOptions(options: DataConnectorTypeOptions): void;
+    setConnectorOptions(options: DataConnectorTypeOptions, update?: boolean): void;
+    setConnectorOptions(options: DataConnectorTypeOptions, update: true): Promise<void>;
 }
-declare namespace DataPool {
-    interface Event {
-        type: ('load' | 'afterLoad' | 'setConnectorOptions' | 'afterSetConnectorOptions');
-        options: DataConnectorTypeOptions;
-    }
+export interface Event {
+    type: ('load' | 'afterLoad' | 'setConnectorOptions' | 'afterSetConnectorOptions');
+    options: DataConnectorTypeOptions;
 }
 export default DataPool;

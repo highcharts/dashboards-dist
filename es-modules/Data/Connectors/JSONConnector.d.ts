@@ -1,7 +1,7 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type JSONConnectorOptions from './JSONConnectorOptions';
 import type { JSONData } from '../Converters/JSONConverterOptions';
-import DataConnector from './DataConnector.js';
+import DataConnector, { type Event as DataConnectorEvent } from './DataConnector.js';
 import JSONConverter from '../Converters/JSONConverter.js';
 /**
  * Class that handles creating a DataConnector from JSON structure
@@ -30,31 +30,26 @@ declare class JSONConnector extends DataConnector {
      * Overrides the DataConnector method. Emits an event on the connector to
      * all registered callbacks of this event.
      *
-     * @param {JSONConnector.Event} e
+     * @param {Event} e
      * Event object containing additional event information.
      */
-    emit(e: JSONConnector.Event): void;
+    emit(e: Event): void;
     /**
      * Initiates the loading of the JSON source to the connector
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits JSONConnector#load
      * @emits JSONConnector#afterLoad
      */
-    load(eventDetail?: DataEvent.Detail): Promise<this>;
+    load(eventDetail?: DataEventDetail): Promise<this>;
 }
 /**
- * Types for class-specific options and events.
+ * Event objects fired from JSONConnector events.
  */
-declare namespace JSONConnector {
-    /**
-     * Event objects fired from JSONConnector events.
-     */
-    interface Event extends DataConnector.Event {
-        readonly data?: JSONData;
-    }
+export interface Event extends DataConnectorEvent {
+    readonly data?: JSONData;
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

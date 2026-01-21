@@ -1,28 +1,48 @@
 import type { DataConverterTypes } from './DataConverterType';
-import type DataEvent from '../DataEvent';
+import type { DataEvent, DataEventCallback, DataEventEmitter } from '../DataEvent';
 import type { ColumnIdsOptions } from '../Connectors/JSONConnectorOptions';
-import DataTable from '../DataTable.js';
+import DataTable, { type Column as DataTableColumn } from '../DataTable.js';
 /**
  * Base class providing an interface and basic methods for a DataConverter
  *
  * @private
  */
-declare class DataConverter implements DataEvent.Emitter<DataConverter.Event> {
+declare class DataConverter implements DataEventEmitter<Event> {
     /**
      * Default options
      */
-    protected static readonly defaultOptions: DataConverter.Options;
+    protected static readonly defaultOptions: Options;
+    /**
+     * Registry as a record object with converter names and their class.
+     */
+    static types: DataConverterTypes;
+    /**
+     * Adds a converter class to the registry.
+     *
+     * @private
+     *
+     * @param {string} key
+     * Registry key of the converter class.
+     *
+     * @param {DataConverterTypes} DataConverterClass
+     * Connector class (aka class constructor) to register.
+     *
+     * @return {boolean}
+     * Returns true, if the registration was successful. False is returned, if
+     * their is already a converter registered with this key.
+     */
+    static registerType<T extends keyof DataConverterTypes>(key: T, DataConverterClass: DataConverterTypes[T]): boolean;
     /**
      * Constructs an instance of the DataConverter.
      *
-     * @param {DataConverter.UserOptions} [options]
+     * @param {UserOptions} [options]
      * Options for the DataConverter.
      */
-    constructor(options?: DataConverter.UserOptions);
+    constructor(options?: UserOptions);
     /**
      * A collection of available date formats.
      */
-    dateFormats: Record<string, DataConverter.DateFormatObject>;
+    dateFormats: Record<string, DateFormatObject>;
     /**
      * Regular expression used in the trim method to change a decimal point.
      */
@@ -30,7 +50,7 @@ declare class DataConverter implements DataEvent.Emitter<DataConverter.Event> {
     /**
      * Options for the DataConverter.
      */
-    readonly options: DataConverter.Options;
+    readonly options: Options;
     /**
      * Converts a string value based on its guessed type.
      *
@@ -40,7 +60,7 @@ declare class DataConverter implements DataEvent.Emitter<DataConverter.Event> {
      * @return {number | string | Date}
      * The converted value.
      */
-    convertByType(value: DataConverter.Type): number | string | Date;
+    convertByType(value: Type): number | string | Date;
     /**
      * Tries to guess the date format
      *  - Check if either month candidate exceeds 12
@@ -63,23 +83,23 @@ declare class DataConverter implements DataEvent.Emitter<DataConverter.Event> {
     /**
      * Emits an event on the DataConverter instance.
      *
-     * @param {DataConverter.Event} [e]
+     * @param {Event} [e]
      * Event object containing additional event data
      */
-    emit(e: DataConverter.Event): void;
+    emit(e: Event): void;
     /**
      * Registers a callback for a specific event.
      *
      * @param {string} type
      * Event type as a string.
      *
-     * @param {DataEventEmitter.Callback} callback
+     * @param {DataEventCallback} callback
      * Function to register for an modifier callback.
      *
      * @return {Function}
      * Function to unregister callback from the modifier event.
      */
-    on<T extends DataConverter.Event['type']>(type: T, callback: DataEvent.Callback<this, Extract<DataConverter.Event, {
+    on<T extends Event['type']>(type: T, callback: DataEventCallback<this, Extract<Event, {
         type: T;
     }>>): Function;
     /**
@@ -97,72 +117,50 @@ declare class DataConverter implements DataEvent.Emitter<DataConverter.Event> {
 /**
  * Additionally provided types for events and conversion.
  */
-declare namespace DataConverter {
-    /**
-     * The basic event object for a DataConverter instance.
-     * Valid types are `parse`, `afterParse`, and `parseError`
-     */
-    interface Event extends DataEvent {
-        readonly type: ('export' | 'afterExport' | 'exportError' | 'parse' | 'afterParse' | 'parseError');
-        readonly columns: DataTable.Column[];
-        readonly error?: string | Error;
-        readonly headers: string[] | ColumnIdsOptions;
-    }
-    interface DateFormatCallbackFunction {
-        (match: ReturnType<string['match']>): number;
-    }
-    interface DateFormatObject {
-        alternative?: string;
-        parser: DateFormatCallbackFunction;
-        regex: RegExp;
-    }
-    /**
-     * The shared options for all DataConverter instances
-     */
-    interface Options {
-        dateFormat?: string;
-        decimalPoint?: string;
-        firstRowAsNames: boolean;
-        /**
-         * A function to parse string representations of dates into JavaScript
-         * timestamps. If not set, the default implementation will be used.
-         */
-        parseDate?: DataConverter.ParseDateFunction;
-    }
-    /**
-     * A function to parse string representations of dates
-     * into JavaScript timestamps.
-     */
-    interface ParseDateFunction {
-        (dateValue: string): number;
-    }
-    /**
-     * Contains supported types to convert values from and to.
-     */
-    type Type = (boolean | null | number | string | DataTable | Date | undefined);
-    /**
-     * Options of the DataConverter.
-     */
-    type UserOptions = Partial<Options>;
-    /**
-     * Registry as a record object with connector names and their class.
-     */
-    const types: DataConverterTypes;
-    /**
-     * Adds a converter class to the registry.
-     *
-     * @private
-     *
-     * @param {string} key
-     * Registry key of the converter class.
-     *
-     * @param {DataConverterTypes} DataConverterClass
-     * Connector class (aka class constructor) to register.
-     *
-     * @return {boolean}
-     * Returns true, if the registration was successful. False is returned, if
-     * their is already a converter registered with this key.
-     */
-    function registerType<T extends keyof DataConverterTypes>(key: T, DataConverterClass: DataConverterTypes[T]): boolean;
+/**
+ * The basic event object for a DataConverter instance.
+ * Valid types are `parse`, `afterParse`, and `parseError`
+ */
+export interface Event extends DataEvent {
+    readonly type: ('export' | 'afterExport' | 'exportError' | 'parse' | 'afterParse' | 'parseError');
+    readonly columns: DataTableColumn[];
+    readonly error?: string | Error;
+    readonly headers: string[] | ColumnIdsOptions;
 }
+export interface DateFormatCallbackFunction {
+    (match: ReturnType<string['match']>): number;
+}
+export interface DateFormatObject {
+    alternative?: string;
+    parser: DateFormatCallbackFunction;
+    regex: RegExp;
+}
+/**
+ * The shared options for all DataConverter instances
+ */
+export interface Options {
+    dateFormat?: string;
+    decimalPoint?: string;
+    firstRowAsNames: boolean;
+    /**
+     * A function to parse string representations of dates into JavaScript
+     * timestamps. If not set, the default implementation will be used.
+     */
+    parseDate?: ParseDateFunction;
+}
+/**
+ * A function to parse string representations of dates
+ * into JavaScript timestamps.
+ */
+export interface ParseDateFunction {
+    (dateValue: string): number;
+}
+/**
+ * Contains supported types to convert values from and to.
+ */
+export type Type = (boolean | null | number | string | DataTable | Date | undefined);
+/**
+ * Options of the DataConverter.
+ */
+export type UserOptions = Partial<Options>;
 export default DataConverter;

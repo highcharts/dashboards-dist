@@ -33,7 +33,7 @@ declare class Time extends TimeBase {
 declare namespace Time {
     interface DateTimeFormatOptions extends Intl.DateTimeFormatOptions {
         dateStyle?: 'full' | 'long' | 'medium' | 'short';
-        fractionalSecondDigits?: number;
+        fractionalSecondDigits?: 1 | 2 | 3;
         prefix?: string;
         suffix?: string;
         timeStyle?: 'full' | 'long' | 'medium' | 'short';
@@ -59,8 +59,17 @@ declare namespace Time {
         (this: Time, timestamp: number): string;
     }
     interface TimeNormalizedObject {
+        /**
+         * The count of the interval.
+         */
         count: number;
+        /**
+         * The name of the time unit.
+         */
         unitName: TimeUnit;
+        /**
+         * The interval in axis values (ms).
+         */
         unitRange: number;
     }
     type TimeUnit = ('millisecond' | 'second' | 'minute' | 'hour' | 'day' | 'week' | 'month' | 'year');

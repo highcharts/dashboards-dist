@@ -1,7 +1,7 @@
-import type Sync from '../../Sync/Sync';
+import type { SyncPair } from '../../Sync/Sync';
 import type { CrossfilterSyncOptions } from '../NavigatorComponentOptions';
 declare const _default: {
     defaultOptions: CrossfilterSyncOptions;
-    syncPair: Sync.SyncPair;
+    syncPair: SyncPair;
 };
 export default _default;

@@ -3,6 +3,7 @@ import type Cell from '../../Layout/Cell';
 import type { Chart, Options as ChartOptions, Highcharts as H } from '../../Plugins/HighchartsTypes';
 import type { ColumnAssignmentOptions, ConstructorType, Options } from './HighchartsComponentOptions';
 import type SidebarPopup from '../../EditMode/SidebarPopup';
+import type { EventTypes as ComponentEventTypes } from '../Component';
 import Component from '../Component.js';
 import ConnectorHandler from '../../Components/ConnectorHandler';
 /**
@@ -16,11 +17,11 @@ declare class HighchartsComponent extends Component {
     /**
      * Predefined sync config for Highcharts component.
      */
-    static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
+    static predefinedSyncConfig: import("../Sync/Sync").PredefinedSyncConfig;
     /**
      * Default options of the Highcharts component.
      */
-    static defaultOptions: Partial<Component.Options> & import("../../../Shared/Types").DeepPartial<Options>;
+    static defaultOptions: Partial<import("../Component").Options> & import("../../../Shared/Types").DeepPartial<Options>;
     /**
      * A full set of chart options used by the chart.
      * [Highcharts API](https://api.highcharts.com/highcharts/)
@@ -69,15 +70,13 @@ declare class HighchartsComponent extends Component {
      */
     constructor(cell: Cell, options: Partial<Options>, board?: Board);
     onTableChanged(): void;
-    /** @private */
     load(): Promise<this>;
     render(): this;
     resize(width?: number | string | null, height?: number | string | null): this;
     /**
      * Adds call update value in store, when chart's point is updated.
-     *
      * @private
-     * */
+     */
     private setupConnectorUpdate;
     /**
      * Update the store, when the point is being dragged.
@@ -87,9 +86,9 @@ declare class HighchartsComponent extends Component {
     private onChartUpdate;
     /**
      * Handles updating via options.
+     *
      * @param options
      * The options to apply.
-     *
      */
     update(options: Partial<Options>, shouldRerender?: boolean): Promise<void>;
     /**
@@ -138,12 +137,6 @@ declare class HighchartsComponent extends Component {
      *
      */
     private createChart;
-    /**
-     * Registers events from the chart options to the callback register.
-     *
-     * @private
-     */
-    private registerChartEvents;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
     /**
      * Retrieves editable options for the chart.
@@ -155,14 +148,11 @@ declare class HighchartsComponent extends Component {
     getEditableOptionValue(propertyPath?: string[]): number | boolean | undefined | string;
 }
 /** @private */
-declare namespace HighchartsComponent {
-    /** @private */
-    type ComponentType = HighchartsComponent;
-    /** @private */
-    type ChartComponentEvents = Component.EventTypes;
-    /** @private */
-    interface HCConnectorHandler extends ConnectorHandler {
-        columnAssignment?: ColumnAssignmentOptions[];
-    }
+export type ComponentType = HighchartsComponent;
+/** @private */
+export type ChartComponentEvents = ComponentEventTypes;
+/** @private */
+export interface HCConnectorHandler extends ConnectorHandler {
+    columnAssignment?: ColumnAssignmentOptions[];
 }
 export default HighchartsComponent;

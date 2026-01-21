@@ -1,7 +1,7 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type CSVConnectorOptions from './CSVConnectorOptions';
 import CSVConverter from '../Converters/CSVConverter.js';
-import DataConnector from './DataConnector.js';
+import DataConnector, { type Event as DataConnectorEvent } from './DataConnector.js';
 /**
  * Class that handles creating a DataConnector from CSV
  *
@@ -29,31 +29,26 @@ declare class CSVConnector extends DataConnector {
      * Overrides the DataConnector method. Emits an event on the connector to
      * all registered callbacks of this event.
      *
-     * @param {CSVConnector.Event} e
+     * @param {Event} e
      * Event object containing additional event information.
      */
-    emit(e: CSVConnector.Event): void;
+    emit(e: Event): void;
     /**
      * Initiates the loading of the CSV source to the connector
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits CSVConnector#load
      * @emits CSVConnector#afterLoad
      */
-    load(eventDetail?: DataEvent.Detail): Promise<this>;
+    load(eventDetail?: DataEventDetail): Promise<this>;
 }
 /**
- * Types for class-specific options and events.
+ * Event objects fired from CSVConnector events.
  */
-declare namespace CSVConnector {
-    /**
-     * Event objects fired from CSVConnector events.
-     */
-    interface Event extends DataConnector.Event {
-        readonly csv?: string;
-    }
+export interface Event extends DataConnectorEvent {
+    readonly csv?: string;
 }
 declare module './DataConnectorType' {
     interface DataConnectorTypes {

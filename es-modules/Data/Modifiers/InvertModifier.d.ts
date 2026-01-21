@@ -1,4 +1,4 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type InvertModifierOptions from './InvertModifierOptions';
 import DataModifier from './DataModifier.js';
 import DataTable from '../DataTable.js';
@@ -15,7 +15,7 @@ declare class InvertModifier extends DataModifier {
     /**
      * Constructs an instance of the invert modifier.
      *
-     * @param {Partial<InvertModifier.Options>} [options]
+     * @param {Partial<InvertModifierOptions>} [options]
      * Options to configure the invert modifier.
      */
     constructor(options?: Partial<InvertModifierOptions>);
@@ -31,14 +31,14 @@ declare class InvertModifier extends DataModifier {
      * @param {DataTable} table
      * Table to invert.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @return {DataTable}
      * Table with inverted `modified` property as a reference or modified table,
      * if `modified` property of the original table is undefined.
      */
-    modifyTable(table: DataTable, eventDetail?: DataEvent.Detail): DataTable;
+    modifyTable(table: DataTable, eventDetail?: DataEventDetail): DataTable;
 }
 declare module './DataModifierType' {
     interface DataModifierTypes {

@@ -1,23 +1,23 @@
 import type { HTMLDOMElement } from '../../Core/Renderer/DOMElementType';
-import type JSON from '../JSON';
+import type { JSONObject } from '../JSON';
 import type Cell from '../Layout/Cell.js';
-import type Serializable from '../Serializable';
+import type { JSON as SerializableJSON } from '../Serializable';
 import EditMode from '../EditMode/EditMode';
 /**
  * Class providing a resizing functionality.
  */
 declare class Resizer {
-    protected static readonly defaultOptions: Resizer.Options;
+    protected static readonly defaultOptions: Options;
     /**
      * Constructor for the Resizer class.
      *
      * @param {EditMode} editMode
      * The parent editMode reference.
      *
-     * @param {Resizer.Options} options
+     * @param {Options} options
      * Options for the Resizer.
      */
-    constructor(editMode: EditMode, options?: Resizer.Options);
+    constructor(editMode: EditMode, options?: Options);
     /**
      * The editMode reference.
      */
@@ -25,7 +25,7 @@ declare class Resizer {
     /**
      * Resizer options.
      */
-    options: Resizer.Options;
+    options: Options;
     /**
      * Resized element reference.
      */
@@ -114,109 +114,107 @@ interface Resizer {
     mouseMoveSnap?: Function;
     mouseUpSnap?: Function;
 }
-declare namespace Resizer {
+/**
+ * Resizer options
+ */
+export interface Options {
     /**
-     * Resizer options
+     * Weather the resizer is enabled or not.
+     *
+     * Try it:
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/edit-mode/resize-disabled/ | Resize disabled}
      */
-    interface Options {
-        /**
-         * Weather the resizer is enabled or not.
-         *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/edit-mode/resize-disabled/ | Resize disabled}
-         */
-        enabled: boolean;
-        /**
-         * Resizer type.
-         */
-        type: 'x' | 'y' | 'xy';
-        /**
-         * Options for the snap mechanism.
-         */
-        snap: SnapOptions;
-        /**
-         * Style of the snap element.
-         */
-        styles: ElementStyles;
-    }
-    interface ResizedCell extends Cell {
-        resizer?: Snap;
-    }
+    enabled: boolean;
     /**
-     * Style of the snap element.
+     * Resizer type.
      */
-    interface ElementStyles {
-        /**
-         * Width of the border on the left side of the element in pixels.
-         */
-        borderLeft?: number;
-        /**
-         * Width of the border on the right side of the element in pixels.
-         */
-        borderRight?: number;
-        /**
-         * Width of the border on the top side of the element in pixels.
-         */
-        borderTop?: number;
-        /**
-         * Width of the border on the bottom side of the element in pixels.
-         */
-        borderBottom?: number;
-        /**
-         * Minimum width of the element in pixels.
-         */
-        minWidth?: number;
-        /**
-         * Minimum height of the element in pixels.
-         */
-        minHeight?: number;
-    }
-    interface Snap {
-        snapX?: HTMLDOMElement | undefined;
-        snapY?: HTMLDOMElement | undefined;
-    }
+    type: 'x' | 'y' | 'xy';
     /**
      * Options for the snap mechanism.
      */
-    interface SnapOptions {
-        /**
-         * Width of the element in pixels.
-         */
-        width?: number;
-        /**
-         * Height of the element in pixels.
-         */
-        height?: number;
-    }
-    interface JSON extends Serializable.JSON<'Dashboards.Action.Resizer'> {
-        options: JSONOptions;
-    }
-    interface JSONOptions extends JSON.Object {
-        enabled: boolean;
-        styles: ElementStylesJSON;
-        type: 'x' | 'y' | 'xy';
-        snap: SnapJSON;
-    }
-    interface SnapJSON extends JSON.Object {
-        width?: number;
-        height?: number;
-    }
-    interface ElementStylesJSON extends JSON.Object {
-        borderLeft?: number;
-        borderRight?: number;
-        borderTop?: number;
-        borderBottom?: number;
-        minWidth?: number;
-        minHeight?: number;
-    }
-    interface ResizePointer {
-        isVisible: boolean;
-        element: HTMLDOMElement;
-    }
-    interface CellSiblings {
-        prev: Array<Cell>;
-        next: Array<Cell>;
-    }
+    snap: SnapOptions;
+    /**
+     * Style of the snap element.
+     */
+    styles: ElementStyles;
+}
+export interface ResizedCell extends Cell {
+    resizer?: Snap;
+}
+/**
+ * Style of the snap element.
+ */
+export interface ElementStyles {
+    /**
+     * Width of the border on the left side of the element in pixels.
+     */
+    borderLeft?: number;
+    /**
+     * Width of the border on the right side of the element in pixels.
+     */
+    borderRight?: number;
+    /**
+     * Width of the border on the top side of the element in pixels.
+     */
+    borderTop?: number;
+    /**
+     * Width of the border on the bottom side of the element in pixels.
+     */
+    borderBottom?: number;
+    /**
+     * Minimum width of the element in pixels.
+     */
+    minWidth?: number;
+    /**
+     * Minimum height of the element in pixels.
+     */
+    minHeight?: number;
+}
+export interface Snap {
+    snapX?: HTMLDOMElement | undefined;
+    snapY?: HTMLDOMElement | undefined;
+}
+/**
+ * Options for the snap mechanism.
+ */
+export interface SnapOptions {
+    /**
+     * Width of the element in pixels.
+     */
+    width?: number;
+    /**
+     * Height of the element in pixels.
+     */
+    height?: number;
+}
+export interface JSON extends SerializableJSON<'Dashboards.Action.Resizer'> {
+    options: JSONOptions;
+}
+export interface JSONOptions extends JSONObject {
+    enabled: boolean;
+    styles: ElementStylesJSON;
+    type: 'x' | 'y' | 'xy';
+    snap: SnapJSON;
+}
+export interface SnapJSON extends JSONObject {
+    width?: number;
+    height?: number;
+}
+export interface ElementStylesJSON extends JSONObject {
+    borderLeft?: number;
+    borderRight?: number;
+    borderTop?: number;
+    borderBottom?: number;
+    minWidth?: number;
+    minHeight?: number;
+}
+export interface ResizePointer {
+    isVisible: boolean;
+    element: HTMLDOMElement;
+}
+export interface CellSiblings {
+    prev: Array<Cell>;
+    next: Array<Cell>;
 }
 export default Resizer;

@@ -1,16 +1,17 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Gøran Slettemark
  *  - Wojciech Chmiel
  *  - Sebastian Bochan
  *  - Sophie Bremer
+ *  - Dawid Dragula
  *
  * */
 'use strict';
@@ -73,7 +74,6 @@ class HighchartsComponent extends Component {
      *  Functions
      *
      * */
-    /** @private */
     async load() {
         this.emit({ type: 'load' });
         await super.load();
@@ -110,9 +110,8 @@ class HighchartsComponent extends Component {
     }
     /**
      * Adds call update value in store, when chart's point is updated.
-     *
      * @private
-     * */
+     */
     setupConnectorUpdate() {
         const { connectorHandlers, chart } = this;
         if (!chart || !this.options.allowConnectorUpdate) {
@@ -141,7 +140,7 @@ class HighchartsComponent extends Component {
      * @param connectorHandler Connector handler with data to update.
      */
     onChartUpdate(point, connectorHandler) {
-        const table = connectorHandler.presentationTable;
+        const table = connectorHandler.dataTable;
         const columnAssignment = connectorHandler.columnAssignment;
         const seriesId = point.series.options.id;
         const converter = new DataConverter();
@@ -169,7 +168,6 @@ class HighchartsComponent extends Component {
     }
     /**
      * Internal method for handling option updates.
-     *
      * @internal
      */
     setOptions() {
@@ -184,9 +182,9 @@ class HighchartsComponent extends Component {
     }
     /**
      * Handles updating via options.
+     *
      * @param options
      * The options to apply.
-     *
      */
     async update(options, shouldRerender = true) {
         await super.update(options, false);
@@ -217,14 +215,8 @@ class HighchartsComponent extends Component {
         for (const connectorHandler of connectorHandlers) {
             const options = connectorHandler.options;
             let columnAssignment = options.columnAssignment;
-            // Set the new data table based on the data table key.
-            const connector = connectorHandler.connector;
-            const dataTableKey = connectorHandler.options.dataTableKey;
-            if (connector && dataTableKey) {
-                connectorHandler.setTable(connector.dataTables[dataTableKey]);
-            }
-            if (!columnAssignment && connectorHandler.presentationTable) {
-                columnAssignment = this.getDefaultColumnAssignment(connectorHandler.presentationTable.getColumnIds(), connectorHandler.presentationTable);
+            if (!columnAssignment && connectorHandler.dataTable) {
+                columnAssignment = this.getDefaultColumnAssignment(connectorHandler.dataTable.getColumnIds(), connectorHandler.dataTable);
             }
             if (columnAssignment) {
                 connectorHandler.columnAssignment = columnAssignment;
@@ -263,11 +255,11 @@ class HighchartsComponent extends Component {
         const chart = this.chart;
         if (!connectorHandler.connector ||
             !chart ||
-            !connectorHandler.presentationTable) {
+            !connectorHandler.dataTable) {
             return;
         }
-        const table = connectorHandler.presentationTable.getModified();
-        const modifierOptions = connectorHandler.presentationTable.getModifier()?.options;
+        const table = connectorHandler.dataTable.getModified();
+        const modifierOptions = connectorHandler.dataTable.getModifier()?.options;
         const columnAssignment = connectorHandler.columnAssignment ?? [];
         // Create the series or update the existing ones.
         for (let i = 0, iEnd = columnAssignment.length; i < iEnd; ++i) {
@@ -345,7 +337,19 @@ class HighchartsComponent extends Component {
      */
     destroy() {
         // Cleanup references in the global Highcharts scope
-        this.chart?.destroy();
+        // Destroy chart before destroying the component element
+        // to ensure chart has access to its renderTo element
+        if (this.chart && this.chart.renderTo && this.chart.renderer) {
+            try {
+                this.chart.destroy();
+            }
+            catch (e) {
+                // Chart may already be destroyed or renderTo/renderer
+                // eslint-disable-next-line no-console
+                console.warn('Error destroying chart:', e);
+            }
+            this.chart = void 0;
+        }
         super.destroy();
     }
     /**
@@ -408,53 +412,6 @@ class HighchartsComponent extends Component {
             throw new Error('Chart constructor not found');
         }
         return this.chart;
-    }
-    /**
-     * Registers events from the chart options to the callback register.
-     *
-     * @private
-     */
-    registerChartEvents() {
-        if (this.chart && this.chart.options) {
-            const options = this.chart.options;
-            const allEvents = [
-                'chart',
-                'series',
-                'yAxis',
-                'xAxis',
-                'colorAxis',
-                'annotations',
-                'navigation'
-            ].map((optionKey) => {
-                let seriesOrAxisOptions = options[optionKey] || {};
-                if (!Array.isArray(seriesOrAxisOptions) &&
-                    seriesOrAxisOptions.events) {
-                    seriesOrAxisOptions = [seriesOrAxisOptions];
-                }
-                if (seriesOrAxisOptions &&
-                    typeof seriesOrAxisOptions === 'object' &&
-                    Array.isArray(seriesOrAxisOptions)) {
-                    return seriesOrAxisOptions.reduce((acc, seriesOrAxis, i) => {
-                        if (seriesOrAxis && seriesOrAxis.events) {
-                            acc[seriesOrAxis.id || `${optionKey}-${i}`] = seriesOrAxis.events;
-                        }
-                        return acc;
-                    }, {}) || {};
-                }
-                return {};
-            });
-            allEvents.forEach((options) => {
-                Object.keys(options).forEach((key) => {
-                    const events = options[key];
-                    Object.keys(events).forEach((callbackKey) => {
-                        this.callbackRegistry.addCallback(`${key}-${callbackKey}`, {
-                            type: 'seriesEvent',
-                            func: events[callbackKey]
-                        });
-                    });
-                });
-            });
-        }
     }
     getOptionsOnDrop(sidebar) {
         const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();

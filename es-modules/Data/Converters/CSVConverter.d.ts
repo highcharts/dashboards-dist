@@ -1,7 +1,7 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type CSVConverterOptions from './CSVConverterOptions';
 import DataConverter from './DataConverter.js';
-import DataTable from '../DataTable.js';
+import type { ColumnCollection as DataTableColumnCollection } from '../DataTable.js';
 /**
  * Handles parsing and transforming CSV to a table.
  *
@@ -34,15 +34,15 @@ declare class CSVConverter extends DataConverter {
      *
      * @param {Partial<CSVConverterOptions>} [options]
      * Options for the parser.
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
-     * @return {DataTable.ColumnCollection}
+     * @return {DataTableColumnCollection}
      * The parsed column collection.
      *
      * @emits CSVDataParser#parse
      * @emits CSVDataParser#afterParse
      */
-    parse(options: Partial<CSVConverterOptions>, eventDetail?: DataEvent.Detail): DataTable.ColumnCollection;
+    parse(options: Partial<CSVConverterOptions>, eventDetail?: DataEventDetail): DataTableColumnCollection;
     /**
      * Parses a single CSV row string into columns, handling delimiters,
      * quoted values, data type inference, and column range selection.

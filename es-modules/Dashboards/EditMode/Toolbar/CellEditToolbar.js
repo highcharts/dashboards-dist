@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -13,7 +13,7 @@
  *  - Sophie Bremer
  *
  * */
-import Cell from '../../Layout/Cell.js';
+import { isCell } from '../../Layout/Cell.js';
 import EditGlobals from '../EditGlobals.js';
 import EditToolbar from './EditToolbar.js';
 import GUIElement from '../../Layout/GUIElement.js';
@@ -45,7 +45,7 @@ class CellEditToolbar extends EditToolbar {
                         const dragDrop = cellEditToolbar.editMode.dragDrop;
                         if (dragDrop &&
                             cellEditToolbar.cell &&
-                            Cell.isCell(cellEditToolbar.cell)) {
+                            isCell(cellEditToolbar.cell)) {
                             dragDrop.onDragStart(e, cellEditToolbar.cell);
                         }
                     }
@@ -90,6 +90,23 @@ class CellEditToolbar extends EditToolbar {
                 }
             }
         });
+        if (options.viewFullscreen?.enabled) {
+            items.push({
+                id: 'viewFullscreen',
+                type: 'icon',
+                className: EditGlobals.classNames.viewFullscreen,
+                icon: iconURLPrefix + 'fullscreen.svg',
+                events: {
+                    click: function () {
+                        const fullScreen = this.menu.parent.editMode.board.fullscreen;
+                        const container = this.menu.parent.cell.container.firstElementChild;
+                        if (fullScreen) {
+                            fullScreen.toggle(container);
+                        }
+                    }
+                }
+            });
+        }
         return items;
     }
     /* *
@@ -176,8 +193,10 @@ class CellEditToolbar extends EditToolbar {
     }
     onCellDestroy() {
         const toolbar = this;
-        if (toolbar.cell && Cell.isCell(toolbar.cell)) {
+        if (toolbar.cell && isCell(toolbar.cell)) {
             const row = toolbar.cell.row;
+            const board = toolbar.editMode.board;
+            const editMode = toolbar.editMode;
             const cellId = toolbar.cell.id;
             // Disable row highlight.
             toolbar.cell.row.setHighlight();
@@ -185,21 +204,20 @@ class CellEditToolbar extends EditToolbar {
             toolbar.cell.destroy();
             toolbar.cell = void 0;
             // Hide row and cell toolbars.
-            toolbar.editMode.hideToolbars(['cell', 'row']);
+            editMode.hideToolbars(['cell', 'row']);
             // Disable resizer.
-            toolbar.editMode.resizer?.disableResizer();
+            editMode.resizer?.disableResizer();
             // Call cellResize dashboard event.
             if (row && row.cells && row.cells.length) {
-                fireEvent(toolbar.editMode.board, 'cellResize', {
+                fireEvent(board, 'cellResize', {
                     cell: row.cells[0]
                 });
                 fireEvent(row, 'cellChange', { cell: row.cells[0], row });
-                fireEvent(toolbar.editMode, 'layoutChanged', {
-                    type: 'cellDestroyed',
-                    target: cellId,
-                    board: toolbar.editMode.board
-                });
             }
+            fireEvent(editMode, 'cellDestroyed', {
+                target: cellId,
+                board: board
+            });
         }
     }
     resetEditedCell() {

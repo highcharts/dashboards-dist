@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -24,7 +24,7 @@ const { merge } = U;
 /**
  * Converts the given JSON to a class instance.
  *
- * @param {HTMLTableConnectorHelper.JSON} json
+ * @param {JSON} json
  * JSON to deserialize as a class instance or object.
  *
  * @return {HTMLTableConnector}
@@ -36,7 +36,7 @@ function fromJSON(json) {
 /**
  * Validates the given class instance for JSON support.
  *
- * @param {Globals.AnyRecord} obj
+ * @param {AnyRecord} obj
  * Class instance or object to validate.
  *
  * @return {boolean}
@@ -52,7 +52,7 @@ function jsonSupportFor(obj) {
  * @param {HTMLTableConnector} obj
  * Class instance or object to serialize as JSON.
  *
- * @return {HTMLTableConnectorHelper.JSON}
+ * @return {JSON}
  * Returns the JSON of the class instance or object.
  */
 function toJSON(obj) {

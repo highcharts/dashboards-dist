@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -35,7 +35,7 @@ const syncPair = {
             return;
         }
         const { dataCursor: cursor } = board;
-        const table = this.connectorHandlers[0]?.presentationTable;
+        const table = this.getDataTable();
         const onCellHover = (e) => {
             if (table) {
                 const cell = e.target;
@@ -80,7 +80,7 @@ const syncPair = {
         if (!highlightOptions?.enabled) {
             return;
         }
-        const table = component.connectorHandlers[0]?.presentationTable;
+        const table = component.getDataTable();
         const handleCursor = (e) => {
             const cursor = e.cursor;
             if (cursor.sourceId === component.id ||

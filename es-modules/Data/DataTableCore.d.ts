@@ -1,5 +1,5 @@
-import type DataEvent from './DataEvent.js';
-import type DataTable from './DataTable.js';
+import type { DataEventDetail } from './DataEvent.js';
+import type { Column as DataTableColumn, ColumnCollection as DataTableColumnCollection, Row as DataTableRow, RowObject as DataTableRowObject } from './DataTable.js';
 import type DataTableOptions from './DataTableOptions.js';
 /**
  * Class to manage columns and rows in a table structure. It provides methods
@@ -31,7 +31,7 @@ declare class DataTableCore {
      */
     constructor(options?: DataTableOptions);
     readonly autoId: boolean;
-    readonly columns: Record<string, DataTable.Column>;
+    readonly columns: Record<string, DataTableColumn>;
     readonly id: string;
     modified?: this;
     rowCount: number;
@@ -69,7 +69,7 @@ declare class DataTableCore {
      * @return {Highcharts.DataTableColumn|undefined}
      * A copy of the column, or `undefined` if not found.
      */
-    getColumn(columnId: string, asReference?: true): (DataTable.Column | undefined);
+    getColumn(columnId: string, asReference?: true): (DataTableColumn | undefined);
     /**
      * Retrieves all or the given columns. Simplified version of the full
      * `DataTable.getColumns` method, always returning by reference.
@@ -81,7 +81,7 @@ declare class DataTableCore {
      * Collection of columns. If a requested column was not found, it is
      * `undefined`.
      */
-    getColumns(columnIds?: Array<string>, asReference?: true): DataTable.ColumnCollection;
+    getColumns(columnIds?: Array<string>, asReference?: true): DataTableColumnCollection;
     /**
      * Retrieves the row at a given index.
      *
@@ -94,7 +94,7 @@ declare class DataTableCore {
      * @return {Record<string, number|string|undefined>|undefined}
      * Returns the row values, or `undefined` if not found.
      */
-    getRow(rowIndex: number, columnIds?: Array<string>): (DataTable.Row | undefined);
+    getRow(rowIndex: number, columnIds?: Array<string>): (DataTableRow | undefined);
     /**
      * Sets cell values for a column. Will insert a new column, if not found.
      *
@@ -113,7 +113,7 @@ declare class DataTableCore {
      * @emits #setColumns
      * @emits #afterSetColumns
      */
-    setColumn(columnId: string, column?: DataTable.Column, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
+    setColumn(columnId: string, column?: DataTableColumn, rowIndex?: number, eventDetail?: DataEventDetail): void;
     /**
      * Sets cell values for multiple columns. Will insert new columns, if not
      * found. Simplified version of the full `DataTableCore.setColumns`, limited
@@ -132,7 +132,7 @@ declare class DataTableCore {
      * @emits #setColumns
      * @emits #afterSetColumns
      */
-    setColumns(columns: DataTable.ColumnCollection, rowIndex?: number, eventDetail?: DataEvent.Detail): void;
+    setColumns(columns: DataTableColumnCollection, rowIndex?: number, eventDetail?: DataEventDetail): void;
     /**
      * Sets cell values of a row. Will insert a new row if no index was
      * provided, or if the index is higher than the total number of table rows.
@@ -152,13 +152,13 @@ declare class DataTableCore {
      *
      * @emits #afterSetRows
      */
-    setRow(row: DataTable.RowObject, rowIndex?: number, insert?: boolean, eventDetail?: DataEvent.Detail): void;
+    setRow(row: DataTableRowObject, rowIndex?: number, insert?: boolean, eventDetail?: DataEventDetail): void;
     /**
-     * Returns the medified (clone) or the original data table if the modified
+     * Returns the modified (clone) or the original data table if the modified
      * one does not exist.
      *
      * @return {Highcharts.DataTableCore}
-     * The medified (clone) or the original data table.
+     * The modified (clone) or the original data table.
      */
     getModified(): this;
 }

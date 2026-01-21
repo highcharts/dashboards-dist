@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -42,13 +42,14 @@ const syncPair = {
             const series = chart.series[i];
             const seriesId = series.options.id ?? '';
             const connectorHandler = component.seriesFromConnector[seriesId];
-            const table = connectorHandler?.connector?.getTable();
+            const connectorId = connectorHandler?.options.id;
+            const table = this.getDataTable(connectorId);
             let columnId;
             if (!table) {
                 continue;
             }
             const presTable = table?.getModified();
-            const colAssignment = connectorHandler.columnAssignment?.find((s) => s.seriesId === seriesId);
+            const colAssignment = connectorHandler?.columnAssignment?.find((s) => s.seriesId === seriesId);
             // TODO: Better way to recognize the column name.
             if (colAssignment) {
                 const { data } = colAssignment;
@@ -140,7 +141,9 @@ const syncPair = {
                     for (let i = 0, iEnd = seriesIds.length; i < iEnd; ++i) {
                         const seriesId = seriesIds[i];
                         const connectorHandler = component.seriesFromConnector[seriesId];
-                        if (connectorHandler?.connector?.getTable() !== table) {
+                        const dataTableKey = connectorHandler?.options.dataTableKey;
+                        const connectorTable = connectorHandler?.connector?.getTable(dataTableKey);
+                        if (connectorTable !== table) {
                             continue;
                         }
                         const colAssignment = connectorHandler.columnAssignment;
@@ -296,7 +299,8 @@ const syncPair = {
                 return;
             }
             for (let i = 0, iEnd = connectorHandlers.length; i < iEnd; ++i) {
-                const table = connectorHandlers[i]?.connector?.getTable();
+                const connectorId = connectorHandlers[i]?.options.id;
+                const table = this.getDataTable(connectorId);
                 if (!table) {
                     continue;
                 }

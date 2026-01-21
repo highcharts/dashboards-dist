@@ -1,7 +1,7 @@
-import type Component from '../Component';
-import type Sync from '../Sync/Sync';
+import type { ConnectorOptions as ComponentConnectorOptions, Options as ComponentOptions } from '../Component';
+import type { OptionsEntry as SyncOptionsEntry, RawOptionsRecord as SyncRawOptionsRecord } from '../Sync/Sync';
 import type { Options as HighchartsOptions } from '../../Plugins/HighchartsTypes';
-export interface Options extends Component.Options {
+export interface Options extends ComponentOptions {
     /**
      * Additional chart options used to render the navigator. Here you can
      * change things like `chart.type`, `chart.height`, or `title.text`.
@@ -42,7 +42,7 @@ export interface Options extends Component.Options {
     /**
      * Connector options
      */
-    connector?: Component.ConnectorOptions;
+    connector?: ComponentConnectorOptions;
     /**
      * Defines which elements should be synced.
      * ```
@@ -74,7 +74,7 @@ export interface Options extends Component.Options {
  * }
  * ```
  */
-export interface SyncOptions extends Sync.RawOptionsRecord {
+export interface SyncOptions extends SyncRawOptionsRecord {
     /**
      * Crossfilter sync is available for Navigator components. Modifies data
      * by selecting only those rows that meet common ranges.
@@ -103,7 +103,7 @@ export interface SyncOptions extends Sync.RawOptionsRecord {
      *
      * @default false
      */
-    extremes?: boolean | Sync.OptionsEntry;
+    extremes?: boolean | SyncOptionsEntry;
 }
 /**
  * Crossfilter sync options.
@@ -116,7 +116,7 @@ export interface SyncOptions extends Sync.RawOptionsRecord {
  * }
  * ```
  */
-export interface CrossfilterSyncOptions extends Sync.OptionsEntry {
+export interface CrossfilterSyncOptions extends SyncOptionsEntry {
     /**
      * Whether this navigator component's content should be affected by
      * other navigators with crossfilter enabled.

@@ -1,54 +1,52 @@
 import type CSSJSONObject from '../CSSJSONObject';
-import Cell from './Cell.js';
-declare namespace Row {
+import type { Options as CellOptions } from './Cell';
+/**
+ * Options for the row.
+ **/
+export interface Options {
     /**
-     * Options for the row.
+     * A unique id for the row.
      **/
-    interface Options {
+    id?: string;
+    /**
+     * Options controlling the edit mode for the cell.
+     **/
+    editMode?: {
         /**
-         * A unique id for the row.
+         * Individual options for the toolbar items.
          **/
-        id?: string;
-        /**
-         * Options controlling the edit mode for the cell.
-         **/
-        editMode?: {
+        toolbarItems?: {
             /**
-             * Individual options for the toolbar items.
-             **/
-            toolbarItems?: {
-                /**
-                 * Options for the `destroy` toolbar item.
-                 */
-                destroy: {
-                    enabled?: boolean;
-                };
-                /**
-                 * Options for the `settings` toolbar item.
-                 */
-                drag: {
-                    enabled?: boolean;
-                };
-                /**
-                 * Options for the `settings` toolbar item.
-                 */
-                settings: {
-                    enabled?: boolean;
-                };
+             * Options for the `destroy` toolbar item.
+             */
+            destroy: {
+                enabled?: boolean;
+            };
+            /**
+             * Options for the `settings` toolbar item.
+             */
+            drag: {
+                enabled?: boolean;
+            };
+            /**
+             * Options for the `settings` toolbar item.
+             */
+            settings: {
+                enabled?: boolean;
             };
         };
-        /**
-         * The id of the container element.
-         **/
-        parentContainerId?: string;
-        /**
-         * An array of cells to be added to the row.
-         **/
-        cells?: Array<Cell.Options>;
-        /**
-         * CSS styles for the row.
-         **/
-        style?: CSSJSONObject;
-    }
+    };
+    /**
+     * The id of the container element.
+     **/
+    parentContainerId?: string;
+    /**
+     * An array of cells to be added to the row.
+     **/
+    cells?: Array<CellOptions>;
+    /**
+     * CSS styles for the row.
+     **/
+    style?: CSSJSONObject;
 }
 export default Row;

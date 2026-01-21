@@ -1,11 +1,9 @@
-import JSON from '../JSON';
-import DataConverter from '../../Data/Converters/DataConverter.js';
-import Serializable from '../Serializable.js';
-declare namespace DataConverterHelper {
-    interface JSON extends Serializable.JSON<'Data.DataConverter'> {
-        options: OptionsJSON;
-    }
-    type OptionsJSON = (JSON.Object & DataConverter.Options);
+import type { JSONObject } from '../JSON';
+import DataConverter, { type Options as DataConverterOptions } from '../../Data/Converters/DataConverter.js';
+import type { Helper as SerializableHelper, JSON as SerializableJSON } from '../Serializable';
+export interface JSON extends SerializableJSON<'Data.DataConverter'> {
+    options: OptionsJSON;
 }
-declare const DataConverterHelper: Serializable.Helper<DataConverter, DataConverterHelper.JSON>;
+export type OptionsJSON = (JSONObject & DataConverterOptions);
+declare const DataConverterHelper: SerializableHelper<DataConverter, JSON>;
 export default DataConverterHelper;

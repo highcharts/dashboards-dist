@@ -1,10 +1,12 @@
+// SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards v@product.version@ (@product.date@)
+ * @license Highcharts Dashboards v4.1.0 (2026-01-21)
  * @module dashboards/dashboards
  *
- * (c) 2009-2025 Highsoft AS
+ * (c) 2009-2026 Highsoft AS
  *
- * License: www.highcharts.com/license
+ * A commercial license may be required depending on use.
+ * See www.highcharts.com/license
  */
 'use strict';
 // Fill registries
@@ -36,6 +38,7 @@ import DataCursor from '../Data/DataCursor.js';
 import DataConverter from '../Data/Converters/DataConverter.js';
 import DataModifier from '../Data/Modifiers/DataModifier.js';
 import DataTable from '../Data/DataTable.js';
+import Defaults from '../Dashboards/Defaults.js';
 import Globals from '../Dashboards/Globals.js';
 import GridPlugin from '../Dashboards/Plugins/GridPlugin.js';
 import HighchartsPlugin from '../Dashboards/Plugins/HighchartsPlugin.js';
@@ -54,6 +57,7 @@ G.addEvent = Utilities.addEvent;
 G.error = Utilities.error;
 G.merge = Utilities.merge;
 G.removeEvent = Utilities.removeEvent;
+G.setOptions = Defaults.setOptions;
 G.uniqueKey = Utilities.uniqueKey;
 G.AST = AST;
 G.Board = Board;
@@ -65,6 +69,7 @@ G.DataCursor = DataCursor;
 G.DataModifier = DataModifier;
 G.DataPool = DataPool;
 G.DataTable = DataTable;
+G.defaultOptions = Defaults.defaultOptions;
 G.GridPlugin = GridPlugin;
 G.HighchartsPlugin = HighchartsPlugin;
 G.PluginHandler = PluginHandler;

@@ -1,7 +1,7 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type JSONConverterOptions from './JSONConverterOptions';
 import DataConverter from './DataConverter.js';
-import DataTable from '../DataTable.js';
+import type { ColumnCollection as DataTableColumnCollection } from '../DataTable.js';
 /**
  * Handles parsing and transforming JSON to a table.
  *
@@ -31,17 +31,17 @@ declare class JSONConverter extends DataConverter {
      * @param {Partial<JSONConverterOptions>}[options]
      * Options for the parser
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits JSONConverter#parse
      * @emits JSONConverter#afterParse
      */
-    parse(options: Partial<JSONConverterOptions>, eventDetail?: DataEvent.Detail): DataTable.ColumnCollection;
+    parse(options: Partial<JSONConverterOptions>, eventDetail?: DataEventDetail): DataTableColumnCollection;
     /**
      * Helper for parsing data in 'columns' orientation.
      *
-     * @param {DataTable.BasicColumn[]} [columnsArray]
+     * @param {DataTableBasicColumn[]} [columnsArray]
      * Array of columns.
      *
      * @param {unknown[]} [data]
@@ -59,7 +59,7 @@ declare class JSONConverter extends DataConverter {
     /**
      * Helper for parsing data in 'rows' orientation.
      *
-     * @param {DataTable.BasicColumn[]} [columnsArray]
+     * @param {DataTableBasicColumn[]} [columnsArray]
      * Array of columns.
      *
      * Helper for parsing data in 'rows' orientation.
@@ -73,7 +73,7 @@ declare class JSONConverter extends DataConverter {
      * @param {Array<string>} [columnIds]
      * Column ids to retrieve.
      *
-     * @return {DataTable.BasicColumn[]}
+     * @return {DataTableBasicColumn[]}
      * Parsed columns.
      */
     private parseRowsOrientation;

@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Karol Kolodziej
@@ -51,13 +51,13 @@ class GridComponent extends Component {
         this.setOptions();
         if (this.grid) {
             this.grid.update(options.gridOptions, false);
-            if (this.grid?.viewport?.dataTable?.id !==
-                this.getFirstConnector()?.getTable()?.id) {
+            const table = this.getDataTable();
+            if (this.grid?.viewport?.dataTable?.id !== table?.id) {
                 this.grid.update({
-                    dataTable: this.getFirstConnector()?.getTable()?.getModified()
+                    dataTable: table?.getModified()
                 }, false);
             }
-            this.grid.renderViewport();
+            await this.grid.redraw();
         }
         this.emit({ type: 'afterUpdate' });
     }
@@ -90,8 +90,8 @@ class GridComponent extends Component {
         if (!grid) {
             return;
         }
-        const dataTable = this.connectorHandlers[0]?.presentationTable;
-        if (!dataTable?.getModified()) {
+        const dataTable = this.getDataTable()?.getModified();
+        if (!dataTable) {
             grid.update({ dataTable: void 0 });
             return;
         }
@@ -99,7 +99,7 @@ class GridComponent extends Component {
             // If the header is not defined, we need to check if the column
             // names have changed, so we can update the whole grid. If they
             // have not changed, we can just update the rows (more efficient).
-            const newColumnIds = dataTable.getModified().getColumnIds();
+            const newColumnIds = dataTable.getColumnIds();
             const { columnOptionsMap, enabledColumns } = grid;
             let index = 0;
             for (const newColumn of newColumnIds) {
@@ -109,13 +109,13 @@ class GridComponent extends Component {
                 if (enabledColumns?.[index] !== newColumn) {
                     // If the visible columns have changed,
                     // update the whole grid.
-                    grid.update({ dataTable: dataTable.getModified() });
+                    grid.update({ dataTable });
                     return;
                 }
                 index++;
             }
         }
-        grid.dataTable = dataTable?.getModified();
+        grid.dataTable = dataTable;
         // Data has changed and the whole grid is not re-rendered, so mark in
         // the querying that data table was modified.
         grid.querying.shouldBeUpdated = true;
@@ -200,7 +200,7 @@ class GridComponent extends Component {
         if (!DGN) {
             throw new Error('Grid not connected.');
         }
-        const dataTable = this.connectorHandlers[0]?.presentationTable, options = this.options, gridOptions = options.gridOptions;
+        const dataTable = this.getDataTable(), options = this.options, gridOptions = options.gridOptions;
         if (!gridOptions) {
             throw new Error('Grid options are not set.');
         }

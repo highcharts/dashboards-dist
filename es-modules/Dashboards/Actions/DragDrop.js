@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -36,7 +36,7 @@ class DragDrop {
      * @param {EditMode} editMode
      * The parent editMode reference.
      *
-     * @param {DragDrop.Options} options
+     * @param {Options} options
      * Options for the DragDrop.
      */
     constructor(editMode, options) {
@@ -216,7 +216,7 @@ class DragDrop {
      * @param {PointerEvent} e
      * Mouse event.
      *
-     * @param {ContextDetection.ContextDetails} contextDetails
+     * @param {ContextDetails} contextDetails
      * Context details (cell, side)
      */
     onRowDrag(e, contextDetails) {
@@ -285,7 +285,7 @@ class DragDrop {
      * @param {PointerEvent} e
      * Mouse event.
      *
-     * @param {ContextDetection.ContextDetails} contextDetails
+     * @param {ContextDetails} contextDetails
      * Context details (cell, side)
      */
     onCellDrag(e, contextDetails) {
@@ -305,7 +305,7 @@ class DragDrop {
      * @param {PointerEvent} e
      * Mouse event.
      *
-     * @param {ContextDetection.ContextDetails} context
+     * @param {ContextDetails} context
      * Context details (cell, side)
      */
     onCellDragCellCtx(e, context) {

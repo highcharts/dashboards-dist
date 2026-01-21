@@ -15,7 +15,7 @@ declare abstract class GUIElement {
      * @returns
      * The offsets of the guiElement.
      */
-    static getOffsets(guiElement: GUIElement, referenceElement?: HTMLDOMElement): GUIElement.Offset;
+    static getOffsets(guiElement: GUIElement, referenceElement?: HTMLDOMElement): Offset;
     /**
      * Get dimensions of the guiElement container from offsets.
      *
@@ -25,7 +25,7 @@ declare abstract class GUIElement {
      * @returns
      * The dimensions of the guiElement container.
      */
-    static getDimFromOffsets(offsets: GUIElement.Offset): GUIElement.Dimensions;
+    static getDimFromOffsets(offsets: Offset): Dimensions;
     /**
      * Based on the element provided, generate an unique id.
      *
@@ -35,7 +35,7 @@ declare abstract class GUIElement {
      * @returns
      * The unique id.
      */
-    static getElementId(elementType: GUIElement.GUIElementType): string;
+    static getElementId(elementType: GUIElementType): string;
     /**
      * Get width in percentages (0% - 100%).
      *
@@ -53,7 +53,7 @@ declare abstract class GUIElement {
     /**
      * The type of a GUIElement instance.
      */
-    protected type?: GUIElement.GUIElementType;
+    protected type?: GUIElementType;
     /**
      * The function to remove bindedGUIElement
      * event on GUIElement container.
@@ -66,13 +66,13 @@ declare abstract class GUIElement {
     /**
      * Create or get existing HTML element as a GUIElement container.
      *
-     * @param {GUIElement.ContainerOptions} options
+     * @param {GetElementContainerOptions} options
      * Options.
      *
      * @returns
      * The HTML element for the element container.
      */
-    protected getElementContainer(options: GUIElement.GetElementContainerOptions): HTMLElement;
+    protected getElementContainer(options: GetElementContainerOptions): HTMLElement;
     /**
      * Destroy the element, its container, event hooks and all properties.
      */
@@ -83,33 +83,31 @@ declare abstract class GUIElement {
      * @returns
      * The GUIElement instance type
      */
-    getType(): GUIElement.GUIElementType | undefined;
+    getType(): GUIElementType | undefined;
     protected changeVisibility(setVisible?: boolean, displayStyle?: string): void;
     hide(): void;
     show(): void;
 }
-declare namespace GUIElement {
-    interface GetElementContainerOptions {
-        render?: boolean;
-        parentContainer?: HTMLDOMElement;
-        attribs?: HTMLAttributes;
-        style?: CSSObject;
-        element?: HTMLElement;
-        elementId?: string;
-    }
-    interface BindedGUIElementEvent extends Event {
-        guiElement: GUIElement;
-    }
-    type GUIElementType = 'row' | 'cell' | 'layout' | 'cell-html' | 'col-nested' | 'col';
-    interface Offset {
-        left: number;
-        top: number;
-        right: number;
-        bottom: number;
-    }
-    interface Dimensions {
-        width: number;
-        height: number;
-    }
+export interface GetElementContainerOptions {
+    render?: boolean;
+    parentContainer?: HTMLDOMElement;
+    attribs?: HTMLAttributes;
+    style?: CSSObject;
+    element?: HTMLElement;
+    elementId?: string;
+}
+export interface BindedGUIElementEvent extends Event {
+    guiElement: GUIElement;
+}
+export type GUIElementType = 'row' | 'cell' | 'layout' | 'cell-html' | 'col-nested' | 'col';
+export interface Offset {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+}
+export interface Dimensions {
+    width: number;
+    height: number;
 }
 export default GUIElement;

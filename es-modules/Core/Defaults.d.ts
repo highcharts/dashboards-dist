@@ -3,6 +3,12 @@ import type { DefaultOptions, Options } from './Options';
 import Time from './Time.js';
 declare module './GlobalsBase' {
     interface GlobalsBase {
+        /**
+         * Global default settings.
+         *
+         * @name Highcharts.defaultOptions
+         * @type {Highcharts.Options}
+         */
         defaultOptions: DefaultOptions;
         time: Time;
     }

@@ -1,5 +1,5 @@
 import type { AnyRecord } from '../Shared/Types';
-import D from './Globals.js';
+import type { Class } from './Globals';
 /**
  * Add an event listener.
  *
@@ -21,7 +21,7 @@ import D from './Globals.js';
  * @return {Function}
  *         A callback function to remove the added event.
  */
-declare function addEvent<T>(el: (D.Class<T> | T), type: string, fn: (Utilities.EventCallback<T> | Function), options?: Utilities.EventOptions): Function;
+declare function addEvent<T>(el: (Class<T> | T), type: string, fn: (EventCallback<T> | Function), options?: EventOptions): Function;
 /**
  * Utility function to deep merge two or more objects and return a third object.
  * If the first argument is true, the contents of the second object is copied
@@ -126,7 +126,7 @@ declare function error(code: number | string, stop?: boolean): void;
  *
  * @return {void}
  */
-declare function fireEvent<T>(el: T, type: string, eventArguments?: (AnyRecord | Event), defaultFunction?: (Utilities.EventCallback<T> | Function)): void;
+declare function fireEvent<T>(el: T, type: string, eventArguments?: (AnyRecord | Event), defaultFunction?: (EventCallback<T> | Function)): void;
 /**
  * Remove an event that was added with {@link Highcharts#addEvent}.
  *
@@ -145,19 +145,17 @@ declare function fireEvent<T>(el: T, type: string, eventArguments?: (AnyRecord |
  *
  * @return {void}
  */
-declare function removeEvent<T>(el: (D.Class<T> | T), type?: string, fn?: (Utilities.EventCallback<T> | Function)): void;
-declare namespace Utilities {
-    interface EventCallback<T> {
-        (this: T, eventArguments: (AnyRecord | Event)): (boolean | void);
-    }
-    interface EventWrapperObject<T> {
-        fn: EventCallback<T>;
-        order: number;
-    }
-    interface EventOptions {
-        order?: number;
-        passive?: boolean;
-    }
+declare function removeEvent<T>(el: (Class<T> | T), type?: string, fn?: (EventCallback<T> | Function)): void;
+export interface EventCallback<T> {
+    (this: T, eventArguments: (AnyRecord | Event)): (boolean | void);
+}
+export interface EventWrapperObject<T> {
+    fn: EventCallback<T>;
+    order: number;
+}
+export interface EventOptions {
+    order?: number;
+    passive?: boolean;
 }
 declare const Utilities: {
     addEvent: typeof addEvent;

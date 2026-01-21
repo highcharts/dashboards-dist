@@ -6,12 +6,15 @@ declare class Fullscreen {
     private unbindFullscreenEvent?;
     /**
      * Toggles displaying the board in fullscreen mode.
+     *
+     * @param container
+     * The container to be displayed in fullscreen mode.
      */
-    toggle(): void;
+    toggle(container?: HTMLElement): void;
     /**
      * Display board in fullscreen.
      */
-    open(): void;
+    open(container?: HTMLElement): void;
     /**
      * Stops displaying the dashboard in fullscreen mode.
      */
@@ -20,7 +23,5 @@ declare class Fullscreen {
      * Set the correct text depending of the fullscreen is on or of.
      */
     setButtonText(): void;
-}
-declare namespace Fullscreen {
 }
 export default Fullscreen;

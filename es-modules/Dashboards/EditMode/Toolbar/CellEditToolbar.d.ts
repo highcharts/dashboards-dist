@@ -1,6 +1,4 @@
-import EditToolbar from './EditToolbar.js';
-declare namespace CellEditToolbar {
-    interface Options extends EditToolbar.Options {
-    }
+import type { Options as EditToolbarOptions } from './EditToolbar';
+export interface Options extends EditToolbarOptions {
 }
 export default CellEditToolbar;

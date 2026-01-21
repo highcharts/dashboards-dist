@@ -73,18 +73,6 @@ declare class TimeBase {
     private weekdays;
     private shortWeekdays;
     /**
-     * Update the Time object with current options. It is called internally on
-     * initializing Highcharts, after running `Highcharts.setOptions` and on
-     * `Chart.update`.
-     *
-     * @private
-     * @function Highcharts.Time#update
-     *
-     * @param {Highcharts.TimeOptions} [options]
-     *
-     */
-    update(options?: TimeBase.TimeOptions): void;
-    /**
      * Get a date in terms of numbers (year, month, day etc) for further
      * processing. Takes the current `timezone` setting into account. Inverse of
      * `makeTime` and the native `Date` constructor and `Date.UTC`.
@@ -280,44 +268,11 @@ declare class TimeBase {
      *         The formatted date.
      */
     dateFormat(format?: TimeBase.DateTimeFormat | null, timestamp?: number, upperCaseFirst?: boolean): string;
-    /**
-     * Resolve legacy formats of dateTimeLabelFormats (strings and arrays) into
-     * an object.
-     * @private
-     * @param {string|Array<T>|Highcharts.Dictionary<T>} f
-     * General format description
-     * @return {Highcharts.Dictionary<T>}
-     * The object definition
-     */
-    resolveDTLFormat(f: TimeBase.DateTimeLabelFormatOption): TimeBase.DateTimeLabelFormatObject;
-    /**
-     * Get the optimal date format for a point, based on a range.
-     *
-     * @private
-     * @function Highcharts.Time#getDateFormat
-     *
-     * @param {number} range
-     *        The time range
-     *
-     * @param {number} timestamp
-     *        The timestamp of the date
-     *
-     * @param {number} startOfWeek
-     *        An integer representing the first day of the week, where 0 is
-     *        Sunday.
-     *
-     * @param {Highcharts.Dictionary<string>} dateTimeLabelFormats
-     *        A map of time units to formats.
-     *
-     * @return {string}
-     *         The optimal date format for a point.
-     */
-    getDateFormat(range: number | undefined, timestamp: number, startOfWeek: number, dateTimeLabelFormats: TimeBase.DateTimeLabelFormatsOption): TimeBase.DateTimeFormat | undefined;
 }
 declare namespace TimeBase {
     interface DateTimeFormatOptions extends Intl.DateTimeFormatOptions {
         dateStyle?: 'full' | 'long' | 'medium' | 'short';
-        fractionalSecondDigits?: number;
+        fractionalSecondDigits?: 1 | 2 | 3;
         prefix?: string;
         suffix?: string;
         timeStyle?: 'full' | 'long' | 'medium' | 'short';

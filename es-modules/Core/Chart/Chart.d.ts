@@ -2,56 +2,87 @@ import type { AlignObject, AlignValue, VerticalAlignValue } from '../Renderer/Al
 import type AnimationOptions from '../Animation/AnimationOptions';
 import type AxisOptions from '../Axis/AxisOptions';
 import type AxisType from '../Axis/AxisType';
-import type BBoxObject from '../Renderer/BBoxObject';
-import type { CSSObject, CursorValue } from '../Renderer/CSSObject';
-import type { EventCallback } from '../Callback';
+import type ColorAxisOptions from '../Axis/Color/ColorAxisOptions';
+import type { CSSObject } from '../Renderer/CSSObject';
 import type { NumberFormatterCallbackFunction, Options } from '../Options';
 import type ChartBase from './ChartBase';
 import type ChartOptions from './ChartOptions';
-import type { ChartPanningOptions, ChartZoomingOptions } from './ChartOptions';
-import type ColorAxis from '../Axis/Color/ColorAxis';
 import type { DeepPartial } from '../../Shared/Types';
-import type { HTMLDOMElement } from '../Renderer/DOMElementType';
 import type Point from '../Series/Point';
-import type PointerEvent from '../PointerEvent';
-import type SeriesOptions from '../Series/SeriesOptions';
 import type { SeriesTypeOptions } from '../Series/SeriesType';
 import Axis from '../Axis/Axis.js';
-import Pointer from '../Pointer.js';
 import Series from '../Series/Series.js';
 import SVGElement from '../Renderer/SVG/SVGElement';
 import SVGRenderer from '../Renderer/SVG/SVGRenderer.js';
 import Time from '../Time.js';
-import { AxisCollectionKey } from '../Axis/AxisOptions';
-declare module '../Axis/AxisBase' {
-    interface AxisBase {
-        extKey?: string;
-        index?: number;
-        touched?: boolean;
-    }
-}
 declare module './ChartBase' {
     interface ChartBase {
-        resetZoomButton?: SVGElement;
-        pan(e: PointerEvent, panning: boolean | ChartPanningOptions): void;
+        /**
+         * Display the zoom button, so users can reset zoom to the default view
+         * settings.
+         *
+         * @emits Highcharts.Chart#event:afterShowResetZoom
+         * @emits Highcharts.Chart#event:beforeShowResetZoom
+         */
         showResetZoom(): void;
+        /**
+         * Zoom the chart out after a user has zoomed in. See also
+         * [Axis.setExtremes](/class-reference/Highcharts.Axis#setExtremes).
+         *
+         * @emits Highcharts.Chart#event:selection
+         */
         zoomOut(): void;
-    }
-}
-declare module './ChartOptions' {
-    interface ChartOptions {
-        forExport?: boolean;
-        renderer?: string;
-        skipClone?: boolean;
     }
 }
 declare module '../Options' {
     interface Options {
+        /**
+         * General options for the chart.
+         */
         chart: ChartOptions;
+        /**
+         * The chart's caption, which will render below the chart and will be
+         * part of exported charts. The caption can be updated after chart
+         * initialization through the `Chart.update` or `Chart.caption.update`
+         * methods.
+         *
+         * @sample highcharts/caption/text/
+         *         A chart with a caption
+         *
+         * @since 7.2.0
+         */
         caption?: Chart.CaptionOptions;
+        /**
+         * Highchart by default puts a credits label in the lower right corner
+         * of the chart. This can be changed using these options.
+         */
         credits?: Chart.CreditsOptions;
+        /**
+         * The chart's subtitle. This can be used both to display a subtitle
+         * below the main title, and to display random text anywhere in the
+         * chart. The subtitle can be updated after chart initialization through
+         * the `Chart.setTitle` method.
+         *
+         * @sample {highcharts} highcharts/title/align-auto/
+         *         Default title alignment
+         * @sample {highmaps} maps/title/subtitle/
+         *         Subtitle options demonstrated
+         */
         subtitle?: Chart.SubtitleOptions;
+        /**
+         * Series options for specific data and the data itself. In TypeScript
+         * you have to cast the series options to specific series types, to get
+         * all possible options for a series.
+         */
         series?: Array<SeriesTypeOptions>;
+        /**
+         * The chart's main title.
+         *
+         * @sample {highmaps} maps/title/title/
+         *         Title options demonstrated
+         * @sample {highcharts} highcharts/title/align-auto/
+         *         Default title alignment
+         */
         title?: Chart.TitleOptions;
     }
 }
@@ -99,83 +130,200 @@ declare class Chart {
     static chart(renderTo: (string | globalThis.HTMLElement), options: Partial<Options>, callback?: Chart.CallbackFunction): Chart;
     constructor(options: Partial<Options>, callback?: Chart.CallbackFunction);
     constructor(renderTo: (string | globalThis.HTMLElement), options: Partial<Options>, callback?: Chart.CallbackFunction);
-    _cursor?: (CursorValue | null);
-    axes: Array<AxisType>;
-    axisOffset: Array<number>;
-    callback?: Chart.CallbackFunction;
-    chartBackground?: SVGElement;
-    chartHeight: number;
-    chartWidth: number;
-    clipBox: BBoxObject;
-    clipOffset?: [number, number, number, number];
-    clipRect?: SVGElement;
-    colorCounter: number;
-    container: globalThis.HTMLElement;
-    containerBox?: {
-        height: number;
-        width: number;
-    };
-    credits?: SVGElement;
-    caption?: SVGElement;
-    eventOptions: Record<string, EventCallback<Series, Event>>;
-    hasCartesianSeries?: boolean;
-    hasLoaded?: boolean;
-    hasRendered?: boolean;
-    index: number;
-    isDirtyBox?: boolean;
-    isDirtyLegend?: boolean;
-    isResizing: number;
-    labelCollectors: Array<Chart.LabelCollectorFunction>;
-    loadingDiv?: HTMLDOMElement;
-    loadingShown?: boolean;
-    loadingSpan?: HTMLDOMElement;
-    locale?: string | Array<string>;
-    margin: Array<number>;
-    marginBottom?: number;
-    numberFormatter: NumberFormatterCallbackFunction;
-    oldChartHeight?: number;
-    oldChartWidth?: number;
-    options: Options;
-    plotBackground?: SVGElement;
-    plotBGImage?: SVGElement;
-    plotBorder?: SVGElement;
-    plotBorderWidth?: number;
-    plotBox: BBoxObject;
-    plotHeight: number;
-    plotLeft: number;
-    plotSizeX?: number;
-    plotSizeY?: number;
-    plotTop: number;
-    plotWidth: number;
-    pointCount: number;
-    pointer?: Pointer;
-    reflowTimeout?: number;
-    renderer: Chart.Renderer;
-    renderTo: globalThis.HTMLElement;
-    series: Array<Series>;
-    seriesGroup?: SVGElement;
-    sharedClips: Record<string, (SVGElement | undefined)>;
-    spacing: Array<number>;
-    spacingBox: BBoxObject;
-    styledMode?: boolean;
-    subtitle?: SVGElement;
-    symbolCounter: number;
-    time: Time;
-    title?: SVGElement;
-    titleOffset: Array<number>;
-    userOptions: Partial<Options>;
-    xAxis: Array<AxisType>;
-    yAxis: Array<AxisType>;
-    zooming: ChartZoomingOptions;
-    zoomClipRect?: SVGElement;
     /**
-     * Function setting zoom options after chart init and after chart update.
-     * Offers support for deprecated options.
+     * All the axes in the chart.
      *
-     * @private
-     * @function Highcharts.Chart#setZoomOptions
+     * @see  Highcharts.Chart.xAxis
+     * @see  Highcharts.Chart.yAxis
+     *
+     * @name Highcharts.Chart#axes
+     * @type {Array<Highcharts.Axis>}
      */
-    setZoomOptions(): void;
+    axes: Array<AxisType>;
+    /**
+     * The current pixel height of the chart.
+     *
+     * @name Highcharts.Chart#chartHeight
+     * @type {number}
+     */
+    chartHeight: number;
+    /**
+     * The current pixel width of the chart.
+     *
+     * @name Highcharts.Chart#chartWidth
+     * @type {number}
+     */
+    chartWidth: number;
+    /**
+     * The containing HTML element of the chart. The container is
+     * dynamically inserted into the element given as the `renderTo`
+     * parameter in the {@link Highcharts#chart} constructor.
+     *
+     * @name Highcharts.Chart#container
+     * @type {Highcharts.HTMLDOMElement}
+     */
+    container: globalThis.HTMLElement;
+    /**
+     * The chart's credits label. The label has an `update` method that
+     * allows setting new options as per the
+     * [credits options set](https://api.highcharts.com/highcharts/credits).
+     *
+     * @name Highcharts.Chart#credits
+     * @type {Highcharts.SVGElement}
+     */
+    credits?: SVGElement;
+    /**
+     * The chart's caption. The caption has an `update` method that
+     * allows modifying the options directly or indirectly via
+     * `chart.update`.
+     *
+     * @name Highcharts.Chart#caption
+     * @type {Highcharts.CaptionObject}
+     */
+    caption?: SVGElement;
+    /**
+     * Index position of the chart in the {@link Highcharts#charts}
+     * property.
+     *
+     * @name Highcharts.Chart#index
+     * @type {number}
+     * @readonly
+     */
+    index: number;
+    /**
+     * Callback function to override the default function that formats
+     * all the numbers in the chart. Returns a string with the formatted
+     * number.
+     *
+     * @name Highcharts.Chart#numberFormatter
+     * @type {Highcharts.NumberFormatterCallbackFunction}
+     */
+    numberFormatter: NumberFormatterCallbackFunction;
+    /**
+     * The options structure for the chart after merging
+     * {@link #defaultOptions} and {@link #userOptions}. It contains
+     * members for the sub elements like series, legend, tooltip etc.
+     *
+     * @name Highcharts.Chart#options
+     * @type {Highcharts.Options}
+     */
+    options: Options;
+    /**
+     * The current height of the plot area in pixels.
+     *
+     * @name Highcharts.Chart#plotHeight
+     * @type {number}
+     */
+    plotHeight: number;
+    /**
+     * The current left position of the plot area in pixels.
+     *
+     * @name Highcharts.Chart#plotLeft
+     * @type {number}
+     */
+    plotLeft: number;
+    /**
+     * The current top position of the plot area in pixels.
+     *
+     * @name Highcharts.Chart#plotTop
+     * @type {number}
+     */
+    plotTop: number;
+    /**
+     * The current width of the plot area in pixels.
+     *
+     * @name Highcharts.Chart#plotWidth
+     * @type {number}
+     */
+    plotWidth: number;
+    /**
+     * The renderer instance of the chart. Each chart instance has only one
+     * associated renderer.
+     *
+     * @name Highcharts.Chart#renderer
+     * @type {Highcharts.SVGRenderer}
+     */
+    renderer: SVGRenderer;
+    /**
+     * All the current series in the chart.
+     *
+     * @name Highcharts.Chart#series
+     * @type {Array<Highcharts.Series>}
+     */
+    series: Array<Series>;
+    /**
+     * Whether the chart is in styled mode, meaning all presentational
+     * attributes are avoided.
+     *
+     * @name Highcharts.Chart#styledMode
+     * @type {boolean}
+     */
+    styledMode?: boolean;
+    /**
+     * The chart subtitle. The subtitle has an `update` method that
+     * allows modifying the options directly or indirectly via
+     * `chart.update`.
+     *
+     * @name Highcharts.Chart#subtitle
+     * @type {Highcharts.SubtitleObject}
+     */
+    subtitle?: SVGElement;
+    /**
+     * The `Time` object associated with the chart. Since v6.0.5,
+     * time settings can be applied individually for each chart. If
+     * no individual settings apply, the `Time` object is shared by
+     * all instances.
+     *
+     * @name Highcharts.Chart#time
+     * @type {Highcharts.Time}
+     */
+    time: Time;
+    /**
+     * The chart title. The title has an `update` method that allows
+     * modifying the options directly or indirectly via
+     * `chart.update`.
+     *
+     * @sample highcharts/members/title-update/
+     *         Updating titles
+     *
+     * @name Highcharts.Chart#title
+     * @type {Highcharts.TitleObject}
+     */
+    title?: SVGElement;
+    /**
+     * The original options given to the constructor or a chart factory
+     * like {@link Highcharts.chart} and {@link Highcharts.stockChart}.
+     * The original options are shallow copied to avoid mutation. The
+     * copy, `chart.userOptions`, may later be mutated to reflect
+     * updated options throughout the lifetime of the chart.
+     *
+     * For collections, like `series`, `xAxis` and `yAxis`, the chart
+     * user options should always be reflected by the item user option,
+     * so for example the following should always be true:
+     *
+     * `chart.xAxis[0].userOptions === chart.userOptions.xAxis[0]`
+     *
+     * @name Highcharts.Chart#userOptions
+     * @type {Highcharts.Options}
+     */
+    userOptions: Partial<Options>;
+    /**
+     * A collection of the X axes in the chart.
+     *
+     * @name Highcharts.Chart#xAxis
+     * @type {Array<Highcharts.Axis>}
+     */
+    xAxis: Array<AxisType>;
+    /**
+     * A collection of the Y axes in the chart.
+     *
+     * @name Highcharts.Chart#yAxis
+     * @type {Array<Highcharts.Axis>}
+     *
+     * @todo
+     * Make events official: Fire the event `afterInit`.
+     */
+    yAxis: Array<AxisType>;
     /**
      * Overridable function that initializes the chart. The constructor's
      * arguments are passed on directly.
@@ -189,54 +337,10 @@ declare class Chart {
      *        Function to run when the chart has loaded and all external
      *        images are loaded.
      *
-     *
      * @emits Highcharts.Chart#event:init
      * @emits Highcharts.Chart#event:afterInit
      */
     init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction): void;
-    /**
-     * Internal function to initialize an individual series.
-     *
-     * @private
-     * @function Highcharts.Chart#initSeries
-     */
-    initSeries(options: SeriesOptions): Series;
-    /**
-     * Internal function to set data for all series with enabled sorting.
-     *
-     * @private
-     * @function Highcharts.Chart#setSortedData
-     */
-    setSortedData(): void;
-    /**
-     * Sort and return chart series in order depending on the number of linked
-     * series.
-     *
-     * @private
-     * @function Highcharts.Series#getSeriesOrderByLinks
-     */
-    getSeriesOrderByLinks(): Array<Series>;
-    /**
-     * Order all series or axes above a given index. When series or axes are
-     * added and ordered by configuration, only the last series is handled
-     * (#248, #1123, #2456, #6112). This function is called on series and axis
-     * initialization and destroy.
-     *
-     * @private
-     * @function Highcharts.Chart#orderItems
-     * @param {string} coll The collection name
-     * @param {number} [fromIndex=0]
-     * If this is given, only the series above this index are handled.
-     */
-    orderItems(coll: ('colorAxis' | 'series' | 'xAxis' | 'yAxis' | 'zAxis'), fromIndex?: number): void;
-    /**
-     * Get the clipping for a series. Could be called for a series to initialate
-     * animating the clip or to set the final clip (only width and x).
-     *
-     * @private
-     * @function Highcharts.Chart#getClipBox
-     */
-    getClipBox(series?: Series, chartCoords?: boolean): BBoxObject;
     /**
      * Check whether a given point is within the plot area.
      *
@@ -295,15 +399,6 @@ declare class Chart {
      */
     get(id: string): (Axis | Series | Point | undefined);
     /**
-     * Create the Axis instances based on the config options.
-     *
-     * @private
-     * @function Highcharts.Chart#createAxes
-     * @emits Highcharts.Chart#event:afterCreateAxes
-     * @emits Highcharts.Chart#event:createAxes
-     */
-    createAxes(): void;
-    /**
      * Returns an array of all currently selected points in the chart. Points
      * can be selected by clicking or programmatically by the
      * {@link Highcharts.Point#select}
@@ -361,61 +456,6 @@ declare class Chart {
      */
     setTitle(titleOptions?: Chart.TitleOptions, subtitleOptions?: Chart.SubtitleOptions, redraw?: boolean): void;
     /**
-     * Apply a title, subtitle or caption for the chart
-     *
-     * @private
-     * @function Highcharts.Chart#applyDescription
-     * @param key {string}
-     * Either title, subtitle or caption
-     * @param {Highcharts.TitleOptions|Highcharts.SubtitleOptions|Highcharts.CaptionOptions|undefined} explicitOptions
-     * The options to set, will be merged with default options.
-     */
-    applyDescription(key: Chart.DescriptionKey, explicitOptions?: Chart.DescriptionOptionsType): void;
-    /**
-     * Internal function to lay out the chart title, subtitle and caption, and
-     * cache the full offset height for use in `getMargins`. The result is
-     * stored in `this.titleOffset`.
-     *
-     * @private
-     * @function Highcharts.Chart#layOutTitles
-     *
-     * @param {boolean} [redraw=true]
-     * @emits Highcharts.Chart#event:afterLayOutTitles
-     */
-    layOutTitles(redraw?: boolean): void;
-    /**
-     * Internal function to get the available size of the container element
-     *
-     * @private
-     * @function Highcharts.Chart#getContainerBox
-     */
-    getContainerBox(): {
-        width: number;
-        height: number;
-    };
-    /**
-     * Internal function to get the chart width and height according to options
-     * and container size. Sets {@link Chart.chartWidth} and
-     * {@link Chart.chartHeight}.
-     *
-     * @private
-     * @function Highcharts.Chart#getChartSize
-     */
-    getChartSize(): void;
-    /**
-     * If the renderTo element has no offsetWidth, most likely one or more of
-     * its parents are hidden. Loop up the DOM tree to temporarily display the
-     * parents, then save the original display properties, and when the true
-     * size is retrieved, reset them. Used on first render and on redraws.
-     *
-     * @private
-     * @function Highcharts.Chart#temporaryDisplay
-     *
-     * @param {boolean} [revert]
-     * Revert to the saved original styles.
-     */
-    temporaryDisplay(revert?: boolean): void;
-    /**
      * Set the {@link Chart.container|chart container's} class name, in
      * addition to `highcharts-container`.
      *
@@ -425,30 +465,6 @@ declare class Chart {
      * The additional class name.
      */
     setClassName(className?: string): void;
-    /**
-     * Get the containing element, determine the size and create the inner
-     * container div to hold the chart.
-     *
-     * @private
-     * @function Highcharts.Chart#afterGetContainer
-     * @emits Highcharts.Chart#event:afterGetContainer
-     */
-    getContainer(): void;
-    /**
-     * Calculate margins by rendering axis labels in a preliminary position.
-     * Title, subtitle and legend have already been rendered at this stage, but
-     * will be moved into their final positions.
-     *
-     * @private
-     * @function Highcharts.Chart#getMargins
-     * @emits Highcharts.Chart#event:getMargins
-     */
-    getMargins(skipAxes?: boolean): void;
-    /**
-     * @private
-     * @function Highcharts.Chart#getAxisMargins
-     */
-    getAxisMargins(): void;
     /**
      * Return the current options of the chart, but only those that differ from
      * default options. Items that can be either an object or an array of
@@ -479,14 +495,6 @@ declare class Chart {
      *        internally as a response to window resize.
      */
     reflow(e?: Event): void;
-    /**
-     * Toggle the event handlers necessary for auto resizing, depending on the
-     * `chart.reflow` option.
-     *
-     * @private
-     * @function Highcharts.Chart#setReflow
-     */
-    setReflow(): void;
     /**
      * Resize the chart to a given width and height. In order to set the width
      * only, the height argument may be skipped. To set the height only, pass
@@ -522,64 +530,6 @@ declare class Chart {
      */
     setSize(width?: (number | null), height?: (number | null), animation?: (boolean | Partial<AnimationOptions>)): void;
     /**
-     * Set the public chart properties. This is done before and after the
-     * pre-render to determine margin sizes.
-     *
-     * @private
-     * @function Highcharts.Chart#setChartSize
-     * @emits Highcharts.Chart#event:afterSetChartSize
-     */
-    setChartSize(skipAxes?: boolean): void;
-    /**
-     * Initial margins before auto size margins are applied.
-     *
-     * @private
-     * @function Highcharts.Chart#resetMargins
-     */
-    resetMargins(): void;
-    /**
-     * Internal function to draw or redraw the borders and backgrounds for chart
-     * and plot area.
-     *
-     * @private
-     * @function Highcharts.Chart#drawChartBox
-     * @emits Highcharts.Chart#event:afterDrawChartBox
-     */
-    drawChartBox(): void;
-    /**
-     * Detect whether a certain chart property is needed based on inspecting its
-     * options and series. This mainly applies to the chart.inverted property,
-     * and in extensions to the chart.angular and chart.polar properties.
-     *
-     * @private
-     * @function Highcharts.Chart#propFromSeries
-     */
-    propFromSeries(): void;
-    /**
-     * Internal function to link two or more series together, based on the
-     * `linkedTo` option. This is done from `Chart.render`, and after
-     * `Chart.addSeries` and `Series.remove`.
-     *
-     * @private
-     * @function Highcharts.Chart#linkSeries
-     * @emits Highcharts.Chart#event:afterLinkSeries
-     */
-    linkSeries(isUpdating?: boolean): void;
-    /**
-     * Render series for the chart.
-     *
-     * @private
-     * @function Highcharts.Chart#renderSeries
-     */
-    renderSeries(): void;
-    /**
-     * Render all graphics for the chart. Runs internally on initialization.
-     *
-     * @private
-     * @function Highcharts.Chart#render
-     */
-    render(): void;
-    /**
      * Set a new credits label for the chart.
      *
      * @sample highcharts/credits/credits-update/
@@ -606,35 +556,6 @@ declare class Chart {
      * @emits Highcharts.Chart#event:destroy
      */
     destroy(): void;
-    /**
-     * Prepare for first rendering after all data are loaded.
-     *
-     * @private
-     * @function Highcharts.Chart#firstRender
-     * @emits Highcharts.Chart#event:beforeRender
-     */
-    firstRender(): void;
-    /**
-     * Internal function that runs on chart load, async if any images are loaded
-     * in the chart. Runs the callbacks and triggers the `load` and `render`
-     * events.
-     *
-     * @private
-     * @function Highcharts.Chart#onload
-     * @emits Highcharts.Chart#event:load
-     * @emits Highcharts.Chart#event:render
-     */
-    onload(): void;
-    /**
-     * Emit console warning if the a11y module is not loaded.
-     * @private
-     */
-    warnIfA11yModuleNotLoaded(): void;
-    /**
-     * Emit console warning if the highcharts.css file is not loaded.
-     * @private
-     */
-    warnIfCSSNotLoaded(): void;
     /**
      * Add a series to the chart after render time. Note that this method should
      * never be used when adding data synchronously at chart render time, as it
@@ -723,23 +644,7 @@ declare class Chart {
      * @return {Highcharts.Axis}
      *         The newly generated Axis object.
      */
-    addColorAxis(options: ColorAxis.Options, redraw?: boolean, animation?: boolean): Axis;
-    /**
-     * Factory for creating different axis types.
-     *
-     * @private
-     * @function Highcharts.Chart#createAxis
-     *
-     * @param {string} coll
-     *        An axis type.
-     *
-     * @param {...Array<*>} arguments
-     *        All arguments for the constructor.
-     *
-     * @return {Highcharts.Axis}
-     *         The newly generated Axis object.
-     */
-    createAxis(coll: AxisCollectionKey, options: Chart.CreateAxisOptionsObject): Axis;
+    addColorAxis(options: ColorAxisOptions, redraw?: boolean, animation?: boolean): Axis;
     /**
      * Dim the chart and show a loading text or symbol. Options for the loading
      * screen are defined in {@link
@@ -871,93 +776,206 @@ declare class Chart {
      * @emits Highcharts.Chart#event:selection
      */
     zoomOut(): void;
-    /**
-     * Pan the chart by dragging the mouse across the pane. This function is
-     * called on mouse move, and the distance to pan is computed from chartX
-     * compared to the first chartX position in the dragging operation.
-     *
-     * @private
-     * @function Highcharts.Chart#pan
-     * @param {Highcharts.PointerEventObject} event
-     * @param {string} panning
-     */
-    pan(event: PointerEvent, panning: ChartPanningOptions | boolean): void;
-    /**
-     * Pan and scale the chart. Used internally by mouse-pan, touch-pan,
-     * touch-zoom, and mousewheel zoom.
-     *
-     * The main positioning logic is created around two imaginary boxes. What is
-     * currently within the `from` rectangle, should be transformed to fill up
-     * the `to` rectangle.
-     * - In a mouse zoom, the `from` rectangle is the selection, while the `to`
-     *   rectangle is the full plot area.
-     * - In a touch zoom, the `from` rectangle is made up of the last two-finger
-     *   touch, while the `to`` rectangle is the current touch.
-     * - In a mousewheel zoom, the `to` rectangle is a 10x10 px square,
-     *   while the `to` rectangle reflects the scale around that.
-     *
-     * @private
-     * @function Highcharts.Chart#transform
-     */
-    transform(params: Chart.ChartTransformParams): boolean;
 }
 interface Chart extends ChartBase {
-    callbacks: Array<Chart.CallbackFunction>;
-    collectionsWithInit: Record<string, [Function, Array<any>?]>;
-    collectionsWithUpdate: Array<string>;
-    propsRequireDirtyBox: Array<string>;
-    propsRequireReflow: Array<string>;
-    propsRequireUpdateSeries: Array<string>;
 }
 declare namespace Chart {
-    interface AfterUpdateEventObject {
-        animation: (boolean | Partial<AnimationOptions>);
-        options: Options;
-        redraw: boolean;
-    }
+    /**
+     * Callback for chart constructors.
+     *
+     * @param {Highcharts.Chart} chart
+     *        Created chart.
+     */
     interface CallbackFunction {
         (this: Chart, chart: Chart): void;
     }
+    /**
+     * The chart's caption, which will render below the chart and will be part
+     * of exported charts. The caption can be updated after chart initialization
+     * through the `Chart.update` or `Chart.caption.update` methods.
+     *
+     * @sample highcharts/caption/text/
+     *         A chart with a caption
+     *
+     * @since 7.2.0
+     */
     interface CaptionOptions {
+        /**
+         * The horizontal alignment of the caption. Can be one of "left",
+         *  "center" and "right".
+         */
         align?: AlignValue;
+        /**
+         * When the caption is floating, the plot area will not move to make
+         * space for it.
+         *
+         * @default false
+         */
         floating?: boolean;
+        /**
+         * The margin between the caption and the plot area.
+         */
         margin?: number;
+        /**
+         * CSS styles for the caption.
+         *
+         * In styled mode, the caption style is given in the
+         * `.highcharts-caption` class.
+         *
+         * @sample {highcharts} highcharts/css/titles/
+         *         Styled mode
+         *
+         * @default {"color": "#666666"}
+         */
         style: CSSObject;
+        /**
+         * The caption text of the chart.
+         *
+         * @sample {highcharts} highcharts/caption/text/
+         *         Custom caption
+         */
         text?: string;
+        /**
+         * Whether to
+         * [use HTML](https://www.highcharts.com/docs/chart-concepts/labels-and-string-formatting#html)
+         * to render the text.
+         *
+         * @default false
+         */
         useHTML?: boolean;
+        /**
+         * The vertical alignment of the caption. Can be one of `"top"`,
+         * `"middle"` and `"bottom"`. When middle, the caption behaves as
+         * floating.
+         */
         verticalAlign?: VerticalAlignValue;
-        width?: number;
+        /**
+         * The x position of the caption relative to the alignment within
+         * `chart.spacingLeft` and `chart.spacingRight`.
+         *
+         * @default 0
+         */
         x?: number;
+        /**
+         * The y position of the caption relative to the alignment within
+         * `chart.spacingTop` and `chart.spacingBottom`.
+         */
         y?: number;
-        zIndex?: number;
     }
-    interface ChartTransformParams {
-        axes?: Array<Axis>;
-        event?: PointerEvent;
-        to?: Partial<BBoxObject>;
-        reset?: boolean;
-        selection?: Pointer.SelectEventObject;
-        from?: Partial<BBoxObject>;
-        trigger?: string;
-        allowResetButton?: boolean;
-        hasZoomed?: boolean;
-    }
-    interface CreateAxisOptionsObject {
-        animation: (undefined | boolean | Partial<AnimationOptions>);
-        axis: (DeepPartial<AxisOptions> | DeepPartial<ColorAxis.Options>);
-        redraw: (undefined | boolean);
-    }
+    /**
+     * Highchart by default puts a credits label in the lower right corner
+     * of the chart. This can be changed using these options.
+     */
     interface CreditsOptions {
+        /**
+         * Whether to show the credits text.
+         *
+         * @sample {highcharts} highcharts/credits/enabled-false/
+         *         Credits disabled
+         * @sample {highstock} stock/credits/enabled/
+         *         Credits disabled
+         * @sample {highmaps} maps/credits/enabled-false/
+         *         Credits disabled
+         */
         enabled?: boolean;
+        /**
+         * The URL for the credits label.
+         *
+         * @sample {highcharts} highcharts/credits/href/
+         *         Custom URL and text
+         * @sample {highmaps} maps/credits/customized/
+         *         Custom URL and text
+         *
+         * @default https://www.highcharts.com?credits
+         */
         href?: string;
+        /**
+         * Events for the credits label.
+         *
+         * @declare Highcharts.CreditsEventsOptionsObject
+         */
+        events?: {
+            /**
+             * Callback function to handle click events on the credits label.
+             * The callback can call `event.preventDefault()` to prevent the
+             * default navigation behavior. Alternatively, you can add a general
+             * event handler using `Highcharts.addEvent(chart, 'creditsClick',
+             * callback)` instead of providing it in the options tree.
+             *
+             * @sample {highcharts} highcharts/credits/events-click/
+             *         Custom click handler
+             *
+             * @param {Event} event
+             *        The click event object.
+             */
+            click?: (event: Event) => void;
+        };
+        /**
+         * Credits for map source to be concatenated with conventional credit
+         * text. By default this is a format string that collects copyright
+         * information from the map if available.
+         *
+         * @see [mapTextFull](#credits.mapTextFull)
+         * @see [text](#credits.text)
+         *
+         * @default   \u00a9 <a href="{geojson.copyrightUrl}">{geojson.copyrightShort}</a>
+         * @since     4.2.2
+         * @product   highmaps
+         */
         mapText?: string;
+        /**
+         * Detailed credits for map source to be displayed on hover of credits
+         * text. By default this is a format string that collects copyright
+         * information from the map if available.
+         *
+         * @see [mapText](#credits.mapText)
+         * @see [text](#credits.text)
+         *
+         * @default {geojson.copyright}
+         * @since   4.2.2
+         * @product highmaps
+         */
         mapTextFull?: string;
+        /**
+         * Position configuration for the credits label.
+         *
+         * @sample {highcharts} highcharts/credits/position-left/
+         *         Left aligned
+         * @sample {highcharts} highcharts/credits/position-left/
+         *         Left aligned
+         * @sample {highmaps} maps/credits/customized/
+         *         Left aligned
+         * @sample {highmaps} maps/credits/customized/
+         *         Left aligned
+         *
+         * @since 2.1
+         */
         position?: AlignObject;
+        /**
+         * CSS styles for the credits label.
+         *
+         * @see In styled mode, credits styles can be set with the
+         *      `.highcharts-credits` class.
+         */
         style: CSSObject;
+        /**
+         * The text for the credits label.
+         *
+         * @productdesc {highmaps}
+         * If a map is loaded as GeoJSON, the text defaults to
+         * `Highcharts @ {map-credits}`. Otherwise, it defaults to
+         * `Highcharts.com`.
+         *
+         * @sample {highcharts} highcharts/credits/href/
+         *         Custom URL and text
+         * @sample {highmaps} maps/credits/customized/
+         *         Custom URL and text
+         */
         text?: string;
     }
-    type DescriptionOptionsType = (TitleOptions | SubtitleOptions | CaptionOptions);
-    type DescriptionKey = 'title' | 'subtitle' | 'caption';
+    /**
+     * Options for the Chart.isInsidePlot function.
+     */
     interface IsInsideOptionsObject {
         axis?: Axis;
         ignoreX?: boolean;
@@ -967,43 +985,284 @@ declare namespace Chart {
         series?: Series;
         visiblePlotOnly?: boolean;
     }
-    interface LabelCollectorFunction {
-        (): (Array<(SVGElement | undefined)> | undefined);
-    }
-    interface LayoutTitleEventObject {
-        alignTo: BBoxObject;
-        key: Chart.DescriptionKey;
-        textPxLength: number;
-    }
-    interface Renderer extends SVGRenderer {
-        plotBox: BBoxObject;
-        spacingBox: BBoxObject;
-    }
+    /**
+     * The chart's subtitle. This can be used both to display a subtitle below
+     * the main title, and to display random text anywhere in the chart. The
+     * subtitle can be updated after chart initialization through the
+     * `Chart.setTitle` method.
+     *
+     * @sample {highcharts} highcharts/title/align-auto/
+     *         Default title alignment
+     * @sample {highmaps} maps/title/subtitle/
+     *         Subtitle options demonstrated
+     */
     interface SubtitleOptions {
+        /**
+         * The horizontal alignment of the subtitle. Can be one of "left",
+         * "center" and "right". Since v12, it defaults to `undefined`, meaning
+         * the actual alignment is inherited from the alignment of the main
+         * title.
+         *
+         * @sample {highcharts} highcharts/title/align-auto/
+         *         Default title and subtitle alignment, dynamic
+         * @sample {highcharts} highcharts/subtitle/align/
+         *         Footnote at right of plot area
+         * @sample {highstock} stock/chart/subtitle-footnote
+         *         Footnote at bottom right of plot area
+         *
+         * @since 2.0
+         */
         align?: AlignValue;
+        /**
+         * When the subtitle is floating, the plot area will not move to make
+         * space for it.
+         *
+         * @sample {highcharts} highcharts/subtitle/floating/
+         *         Floating title and subtitle
+         * @sample {highstock} stock/chart/subtitle-footnote
+         *         Footnote floating at bottom right of plot area
+         *
+         * @default false
+         * @since   2.1
+         */
         floating?: boolean;
+        /**
+         * CSS styles for the title.
+         *
+         * In styled mode, the subtitle style is given in the
+         * `.highcharts-subtitle` class.
+         *
+         * @sample {highcharts} highcharts/subtitle/style/
+         *         Custom color and weight
+         * @sample {highcharts} highcharts/css/titles/
+         *         Styled mode
+         * @sample {highstock} stock/chart/subtitle-style
+         *         Custom color and weight
+         * @sample {highstock} highcharts/css/titles/
+         *         Styled mode
+         * @sample {highmaps} highcharts/css/titles/
+         *         Styled mode
+         *
+         * @default {"color": "#666666"}
+         */
         style: CSSObject;
+        /**
+         * The subtitle of the chart.
+         *
+         * @sample {highcharts|highstock} highcharts/subtitle/text/
+         *         Custom subtitle
+         * @sample {highcharts|highstock} highcharts/subtitle/text-formatted/
+         *         Formatted and linked text.
+         */
         text?: string;
+        /**
+         * Whether to
+         * [use HTML](https://www.highcharts.com/docs/chart-concepts/labels-and-string-formatting#html)
+         * to render the text.
+         *
+         * @default false
+         */
         useHTML?: boolean;
+        /**
+         * The vertical alignment of the title. Can be one of `"top"`,
+         * `"middle"` and `"bottom"`. When middle, the subtitle behaves as
+         * floating.
+         *
+         * @sample {highcharts} highcharts/subtitle/verticalalign/
+         *         Footnote at the bottom right of plot area
+         * @sample {highstock} stock/chart/subtitle-footnote
+         *         Footnote at the bottom right of plot area
+         *
+         * @since 2.1
+         */
         verticalAlign?: VerticalAlignValue;
-        width?: number;
+        /**
+         * The x position of the subtitle relative to the alignment within
+         * `chart.spacingLeft` and `chart.spacingRight`.
+         *
+         * @sample {highcharts} highcharts/subtitle/align/
+         *         Footnote at right of plot area
+         * @sample {highstock} stock/chart/subtitle-footnote
+         *         Footnote at the bottom right of plot area
+         *
+         * @default 0
+         * @since   2.0
+         */
         x?: number;
+        /**
+         * The y position of the subtitle relative to the alignment within
+         * `chart.spacingTop` and `chart.spacingBottom`. By default the subtitle
+         * is laid out below the title unless the title is floating.
+         *
+         * @sample {highcharts} highcharts/subtitle/verticalalign/
+         *         Footnote at the bottom right of plot area
+         * @sample {highstock} stock/chart/subtitle-footnote
+         *         Footnote at the bottom right of plot area
+         *
+         * @since 2.0
+         */
         y?: number;
-        zIndex?: number;
     }
+    /**
+     * The chart's main title.
+     *
+     * @sample {highmaps} maps/title/title/
+     *         Title options demonstrated
+     * @sample {highcharts} highcharts/title/align-auto/
+     *         Default title alignment
+     */
     interface TitleOptions {
+        /**
+         * The horizontal alignment of the title. Can be one of "left", "center"
+         * and "right".
+         *
+         * Since v12 it defaults to `undefined`, meaning the alignment is
+         * computed for best fit. If the text fits in one line, it aligned to
+         * the center, but if it is wrapped into multiple lines, it is aligned
+         * to the left.
+         *
+         * @sample {highcharts} highcharts/title/align-auto/
+         *         Default alignment, dynamic
+         * @sample {highcharts} highcharts/title/align/
+         *         Aligned to the plot area (x = 70px = margin left - spacing
+         *         left)
+         * @sample {highstock} stock/chart/title-align/
+         *         Aligned to the plot area (x = 50px = margin left - spacing
+         *         left)
+         *
+         * @since 2.0
+         */
         align?: AlignValue;
+        /**
+         * When the title is floating, the plot area will not move to make space
+         * for it.
+         *
+         * @sample {highcharts} highcharts/chart/zoomtype-none/
+         *         False by default
+         * @sample {highcharts} highcharts/title/floating/
+         *         True - title on top of the plot area
+         * @sample {highstock} stock/chart/title-floating/
+         *         True - title on top of the plot area
+         *
+         * @default false
+         * @since   2.1
+         */
         floating?: boolean;
+        /**
+         * The margin between the title and the plot area, or if a subtitle
+         * is present, the margin between the subtitle and the plot area.
+         *
+         * @sample {highcharts} highcharts/title/margin-50/
+         *         A chart title margin of 50
+         * @sample {highcharts} highcharts/title/margin-subtitle/
+         *         The same margin applied with a subtitle
+         * @sample {highstock} stock/chart/title-margin/
+         *         A chart title margin of 50
+         *
+         * @since 2.1
+         */
         margin?: number;
+        /**
+         * When the title is too wide to fit in the chart, the default behavior
+         * is to scale it down to fit, or apply word wrap if it is scaled down
+         * to `minScale` and still doesn't fit.
+         *
+         * The default value reflects the scale, when using default font sizes,
+         * when the title font size matches that of the subtitle. The title
+         * still stands out as it is bold by default.
+         *
+         * Set `minScale` to 1 to avoid downscaling.
+         *
+         * @sample {highcharts} highcharts/title/align-auto/
+         *         Downscaling demonstrated
+         *
+         * @since 12.0.0
+         */
         minScale?: number;
+        /**
+         * CSS styles for the title. Use this for font styling, but use `align`,
+         * `x` and `y` for text alignment.
+         *
+         * Note that the default [title.minScale](#title.minScale) option also
+         * affects the rendered font size. In order to keep the font size fixed
+         * regardless of title length, set `minScale` to 1.
+         *
+         * In styled mode, the title style is given in the `.highcharts-title`
+         * class.
+         *
+         * @sample {highcharts} highcharts/title/style/
+         *         Custom color and weight
+         * @sample {highstock} stock/chart/title-style/
+         *         Custom color and weight
+         * @sample highcharts/css/titles/
+         *         Styled mode
+         *
+         * @default {highcharts|highmaps} { "color": "#333333", "fontSize": "18px" }
+         * @default {highstock} { "color": "#333333", "fontSize": "16px" }
+         */
         style: CSSObject;
+        /**
+         * The title of the chart. To disable the title, set the `text` to
+         * `undefined`.
+         *
+         * @sample {highcharts} highcharts/title/text/
+         *         Custom title
+         * @sample {highstock} stock/chart/title-text/
+         *         Custom title
+         *
+         * @default {highcharts|highmaps} Chart title
+         * @default {highstock} undefined
+         */
         text?: string;
+        /**
+         * Whether to
+         * [use HTML](https://www.highcharts.com/docs/chart-concepts/labels-and-string-formatting#html)
+         * to render the text.
+         *
+         * @default false
+         */
         useHTML?: boolean;
+        /**
+         * The vertical alignment of the title. Can be one of `"top"`,
+         * `"middle"` and `"bottom"`. When a value is given, the title behaves
+         * as if [floating](#title.floating) were `true`.
+         *
+         * @sample {highcharts} highcharts/title/verticalalign/
+         *         Chart title in bottom right corner
+         * @sample {highstock} stock/chart/title-verticalalign/
+         *         Chart title in bottom right corner
+         *
+         * @since 2.1
+         */
         verticalAlign?: VerticalAlignValue;
-        width?: number;
+        /**
+         * The x position of the title relative to the alignment within
+         * `chart.spacingLeft` and `chart.spacingRight`.
+         *
+         * @sample {highcharts} highcharts/title/align/
+         *         Aligned to the plot area (x = 70px = margin left - spacing
+         *         left)
+         * @sample {highstock} stock/chart/title-align/
+         *         Aligned to the plot area (x = 50px = margin left - spacing
+         *         left)
+         *
+         * @default 0
+         * @since   2.0
+         */
         x?: number;
+        /**
+         * The y position of the title relative to the alignment within
+         * [chart.spacingTop](#chart.spacingTop) and [chart.spacingBottom](
+         * #chart.spacingBottom). By default it depends on the font size.
+         *
+         * @sample {highcharts} highcharts/title/y/
+         *         Title inside the plot area
+         * @sample {highstock} stock/chart/title-verticalalign/
+         *         Chart title in bottom right corner
+         *
+         * @since 2.0
+         */
         y?: number;
-        zIndex?: number;
     }
 }
 export default Chart;

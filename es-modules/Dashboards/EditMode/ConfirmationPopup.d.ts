@@ -22,7 +22,7 @@ declare class ConfirmationPopup extends BaseForm {
      * @param options
      * Options for confirmation popup.
      */
-    constructor(parentDiv: HTMLElement, iconsURL: string, editMode: EditMode, options?: ConfirmationPopup.Options);
+    constructor(parentDiv: HTMLElement, iconsURL: string, editMode: EditMode, options?: Options);
     /**
      * Container for buttons.
      */
@@ -38,11 +38,11 @@ declare class ConfirmationPopup extends BaseForm {
     /**
      * Options for confirmation popup.
      */
-    options?: ConfirmationPopup.Options;
+    options?: Options;
     /**
      * Show options for confirmation popup.
      */
-    contentOptions?: ConfirmationPopup.ContentOptions;
+    contentOptions?: ContentOptions;
     /**
      * Returns popup container.
      *
@@ -76,48 +76,46 @@ declare class ConfirmationPopup extends BaseForm {
      * @param options
      * Options for confirmation popup.
      */
-    show(options: ConfirmationPopup.ContentOptions): void;
+    show(options: ContentOptions): void;
     /**
      * Hides confirmation popup.
      */
     closePopup(): void;
 }
-declare namespace ConfirmationPopup {
+/**
+ * Options for confirmation popup.
+ */
+export interface Options {
     /**
-     * Options for confirmation popup.
+     * Close icon
+     *
+     * Try it:
+     *
+     * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/edit-mode/change-close-icon/ | Change close icon}
      */
-    interface Options {
-        /**
-         * Close icon
-         *
-         * Try it:
-         *
-         * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/edit-mode/change-close-icon/ | Change close icon}
-         */
-        close: CloseIcon;
-    }
+    close: CloseIcon;
+}
+/**
+ * Close icon options.
+ */
+export interface CloseIcon {
     /**
-     * Close icon options.
+     * Icon's URL.
      */
-    interface CloseIcon {
-        /**
-         * Icon's URL.
-         */
-        icon: string;
-    }
-    interface ContentOptions {
-        confirmButton: ConfirmButton;
-        cancelButton: ConfirmButton;
-        text: string;
-    }
-    interface ConfirmButton {
-        value: string;
-        callback: Function;
-        context?: RowEditToolbar | CellEditToolbar;
-    }
-    interface CancelButton {
-        value: string;
-        callback: Function;
-    }
+    icon: string;
+}
+export interface ContentOptions {
+    confirmButton: ConfirmButton;
+    cancelButton: ConfirmButton;
+    text: string;
+}
+export interface ConfirmButton {
+    value: string;
+    callback: Function;
+    context?: RowEditToolbar | CellEditToolbar;
+}
+export interface CancelButton {
+    value: string;
+    callback: Function;
 }
 export default ConfirmationPopup;

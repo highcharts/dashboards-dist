@@ -1,5 +1,6 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type DataTable from '../DataTable';
+import type { Column as DataTableColumn } from '../DataTable';
 import type { Formula } from '../Formula/Formula';
 import type { MathModifierOptions } from './MathModifierOptions';
 import DataModifier from './DataModifier.js';
@@ -18,7 +19,7 @@ declare class MathModifier extends DataModifier {
     static readonly defaultOptions: MathModifierOptions;
     constructor(options: Partial<MathModifierOptions>);
     options: MathModifierOptions;
-    modifyTable(table: DataTable, eventDetail?: DataEvent.Detail): DataTable;
+    modifyTable(table: DataTable, eventDetail?: DataEventDetail): DataTable;
     /**
      * Process a column by replacing formula strings with calculated values.
      *
@@ -36,7 +37,7 @@ declare class MathModifier extends DataModifier {
      * @return {Highcharts.DataTableColumn}
      * Returns the processed table column.
      */
-    protected processColumn(table: DataTable, columnId: string, rowIndex?: number): DataTable.Column;
+    protected processColumn(table: DataTable, columnId: string, rowIndex?: number): DataTableColumn;
     /**
      * Process a column by replacing cell values with calculated values from a
      * given formula.
@@ -58,7 +59,7 @@ declare class MathModifier extends DataModifier {
      * @return {Highcharts.DataTableColumn}
      * Returns the processed table column.
      */
-    protected processColumnFormula(formula: Formula, table: DataTable, rowStart?: number, rowEnd?: number): DataTable.Column;
+    protected processColumnFormula(formula: Formula, table: DataTable, rowStart?: number, rowEnd?: number): DataTableColumn;
 }
 declare module './DataModifierType' {
     interface DataModifierTypes {

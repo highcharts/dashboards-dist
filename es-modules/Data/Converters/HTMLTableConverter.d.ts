@@ -1,8 +1,8 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type DataConnector from '../Connectors/DataConnector';
 import type HTMLTableConverterOptions from './HTMLTableConverterOptions';
 import DataConverter from './DataConverter.js';
-import DataTable from '../DataTable.js';
+import type { ColumnCollection as DataTableColumnCollection } from '../DataTable.js';
 /**
  * Handles parsing and transformation of an HTML table to a table.
  *
@@ -55,14 +55,14 @@ declare class HTMLTableConverter extends DataConverter {
      * @param {Partial<HTMLTableConverterOptions>}[options]
      * Options for the parser
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits CSVDataParser#parse
      * @emits CSVDataParser#afterParse
      * @emits HTMLTableParser#parseError
      */
-    parse(options: Partial<HTMLTableConverterOptions>, eventDetail?: DataEvent.Detail): DataTable.ColumnCollection;
+    parse(options: Partial<HTMLTableConverterOptions>, eventDetail?: DataEventDetail): DataTableColumnCollection;
 }
 declare module './DataConverterType' {
     interface DataConverterTypes {

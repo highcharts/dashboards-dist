@@ -1,12 +1,10 @@
-import type JSON from '../JSON';
+import type { JSONObject } from '../JSON';
 import type GoogleSheetsConnectorOptions from '../../Data/Connectors/GoogleSheetsConnectorOptions';
 import GoogleSheetsConnector from '../../Data/Connectors/GoogleSheetsConnector.js';
-import Serializable from '../Serializable.js';
-declare namespace GoogleSheetsConnectorHelper {
-    interface JSON extends Serializable.JSON<'Data.GoogleSheetsConnector'> {
-        options: OptionsJSON;
-    }
-    type OptionsJSON = (JSON.Object & GoogleSheetsConnectorOptions);
+import type { Helper as SerializableHelper, JSON as SerializableJSON } from '../Serializable';
+export interface JSON extends SerializableJSON<'Data.GoogleSheetsConnector'> {
+    options: OptionsJSON;
 }
-declare const GoogleSheetsConnectorHelper: Serializable.Helper<GoogleSheetsConnector, GoogleSheetsConnectorHelper.JSON>;
+export type OptionsJSON = (JSONObject & GoogleSheetsConnectorOptions);
+declare const GoogleSheetsConnectorHelper: SerializableHelper<GoogleSheetsConnector, JSON>;
 export default GoogleSheetsConnectorHelper;

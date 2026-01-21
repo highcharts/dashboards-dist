@@ -1,27 +1,26 @@
-import type JSON from '../JSON';
+import type { State as DataCursorState } from '../../Data/DataCursor.js';
+import type { JSONArray, JSONObject } from '../JSON';
 import DataCursor from '../../Data/DataCursor.js';
-import Serializable from '../Serializable.js';
-declare namespace DataCursorHelper {
-    type TypeJSON = (PositionJSON | RangeJSON);
-    interface PositionJSON extends JSON.Object {
-        column?: string;
-        row?: number;
-        state: DataCursor.State;
-        sourceId?: string;
-        type: 'position';
-    }
-    interface RangeJSON extends JSON.Object {
-        columns?: Array<string>;
-        firstRow: number;
-        lastRow: number;
-        state: DataCursor.State;
-        sourceId?: string;
-        type: 'range';
-    }
-    interface JSON extends Serializable.JSON<'Data.DataCursor'> {
-        stateMap: StateMapJSON;
-    }
-    type StateMapJSON = JSON.Object<JSON.Object<JSON.Array<TypeJSON>>>;
+import type { Helper as SerializableHelper, JSON as SerializableJSON } from '../Serializable';
+export type TypeJSON = (PositionJSON | RangeJSON);
+export interface PositionJSON extends JSONObject {
+    column?: string;
+    row?: number;
+    state: DataCursorState;
+    sourceId?: string;
+    type: 'position';
 }
-declare const DataCursorHelper: Serializable.Helper<DataCursor, DataCursorHelper.JSON>;
+export interface RangeJSON extends JSONObject {
+    columns?: Array<string>;
+    firstRow: number;
+    lastRow: number;
+    state: DataCursorState;
+    sourceId?: string;
+    type: 'range';
+}
+export interface JSON extends SerializableJSON<'Data.DataCursor'> {
+    stateMap: StateMapJSON;
+}
+export type StateMapJSON = JSONObject<JSONObject<JSONArray<TypeJSON>>>;
+declare const DataCursorHelper: SerializableHelper<DataCursor, JSON>;
 export default DataCursorHelper;

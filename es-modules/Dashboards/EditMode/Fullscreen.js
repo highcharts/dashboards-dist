@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -35,19 +35,24 @@ class Fullscreen {
     * */
     /**
      * Toggles displaying the board in fullscreen mode.
+     *
+     * @param container
+     * The container to be displayed in fullscreen mode.
      */
-    toggle() {
+    toggle(container) {
         const fullscreen = this, isOpen = this.isOpen;
-        fullscreen[isOpen ? 'close' : 'open']();
+        fullscreen[isOpen ? 'close' : 'open'](container);
     }
     /**
      * Display board in fullscreen.
      */
-    open() {
+    open(container) {
         if (this.isOpen) {
             return;
         }
-        const fullscreen = this, board = fullscreen.board;
+        const fullscreen = this;
+        const board = fullscreen.board;
+        const elementToFullscreen = container || board.boardWrapper;
         // Handle exitFullscreen() method when user clicks 'Escape' button.
         const unbindChange = addEvent(board.boardWrapper.ownerDocument, // Dashboard's document
         'fullscreenchange', function () {
@@ -63,7 +68,7 @@ class Fullscreen {
         fullscreen.unbindFullscreenEvent = () => {
             unbindChange();
         };
-        const promise = board.boardWrapper.requestFullscreen();
+        const promise = elementToFullscreen.requestFullscreen();
         promise['catch'](() => {
             throw new Error('Full screen is not supported.');
         });
@@ -72,7 +77,8 @@ class Fullscreen {
      * Stops displaying the dashboard in fullscreen mode.
      */
     close() {
-        const fullscreen = this, board = fullscreen.board;
+        const fullscreen = this;
+        const board = fullscreen.board;
         // Don't fire exitFullscreen() when user exited using 'Escape' button.
         if (fullscreen.isOpen &&
             board.boardWrapper.ownerDocument instanceof Document) {

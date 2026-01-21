@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -34,7 +34,7 @@ class CellHTML extends GUIElement {
     /**
      * Constructs an instance of the CellHTML class.
      *
-     * @param {Cell.Options} options
+     * @param {Options} options
      * Options for the cell.
      */
     constructor(options) {
@@ -76,18 +76,15 @@ class CellHTML extends GUIElement {
 }
 /* *
  *
- *  Namespace
+ *  Type Declarations
  *
  * */
-(function (CellHTML) {
-    /**
-     * Checks if a valid cell HTML instance.
-     */
-    function isCellHTML(cellHTML) {
-        return cellHTML instanceof CellHTML;
-    }
-    CellHTML.isCellHTML = isCellHTML;
-})(CellHTML || (CellHTML = {}));
+/**
+ * Checks if a valid cell HTML instance.
+ */
+export function isCellHTML(cellHTML) {
+    return cellHTML instanceof CellHTML;
+}
 /* *
  *
  *  Default Export

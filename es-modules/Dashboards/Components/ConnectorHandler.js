@@ -1,16 +1,16 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
  *
  * */
-import Cell from '../Layout/Cell.js';
+import { isCell } from '../Layout/Cell.js';
 import Globals from '../Globals.js';
 /* *
  *
@@ -41,7 +41,6 @@ class ConnectorHandler {
         /**
          * Event listeners tied to the current DataTable. Used for rerendering the
          * component on data changes.
-         *
          * @internal
          */
         this.tableEvents = [];
@@ -66,7 +65,7 @@ class ConnectorHandler {
         if (connectorId &&
             (this.connectorId !== connectorId ||
                 dataPool.isNewConnector(connectorId))) {
-            if (Cell.isCell(component.cell)) {
+            if (isCell(component.cell)) {
                 component.cell.setLoadingState();
             }
             const connector = await dataPool.getConnector(connectorId);
@@ -99,13 +98,7 @@ class ConnectorHandler {
                 });
             }
         });
-        if (this.presentationModifier) {
-            this.presentationTable =
-                this.presentationModifier.modifyTable(table.getModified().clone()).getModified();
-        }
-        else {
-            this.presentationTable = table;
-        }
+        this.dataTable = table;
     }
     /**
      * Sets the connector for the component connector handler.
@@ -123,15 +116,7 @@ class ConnectorHandler {
         }
         this.connector = connector;
         if (connector) {
-            const dataTables = connector.dataTables;
-            if (this.options.dataTableKey) {
-                // Match a data table used in this component.
-                this.setTable(dataTables[this.options.dataTableKey]);
-                // Take the first connector data table if id not provided.
-            }
-            else {
-                this.setTable(Object.values(dataTables)[0]);
-            }
+            this.setTable(connector.getTable(this.options.dataTableKey));
         }
         this.addConnectorAssignment();
         return this.component;

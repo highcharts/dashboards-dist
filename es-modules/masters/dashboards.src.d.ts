@@ -1,10 +1,11 @@
 /**
- * @license Highcharts Dashboards v@product.version@ (@product.date@)
+ * @license Highcharts Dashboards v4.1.0 (2026-01-21)
  * @module dashboards/dashboards
  *
- * (c) 2009-2025 Highsoft AS
+ * (c) 2009-2026 Highsoft AS
  *
- * License: www.highcharts.com/license
+ * A commercial license may be required depending on use.
+ * See www.highcharts.com/license
  */
 import type { Highcharts as HighchartsNamespace } from '../Dashboards/Plugins/HighchartsTypes';
 import type { GridNamespace } from '../Dashboards/Plugins/GridTypes';
@@ -35,6 +36,7 @@ import DataCursor from '../Data/DataCursor.js';
 import DataConverter from '../Data/Converters/DataConverter.js';
 import DataModifier from '../Data/Modifiers/DataModifier.js';
 import DataTable from '../Data/DataTable.js';
+import Defaults from '../Dashboards/Defaults.js';
 import Globals from '../Dashboards/Globals.js';
 import GridPlugin from '../Dashboards/Plugins/GridPlugin.js';
 import HighchartsPlugin from '../Dashboards/Plugins/HighchartsPlugin.js';
@@ -49,7 +51,9 @@ declare global {
         error: typeof Utilities.error;
         merge: typeof Utilities.merge;
         removeEvent: typeof Utilities.removeEvent;
+        setOptions: typeof Defaults.setOptions;
         uniqueKey: typeof Utilities.uniqueKey;
+        version: typeof Globals.version;
         win: typeof Globals.win;
         AST: typeof AST;
         Board: typeof Board;
@@ -61,6 +65,7 @@ declare global {
         DataModifier: typeof DataModifier;
         DataPool: typeof DataPool;
         DataTable: typeof DataTable;
+        defaultOptions: typeof Defaults.defaultOptions;
         GridPlugin: typeof GridPlugin;
         HighchartsPlugin: typeof HighchartsPlugin;
         PluginHandler: typeof PluginHandler;

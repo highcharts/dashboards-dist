@@ -21,11 +21,11 @@ declare class KPIComponent extends Component {
     /**
      * Default options of the KPI component.
      */
-    static defaultOptions: Partial<Component.Options> & Types.DeepPartial<Options>;
+    static defaultOptions: Partial<import("../Component.js").Options> & Types.DeepPartial<Options>;
     /**
      * Predefined sync config for the KPI component.
      */
-    static predefinedSyncConfig: import("../Sync/Sync").default.PredefinedSyncConfig;
+    static predefinedSyncConfig: import("../Sync/Sync").PredefinedSyncConfig;
     /**
      * Default options of the KPI component.
      *
@@ -135,7 +135,5 @@ declare class KPIComponent extends Component {
      */
     setValue(value?: number | string | undefined): void;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
-}
-declare namespace KPIComponent {
 }
 export default KPIComponent;

@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -28,6 +28,28 @@ const { addEvent, fireEvent, merge, pick } = U;
  * Abstract class providing an interface for managing a DataConnector.
  */
 class DataConnector {
+    /**
+     * Adds a connector class to the registry. The connector has to provide the
+     * `DataConnector.options` property and the `DataConnector.load` method to
+     * modify the table.
+     *
+     * @private
+     *
+     * @param {string} key
+     * Registry key of the connector class.
+     *
+     * @param {DataConnectorType} DataConnectorClass
+     * Connector class (aka class constructor) to register.
+     *
+     * @return {boolean}
+     * Returns true, if the registration was successful. False is returned, if
+     * their is already a connector registered with this key.
+     */
+    static registerType(key, DataConnectorClass) {
+        return (!!key &&
+            !DataConnector.types[key] &&
+            !!(DataConnector.types[key] = DataConnectorClass));
+    }
     /**
      * Whether the connector is currently polling for new data.
      */
@@ -62,7 +84,7 @@ class DataConnector {
         let dataTableIndex = 0;
         if (options.options) {
             // eslint-disable-next-line no-console
-            console.error('The `DataConnectorOptions.options` property was removed in Dashboards v4.0.0. Check how to upgrade your connector to use the new options structure here: https://api.highcharts.com/dashboards/#interfaces/Data_DataTableOptions.DataTableOptions-1');
+            console.error('The `DataConnectorOptions.options` property was removed in Dashboards v4.0.0. Check how to upgrade your connector to use the new options structure here: https://api.highcharts.com/dashboards/#interfaces/Data_DataTableOptions.DataTableOptions');
         }
         if (dataTables && dataTables?.length > 0) {
             for (let i = 0, iEnd = dataTables.length; i < iEnd; ++i) {
@@ -74,9 +96,10 @@ class DataConnector {
                     dataTableIndex++;
                 }
             }
-            // If user options dataTables is not defined, generate a default table.
         }
         else {
+            // If user options dataTables is not defined, generate a default
+            // table.
             this.dataTables[0] = new DataTable({
                 id: options.id // Required by DataTableCore
             });
@@ -109,7 +132,7 @@ class DataConnector {
      * @param {string} name
      * The name of the column to be described.
      *
-     * @param {DataConnector.MetaColumn} columnMeta
+     * @param {MetaColumn} columnMeta
      * The metadata to apply to the column.
      */
     describeColumn(name, columnMeta) {
@@ -120,7 +143,7 @@ class DataConnector {
     /**
      * Method for applying columns meta information to the whole DataConnector.
      *
-     * @param {Highcharts.Dictionary<DataConnector.MetaColumn>} columns
+     * @param {Record<string, MetaColumn>} columns
      * Pairs of column names and MetaColumn objects.
      */
     describeColumns(columns) {
@@ -166,6 +189,34 @@ class DataConnector {
         }
     }
     /**
+     * Updates the connector with new options.
+     *
+     * @param newOptions
+     * The new options to be applied to the connector.
+     *
+     * @param reload
+     * Whether to reload the connector after applying the new options.
+     */
+    async update(newOptions, reload = true) {
+        this.emit({ type: 'beforeUpdate' });
+        merge(true, this.options, newOptions);
+        const { options } = this;
+        if ('enablePolling' in newOptions || 'dataRefreshRate' in newOptions) {
+            if ('enablePolling' in options && options.enablePolling) {
+                this.stopPolling();
+                this.startPolling(('dataRefreshRate' in options &&
+                    typeof options.dataRefreshRate === 'number') ? Math.max(options.dataRefreshRate, 1) * 1000 : 1000);
+            }
+            else {
+                this.stopPolling();
+            }
+        }
+        if (reload) {
+            await this.load();
+        }
+        this.emit({ type: 'afterUpdate' });
+    }
+    /**
      * The default load method, which fires the `afterLoad` event
      *
      * @return {Promise<DataConnector>}
@@ -208,7 +259,9 @@ class DataConnector {
         this.pollingController = new AbortController();
         // Clear the polling timeout.
         window.clearTimeout(connector._polling);
-        connector._polling = window.setTimeout(() => connector
+        connector._polling = window.setTimeout(
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        () => connector
             .load()['catch']((error) => connector.emit({
             type: 'loadError',
             error
@@ -237,7 +290,7 @@ class DataConnector {
      * Emits an event on the connector to all registered callbacks of this
      * event.
      *
-     * @param {DataConnector.Event} e
+     * @param {Event} e
      * Event object containing additional event information.
      */
     emit(e) {
@@ -265,10 +318,10 @@ class DataConnector {
      * @param {T}[data]
      * Data specific to the corresponding converter.
      *
-     * @param {DataConnector.CreateConverterFunction}[createConverter]
+     * @param {CreateConverterFunction}[createConverter]
      * Creates a specific converter combining the dataTable options.
      *
-     * @param {DataConnector.ParseDataFunction<T>}[parseData]
+     * @param {ParseDataFunction<T>}[parseData]
      * Runs the converter parse method with the specific data type.
      */
     initConverters(data, createConverter, parseData) {
@@ -290,53 +343,13 @@ class DataConnector {
 }
 /* *
  *
- *  Class Namespace
+ *  Static Properties
  *
  * */
-(function (DataConnector) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     * Registry as a record object with connector names and their class.
-     */
-    DataConnector.types = {};
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Adds a connector class to the registry. The connector has to provide the
-     * `DataConnector.options` property and the `DataConnector.load` method to
-     * modify the table.
-     *
-     * @private
-     *
-     * @param {string} key
-     * Registry key of the connector class.
-     *
-     * @param {DataConnectorType} DataConnectorClass
-     * Connector class (aka class constructor) to register.
-     *
-     * @return {boolean}
-     * Returns true, if the registration was successful. False is returned, if
-     * their is already a connector registered with this key.
-     */
-    function registerType(key, DataConnectorClass) {
-        return (!!key &&
-            !DataConnector.types[key] &&
-            !!(DataConnector.types[key] = DataConnectorClass));
-    }
-    DataConnector.registerType = registerType;
-})(DataConnector || (DataConnector = {}));
+/**
+ * Registry as a record object with connector names and their class.
+ */
+DataConnector.types = {};
 /* *
  *
  *  Default Export

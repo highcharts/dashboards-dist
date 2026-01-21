@@ -60,7 +60,6 @@ declare class AST {
      * @type    {Array<string>}
      */
     static allowedTags: string[];
-    static emptyHTML: string;
     /**
      * Allow all custom SVG and HTML attributes, references and tags (together
      * with potentially harmful ones) to be added to the DOM from the chart
@@ -102,7 +101,6 @@ declare class AST {
      * The filtered attributes
      */
     static filterUserAttributes(attributes: SVGAttributes): SVGAttributes;
-    static parseStyle(style: string): CSSObject;
     /**
      * Utility function to set html content for an element by passing in a
      * markup string. The markup is safely parsed by the AST class to avoid
@@ -137,21 +135,11 @@ declare class AST {
      * The inserted node.
      */
     addToDOM(parent: Element): HTMLElement | SVGElement;
-    /**
-     * Parse HTML/SVG markup into AST Node objects. Used internally from the
-     * constructor.
-     *
-     * @private
-     *
-     * @function Highcharts.AST#getNodesFromMarkup
-     *
-     * @param {string} markup The markup string.
-     *
-     * @return {Array<Highcharts.ASTNode>} The parsed nodes.
-     */
-    private parseMarkup;
 }
 declare namespace AST {
+    /**
+     * Serialized form of an SVG/HTML definition, including children.
+     */
     interface Node {
         attributes?: (HTMLAttributes & SVGAttributes);
         children?: Array<Node>;

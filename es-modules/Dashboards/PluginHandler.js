@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -16,87 +16,78 @@ import Sync from './Components/Sync/Sync.js';
 import ComponentRegistry from './Components/ComponentRegistry.js';
 /* *
  *
- *  Namespace
+ *  Constants
  *
  * */
-var PluginHandler;
-(function (PluginHandler) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /** @internal */
-    PluginHandler.registry = {};
-    /**
-     * Revision of the Dashboard plugin API.
-     *
-     * @internal
-     */
-    PluginHandler.revision = 0;
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Adds a dashboard plugin.
-     *
-     * @param {Dashboards.Plugin} plugin
-     * Dashboard plugin to register.
-     *
-     * @param {string} [key]
-     * Plugin key for the registry. (Default: `plugin.name`)
-     */
-    function addPlugin(plugin, key = plugin.name) {
-        const { maxRevision, minRevision, onRegister } = plugin;
-        if (PluginHandler.registry[key]) {
-            // Only throw error with custom key
-            if (key !== plugin.name) {
-                throw new Error(`Plugin '${key}' already registered.`);
-            }
-            return;
+/** @internal */
+export const registry = {};
+/**
+ * Revision of the Dashboard plugin API.
+ *
+ * @internal
+ */
+export const revision = 0;
+/* *
+ *
+ *  Functions
+ *
+ * */
+/**
+ * Adds a dashboard plugin.
+ *
+ * @param {Dashboards.Plugin} plugin
+ * Dashboard plugin to register.
+ *
+ * @param {string} [key]
+ * Plugin key for the registry. (Default: `plugin.name`)
+ */
+export function addPlugin(plugin, key = plugin.name) {
+    const { maxRevision, minRevision, onRegister } = plugin;
+    if (registry[key]) {
+        // Only throw error with custom key
+        if (key !== plugin.name) {
+            throw new Error(`Plugin '${key}' already registered.`);
         }
-        if ((typeof minRevision === 'number' && minRevision > PluginHandler.revision) ||
-            (typeof maxRevision === 'number' && maxRevision < PluginHandler.revision)) {
-            throw new Error(`Plugin '${key}' does not support revision ${PluginHandler.revision}.`);
-        }
-        onRegister({
+        return;
+    }
+    if ((typeof minRevision === 'number' && minRevision > revision) ||
+        (typeof maxRevision === 'number' && maxRevision < revision)) {
+        throw new Error(`Plugin '${key}' does not support revision ${revision}.`);
+    }
+    onRegister({
+        Board,
+        ComponentRegistry,
+        Sync,
+        revision
+    });
+    registry[key] = plugin;
+}
+/**
+ * Removes a dashboard plugin.
+ *
+ * @param {string} key
+ * Plugin key in the registry.
+ */
+export function removePlugin(key) {
+    if (registry[key]) {
+        registry[key].onUnregister({
+            ComponentRegistry: ComponentRegistry,
             Board,
-            ComponentRegistry,
             Sync,
-            revision: PluginHandler.revision
+            revision
         });
-        PluginHandler.registry[key] = plugin;
+        delete registry[key];
     }
-    PluginHandler.addPlugin = addPlugin;
-    /**
-     * Removes a dashboard plugin.
-     *
-     * @param {string} key
-     * Plugin key in the registry.
-     */
-    function removePlugin(key) {
-        if (PluginHandler.registry[key]) {
-            PluginHandler.registry[key].onUnregister({
-                ComponentRegistry: ComponentRegistry,
-                Board,
-                Sync,
-                revision: PluginHandler.revision
-            });
-            delete PluginHandler.registry[key];
-        }
-    }
-    PluginHandler.removePlugin = removePlugin;
-})(PluginHandler || (PluginHandler = {}));
+}
 /* *
  *
  *  Default Export
  *
  * */
+const PluginHandler = {
+    addPlugin,
+    removePlugin,
+    registry,
+    revision
+};
 export default PluginHandler;

@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -45,7 +45,7 @@ class Row extends GUIElement {
      * @param {Layout} layout
      * Reference to the layout instance.
      *
-     * @param {Row.Options} options
+     * @param {Options} options
      * Options for the row.
      *
      * @param {HTMLElement} rowElement
@@ -101,7 +101,7 @@ class Row extends GUIElement {
     /**
      * Add a new Cell instance to the row cells array.
      *
-     * @param {Cell.Options} [options]
+     * @param {CellOptions} [options]
      * Options for the row cell.
      *
      * @param {HTMLElement} [cellElement]
@@ -131,13 +131,17 @@ class Row extends GUIElement {
     destroy() {
         const row = this;
         const { layout } = row;
-        // Copy to avoid problem with index when shifting array of cells during
-        // the destroy.
-        const rowCells = [...row.cells];
+        const board = row.layout.board;
+        const editMode = board.editMode;
         // Destroy cells.
-        for (let i = 0, iEnd = rowCells?.length; i < iEnd; ++i) {
-            if (rowCells[i]) {
-                rowCells[i].destroy();
+        if (row.cells) {
+            // Copy to avoid problem with index when shifting array of cells
+            // during the destroy.
+            const rowCells = [...row.cells];
+            for (let i = 0, iEnd = rowCells.length; i < iEnd; ++i) {
+                if (rowCells[i]) {
+                    rowCells[i].destroy();
+                }
             }
         }
         if (row.layout) {
@@ -147,6 +151,10 @@ class Row extends GUIElement {
                 layout.destroy();
             }
         }
+        fireEvent(editMode, 'rowDestroyed', {
+            target: row,
+            board: board
+        });
     }
     /**
      * Get the row's options.

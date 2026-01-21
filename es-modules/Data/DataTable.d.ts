@@ -1,4 +1,4 @@
-import type DataEvent from './DataEvent';
+import type { DataEvent, DataEventCallback, DataEventDetail, DataEventEmitter } from './DataEvent';
 import type DataModifier from './Modifiers/DataModifier';
 import type DataTableOptions from './DataTableOptions';
 import type { DataTableValue } from './DataTableOptions';
@@ -15,7 +15,7 @@ import DataTableCore from './DataTableCore.js';
  * @param {Highcharts.DataTableOptions} [options]
  * Options to initialize the new DataTable instance.
  */
-declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataTable.Event> {
+declare class DataTable extends DataTableCore implements DataEventEmitter<Event> {
     constructor(options?: DataTableOptions);
     private modifier?;
     private localRowIndexes?;
@@ -40,7 +40,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @emits #cloneTable
      * @emits #afterCloneTable
      */
-    clone(skipColumns?: boolean, eventDetail?: DataEvent.Detail): DataTable;
+    clone(skipColumns?: boolean, eventDetail?: DataEventDetail): DataTable;
     /**
      * Deletes columns from the table.
      *
@@ -59,7 +59,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @emits #deleteColumns
      * @emits #afterDeleteColumns
      */
-    deleteColumns(columnIds?: Array<string>, eventDetail?: DataEvent.Detail): (DataTable.ColumnCollection | undefined);
+    deleteColumns(columnIds?: Array<string>, eventDetail?: DataEventDetail): (ColumnCollection | undefined);
     /**
      * Deletes the row index references. This is useful when the original table
      * is deleted, and the references are no longer needed. This table is
@@ -72,11 +72,11 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      *
      * @function Highcharts.DataTable#deleteRows
      *
-     * @param {number} [rowIndex]
-     * Index to start delete of rows. If not specified, all rows will be
-     * deleted.
+     * @param {number | number[]} [rowIndex]
+     * Index of the row where deletion should start, or an array of indices for
+     * deleting multiple rows. If not specified, all rows will be deleted.
      *
-     * @param {number} [rowCount=1]
+     * @param {number} [rowCount]
      * Number of rows to delete.
      *
      * @param {Highcharts.DataTableEventDetail} [eventDetail]
@@ -88,16 +88,16 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @emits #deleteRows
      * @emits #afterDeleteRows
      */
-    deleteRows(rowIndex?: number, rowCount?: number, eventDetail?: DataEvent.Detail): Array<DataTable.Row>;
+    deleteRows(rowIndex?: number | number[], rowCount?: number, eventDetail?: DataEventDetail): Array<Row>;
     /**
      * Emits an event on this table to all registered callbacks of the given
      * event.
      * @private
      *
-     * @param {DataTable.Event} e
+     * @param {Event} e
      * Event object with event information.
      */
-    emit(e: DataTable.Event): void;
+    emit(e: Event): void;
     /**
      * Fetches a single cell value.
      *
@@ -112,7 +112,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {Highcharts.DataTableCellType|undefined}
      * Returns the cell value or `undefined`.
      */
-    getCell(columnId: string, rowIndex: number): (DataTable.CellType | undefined);
+    getCell(columnId: string, rowIndex: number): (CellType | undefined);
     /**
      * Fetches the given column by the canonical column name.
      * This function is a simplified wrap of {@link getColumns}.
@@ -128,7 +128,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {Highcharts.DataTableColumn|undefined}
      * A copy of the column, or `undefined` if not found.
      */
-    getColumn(columnId: string, asReference?: boolean): (DataTable.Column | undefined);
+    getColumn(columnId: string, asReference?: boolean): (Column | undefined);
     /**
      * Fetches all column IDs.
      *
@@ -138,9 +138,9 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * Returns all column IDs.
      */
     getColumnIds(): Array<string>;
-    getColumns(columnIds?: Array<string>, asReference?: boolean): DataTable.ColumnCollection;
-    getColumns(columnIds: (Array<string> | undefined), asReference: true): Record<string, DataTable.Column>;
-    getColumns(columnIds: (Array<string> | undefined), asReference: false, asBasicColumns: true): Record<string, DataTable.BasicColumn>;
+    getColumns(columnIds?: Array<string>, asReference?: boolean): ColumnCollection;
+    getColumns(columnIds: (Array<string> | undefined), asReference: true): Record<string, Column>;
+    getColumns(columnIds: (Array<string> | undefined), asReference: false, asBasicColumns: true): Record<string, BasicColumn>;
     /**
      * Takes the original row index and returns the local row index in the
      * modified table for which this function is called.
@@ -187,7 +187,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {Highcharts.DataTableRow}
      * Returns the row values, or `undefined` if not found.
      */
-    getRow(rowIndex: number, columnIds?: Array<string>): (DataTable.Row | undefined);
+    getRow(rowIndex: number, columnIds?: Array<string>): (Row | undefined);
     /**
      * Returns the number of rows in this table.
      *
@@ -214,7 +214,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {number|undefined}
      * Index of the first row matching the cell value.
      */
-    getRowIndexBy(columnId: string, cellValue: DataTable.CellType, rowIndexOffset?: number): (number | undefined);
+    getRowIndexBy(columnId: string, cellValue: CellType, rowIndexOffset?: number): (number | undefined);
     /**
      * Retrieves the row at a given index. This function is a simplified wrap of
      * {@link getRowObjects}.
@@ -230,7 +230,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {Highcharts.DataTableRowObject}
      * Returns the row values, or `undefined` if not found.
      */
-    getRowObject(rowIndex: number, columnIds?: Array<string>): (DataTable.RowObject | undefined);
+    getRowObject(rowIndex: number, columnIds?: Array<string>): (RowObject | undefined);
     /**
      * Fetches all or a number of rows as an object.
      *
@@ -248,7 +248,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {Highcharts.DataTableRowObject}
      * Returns retrieved rows.
      */
-    getRowObjects(rowIndex?: number, rowCount?: number, columnIds?: Array<string>): (Array<DataTable.RowObject>);
+    getRowObjects(rowIndex?: number, rowCount?: number, columnIds?: Array<string>): (Array<RowObject>);
     /**
      * Fetches all or a number of rows as an array.
      *
@@ -266,7 +266,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {Highcharts.DataTableRow}
      * Returns retrieved rows.
      */
-    getRows(rowIndex?: number, rowCount?: number, columnIds?: Array<string>): (Array<DataTable.Row>);
+    getRows(rowIndex?: number, rowCount?: number, columnIds?: Array<string>): (Array<Row>);
     /**
      * Returns the unique version tag of the current state of the table.
      *
@@ -302,7 +302,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {boolean}
      * True, if a row has been found, otherwise false.
      */
-    hasRowWith(columnId: string, cellValue: DataTable.CellType): boolean;
+    hasRowWith(columnId: string, cellValue: CellType): boolean;
     /**
      * Registers a callback function to be executed when a specific event is
      * emitted. To stop listening to the event, call the function returned by
@@ -319,7 +319,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @return {Function}
      * Function to unregister callback from the event.
      */
-    on<T extends DataTable.Event['type']>(type: T, callback: DataEvent.Callback<this, Extract<DataTable.Event, {
+    on<T extends Event['type']>(type: T, callback: DataEventCallback<this, Extract<Event, {
         type: T;
     }>>): Function;
     /**
@@ -361,7 +361,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @emits #setCell
      * @emits #afterSetCell
      */
-    setCell(columnId: string, rowIndex: number, cellValue: DataTable.CellType, eventDetail?: DataEvent.Detail): void;
+    setCell(columnId: string, rowIndex: number, cellValue: CellType, eventDetail?: DataEventDetail): void;
     /**
      * Replaces or updates multiple columns in the table with new data. If a
      * column does not exist, it will be created and added to the table.
@@ -386,7 +386,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @emits #setColumns
      * @emits #afterSetColumns
      */
-    setColumns(columns: DataTable.ColumnCollection, rowIndex?: number, eventDetail?: DataEvent.Detail, typeAsOriginal?: boolean): void;
+    setColumns(columns: ColumnCollection, rowIndex?: number, eventDetail?: DataEventDetail, typeAsOriginal?: boolean): void;
     /**
      * Assigns a new data modifier to the table.
      *
@@ -406,7 +406,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @emits #setModifier
      * @emits #afterSetModifier
      */
-    setModifier(modifier?: DataModifier, eventDetail?: DataEvent.Detail): Promise<DataTable>;
+    setModifier(modifier?: DataModifier, eventDetail?: DataEventDetail): Promise<DataTable>;
     /**
      * Sets the original row indexes for the table. It is used to keep the
      * reference to the original rows when modifying the table.
@@ -431,7 +431,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * Cell values to set.
      *
      * @param {number} [rowIndex]
-     * Index of the row to set. Leave `undefind` to add as a new row.
+     * Index of the row to set. Leave `undefined` to add as a new row.
      *
      * @param {boolean} [insert]
      * Whether to insert the row at the given index, or to overwrite the row.
@@ -442,7 +442,7 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @emits #setRows
      * @emits #afterSetRows
      */
-    setRow(row: (DataTable.Row | DataTable.RowObject), rowIndex?: number, insert?: boolean, eventDetail?: DataEvent.Detail): void;
+    setRow(row: (Row | RowObject), rowIndex?: number, insert?: boolean, eventDetail?: DataEventDetail): void;
     /**
      * Sets cell values for multiple rows. Will insert new rows, if no index was
      * was provided, or if the index is higher than the total number of table
@@ -465,99 +465,97 @@ declare class DataTable extends DataTableCore implements DataEvent.Emitter<DataT
      * @emits #setRows
      * @emits #afterSetRows
      */
-    setRows(rows: Array<(DataTable.Row | DataTable.RowObject)>, rowIndex?: number, insert?: boolean, eventDetail?: DataEvent.Detail): void;
+    setRows(rows: Array<(Row | RowObject)>, rowIndex?: number, insert?: boolean, eventDetail?: DataEventDetail): void;
 }
 /**
  * Additionally it provides necessary types for events.
  */
-declare namespace DataTable {
-    /**
-     * Possible value types for a table cell.
-     */
-    type CellType = (boolean | number | null | string | undefined);
-    /**
-     * Conventional array of table cells typed as `CellType`.
-     */
-    interface BasicColumn extends Array<DataTable.CellType> {
-        [index: number]: CellType;
-    }
-    /**
-     * Array of table cells in vertical expansion.
-     */
-    type Column = BasicColumn | TypedArray;
-    /**
-     * Collection of columns, where the key is the column name and
-     * the value is an array of column values.
-     */
-    interface ColumnCollection {
-        [columnId: string]: Column;
-    }
-    /**
-     * Event object for cell-related events.
-     */
-    interface CellEvent extends DataEvent {
-        readonly type: ('setCell' | 'afterSetCell');
-        readonly cellValue: DataTable.CellType;
-        readonly columnId: string;
-        readonly rowIndex: number;
-    }
-    /**
-     * Event object for clone-related events.
-     */
-    interface CloneEvent extends DataEvent {
-        readonly type: ('cloneTable' | 'afterCloneTable');
-        readonly tableClone?: DataTable;
-    }
-    /**
-     * Event object for column-related events.
-     */
-    interface ColumnEvent extends DataEvent {
-        readonly type: ('deleteColumns' | 'afterDeleteColumns' | 'setColumns' | 'afterSetColumns');
-        readonly columns?: ColumnCollection;
-        readonly columnIds: Array<string>;
-        readonly rowIndex?: number;
-    }
-    /**
-     * All information objects of DataTable events.
-     */
-    type Event = (CellEvent | CloneEvent | ColumnEvent | SetModifierEvent | RowEvent);
-    /**
-     * Event object for modifier-related events.
-     */
-    interface ModifierEvent extends DataEvent {
-        readonly type: ('setModifier' | 'afterSetModifier');
-        readonly modifier: (DataModifier | undefined);
-    }
-    /**
-     * Array of table cells in horizontal expansion. Index of the array is the
-     * index of the column names.
-     */
-    interface Row extends Array<CellType> {
-        [index: number]: CellType;
-    }
-    /**
-     * Event object for row-related events.
-     */
-    interface RowEvent extends DataEvent {
-        readonly type: ('deleteRows' | 'afterDeleteRows' | 'setRows' | 'afterSetRows');
-        readonly rowCount: number;
-        readonly rowIndex: number;
-        readonly rows?: Array<Row | RowObject>;
-    }
-    /**
-     * Object of row values, where the keys are the column names.
-     */
-    interface RowObject extends Record<string, CellType> {
-        [column: string]: CellType;
-    }
-    /**
-    * Event object for the setModifier events.
-    */
-    interface SetModifierEvent extends DataEvent {
-        readonly type: ('setModifier' | 'afterSetModifier' | 'setModifierError');
-        readonly error?: unknown;
-        readonly modifier?: DataModifier;
-        readonly modified?: DataTable;
-    }
+/**
+ * Possible value types for a table cell.
+ */
+export type CellType = (boolean | number | null | string | undefined);
+/**
+ * Conventional array of table cells typed as `CellType`.
+ */
+export interface BasicColumn extends Array<CellType> {
+    [index: number]: CellType;
+}
+/**
+ * Array of table cells in vertical expansion.
+ */
+export type Column = BasicColumn | TypedArray;
+/**
+ * Collection of columns, where the key is the column name and
+ * the value is an array of column values.
+ */
+export interface ColumnCollection {
+    [columnId: string]: Column;
+}
+/**
+ * Event object for cell-related events.
+ */
+export interface CellEvent extends DataEvent {
+    readonly type: ('setCell' | 'afterSetCell');
+    readonly cellValue: CellType;
+    readonly columnId: string;
+    readonly rowIndex: number;
+}
+/**
+ * Event object for clone-related events.
+ */
+export interface CloneEvent extends DataEvent {
+    readonly type: ('cloneTable' | 'afterCloneTable');
+    readonly tableClone?: DataTable;
+}
+/**
+ * Event object for column-related events.
+ */
+export interface ColumnEvent extends DataEvent {
+    readonly type: ('deleteColumns' | 'afterDeleteColumns' | 'setColumns' | 'afterSetColumns');
+    readonly columns?: ColumnCollection;
+    readonly columnIds: Array<string>;
+    readonly rowIndex?: number;
+}
+/**
+ * All information objects of DataTable events.
+ */
+export type Event = (CellEvent | CloneEvent | ColumnEvent | SetModifierEvent | RowEvent);
+/**
+ * Event object for modifier-related events.
+ */
+export interface ModifierEvent extends DataEvent {
+    readonly type: ('setModifier' | 'afterSetModifier');
+    readonly modifier: (DataModifier | undefined);
+}
+/**
+ * Array of table cells in horizontal expansion. Index of the array is the
+ * index of the column names.
+ */
+export interface Row extends Array<CellType> {
+    [index: number]: CellType;
+}
+/**
+ * Event object for row-related events.
+ */
+export interface RowEvent extends DataEvent {
+    readonly type: ('deleteRows' | 'afterDeleteRows' | 'setRows' | 'afterSetRows');
+    readonly rowCount: number;
+    readonly rowIndex: number | number[];
+    readonly rows?: Array<Row | RowObject>;
+}
+/**
+ * Object of row values, where the keys are the column names.
+ */
+export interface RowObject extends Record<string, CellType> {
+    [column: string]: CellType;
+}
+/**
+* Event object for the setModifier events.
+*/
+export interface SetModifierEvent extends DataEvent {
+    readonly type: ('setModifier' | 'afterSetModifier' | 'setModifierError');
+    readonly error?: unknown;
+    readonly modifier?: DataModifier;
+    readonly modified?: DataTable;
 }
 export default DataTable;

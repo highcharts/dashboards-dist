@@ -1,4 +1,4 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type { FilterModifierOptions } from './FilterModifierOptions';
 import DataModifier from './DataModifier.js';
 import DataTable from '../DataTable.js';
@@ -20,7 +20,7 @@ declare class FilterModifier extends DataModifier {
     /**
      * Constructs an instance of the filter modifier.
      *
-     * @param {Partial<FilterModifier.Options>} [options]
+     * @param {Partial<FilterModifierOptions>} [options]
      * Options to configure the filter modifier.
      */
     constructor(options?: Partial<FilterModifierOptions>);
@@ -36,14 +36,14 @@ declare class FilterModifier extends DataModifier {
      * @param {DataTable} table
      * Table to modify.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @return {DataTable}
      * Table with `modified` property as a reference or modified table, if
      * `modified` property of the original table is undefined.
      */
-    modifyTable(table: DataTable, eventDetail?: DataEvent.Detail): DataTable;
+    modifyTable(table: DataTable, eventDetail?: DataEventDetail): DataTable;
 }
 declare module './DataModifierType' {
     interface DataModifierTypes {

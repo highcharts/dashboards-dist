@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -21,10 +21,12 @@ import ComponentRegistry from './Components/ComponentRegistry.js';
 import DashboardsAccessibility from './Accessibility/DashboardsAccessibility.js';
 import DataCursor from '../Data/DataCursor.js';
 import DataPool from '../Data/DataPool.js';
+import Defaults from './Defaults.js';
 import Globals from './Globals.js';
+import Layout from './Layout/Layout.js';
 import HTMLComponent from './Components/HTMLComponent/HTMLComponent.js';
 import U from '../Core/Utilities.js';
-const { merge, addEvent, error, objectEach, uniqueKey } = U;
+const { merge, addEvent, createElement, error, objectEach, uniqueKey } = U;
 /* *
  *
  *  Class
@@ -83,7 +85,7 @@ class Board {
          * @internal
          */
         this.componentTypes = ComponentRegistry.types;
-        this.options = merge(Board.defaultOptions, options);
+        this.options = merge(Defaults.defaultOptions, options);
         this.dataPool = new DataPool(options.dataPool);
         this.id = uniqueKey();
         this.guiEnabled = !options.gui ?
@@ -155,11 +157,11 @@ class Board {
     /**
      * Inits creating a layouts and setup the EditMode tools.
      * @internal
-     *
      */
     initEditMode() {
-        if (Dashboards.EditMode) {
-            this.editMode = new Dashboards.EditMode(this, this.options.editMode);
+        const { EditMode } = Globals.win.Dashboards;
+        if (EditMode) {
+            this.editMode = new EditMode(this, this.options.editMode);
         }
         else if (this.editModeEnabled) {
             throw new Error('Missing layout.js module');
@@ -186,6 +188,7 @@ class Board {
      */
     destroy() {
         const board = this;
+        const index = this.index;
         // Cancel all data connectors pending requests.
         this.dataPool.cancelPendingRequests();
         // Destroy layouts.
@@ -210,7 +213,7 @@ class Board {
         objectEach(board, function (val, key) {
             delete board[key];
         });
-        Globals.boards[this.index] = void 0;
+        Globals.boards[index] = void 0;
         return;
     }
     /**
@@ -228,6 +231,68 @@ class Board {
                 editModeTools.contextMenu
                     .updatePosition(editModeTools.contextButtonElement);
             }
+        }
+    }
+    /**
+     * Update the dashboard with new options.
+     *
+     * @param newOptions
+     * The new options to apply to the dashboard.
+     */
+    update(newOptions) {
+        const board = this;
+        // Merge new options with existing ones
+        board.options = merge(board.options, newOptions);
+        // Update dataPool if dataPool options changed
+        if (newOptions.dataPool) {
+            board.dataPool = new DataPool(board.options.dataPool);
+        }
+        // Update guiEnabled and editModeEnabled flags if changed
+        if (newOptions.gui !== void 0) {
+            board.guiEnabled = !newOptions.gui ?
+                false : board.options?.gui?.enabled;
+        }
+        if (newOptions.editMode !== void 0) {
+            board.editModeEnabled = !newOptions.editMode ?
+                false : board.options?.editMode?.enabled;
+        }
+        // Destroy existing components
+        for (const mountedComponent of board.mountedComponents) {
+            mountedComponent.component.destroy();
+        }
+        board.mountedComponents = [];
+        // Destroy existing layouts if GUI is enabled
+        if (board.guiEnabled && board.layouts) {
+            for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
+                board.layouts[i].destroy();
+            }
+            board.layouts = [];
+            // Ensure layoutsWrapper exists
+            if (!board.layoutsWrapper && board.container) {
+                board.layoutsWrapper = createElement('div', {
+                    className: Globals.classNames.layoutsWrapper
+                }, {}, board.container);
+            }
+            // Create new layouts if they are provided
+            if (board.options.gui?.layouts) {
+                const guiOptions = board.options.gui;
+                for (let i = 0, iEnd = guiOptions.layouts.length; i < iEnd; ++i) {
+                    board.layouts.push(new Layout(board, merge({}, guiOptions.layoutOptions, guiOptions.layouts[i])));
+                }
+                // Re-initialize editMode events if editMode exists
+                if (board.editMode) {
+                    // Re-initialize events for all layouts
+                    let j = 0;
+                    const jEnd = board.layouts.length;
+                    for (j; j < jEnd; ++j) {
+                        board.editMode.setLayoutEvents(board.layouts[j]);
+                    }
+                }
+            }
+        }
+        // Add new components
+        if (board.options.components) {
+            void board.setComponents(board.options.components);
         }
     }
     /**
@@ -286,37 +351,6 @@ class Board {
         return this.mountedComponents.find((c) => c.cell.id === id)?.component;
     }
 }
-/* *
- *
- *  Class Namespace
- *
- * */
-(function (Board) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     * Global dashboard settings.
-     */
-    Board.defaultOptions = {
-        gui: {
-            enabled: true,
-            layoutOptions: {
-                rowClassName: void 0,
-                cellClassName: void 0
-            },
-            layouts: []
-        },
-        components: []
-    };
-})(Board || (Board = {}));
 /* *
  *
  *  Registry

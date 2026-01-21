@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -48,7 +48,7 @@ class DataPool {
      * Emits an event on this data pool to all registered callbacks of the given
      * event.
      *
-     * @param {DataTable.Event} e
+     * @param {DataTableEvent} e
      * Event object with event information.
      */
     emit(e) {
@@ -215,8 +215,12 @@ class DataPool {
      *
      * @param options
      * Connector options to set.
+     *
+     * @param update
+     * Whether to update the existing connector with the new options and reload
+     * it (`true`) or replace it with a new connector instance (`false`).
      */
-    setConnectorOptions(options) {
+    async setConnectorOptions(options, update) {
         const connectorsOptions = this.options.connectors;
         const connectorsInstances = this.connectors;
         this.emit({
@@ -229,12 +233,20 @@ class DataPool {
                 break;
             }
         }
-        // TODO: Check if can be refactored
-        if (connectorsInstances[options.id]) {
-            connectorsInstances[options.id].stopPolling();
-            delete connectorsInstances[options.id];
+        let existingConnector = connectorsInstances[options.id];
+        if (existingConnector) {
+            if (update) {
+                await existingConnector.update(options, true);
+            }
+            else {
+                existingConnector.stopPolling();
+                existingConnector = void 0;
+                delete connectorsInstances[options.id];
+            }
         }
-        connectorsOptions.push(options);
+        if (!existingConnector) {
+            connectorsOptions.push(options);
+        }
         this.emit({
             type: 'afterSetConnectorOptions',
             options

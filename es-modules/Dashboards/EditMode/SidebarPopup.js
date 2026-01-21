@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  Pawel Lysy
@@ -12,11 +12,11 @@
  * */
 'use strict';
 import AST from '../../Core/Renderer/HTML/AST.js';
-import CellHTML from '../Layout/CellHTML.js';
+import { isCellHTML } from '../Layout/CellHTML.js';
 import AccordionMenu from './AccordionMenu.js';
 import BaseForm from '../../Shared/BaseForm.js';
 import Bindings from '../Actions/Bindings.js';
-import Cell from '../Layout/Cell.js';
+import { isCell } from '../Layout/Cell.js';
 import EditGlobals from './EditGlobals.js';
 import EditRenderer from './EditRenderer.js';
 import GUIElement from '../Layout/GUIElement.js';
@@ -136,7 +136,7 @@ class SidebarPopup extends BaseForm {
             editMode.resizer.disableResizer();
         }
         // Remove highlight from the row.
-        if (Cell.isCell(editMode.editCellContext) &&
+        if (isCell(editMode.editCellContext) &&
             editMode.editCellContext.row) {
             editMode.editCellContext.row.setHighlight();
         }
@@ -300,7 +300,7 @@ class SidebarPopup extends BaseForm {
         if (editMode.isEditOverlayActive) {
             editMode.setEditOverlay(true);
         }
-        if (Cell.isCell(editCellContext) && editCellContext.row) {
+        if (isCell(editCellContext) && editCellContext.row) {
             editMode.showToolbars(['cell', 'row'], editCellContext);
             editCellContext.row.setHighlight(true);
             editCellContext.setHighlight(true);
@@ -308,7 +308,7 @@ class SidebarPopup extends BaseForm {
                 editMode.resizer.setSnapPositions(editMode.editCellContext);
             }
         }
-        else if (CellHTML.isCellHTML(editCellContext) && editMode.cellToolbar) {
+        else if (isCellHTML(editCellContext) && editMode.cellToolbar) {
             editMode.cellToolbar.showToolbar(editCellContext);
             editCellContext.setHighlight();
         }

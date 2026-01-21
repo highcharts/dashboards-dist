@@ -1,14 +1,10 @@
-import type AxisType from './Axis/AxisType';
 import type Chart from './Chart/Chart';
 import type CSSObject from './Renderer/CSSObject';
-import type { DeepPartial } from '../Shared/Types';
+import type { DeepPartial, TypedArray } from '../Shared/Types';
 import type { DOMElementType, HTMLDOMElement } from './Renderer/DOMElementType';
-import type EventCallback from './EventCallback';
+import type { EventCallback } from './Callback';
 import type HTMLAttributes from './Renderer/HTML/HTMLAttributes';
-import type Series from './Series/Series';
 import type SVGAttributes from './Renderer/SVG/SVGAttributes';
-import type Time from './Time';
-import type Types from '../Shared/Types';
 type NonArray<T> = T extends Array<unknown> ? never : T;
 type NonFunction<T> = T extends Function ? never : T;
 type NullType = (null | undefined);
@@ -48,50 +44,6 @@ declare namespace error {
 }
 declare function merge<T = object>(extend: true, a?: T, ...n: Array<DeepPartial<T> | undefined>): (T);
 declare function merge<T1 extends object = object, T2 = unknown, T3 = unknown, T4 = unknown, T5 = unknown, T6 = unknown, T7 = unknown, T8 = unknown, T9 = unknown>(a?: T1, b?: T2, c?: T3, d?: T4, e?: T5, f?: T6, g?: T7, h?: T8, i?: T9): (T1 & T2 & T3 & T4 & T5 & T6 & T7 & T8 & T9);
-/**
- * Constrain a value to within a lower and upper threshold.
- *
- * @private
- * @param {number} value The initial value
- * @param {number} min The lower threshold
- * @param {number} max The upper threshold
- * @return {number} Returns a number value within min and max.
- */
-declare function clamp(value: number, min: number, max: number): number;
-/**
- * Utility for crisping a line position to the nearest full pixel depening on
- * the line width
- * @param {number} value       The raw pixel position
- * @param {number} lineWidth   The line width
- * @param {boolean} [inverted] Whether the containing group is inverted.
- *                             Crisping round numbers on the y-scale need to go
- *                             to the other side because the coordinate system
- *                             is flipped (scaleY is -1)
- * @return {number}            The pixel position to use for a crisp display
- */
-declare function crisp(value: number, lineWidth?: number, inverted?: boolean): number;
-/**
- * Return the deep difference between two objects. It can either return the new
- * properties, or optionally return the old values of new properties.
- * @private
- */
-declare function diffObjects(newer: AnyRecord, older: AnyRecord, keepOlder?: boolean, collectionsWithUpdate?: string[]): AnyRecord;
-/**
- * Shortcut for parseInt
- *
- * @private
- * @function Highcharts.pInt
- *
- * @param {*} s
- *        any
- *
- * @param {number} [mag]
- *        Magnitude
- *
- * @return {number}
- *         number
- */
-declare function pInt(s: any, mag?: number): number;
 /**
  * Utility function to check for string type.
  *
@@ -169,21 +121,6 @@ declare function isNumber(n: unknown): n is number;
  * @return {void}
  */
 declare function erase(arr: Array<unknown>, item: unknown): void;
-/**
- * Insert a series or an axis in a collection with other items, either the
- * chart series or yAxis series or axis collections, in the correct order
- * according to the index option and whether it is internal. Used internally
- * when adding series and axes.
- *
- * @private
- * @function Highcharts.Chart#insertItem
- * @param  {Highcharts.Series|Highcharts.Axis} item
- *         The item to insert
- * @param  {Array<Highcharts.Series>|Array<Highcharts.Axis>} collection
- *         A collection of items, like `chart.series` or `xAxis.series`.
- * @return {number} The index of the series in the collection.
- */
-declare function insertItem(item: Series | AxisType, collection: Array<Series | AxisType>): number;
 /**
  * Adds an item to an array, if it is not present in the array.
  *
@@ -473,7 +410,7 @@ declare function stableSort<T>(arr: Array<T>, sortFunction: (a: T, b: T) => numb
  * @return {number}
  *         The lowest number.
  */
-declare function arrayMin(data: Array<any> | Types.TypedArray): number;
+declare function arrayMin(data: Array<any> | TypedArray): number;
 /**
  * Non-recursive method to find the lowest member of an array. `Math.max` raises
  * a maximum call stack size exceeded error in Chrome when trying to apply more
@@ -487,7 +424,7 @@ declare function arrayMin(data: Array<any> | Types.TypedArray): number;
  * @return {number}
  *         The highest number.
  */
-declare function arrayMax(data: Array<any> | Types.TypedArray): number;
+declare function arrayMax(data: Array<any> | TypedArray): number;
 /**
  * Utility method that destroys any SVGElement instances that are properties on
  * the given object. It loops all properties and invokes destroy if there is a
@@ -526,36 +463,25 @@ declare function discardElement(element?: HTMLDOMElement): void;
  *         The corrected float number.
  */
 declare function correctFloat(num: number, prec?: number): number;
-/**
- * Find the closest distance between two values of a two-dimensional array
- * @private
- * @function Highcharts.getClosestDistance
- *
- * @param {Array<Array<number>>} arrays
- *          An array of arrays of numbers
- *
- * @return {number | undefined}
- *          The closest distance between values
- */
-declare function getClosestDistance(arrays: (number[] | Types.TypedArray)[], onError?: Function): (number | undefined);
-/**
- * Returns the value of a property path on a given object.
- *
- * @private
- * @function getNestedProperty
- *
- * @param {string} path
- * Path to the property, for example `custom.myValue`.
- *
- * @param {unknown} obj
- * Instance containing the property on the specific path.
- *
- * @return {unknown}
- * The unknown property value.
- */
-declare function getNestedProperty(path: string, parent: unknown): unknown;
 declare function getStyle(el: HTMLDOMElement, prop: string, toInt: true): (number | undefined);
 declare function getStyle(el: HTMLDOMElement, prop: string, toInt?: false): (number | string | undefined);
+/**
+ * Return the value of the first element in the array that satisfies the
+ * provided testing function.
+ *
+ * @function Highcharts.find<T>
+ *
+ * @param {Array<T>} arr
+ *        The array to test.
+ *
+ * @param {Function} callback
+ *        The callback function. The function receives the item as the first
+ *        argument. Return `true` if this item satisfies the condition.
+ *
+ * @return {T|undefined}
+ *         The value of the element.
+ */
+declare const find: <T>(arr: Array<T>, callback: Utilities.FindCallback<T>) => (T | undefined);
 /**
  * Get the element's offset position, corrected for `overflow: auto`.
  *
@@ -655,6 +581,20 @@ declare function removeEvent<T>(el: (Class<T> | T), type?: string, fn?: (EventCa
  */
 declare function fireEvent<T>(el: T, type: string, eventArguments?: (AnyRecord | Event), defaultFunction?: (EventCallback<T> | Function)): void;
 /**
+ * Get a unique key for using in internal element id's and pointers. The key is
+ * composed of a random hash specific to this Highcharts instance, and a
+ * counter.
+ *
+ * @example
+ * let id = uniqueKey(); // => 'highcharts-x45f6hp-0'
+ *
+ * @function Highcharts.uniqueKey
+ *
+ * @return {string}
+ * A unique key.
+ */
+declare const uniqueKey: () => string;
+/**
  * Activates a serial mode for element IDs provided by
  * {@link Highcharts.uniqueKey}. This mode can be used in automated tests, where
  * a simple comparison of two rendered SVG graphics is needed.
@@ -680,21 +620,47 @@ declare function fireEvent<T>(el: T, type: string, eventArguments?: (AnyRecord |
  */
 declare function useSerialIds(mode?: boolean): (boolean | undefined);
 declare function isFunction(obj: unknown): obj is Function;
-declare function ucfirst(s: unknown): string;
 declare namespace Utilities {
     type RelativeSize = (number | string);
     interface ErrorMessageEventObject {
+        /**
+         * The chart that causes the error.
+         */
         chart?: Chart;
+        /**
+         * The error code.
+         */
         code: number;
+        /**
+         * The error message.
+         */
         message?: string;
+        /**
+         * Additional parameters for the generated message.
+         */
         params?: Record<string, string>;
     }
     interface EventOptions {
+        /**
+         * The order the event handler should be called. This opens for having
+         * one handler be called before another, independent of in which order
+         * they were added.
+         */
         order?: number;
+        /**
+         * Whether an event should be passive or not. When set to `true`, the
+         * function specified by listener will never call `preventDefault()`.
+         */
         passive?: boolean;
     }
     interface EventWrapperObject<T> {
+        /**
+         * The function callback to execute when the event is fired.
+         */
         fn: EventCallback<T>;
+        /**
+         * The order the event handler should be called.
+         */
         order: number;
     }
     interface FindCallback<T> {
@@ -704,42 +670,47 @@ declare namespace Utilities {
         (this: TContext, value: TObject[keyof TObject], key: Extract<keyof TObject, string>, obj: TObject): void;
     }
     interface OffsetObject {
+        /**
+         * Height of the element.
+         */
         height: number;
+        /**
+         * Left distance to the page border.
+         */
         left: number;
+        /**
+         * Top distance to the page border.
+         */
         top: number;
+        /**
+         * Width of the element.
+         */
         width: number;
     }
     interface WrapProceedFunction<T extends ArrowFunction> {
         (proceed: (T & ArrowFunction), ...args: Array<any>): ReturnType<T>;
     }
 }
-declare const Utilities: {
+interface Utilities {
     addEvent: typeof addEvent;
     arrayMax: typeof arrayMax;
     arrayMin: typeof arrayMin;
     attr: typeof attr;
-    clamp: typeof clamp;
     clearTimeout: typeof internalClearTimeout;
     correctFloat: typeof correctFloat;
     createElement: typeof createElement;
-    crisp: typeof crisp;
     css: typeof css;
     defined: typeof defined;
     destroyObjectProperties: typeof destroyObjectProperties;
-    diffObjects: typeof diffObjects;
     discardElement: typeof discardElement;
     erase: typeof erase;
     error: typeof error;
     extend: typeof extend;
     extendClass: typeof extendClass;
-    find: <T>(arr: Array<T>, callback: Utilities.FindCallback<T>) => (T | undefined);
+    find: typeof find;
     fireEvent: typeof fireEvent;
-    getAlignFactor: (align?: string) => number;
-    getClosestDistance: typeof getClosestDistance;
     getMagnitude: typeof getMagnitude;
-    getNestedProperty: typeof getNestedProperty;
     getStyle: typeof getStyle;
-    insertItem: typeof insertItem;
     isArray: typeof isArray;
     isClass: typeof isClass;
     isDOMElement: typeof isDOMElement;
@@ -753,7 +724,6 @@ declare const Utilities: {
     offset: typeof offset;
     pad: typeof pad;
     pick: typeof pick;
-    pInt: typeof pInt;
     pushUnique: typeof pushUnique;
     relativeLength: typeof relativeLength;
     removeEvent: typeof removeEvent;
@@ -761,10 +731,9 @@ declare const Utilities: {
     splat: typeof splat;
     stableSort: typeof stableSort;
     syncTimeout: typeof syncTimeout;
-    timeUnits: Record<Time.TimeUnit, number>;
-    ucfirst: typeof ucfirst;
-    uniqueKey: () => string;
+    uniqueKey: typeof uniqueKey;
     useSerialIds: typeof useSerialIds;
     wrap: typeof wrap;
-};
+}
+declare const Utilities: Utilities;
 export default Utilities;

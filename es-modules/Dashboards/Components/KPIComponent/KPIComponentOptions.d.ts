@@ -1,14 +1,14 @@
-import type Component from '../Component';
+import type { ConnectorOptions as ComponentConnectorOptions, Options as ComponentOptions } from '../Component';
 import type CSSObject from '../../../Core/Renderer/CSSObject';
-import type KPIComponent from './KPIComponent';
+import type { FormulaType } from './KPIComponent';
 import type { Options as HighchartsOptions } from '../../Plugins/HighchartsTypes';
-import Sync from '../Sync/Sync';
-export interface Options extends Component.Options {
+import type { OptionsEntry as SyncOptionsEntry, OptionsRecord as SyncOptionsRecord, RawOptionsRecord as SyncRawOptionsRecord } from '../Sync/Sync';
+export interface Options extends ComponentOptions {
     columnId: string;
     /**
      * Connector options
      */
-    connector?: Component.ConnectorOptions;
+    connector?: ComponentConnectorOptions;
     /**
      * A full set of chart options applied into KPI chart that is displayed
      * below the value.
@@ -56,7 +56,7 @@ export interface Options extends Component.Options {
     /**
      * Sync options for the component.
      */
-    syncHandlers?: Sync.OptionsRecord;
+    syncHandlers?: SyncOptionsRecord;
     /**
      * A format string for the value text.
      *
@@ -115,7 +115,7 @@ export interface Options extends Component.Options {
      * {@link https://jsfiddle.net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/dashboards/kpi-component/formula/ | KPI value formula}
      *
      */
-    formula?: KPIComponent.FormulaType | FormulaCallbackFunction;
+    formula?: FormulaType | FormulaCallbackFunction;
 }
 /**
  * Options for linking KPI value to the chart point.
@@ -154,7 +154,7 @@ export interface LinkedValueToOptions {
  * }
  * ```
  */
-export interface SyncOptions extends Sync.RawOptionsRecord {
+export interface SyncOptions extends SyncRawOptionsRecord {
     /**
      * Extremes sync is available for Highcharts, KPI, Grid and
      * Navigator components. Sets a common range of displayed data. For the
@@ -166,6 +166,6 @@ export interface SyncOptions extends Sync.RawOptionsRecord {
      *
      * @default false
      */
-    extremes?: boolean | Sync.OptionsEntry;
+    extremes?: boolean | SyncOptionsEntry;
 }
 export default Options;

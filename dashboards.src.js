@@ -1,10 +1,12 @@
+// SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards v4.0.0 (2025-10-29)
+ * @license Highcharts Dashboards v4.1.0 (2026-01-21)
  * @module dashboards/dashboards
  *
- * (c) 2009-2025 Highsoft AS
+ * (c) 2009-2026 Highsoft AS
  *
- * License: www.highcharts.com/license
+ * A commercial license may be required depending on use.
+ * See www.highcharts.com/license
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -50,11 +52,12 @@ __webpack_require__.d(__webpack_exports__, {
 ;// ./code/dashboards/es-modules/Core/Globals.js
 /* *
  *
- *  (c) 2010-2025 Torstein Honsi
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
@@ -65,7 +68,7 @@ __webpack_require__.d(__webpack_exports__, {
  * */
 /**
  * Shared Highcharts properties.
- * @private
+ * @internal
  */
 var Globals;
 (function (Globals) {
@@ -74,7 +77,7 @@ var Globals;
      *  Constants
      *
      * */
-    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '4.0.0', Globals.win = (typeof window !== 'undefined' ?
+    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '4.1.0', Globals.win = (typeof window !== 'undefined' ?
         window :
         {}), // eslint-disable-line node/no-unsupported-features/es-builtins
     Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -112,7 +115,7 @@ var Globals;
     /**
      * A shared registry between all bundles to keep track of applied
      * compositions.
-     * @private
+     * @internal
      */
     Globals.composed = [];
     /**
@@ -137,14 +140,12 @@ var Globals;
      */
     Globals.dateFormats = {};
     /**
-     * @private
+     * @internal
      * @deprecated
      * @todo Use only `Core/Series/SeriesRegistry.seriesTypes`
      */
     Globals.seriesTypes = {};
-    /**
-     * @private
-     */
+    /** @internal */
     Globals.symbolSizes = {};
     /* *
      *
@@ -179,11 +180,12 @@ var Globals;
 ;// ./code/dashboards/es-modules/Core/Utilities.js
 /* *
  *
- *  (c) 2010-2025 Torstein Honsi
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
@@ -323,7 +325,7 @@ function merge(extendOrSource, ...sources) {
 /**
  * Constrain a value to within a lower and upper threshold.
  *
- * @private
+ * @internal
  * @param {number} value The initial value
  * @param {number} min The lower threshold
  * @param {number} max The upper threshold
@@ -351,7 +353,7 @@ function crisp(value, lineWidth = 0, inverted) {
 /**
  * Return the deep difference between two objects. It can either return the new
  * properties, or optionally return the old values of new properties.
- * @private
+ * @internal
  */
 function diffObjects(newer, older, keepOlder, collectionsWithUpdate) {
     const ret = {};
@@ -417,7 +419,7 @@ function diffObjects(newer, older, keepOlder, collectionsWithUpdate) {
 /**
  * Shortcut for parseInt
  *
- * @private
+ * @internal
  * @function Highcharts.pInt
  *
  * @param {*} s
@@ -554,7 +556,7 @@ function erase(arr, item) {
  * according to the index option and whether it is internal. Used internally
  * when adding series and axes.
  *
- * @private
+ * @internal
  * @function Highcharts.Chart#insertItem
  * @param  {Highcharts.Series|Highcharts.Axis} item
  *         The item to insert
@@ -1185,14 +1187,14 @@ const timeUnits = {
 /**
  * Easing definition
  *
- * @private
+ * @internal
  * @function Math.easeInOutSine
  *
  * @param {number} pos
- *        Current position, ranging from 0 to 1.
+ * Current position, ranging from 0 to 1.
  *
  * @return {number}
- *         Ease result
+ * Ease result
  */
 Math.easeInOutSine = function (pos) {
     return -0.5 * (Math.cos(Math.PI * pos) - 1);
@@ -1200,7 +1202,7 @@ Math.easeInOutSine = function (pos) {
 /**
  * Convenience function to get the align factor, used several places for
  * computing positions
- * @private
+ * @internal
  */
 const getAlignFactor = (align = '') => ({
     center: 0.5,
@@ -1210,7 +1212,7 @@ const getAlignFactor = (align = '') => ({
 }[align] || 0);
 /**
  * Find the closest distance between two values of a two-dimensional array
- * @private
+ * @internal
  * @function Highcharts.getClosestDistance
  *
  * @param {Array<Array<number>>} arrays
@@ -1243,7 +1245,7 @@ function getClosestDistance(arrays, onError) {
 /**
  * Returns the value of a property path on a given object.
  *
- * @private
+ * @internal
  * @function getNestedProperty
  *
  * @param {string} path
@@ -1511,18 +1513,14 @@ function addEvent(el, type, fn, options = {}) {
  */
 function removeEvent(el, type, fn) {
     /* eslint-enable valid-jsdoc */
-    /**
-     * @private
-     */
+    /** @internal */
     function removeOneEvent(type, fn) {
         const removeEventListener = el.removeEventListener;
         if (removeEventListener) {
             removeEventListener.call(el, type, fn, false);
         }
     }
-    /**
-     * @private
-     */
+    /** @internal */
     function removeAllEvents(eventCollection) {
         let types, len;
         if (!el.nodeName) {
@@ -1774,11 +1772,6 @@ if (win.jQuery) {
         }
     };
 }
-/* *
- *
- *  Default Export
- *
- * */
 // TODO use named exports when supported.
 const Utilities = {
     addEvent,
@@ -1840,35 +1833,6 @@ const Utilities = {
  *  API Declarations
  *
  * */
-/**
- * An animation configuration. Animation configurations can also be defined as
- * booleans, where `false` turns off animation and `true` defaults to a duration
- * of 500ms and defer of 0ms.
- *
- * @interface Highcharts.AnimationOptionsObject
- */ /**
-* A callback function to execute when the animation finishes.
-* @name Highcharts.AnimationOptionsObject#complete
-* @type {Function|undefined}
-*/ /**
-* The animation defer in milliseconds.
-* @name Highcharts.AnimationOptionsObject#defer
-* @type {number|undefined}
-*/ /**
-* The animation duration in milliseconds.
-* @name Highcharts.AnimationOptionsObject#duration
-* @type {number|undefined}
-*/ /**
-* The name of an easing function as defined on the `Math` object.
-* @name Highcharts.AnimationOptionsObject#easing
-* @type {string|Function|undefined}
-*/ /**
-* A callback function to execute on each step of each attribute or CSS property
-* that's being animated. The first argument contains information about the
-* animation and progress.
-* @name Highcharts.AnimationOptionsObject#step
-* @type {Function|undefined}
-*/
 /**
  * Creates a frame for the animated SVG element.
  *
@@ -2030,6 +1994,9 @@ const Utilities = {
 * @type {T}
 */
 /**
+ * @typedef {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} Highcharts.DOMElementType
+ */
+/**
  * The function callback to execute when the event is fired. The `this` context
  * contains the instance, that fired the event.
  *
@@ -2170,11 +2137,12 @@ const Utilities = {
 ;// ./code/dashboards/es-modules/Core/Renderer/HTML/AST.js
 /* *
  *
- *  (c) 2010-2025 Torstein Honsi
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
@@ -2254,6 +2222,15 @@ class AST {
         });
         return attributes;
     }
+    /**
+     * Utility function to parse a style string to a CSSObject.
+     *
+     * @internal
+     * @param {string} style
+     * The style string to parse.
+     * @return {Highcharts.CSSObject}
+     * The parsed CSSObject.
+     */
     static parseStyle(style) {
         return style
             .split(';')
@@ -2315,11 +2292,11 @@ class AST {
      */
     addToDOM(parent) {
         /**
-         * @private
+         * @internal
          * @param {Highcharts.ASTNode} subtree
-         * HTML/SVG definition
+         * HTML/SVG definition.
          * @param {Element} [subParent]
-         * parent node
+         * Parent node.
          * @return {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement}
          * The inserted node.
          */
@@ -2390,13 +2367,11 @@ class AST {
      * Parse HTML/SVG markup into AST Node objects. Used internally from the
      * constructor.
      *
-     * @private
-     *
-     * @function Highcharts.AST#getNodesFromMarkup
-     *
-     * @param {string} markup The markup string.
-     *
-     * @return {Array<Highcharts.ASTNode>} The parsed nodes.
+     * @internal
+     * @param {string} markup
+     * The markup string.
+     * @return {Array<Highcharts.ASTNode>}
+     * The parsed nodes.
      */
     parseMarkup(markup) {
         const nodes = [];
@@ -2672,6 +2647,7 @@ AST.allowedTags = [
     'u',
     'ul'
 ];
+/** @internal */
 AST.emptyHTML = emptyHTML;
 /**
  * Allow all custom SVG and HTML attributes, references and tags (together
@@ -2734,11 +2710,11 @@ AST.bypassHTMLFiltering = false;
 ;// ./code/dashboards/es-modules/Dashboards/Globals.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -2752,78 +2728,73 @@ AST.bypassHTMLFiltering = false;
 
 /* *
  *
- *  Namespace
+ *  Constants
  *
  * */
 /**
- * Global Dashboards namespace in classic `<scripts>`-based implementations.
- *
- * @namespace Dashboards
+ * Prefix of a GUIElement HTML class name.
  */
-var Globals_Globals;
-(function (Globals) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     * Prefix of a GUIElement HTML class name.
-     */
-    Globals.classNamePrefix = 'highcharts-dashboards-';
-    /** @internal */
-    Globals.classNames = {
-        layout: Globals.classNamePrefix + 'layout',
-        cell: Globals.classNamePrefix + 'cell',
-        cellHover: Globals.classNamePrefix + 'cell-state-hover',
-        cellActive: Globals.classNamePrefix + 'cell-state-active',
-        cellLoading: Globals.classNamePrefix + 'cell-state-loading',
-        row: Globals.classNamePrefix + 'row',
-        layoutsWrapper: Globals.classNamePrefix + 'layouts-wrapper',
-        boardContainer: Globals.classNamePrefix + 'wrapper'
-    };
-    /** @internal */
-    Globals.guiElementType = {
-        row: 'row',
-        cell: 'cell',
-        layout: 'layout'
-    };
-    /**
-     * Contains all Board instances of this window.
-     */
-    Globals.boards = [];
-    /**
-     * Reference to the window used by Dashboards.
-     */
-    Globals.win = window;
-    Globals.doc = document;
-    Globals.noop = function () { };
-    Globals.isMS = /(edge|msie|trident)/i
-        .test((Globals.win.navigator && Globals.win.navigator.userAgent) || '') && !Globals.win.opera;
-    Globals.supportsPassiveEvents = (function () {
-        // Checks whether the browser supports passive events, (#11353).
-        let supportsPassive = false;
-        // Object.defineProperty doesn't work on IE as well as passive
-        // events - instead of using polyfill, we can exclude IE totally.
-        if (!Globals.isMS) {
-            const opts = Object.defineProperty({}, 'passive', {
-                get: function () {
-                    supportsPassive = true;
-                }
-            });
-            if (Globals.win.addEventListener && Globals.win.removeEventListener) {
-                Globals.win.addEventListener('testPassive', Globals.noop, opts);
-                Globals.win.removeEventListener('testPassive', Globals.noop, opts);
+const classNamePrefix = 'highcharts-dashboards-';
+const version = '4.1.0';
+/** @internal */
+const classNames = {
+    layout: classNamePrefix + 'layout',
+    cell: classNamePrefix + 'cell',
+    cellHover: classNamePrefix + 'cell-state-hover',
+    cellActive: classNamePrefix + 'cell-state-active',
+    cellLoading: classNamePrefix + 'cell-state-loading',
+    row: classNamePrefix + 'row',
+    layoutsWrapper: classNamePrefix + 'layouts-wrapper',
+    boardContainer: classNamePrefix + 'wrapper'
+};
+/** @internal */
+const guiElementType = {
+    row: 'row',
+    cell: 'cell',
+    layout: 'layout'
+};
+/**
+ * Contains all Board instances of this window.
+ */
+const boards = [];
+/**
+ * Reference to the window used by Dashboards.
+ */
+const Globals_win = window;
+const Globals_doc = document;
+const noop = function () { };
+const isMS = /(edge|msie|trident)/i
+    .test((Globals_win.navigator && Globals_win.navigator.userAgent) || '') && !Globals_win.opera;
+const supportsPassiveEvents = (function () {
+    // Checks whether the browser supports passive events, (#11353).
+    let supportsPassive = false;
+    // Object.defineProperty doesn't work on IE as well as passive
+    // events - instead of using polyfill, we can exclude IE totally.
+    if (!isMS) {
+        const opts = Object.defineProperty({}, 'passive', {
+            get: function () {
+                supportsPassive = true;
             }
+        });
+        if (Globals_win.addEventListener && Globals_win.removeEventListener) {
+            Globals_win.addEventListener('testPassive', noop, opts);
+            Globals_win.removeEventListener('testPassive', noop, opts);
         }
-        return supportsPassive;
-    }());
-})(Globals_Globals || (Globals_Globals = {}));
+    }
+    return supportsPassive;
+}());
+const Globals_Globals = {
+    boards,
+    classNamePrefix,
+    classNames,
+    doc: Globals_doc,
+    guiElementType,
+    isMS,
+    noop,
+    supportsPassiveEvents,
+    version,
+    win: Globals_win
+};
 /* *
  *
  *  Default Export
@@ -2834,11 +2805,11 @@ var Globals_Globals;
 ;// ./code/dashboards/es-modules/Dashboards/EditMode/EditGlobals.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -2992,11 +2963,11 @@ const EditGlobals = {
 ;// ./code/dashboards/es-modules/Dashboards/Layout/GUIElement.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -3103,7 +3074,7 @@ class GUIElement {
     /**
      * Create or get existing HTML element as a GUIElement container.
      *
-     * @param {GUIElement.ContainerOptions} options
+     * @param {GetElementContainerOptions} options
      * Options.
      *
      * @returns
@@ -3188,11 +3159,11 @@ class GUIElement {
 ;// ./code/dashboards/es-modules/Dashboards/Layout/Cell.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -3227,7 +3198,7 @@ class Cell extends Layout_GUIElement {
      * @param {Row} row
      * Reference to the row instance.
      *
-     * @param {Cell.Options} options
+     * @param {Options} options
      * Options for the cell.
      *
      * @param {HTMLElement} cellElement
@@ -3310,7 +3281,14 @@ class Cell extends Layout_GUIElement {
      *
      */
     getOptions() {
-        return this.options;
+        const cell = this;
+        if (cell.options.layout && cell.nestedLayout) {
+            return {
+                ...cell.options,
+                layout: cell.nestedLayout.getOptions()
+            };
+        }
+        return cell.options;
     }
     changeVisibility(setVisible = true) {
         super.changeVisibility(setVisible);
@@ -3455,20 +3433,12 @@ class Cell extends Layout_GUIElement {
         return Layout_GUIElement.getPercentageWidth(width) || '';
     }
 }
-/* *
- *
- *  Namespace
- *
- * */
-(function (Cell) {
-    /**
-     * Checks if a valid cell instance.
-     */
-    function isCell(cell) {
-        return (!!cell && 'row' in cell && cell.type === 'cell');
-    }
-    Cell.isCell = isCell;
-})(Cell || (Cell = {}));
+/**
+ * Checks if a valid cell instance.
+ */
+function isCell(cell) {
+    return (!!cell && 'row' in cell && cell.type === 'cell');
+}
 /* *
  *
  *  Default Export
@@ -3506,11 +3476,11 @@ class CallbackRegistry {
 ;// ./code/dashboards/es-modules/Dashboards/Components/ConnectorHandler.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -3547,7 +3517,6 @@ class ConnectorHandler {
         /**
          * Event listeners tied to the current DataTable. Used for rerendering the
          * component on data changes.
-         *
          * @internal
          */
         this.tableEvents = [];
@@ -3572,7 +3541,7 @@ class ConnectorHandler {
         if (connectorId &&
             (this.connectorId !== connectorId ||
                 dataPool.isNewConnector(connectorId))) {
-            if (Layout_Cell.isCell(component.cell)) {
+            if (isCell(component.cell)) {
                 component.cell.setLoadingState();
             }
             const connector = await dataPool.getConnector(connectorId);
@@ -3605,13 +3574,7 @@ class ConnectorHandler {
                 });
             }
         });
-        if (this.presentationModifier) {
-            this.presentationTable =
-                this.presentationModifier.modifyTable(table.getModified().clone()).getModified();
-        }
-        else {
-            this.presentationTable = table;
-        }
+        this.dataTable = table;
     }
     /**
      * Sets the connector for the component connector handler.
@@ -3629,15 +3592,7 @@ class ConnectorHandler {
         }
         this.connector = connector;
         if (connector) {
-            const dataTables = connector.dataTables;
-            if (this.options.dataTableKey) {
-                // Match a data table used in this component.
-                this.setTable(dataTables[this.options.dataTableKey]);
-                // Take the first connector data table if id not provided.
-            }
-            else {
-                this.setTable(Object.values(dataTables)[0]);
-            }
+            this.setTable(connector.getTable(this.options.dataTableKey));
         }
         this.addConnectorAssignment();
         return this.component;
@@ -3776,11 +3731,11 @@ class ConnectorHandler {
 ;// ./code/dashboards/es-modules/Dashboards/Components/EditableOptions.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -3839,11 +3794,11 @@ EditableOptions.defaultTypeMap = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Emitter.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -3915,11 +3870,11 @@ SyncEmitter.registry = {};
 ;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Handler.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -4008,11 +3963,11 @@ SyncHandler.registry = {};
 ;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Sync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -4218,11 +4173,11 @@ Sync.defaultHandlers = {};
 ;// ./code/dashboards/es-modules/Dashboards/Components/ComponentUtilities.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -4234,70 +4189,64 @@ Sync.defaultHandlers = {};
 
 /* *
  *
- *  Namespace
+ *  Functions
  *
  * */
-var ComponentUtilities;
-(function (ComponentUtilities) {
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    function getMargins(element, includeBorders = true) {
-        const borders = {
-            x: ['borderLeft', 'borderRight'],
-            y: ['borderTop', 'borderBottom']
-        };
-        return {
-            y: getStyles(element, [
-                'marginTop',
-                'marginBottom',
-                ...(includeBorders ? borders.y : [])
-            ]).reduce(sumPixels, 0),
-            x: getStyles(element, [
-                'marginLeft',
-                'marginTop',
-                ...(includeBorders ? borders.x : [])
-            ]).reduce(sumPixels, 0)
-        };
+function getMargins(element, includeBorders = true) {
+    const borders = {
+        x: ['borderLeft', 'borderRight'],
+        y: ['borderTop', 'borderBottom']
+    };
+    return {
+        y: getStyles(element, [
+            'marginTop',
+            'marginBottom',
+            ...(includeBorders ? borders.y : [])
+        ]).reduce(sumPixels, 0),
+        x: getStyles(element, [
+            'marginLeft',
+            'marginTop',
+            ...(includeBorders ? borders.x : [])
+        ]).reduce(sumPixels, 0)
+    };
+}
+function getPaddings(element) {
+    return {
+        x: getStyles(element, ['paddingLeft', 'paddingRight']).reduce(sumPixels, 0),
+        y: getStyles(element, ['paddingTop', 'paddingBottom']).reduce(sumPixels, 0)
+    };
+}
+function getStyles(element, styles) {
+    const elementStyles = window.getComputedStyle(element);
+    return styles.map((style) => elementStyles[style]); // Cannot use getPropertyValue?
+}
+function sumPixels(accumulator, value) {
+    if (value) {
+        accumulator += (typeof value === 'number' ? value : parseFloat(value));
     }
-    ComponentUtilities.getMargins = getMargins;
-    function getPaddings(element) {
-        return {
-            x: getStyles(element, ['paddingLeft', 'paddingRight']).reduce(sumPixels, 0),
-            y: getStyles(element, ['paddingTop', 'paddingBottom']).reduce(sumPixels, 0)
-        };
-    }
-    ComponentUtilities.getPaddings = getPaddings;
-    function getStyles(element, styles) {
-        const elementStyles = window.getComputedStyle(element);
-        return styles.map((style) => elementStyles[style]); // Cannot use getPropertyValue?
-    }
-    ComponentUtilities.getStyles = getStyles;
-    function sumPixels(accumulator, value) {
-        if (value) {
-            accumulator += (typeof value === 'number' ? value : parseFloat(value));
-        }
-        return accumulator;
-    }
-    ComponentUtilities.sumPixels = sumPixels;
-})(ComponentUtilities || (ComponentUtilities = {}));
+    return accumulator;
+}
 /* *
  *
  *  Default Export
  *
  * */
+const ComponentUtilities = {
+    getMargins,
+    getPaddings,
+    getStyles,
+    sumPixels
+};
 /* harmony default export */ const Components_ComponentUtilities = (ComponentUtilities);
 
 ;// ./code/dashboards/es-modules/Dashboards/Utilities.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -4308,7 +4257,7 @@ var ComponentUtilities;
  * */
 
 
-const { doc: Utilities_doc, supportsPassiveEvents } = Dashboards_Globals;
+const { doc: Utilities_doc, supportsPassiveEvents: Utilities_supportsPassiveEvents } = Dashboards_Globals;
 
 const { error: coreError, isClass: Utilities_isClass, isDOMElement: Utilities_isDOMElement, isObject: Utilities_isObject, objectEach: Utilities_objectEach, uniqueKey: coreUniqueKey } = Core_Utilities;
 /* *
@@ -4353,7 +4302,7 @@ function Utilities_addEvent(el, type, fn, options = {}) {
     // on touch events (#11353).
     const addEventListener = el.addEventListener;
     if (addEventListener) {
-        addEventListener.call(el, type, fn, supportsPassiveEvents ? {
+        addEventListener.call(el, type, fn, Utilities_supportsPassiveEvents ? {
             passive: options.passive === void 0 ?
                 type.indexOf('touch') !== -1 : options.passive,
             capture: false
@@ -4741,17 +4690,18 @@ const Utilities_Utilities = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/Component.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
  *  - Wojciech Chmiel
  *  - Gøran Slettemark
  *  - Sophie Bremer
+ *  - Dawid Dragula
  *
  * */
 
@@ -4761,11 +4711,11 @@ const Utilities_Utilities = {
 
 
 
-const { classNamePrefix } = Dashboards_Globals;
+const { classNamePrefix: Component_classNamePrefix } = Dashboards_Globals;
 
 const { createElement: Component_createElement, isArray: Component_isArray, merge: Component_merge, fireEvent: Component_fireEvent, addEvent: Component_addEvent, objectEach: Component_objectEach, isFunction: Component_isFunction, getStyle: Component_getStyle, diffObjects: Component_diffObjects, removeEvent: Component_removeEvent } = Core_Utilities;
 
-const { getMargins, getPaddings } = Components_ComponentUtilities;
+const { getMargins: Component_getMargins, getPaddings: Component_getPaddings } = Components_ComponentUtilities;
 
 const { deepClone: Component_deepClone, uniqueKey: Component_uniqueKey } = Dashboards_Utilities;
 /* *
@@ -4774,15 +4724,7 @@ const { deepClone: Component_deepClone, uniqueKey: Component_uniqueKey } = Dashb
  *
  * */
 /**
- *
- * Abstract Class of component.
- *
- * @internal
- *
- */
-/**
- * Abstract Class of component.
- * @internal
+ * Abstract class of component.
  */
 class Component {
     /* *
@@ -4791,15 +4733,17 @@ class Component {
      *
      * */
     /**
-     *
      * Creates HTML text element like header or title
      *
      * @param tagName
      * HTML tag name used as wrapper of text like `h2` or `p`.
+     *
      * @param elementName
      * Name of element
+     *
      * @param textOptions
      * The options for the component
+     *
      * @returns
      * HTML object when title is created, otherwise undefined
      *
@@ -4809,13 +4753,13 @@ class Component {
         if (typeof textOptions === 'object') {
             const { className, text, style } = textOptions;
             return Component_createElement(tagName, {
-                className: className || `${classNamePrefix}component-${elementName}`,
+                className: className || `${Component_classNamePrefix}component-${elementName}`,
                 textContent: text
             }, style);
         }
         if (typeof textOptions === 'string') {
             return Component_createElement(tagName, {
-                className: `${classNamePrefix}component-${elementName}`,
+                className: `${Component_classNamePrefix}component-${elementName}`,
                 textContent: textOptions
             }, {});
         }
@@ -4836,35 +4780,31 @@ class Component {
      */
     constructor(cell, options, board) {
         /**
-         * The connector handlers for the component.
+         * The connector handlers for the component. They are used to handle the
+         * connector options and data tables.
          */
         this.connectorHandlers = [];
         /**
          * Registry of callbacks registered on the component. Used in the Highcharts
          * component to keep track of chart events.
-         *
          * @internal
          */
         this.callbackRegistry = new Dashboards_CallbackRegistry();
         /**
          * Event listeners tied to the parent cell. Used for rendering/resizing the
          * component on interactions.
-         *
          * @internal
          */
         this.cellListeners = [];
         /**
          * Timeouts for calls to `Component.resizeTo()`.
-         *
          * @internal
-        /* *
          */
         this.resizeTimeouts = [];
         /**
          * Timeouts for resizing the content. I.e. `chart.setSize()`.
-         *
          * @internal
-         * */
+         */
         this.innerResizeTimeouts = [];
         const renderTo = options.renderTo;
         this.board = board || cell?.row?.layout?.board || {};
@@ -4904,12 +4844,12 @@ class Component {
         if (cell) {
             this.attachCellListeners();
             this.on('update', () => {
-                if (Layout_Cell.isCell(this.cell)) {
+                if (isCell(this.cell)) {
                     this.cell.setLoadingState();
                 }
             });
             this.on('afterRender', () => {
-                if (Layout_Cell.isCell(this.cell)) {
+                if (isCell(this.cell)) {
                     this.cell.setLoadingState(false);
                 }
             });
@@ -4933,13 +4873,36 @@ class Component {
      * Returns the first connector of the component if it exists.
      *
      * @internal
+     * @deprecated
      */
     getFirstConnector() {
         return this.connectorHandlers[0]?.connector;
     }
     /**
-     * Setup listeners on cell/other things up the chain
+     * Returns the data table connected to the component by the `connectorId`
+     * and `dataTableKey`. If both args are undefined, the first data table is
+     * returned.
      *
+     * @param connectorId
+     * The id of the connector.
+     *
+     * @param dataTableKey
+     * The key of the data table within the connector.
+     *
+     * @returns
+     * The data table, or undefined if no matching handler is found.
+     */
+    getDataTable(connectorId, dataTableKey) {
+        for (const handler of this.connectorHandlers) {
+            if ((!connectorId ||
+                handler.options.id === connectorId) && (!dataTableKey ||
+                handler.options.dataTableKey === dataTableKey)) {
+                return handler.dataTable;
+            }
+        }
+    }
+    /**
+     * Setup listeners on cell/other things up the chain
      * @internal
      */
     attachCellListeners() {
@@ -4951,7 +4914,7 @@ class Component {
             }
         }
         if (this.cell &&
-            Layout_Cell.isCell(this.cell) &&
+            isCell(this.cell) &&
             Object.keys(this.cell).length) {
             const board = this.cell.row.layout.board;
             this.cellListeners.push(
@@ -4975,8 +4938,10 @@ class Component {
     }
     /**
      * Set a parent cell.
+     *
      * @param cell
      * Instance of a cell.
+     *
      * @param resize
      * Flag that allow to resize the component.
      *
@@ -5012,24 +4977,27 @@ class Component {
      *
      * @returns
      * Current height as number.
+     *
      * @internal
      */
     getContentHeight() {
         const titleHeight = this.titleElement ?
-            this.titleElement.clientHeight + getMargins(this.titleElement).y :
+            this.titleElement.clientHeight + Component_getMargins(this.titleElement).y :
             0;
         const captionHeight = this.captionElement ?
             this.captionElement.clientHeight +
-                getMargins(this.captionElement).y :
+                Component_getMargins(this.captionElement).y :
             0;
         return titleHeight + captionHeight;
     }
     /**
      * Resize the component
+     *
      * @param width
      * The width to set the component to.
      * Can be pixels, a percentage string or null.
      * Null will unset the style
+     *
      * @param height
      * The height to set the component to.
      * Can be pixels, a percentage string or null.
@@ -5038,7 +5006,7 @@ class Component {
     resize(width, height) {
         if (height) {
             // Get offset for border, padding
-            const pad = getPaddings(this.element).y + getMargins(this.element).y;
+            const pad = Component_getPaddings(this.element).y + Component_getMargins(this.element).y;
             this.element.style.height = 'calc(100% - ' + pad + 'px)';
             this.contentElement.style.height =
                 'calc(100% - ' + this.getContentHeight() + 'px)';
@@ -5056,16 +5024,18 @@ class Component {
      * It's a temporary alternative for the `resize` method. It sets the strict
      * pixel height for the component so that the content can be distributed in
      * the right way, without looping the resizers in the content and container.
+     *
      * @param width
      * The width to set the component to.
+     *
      * @param height
      * The height to set the component to.
      */
     resizeDynamicContent(width, height) {
         const { element } = this;
         if (height) {
-            const margins = getMargins(element).y;
-            const paddings = getPaddings(element).y;
+            const margins = Component_getMargins(element).y;
+            const paddings = Component_getPaddings(element).y;
             if (typeof height === 'string') {
                 height = parseFloat(height);
             }
@@ -5084,6 +5054,7 @@ class Component {
     }
     /**
      * Adjusts size of component to parent's cell size when animation is done.
+     *
      * @param element
      * HTML element that is resized.
      */
@@ -5096,14 +5067,15 @@ class Component {
         }
         const timeoutID = requestAnimationFrame(() => {
             const { width, height } = element.getBoundingClientRect();
-            const padding = getPaddings(element);
-            const margins = getMargins(element);
+            const padding = Component_getPaddings(element);
+            const margins = Component_getMargins(element);
             this.resize(width - padding.x - margins.x, height - padding.y - margins.y);
         });
         this.resizeTimeouts.push(timeoutID);
     }
     /**
      * Handles updating via options.
+     *
      * @param newOptions
      * The options to apply.
      *
@@ -5126,14 +5098,19 @@ class Component {
         let connectorsHaveChanged = connectorOptions.length !== this.connectorHandlers.length;
         if (!connectorsHaveChanged) {
             for (let i = 0, iEnd = connectorOptions.length; i < iEnd; i++) {
-                const oldOpt = this.connectorHandlers[i]?.options;
-                const newOpt = connectorOptions[i];
-                if (newOpt?.id !== oldOpt?.id ||
-                    newOpt?.dataTableKey !== oldOpt?.dataTableKey) {
+                const oldOptions = this.connectorHandlers[i]?.options;
+                const newOptions = connectorOptions[i];
+                // Check if the connector id has changed.
+                if (oldOptions.id !== newOptions.id) {
                     connectorsHaveChanged = true;
                     break;
                 }
-                this.connectorHandlers[i].updateOptions(connectorOptions[i]);
+                // Check if the data table key has changed.
+                if (oldOptions.dataTableKey !== newOptions.dataTableKey) {
+                    connectorsHaveChanged = true;
+                    break;
+                }
+                this.connectorHandlers[i].updateOptions(newOptions);
             }
         }
         if (connectorsHaveChanged) {
@@ -5293,7 +5270,20 @@ class Component {
         Component_removeEvent(this);
         this.element.remove();
     }
-    /** @internal */
+    /**
+     * Adds an event listener to the component.
+     *
+     * @param type
+     * The type of event to listen for.
+     *
+     * @param callback
+     * The callback to call when the event is triggered.
+     *
+     * @returns
+     * The function to remove the event listener.
+     *
+     * @internal
+     */
     on(type, callback) {
         return Component_addEvent(this, type, callback);
     }
@@ -5351,7 +5341,7 @@ class Component {
 }
 /* *
  *
- *  Properties
+ *  Static Properties
  *
  * */
 /** @internal */
@@ -5367,7 +5357,7 @@ Component.predefinedSyncConfig = {
  * Default options of the component.
  */
 Component.defaultOptions = {
-    className: `${classNamePrefix}component`,
+    className: `${Component_classNamePrefix}component`,
     id: '',
     title: false,
     caption: false,
@@ -5387,11 +5377,11 @@ Component.defaultOptions = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Karol Kolodziej
@@ -5430,11 +5420,11 @@ const HTMLComponentDefaults = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -5460,11 +5450,11 @@ const predefinedSyncConfig = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLComponent.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -5752,11 +5742,11 @@ HTMLComponent.predefinedSyncConfig = HTMLSyncs;
 ;// ./code/dashboards/es-modules/Data/Converters/DataConverterUtils.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Kamil Kubik
@@ -5766,215 +5756,204 @@ HTMLComponent.predefinedSyncConfig = HTMLSyncs;
 const { isNumber: DataConverterUtils_isNumber } = Core_Utilities;
 /* *
  *
- *  Namespace
+ *  Functions
  *
  * */
-var DataConverterUtils;
-(function (DataConverterUtils) {
-    /* *
-    *
-    *  Properties
-    *
-    * */
-    /* *
-    *
-    * Functions
-    *
-    * */
-    /**
-     * Converts a value to a Date.
-     *
-     * @param {DataConverter.Type} value
-     * Value to convert.
-     *
-     * @return {globalThis.Date}
-     * Converted value as a Date.
-     */
-    function asDate(value, converter) {
-        let timestamp;
-        if (typeof value === 'string') {
-            timestamp = converter.parseDate(value);
+/**
+ * Converts a value to a Date.
+ *
+ * @param {DataConverterType} value
+ * Value to convert.
+ *
+ * @return {globalThis.Date}
+ * Converted value as a Date.
+ */
+function asDate(value, converter) {
+    let timestamp;
+    if (typeof value === 'string') {
+        timestamp = converter.parseDate(value);
+    }
+    else if (typeof value === 'number') {
+        timestamp = value;
+    }
+    else if (value instanceof Date) {
+        return value;
+    }
+    else {
+        timestamp = converter.parseDate(asString(value));
+    }
+    return new Date(timestamp);
+}
+/**
+ * Converts a value to a number.
+ *
+ * @param {DataConverterType} value
+ * Value to convert.
+ *
+ * @return {number}
+ * Converted value as a number.
+ */
+function asNumber(value, decimalRegExp) {
+    if (typeof value === 'number') {
+        return value;
+    }
+    if (typeof value === 'boolean') {
+        return value ? 1 : 0;
+    }
+    if (typeof value === 'string') {
+        const decimalRegex = decimalRegExp;
+        if (value.indexOf(' ') > -1) {
+            value = value.replace(/\s+/g, '');
         }
-        else if (typeof value === 'number') {
-            timestamp = value;
+        if (decimalRegex) {
+            if (!decimalRegex.test(value)) {
+                return NaN;
+            }
+            value = value.replace(decimalRegex, '$1.$2');
         }
-        else if (value instanceof Date) {
-            return value;
+        return parseFloat(value);
+    }
+    if (value instanceof Date) {
+        return value.getDate();
+    }
+    if (value) {
+        return value.getRowCount();
+    }
+    return NaN;
+}
+/**
+ * Converts a value to a string.
+ *
+ * @param {DataConverterType} value
+ * Value to convert.
+ *
+ * @return {string}
+ * Converted value as a string.
+ */
+function asString(value) {
+    return '' + value;
+}
+/**
+ * Converts a value to a boolean.
+ *
+ * @param {DataConverterType} value
+ * Value to convert.
+ *
+ * @return {boolean}
+ * Converted value as a boolean.
+ */
+function asBoolean(value) {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        return value !== '' && value !== '0' && value !== 'false';
+    }
+    return !!asNumber(value);
+}
+/**
+ * Guesses the potential type of a string value for parsing CSV etc.
+ *
+ * @param {*} value
+ * The value to examine.
+ *
+ * @return {'number' | 'string' | 'Date'}
+ * Type string, either `string`, `Date`, or `number`.
+ */
+function guessType(value, converter) {
+    let result = 'string';
+    if (typeof value === 'string') {
+        const trimedValue = trim(`${value}`), decimalRegExp = converter.decimalRegExp;
+        let innerTrimedValue = trim(trimedValue, true);
+        if (decimalRegExp) {
+            innerTrimedValue = (decimalRegExp.test(innerTrimedValue) ?
+                innerTrimedValue.replace(decimalRegExp, '$1.$2') :
+                '');
+        }
+        const floatValue = parseFloat(innerTrimedValue);
+        if (+innerTrimedValue === floatValue) {
+            // String is numeric
+            value = floatValue;
         }
         else {
-            timestamp = converter.parseDate(asString(value));
+            // Determine if a date string
+            const dateValue = converter.parseDate(value);
+            result = DataConverterUtils_isNumber(dateValue) ? 'Date' : 'string';
         }
-        return new Date(timestamp);
     }
-    DataConverterUtils.asDate = asDate;
-    /**
-     * Converts a value to a number.
-     *
-     * @param {DataConverter.Type} value
-     * Value to convert.
-     *
-     * @return {number}
-     * Converted value as a number.
-     */
-    function asNumber(value, decimalRegExp) {
-        if (typeof value === 'number') {
-            return value;
-        }
-        if (typeof value === 'boolean') {
-            return value ? 1 : 0;
-        }
-        if (typeof value === 'string') {
-            const decimalRegex = decimalRegExp;
-            if (value.indexOf(' ') > -1) {
-                value = value.replace(/\s+/g, '');
-            }
-            if (decimalRegex) {
-                if (!decimalRegex.test(value)) {
-                    return NaN;
-                }
-                value = value.replace(decimalRegex, '$1.$2');
-            }
-            return parseFloat(value);
-        }
-        if (value instanceof Date) {
-            return value.getDate();
-        }
-        if (value) {
-            return value.getRowCount();
-        }
-        return NaN;
+    if (typeof value === 'number') {
+        // Greater than milliseconds in a year assumed timestamp
+        result = value > 365 * 24 * 3600 * 1000 ? 'Date' : 'number';
     }
-    DataConverterUtils.asNumber = asNumber;
-    /**
-     * Converts a value to a string.
-     *
-     * @param {DataConverter.Type} value
-     * Value to convert.
-     *
-     * @return {string}
-     * Converted value as a string.
-     */
-    function asString(value) {
-        return '' + value;
+    return result;
+}
+/**
+ * Trim a string from whitespaces.
+ *
+ * @param {string} str
+ * String to trim.
+ *
+ * @param {boolean} [inside=false]
+ * Remove all spaces between numbers.
+ *
+ * @return {string}
+ * Trimed string
+ */
+function trim(str, inside) {
+    if (typeof str === 'string') {
+        str = str.replace(/^\s+|\s+$/g, '');
+        // Clear white space insdie the string, like thousands separators
+        if (inside && /^[\d\s]+$/.test(str)) {
+            str = str.replace(/\s/g, '');
+        }
     }
-    DataConverterUtils.asString = asString;
-    /**
-     * Converts a value to a boolean.
-     *
-     * @param {DataConverter.Type} value
-     * Value to convert.
-     *
-     * @return {boolean}
-     * Converted value as a boolean.
-     */
-    function asBoolean(value) {
-        if (typeof value === 'boolean') {
-            return value;
-        }
-        if (typeof value === 'string') {
-            return value !== '' && value !== '0' && value !== 'false';
-        }
-        return !!asNumber(value);
+    return str;
+}
+/**
+ * Parses an array of columns to a column collection. If more headers are
+ * provided, the corresponding, empty columns are added.
+ *
+ * @param {DataTableColumn[]} [columnsArray]
+ * Array of columns.
+ *
+ * @param {string[]} [headers]
+ * Column ids to use.
+ *
+ * @return {DataTableColumnCollection}
+ * Parsed columns.
+ */
+function getColumnsCollection(columnsArray = [], headers) {
+    const columns = {};
+    for (let i = 0, iEnd = Math.max(headers.length, columnsArray.length); i < iEnd; ++i) {
+        const columnId = headers[i] || `${i}`;
+        columns[columnId] = columnsArray[i] ? columnsArray[i].slice() : [];
     }
-    DataConverterUtils.asBoolean = asBoolean;
-    /**
-     * Guesses the potential type of a string value for parsing CSV etc.
-     *
-     * @param {*} value
-     * The value to examine.
-     *
-     * @return {'number' | 'string' | 'Date'}
-     * Type string, either `string`, `Date`, or `number`.
-     */
-    function guessType(value, converter) {
-        let result = 'string';
-        if (typeof value === 'string') {
-            const trimedValue = DataConverterUtils.trim(`${value}`), decimalRegExp = converter.decimalRegExp;
-            let innerTrimedValue = DataConverterUtils.trim(trimedValue, true);
-            if (decimalRegExp) {
-                innerTrimedValue = (decimalRegExp.test(innerTrimedValue) ?
-                    innerTrimedValue.replace(decimalRegExp, '$1.$2') :
-                    '');
-            }
-            const floatValue = parseFloat(innerTrimedValue);
-            if (+innerTrimedValue === floatValue) {
-                // String is numeric
-                value = floatValue;
-            }
-            else {
-                // Determine if a date string
-                const dateValue = converter.parseDate(value);
-                result = DataConverterUtils_isNumber(dateValue) ? 'Date' : 'string';
-            }
-        }
-        if (typeof value === 'number') {
-            // Greater than milliseconds in a year assumed timestamp
-            result = value > 365 * 24 * 3600 * 1000 ? 'Date' : 'number';
-        }
-        return result;
-    }
-    DataConverterUtils.guessType = guessType;
-    /**
-     * Trim a string from whitespaces.
-     *
-     * @param {string} str
-     * String to trim.
-     *
-     * @param {boolean} [inside=false]
-     * Remove all spaces between numbers.
-     *
-     * @return {string}
-     * Trimed string
-     */
-    function trim(str, inside) {
-        if (typeof str === 'string') {
-            str = str.replace(/^\s+|\s+$/g, '');
-            // Clear white space insdie the string, like thousands separators
-            if (inside && /^[\d\s]+$/.test(str)) {
-                str = str.replace(/\s/g, '');
-            }
-        }
-        return str;
-    }
-    DataConverterUtils.trim = trim;
-    /**
-     * Parses an array of columns to a column collection. If more headers are
-     * provided, the corresponding, empty columns are added.
-     *
-     * @param {DataTable.Column[]} [columnsArray]
-     * Array of columns.
-     *
-     * @param {string[]} [headers]
-     * Column ids to use.
-     *
-     * @return {DataTable.ColumnCollection}
-     * Parsed columns.
-     */
-    function getColumnsCollection(columnsArray = [], headers) {
-        const columns = {};
-        for (let i = 0, iEnd = Math.max(headers.length, columnsArray.length); i < iEnd; ++i) {
-            const columnId = headers[i] || `${i}`;
-            columns[columnId] = columnsArray[i] ? columnsArray[i].slice() : [];
-        }
-        return columns;
-    }
-    DataConverterUtils.getColumnsCollection = getColumnsCollection;
-})(DataConverterUtils || (DataConverterUtils = {}));
+    return columns;
+}
 /* *
  *
  *  Default Export
  *
  * */
+const DataConverterUtils = {
+    asBoolean,
+    asDate,
+    asNumber,
+    asString,
+    getColumnsCollection,
+    guessType,
+    trim
+};
 /* harmony default export */ const Converters_DataConverterUtils = (DataConverterUtils);
 
 ;// ./code/dashboards/es-modules/Data/Converters/DataConverter.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -6001,6 +5980,26 @@ const { addEvent: DataConverter_addEvent, fireEvent: DataConverter_fireEvent, me
  * @private
  */
 class DataConverter {
+    /**
+     * Adds a converter class to the registry.
+     *
+     * @private
+     *
+     * @param {string} key
+     * Registry key of the converter class.
+     *
+     * @param {DataConverterTypes} DataConverterClass
+     * Connector class (aka class constructor) to register.
+     *
+     * @return {boolean}
+     * Returns true, if the registration was successful. False is returned, if
+     * their is already a converter registered with this key.
+     */
+    static registerType(key, DataConverterClass) {
+        return (!!key &&
+            !DataConverter.types[key] &&
+            !!(DataConverter.types[key] = DataConverterClass));
+    }
     /* *
      *
      *  Constructor
@@ -6009,7 +6008,7 @@ class DataConverter {
     /**
      * Constructs an instance of the DataConverter.
      *
-     * @param {DataConverter.UserOptions} [options]
+     * @param {UserOptions} [options]
      * Options for the DataConverter.
      */
     constructor(options) {
@@ -6207,7 +6206,7 @@ class DataConverter {
     /**
      * Emits an event on the DataConverter instance.
      *
-     * @param {DataConverter.Event} [e]
+     * @param {Event} [e]
      * Event object containing additional event data
      */
     emit(e) {
@@ -6219,7 +6218,7 @@ class DataConverter {
      * @param {string} type
      * Event type as a string.
      *
-     * @param {DataEventEmitter.Callback} callback
+     * @param {DataEventCallback} callback
      * Function to register for an modifier callback.
      *
      * @return {Function}
@@ -6299,56 +6298,10 @@ DataConverter.defaultOptions = {
     dateFormat: '',
     firstRowAsNames: true
 };
-/* *
- *
- *  Class Namespace
- *
- * */
 /**
- * Additionally provided types for events and conversion.
+ * Registry as a record object with converter names and their class.
  */
-(function (DataConverter) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     * Registry as a record object with connector names and their class.
-     */
-    DataConverter.types = {};
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Adds a converter class to the registry.
-     *
-     * @private
-     *
-     * @param {string} key
-     * Registry key of the converter class.
-     *
-     * @param {DataConverterTypes} DataConverterClass
-     * Connector class (aka class constructor) to register.
-     *
-     * @return {boolean}
-     * Returns true, if the registration was successful. False is returned, if
-     * their is already a converter registered with this key.
-     */
-    function registerType(key, DataConverterClass) {
-        return (!!key &&
-            !DataConverter.types[key] &&
-            !!(DataConverter.types[key] = DataConverterClass));
-    }
-    DataConverter.registerType = registerType;
-})(DataConverter || (DataConverter = {}));
+DataConverter.types = {};
 /* *
  *
  *  Default Export
@@ -6359,11 +6312,11 @@ DataConverter.defaultOptions = {
 ;// ./code/dashboards/es-modules/Data/Converters/CSVConverter.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Torstein Hønsi
@@ -6424,9 +6377,9 @@ class CSVConverter extends Converters_DataConverter {
      *
      * @param {Partial<CSVConverterOptions>} [options]
      * Options for the parser.
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
-     * @return {DataTable.ColumnCollection}
+     * @return {DataTableColumnCollection}
      * The parsed column collection.
      *
      * @emits CSVDataParser#parse
@@ -6735,11 +6688,11 @@ Converters_DataConverter.registerType('CSV', CSVConverter);
 ;// ./code/dashboards/es-modules/Data/Modifiers/DataModifier.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -6759,6 +6712,28 @@ const { addEvent: DataModifier_addEvent, fireEvent: DataModifier_fireEvent, merg
  * Abstract class to provide an interface for modifying a table.
  */
 class DataModifier {
+    /**
+     * Adds a modifier class to the registry. The modifier class has to provide
+     * the `DataModifier.options` property and the `DataModifier.modifyTable`
+     * method to modify the table.
+     *
+     * @private
+     *
+     * @param {string} key
+     * Registry key of the modifier class.
+     *
+     * @param {DataModifierType} DataModifierClass
+     * Modifier class (aka class constructor) to register.
+     *
+     * @return {boolean}
+     * Returns true, if the registration was successful. False is returned, if
+     * their is already a modifier registered with this key.
+     */
+    static registerType(key, DataModifierClass) {
+        return (!!key &&
+            !DataModifier.types[key] &&
+            !!(DataModifier.types[key] = DataModifierClass));
+    }
     /* *
      *
      *  Functions
@@ -6771,7 +6746,7 @@ class DataModifier {
      * @param {DataTable} dataTable
      * The datatable to execute
      *
-     * @param {DataModifier.BenchmarkOptions} options
+     * @param {BenchmarkOptions} options
      * Options. Currently supports `iterations` for number of iterations.
      *
      * @return {Array<number>}
@@ -6821,7 +6796,7 @@ class DataModifier {
     /**
      * Emits an event on the modifier to all registered callbacks of this event.
      *
-     * @param {DataModifier.Event} [e]
+     * @param {DataModifierEvent} [e]
      * Event object containing additonal event information.
      */
     emit(e) {
@@ -6835,7 +6810,7 @@ class DataModifier {
      * @param {Highcharts.DataTable} table
      * Table to modify.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @return {Promise<Highcharts.DataTable>}
@@ -6866,7 +6841,7 @@ class DataModifier {
      * @param {string} type
      * Event type as a string.
      *
-     * @param {DataEventEmitter.Callback} callback
+     * @param {DataEventCallback} callback
      * Function to register for an modifier callback.
      *
      * @return {Function}
@@ -6878,57 +6853,14 @@ class DataModifier {
 }
 /* *
  *
- *  Class Namespace
+ *  Static Properties
  *
  * */
 /**
- * Additionally provided types for modifier events and options.
+ * Registry as a record object with modifier names and their class
+ * constructor.
  */
-(function (DataModifier) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     * Registry as a record object with modifier names and their class
-     * constructor.
-     */
-    DataModifier.types = {};
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Adds a modifier class to the registry. The modifier class has to provide
-     * the `DataModifier.options` property and the `DataModifier.modifyTable`
-     * method to modify the table.
-     *
-     * @private
-     *
-     * @param {string} key
-     * Registry key of the modifier class.
-     *
-     * @param {DataModifierType} DataModifierClass
-     * Modifier class (aka class constructor) to register.
-     *
-     * @return {boolean}
-     * Returns true, if the registration was successful. False is returned, if
-     * their is already a modifier registered with this key.
-     */
-    function registerType(key, DataModifierClass) {
-        return (!!key &&
-            !DataModifier.types[key] &&
-            !!(DataModifier.types[key] = DataModifierClass));
-    }
-    DataModifier.registerType = registerType;
-})(DataModifier || (DataModifier = {}));
+DataModifier.types = {};
 /* *
  *
  *  Default Export
@@ -6939,153 +6871,143 @@ class DataModifier {
 ;// ./code/dashboards/es-modules/Data/ColumnUtils.js
 /* *
  *
- *  (c) 2020-2025 Highsoft AS
+ *  (c) 2020-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
  *
  * */
+/* *
+*
+* Functions
+*
+* */
 /**
- * Utility functions for columns that can be either arrays or typed arrays.
+ * Sets the length of the column array.
+ *
+ * @param {DataTableColumn} column
+ * Column to be modified.
+ *
+ * @param {number} length
+ * New length of the column.
+ *
+ * @param {boolean} asSubarray
+ * If column is a typed array, return a subarray instead of a new array. It
+ * is faster `O(1)`, but the entire buffer will be kept in memory until all
+ * views of it are destroyed. Default is `false`.
+ *
+ * @return {DataTableColumn}
+ * Modified column.
+ *
  * @private
  */
-var ColumnUtils;
-(function (ColumnUtils) {
-    /* *
-    *
-    *  Declarations
-    *
-    * */
-    /* *
-    *
-    * Functions
-    *
-    * */
-    /**
-     * Sets the length of the column array.
-     *
-     * @param {DataTable.Column} column
-     * Column to be modified.
-     *
-     * @param {number} length
-     * New length of the column.
-     *
-     * @param {boolean} asSubarray
-     * If column is a typed array, return a subarray instead of a new array. It
-     * is faster `O(1)`, but the entire buffer will be kept in memory until all
-     * views of it are destroyed. Default is `false`.
-     *
-     * @return {DataTable.Column}
-     * Modified column.
-     *
-     * @private
-     */
-    function setLength(column, length, asSubarray) {
-        if (Array.isArray(column)) {
-            column.length = length;
-            return column;
-        }
-        return column[asSubarray ? 'subarray' : 'slice'](0, length);
+function setLength(column, length, asSubarray) {
+    if (Array.isArray(column)) {
+        column.length = length;
+        return column;
     }
-    ColumnUtils.setLength = setLength;
-    /**
-     * Splices a column array.
-     *
-     * @param {DataTable.Column} column
-     * Column to be modified.
-     *
-     * @param {number} start
-     * Index at which to start changing the array.
-     *
-     * @param {number} deleteCount
-     * An integer indicating the number of old array elements to remove.
-     *
-     * @param {boolean} removedAsSubarray
-     * If column is a typed array, return a subarray instead of a new array. It
-     * is faster `O(1)`, but the entire buffer will be kept in memory until all
-     * views to it are destroyed. Default is `true`.
-     *
-     * @param {Array<number>|TypedArray} items
-     * The elements to add to the array, beginning at the start index. If you
-     * don't specify any elements, `splice()` will only remove elements from the
-     * array.
-     *
-     * @return {SpliceResult}
-     * Object containing removed elements and the modified column.
-     *
-     * @private
-     */
-    function splice(column, start, deleteCount, removedAsSubarray, items = []) {
-        if (Array.isArray(column)) {
-            if (!Array.isArray(items)) {
-                items = Array.from(items);
-            }
-            return {
-                removed: column.splice(start, deleteCount, ...items),
-                array: column
-            };
+    return column[asSubarray ? 'subarray' : 'slice'](0, length);
+}
+/**
+ * Splices a column array.
+ *
+ * @param {DataTableColumn} column
+ * Column to be modified.
+ *
+ * @param {number} start
+ * Index at which to start changing the array.
+ *
+ * @param {number} deleteCount
+ * An integer indicating the number of old array elements to remove.
+ *
+ * @param {boolean} removedAsSubarray
+ * If column is a typed array, return a subarray instead of a new array. It
+ * is faster `O(1)`, but the entire buffer will be kept in memory until all
+ * views to it are destroyed. Default is `true`.
+ *
+ * @param {Array<number>|TypedArray} items
+ * The elements to add to the array, beginning at the start index. If you
+ * don't specify any elements, `splice()` will only remove elements from the
+ * array.
+ *
+ * @return {SpliceResult}
+ * Object containing removed elements and the modified column.
+ *
+ * @private
+ */
+function splice(column, start, deleteCount, removedAsSubarray, items = []) {
+    if (Array.isArray(column)) {
+        if (!Array.isArray(items)) {
+            items = Array.from(items);
         }
-        const Constructor = Object.getPrototypeOf(column)
-            .constructor;
-        const removed = column[removedAsSubarray ? 'subarray' : 'slice'](start, start + deleteCount);
-        const newLength = column.length - deleteCount + items.length;
-        const result = new Constructor(newLength);
-        result.set(column.subarray(0, start), 0);
-        result.set(items, start);
-        result.set(column.subarray(start + deleteCount), start + items.length);
         return {
-            removed: removed,
-            array: result
+            removed: column.splice(start, deleteCount, ...items),
+            array: column
         };
     }
-    ColumnUtils.splice = splice;
-    /**
-     * Converts a cell value to a number.
-     *
-     * @param {DataTable.CellType} value
-     * Cell value to convert to a number.
-     *
-     * @param {boolean} useNaN
-     * If `true`, returns `NaN` for non-numeric values; if `false`,
-     * returns `null` instead.
-     *
-     * @return {number | null}
-     * Number or `null` if the value is not a number.
-     *
-     * @private
-     */
-    function convertToNumber(value, useNaN) {
-        switch (typeof value) {
-            case 'boolean':
-                return (value ? 1 : 0);
-            case 'number':
-                return (isNaN(value) && !useNaN ? null : value);
-            default:
-                value = parseFloat(`${value ?? ''}`);
-                return (isNaN(value) && !useNaN ? null : value);
-        }
+    const Constructor = Object.getPrototypeOf(column)
+        .constructor;
+    const removed = column[removedAsSubarray ? 'subarray' : 'slice'](start, start + deleteCount);
+    const newLength = column.length - deleteCount + items.length;
+    const result = new Constructor(newLength);
+    result.set(column.subarray(0, start), 0);
+    result.set(items, start);
+    result.set(column.subarray(start + deleteCount), start + items.length);
+    return {
+        removed: removed,
+        array: result
+    };
+}
+/**
+ * Converts a cell value to a number.
+ *
+ * @param {DataTableCellType} value
+ * Cell value to convert to a number.
+ *
+ * @param {boolean} useNaN
+ * If `true`, returns `NaN` for non-numeric values; if `false`,
+ * returns `null` instead.
+ *
+ * @return {number | null}
+ * Number or `null` if the value is not a number.
+ *
+ * @private
+ */
+function convertToNumber(value, useNaN) {
+    switch (typeof value) {
+        case 'boolean':
+            return (value ? 1 : 0);
+        case 'number':
+            return (isNaN(value) && !useNaN ? null : value);
+        default:
+            value = parseFloat(`${value ?? ''}`);
+            return (isNaN(value) && !useNaN ? null : value);
     }
-    ColumnUtils.convertToNumber = convertToNumber;
-})(ColumnUtils || (ColumnUtils = {}));
+}
 /* *
  *
  *  Default Export
  *
  * */
+const ColumnUtils = {
+    convertToNumber,
+    setLength,
+    splice
+};
 /* harmony default export */ const Data_ColumnUtils = (ColumnUtils);
 
 ;// ./code/dashboards/es-modules/Data/DataTableCore.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -7095,7 +7017,7 @@ var ColumnUtils;
  * */
 
 
-const { setLength, splice } = Data_ColumnUtils;
+const { setLength: DataTableCore_setLength, splice: DataTableCore_splice } = Data_ColumnUtils;
 
 const { fireEvent: DataTableCore_fireEvent, objectEach: DataTableCore_objectEach, uniqueKey: DataTableCore_uniqueKey } = Core_Utilities;
 /* *
@@ -7172,7 +7094,7 @@ class DataTableCore {
         this.rowCount = rowCount;
         DataTableCore_objectEach(this.columns, (column, columnId) => {
             if (column.length !== rowCount) {
-                this.columns[columnId] = setLength(column, rowCount);
+                this.columns[columnId] = DataTableCore_setLength(column, rowCount);
             }
         });
     }
@@ -7195,7 +7117,7 @@ class DataTableCore {
             let length = 0;
             DataTableCore_objectEach(this.columns, (column, columnId) => {
                 this.columns[columnId] =
-                    splice(column, rowIndex, rowCount).array;
+                    DataTableCore_splice(column, rowIndex, rowCount).array;
                 length = column.length;
             });
             this.rowCount = length;
@@ -7323,16 +7245,25 @@ class DataTableCore {
      * @emits #afterSetRows
      */
     setRow(row, rowIndex = this.rowCount, insert, eventDetail) {
-        const { columns } = this, indexRowCount = insert ? this.rowCount + 1 : rowIndex + 1;
-        DataTableCore_objectEach(row, (cellValue, columnId) => {
-            let column = columns[columnId] ||
-                eventDetail?.addColumns !== false && new Array(indexRowCount);
+        const { columns } = this, indexRowCount = insert ? this.rowCount + 1 : rowIndex + 1, rowKeys = Object.keys(row);
+        if (eventDetail?.addColumns !== false) {
+            for (let i = 0, iEnd = rowKeys.length; i < iEnd; i++) {
+                const key = rowKeys[i];
+                if (!columns[key]) {
+                    columns[key] = [];
+                }
+            }
+        }
+        DataTableCore_objectEach(columns, (column, columnId) => {
+            if (!column && eventDetail?.addColumns !== false) {
+                column = new Array(indexRowCount);
+            }
             if (column) {
                 if (insert) {
-                    column = splice(column, rowIndex, 0, true, [cellValue]).array;
+                    column = DataTableCore_splice(column, rowIndex, 0, true, [row[columnId] ?? null]).array;
                 }
                 else {
-                    column[rowIndex] = cellValue;
+                    column[rowIndex] = row[columnId] ?? null;
                 }
                 columns[columnId] = column;
             }
@@ -7346,11 +7277,11 @@ class DataTableCore {
         }
     }
     /**
-     * Returns the medified (clone) or the original data table if the modified
+     * Returns the modified (clone) or the original data table if the modified
      * one does not exist.
      *
      * @return {Highcharts.DataTableCore}
-     * The medified (clone) or the original data table.
+     * The modified (clone) or the original data table.
      */
     getModified() {
         return this.modified || this;
@@ -7399,11 +7330,11 @@ class DataTableCore {
 ;// ./code/dashboards/es-modules/Data/DataTable.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -7483,6 +7414,7 @@ class DataTable extends Data_DataTableCore {
             tableClone.originalRowIndexes = table.originalRowIndexes;
             tableClone.localRowIndexes = table.localRowIndexes;
         }
+        tableClone.metadata = { ...table.metadata };
         table.emit({
             type: 'afterCloneTable',
             detail: eventDetail,
@@ -7557,11 +7489,11 @@ class DataTable extends Data_DataTableCore {
      *
      * @function Highcharts.DataTable#deleteRows
      *
-     * @param {number} [rowIndex]
-     * Index to start delete of rows. If not specified, all rows will be
-     * deleted.
+     * @param {number | number[]} [rowIndex]
+     * Index of the row where deletion should start, or an array of indices for
+     * deleting multiple rows. If not specified, all rows will be deleted.
      *
-     * @param {number} [rowCount=1]
+     * @param {number} [rowCount]
      * Number of rows to delete.
      *
      * @param {Highcharts.DataTableEventDetail} [eventDetail]
@@ -7574,43 +7506,77 @@ class DataTable extends Data_DataTableCore {
      * @emits #afterDeleteRows
      */
     deleteRows(rowIndex, rowCount = 1, eventDetail) {
-        const table = this, deletedRows = [], modifiedRows = [], modifier = table.modifier;
-        table.emit({
+        const { columns, modifier } = this;
+        const deletedRows = [];
+        let indices;
+        let actualRowCount;
+        if (!DataTable_defined(rowIndex)) {
+            // No index provided - delete all rows.
+            indices = [0];
+            actualRowCount = this.rowCount;
+        }
+        else if (Array.isArray(rowIndex)) {
+            // Array of indices provided - delete the specified rows.
+            indices = rowIndex
+                // Remove negative indices, and indices beyond the row count,
+                // and remove duplicates.
+                .filter((index, i, arr) => (index >= 0 &&
+                index < this.rowCount &&
+                arr.indexOf(index) === i))
+                // Sort indices in descending order.
+                .sort((a, b) => b - a);
+            actualRowCount = indices.length;
+        }
+        else {
+            // Single index provided - delete the specified range of rows.
+            indices = [rowIndex];
+            actualRowCount = rowCount;
+        }
+        this.emit({
             type: 'deleteRows',
             detail: eventDetail,
-            rowCount,
-            rowIndex: (rowIndex || 0)
+            rowCount: actualRowCount,
+            rowIndex: rowIndex ?? 0
         });
-        if (typeof rowIndex === 'undefined') {
-            rowIndex = 0;
-            rowCount = table.rowCount;
-        }
-        if (rowCount > 0 && rowIndex < table.rowCount) {
-            const columns = table.columns, columnIds = Object.keys(columns);
-            for (let i = 0, iEnd = columnIds.length, column, deletedCells, columnId; i < iEnd; ++i) {
-                columnId = columnIds[i];
-                column = columns[columnId];
-                const result = DataTable_splice(column, rowIndex, rowCount);
-                deletedCells = result.removed;
-                columns[columnId] = column = result.array;
+        if (actualRowCount > 0) {
+            const columnIds = Object.keys(columns);
+            for (let i = 0; i < columnIds.length; ++i) {
+                const columnId = columnIds[i];
+                const column = columns[columnId];
+                let deletedCells;
+                // Perform a range splice.
+                if (indices.length === 1 && actualRowCount > 1) {
+                    const result = DataTable_splice(column, indices[0], actualRowCount);
+                    deletedCells = result.removed;
+                    columns[columnId] = result.array;
+                }
+                else {
+                    // Perform a index splice for each index in the array.
+                    deletedCells = [];
+                    for (const index of indices) {
+                        deletedCells.push(column[index]);
+                        DataTable_splice(column, index, 1);
+                    }
+                    // Reverse the deleted cells to maintain the correct order.
+                    deletedCells.reverse();
+                }
                 if (!i) {
-                    table.rowCount = column.length;
+                    this.rowCount = column.length;
                 }
                 for (let j = 0, jEnd = deletedCells.length; j < jEnd; ++j) {
-                    deletedRows[j] = (deletedRows[j] || []);
+                    deletedRows[j] = deletedRows[j] || [];
                     deletedRows[j][i] = deletedCells[j];
                 }
-                modifiedRows.push(new Array(iEnd));
             }
         }
         if (modifier) {
-            modifier.modifyTable(table);
+            modifier.modifyTable(this);
         }
-        table.emit({
+        this.emit({
             type: 'afterDeleteRows',
             detail: eventDetail,
-            rowCount,
-            rowIndex: (rowIndex || 0),
+            rowCount: actualRowCount,
+            rowIndex: rowIndex ?? 0,
             rows: deletedRows
         });
         return deletedRows;
@@ -7620,7 +7586,7 @@ class DataTable extends Data_DataTableCore {
      * event.
      * @private
      *
-     * @param {DataTable.Event} e
+     * @param {Event} e
      * Event object with event information.
      */
     emit(e) {
@@ -8232,7 +8198,7 @@ class DataTable extends Data_DataTableCore {
      * Cell values to set.
      *
      * @param {number} [rowIndex]
-     * Index of the row to set. Leave `undefind` to add as a new row.
+     * Index of the row to set. Leave `undefined` to add as a new row.
      *
      * @param {boolean} [insert]
      * Whether to insert the row at the given index, or to overwrite the row.
@@ -8296,7 +8262,7 @@ class DataTable extends Data_DataTableCore {
                 }
             }
             else {
-                super.setRow(row, i2, void 0, { silent: true });
+                super.setRow(row, i2, insert, { silent: true });
             }
         }
         const indexRowCount = insert ?
@@ -8331,11 +8297,11 @@ class DataTable extends Data_DataTableCore {
 ;// ./code/dashboards/es-modules/Data/Connectors/DataConnector.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -8359,6 +8325,28 @@ const { addEvent: DataConnector_addEvent, fireEvent: DataConnector_fireEvent, me
  * Abstract class providing an interface for managing a DataConnector.
  */
 class DataConnector {
+    /**
+     * Adds a connector class to the registry. The connector has to provide the
+     * `DataConnector.options` property and the `DataConnector.load` method to
+     * modify the table.
+     *
+     * @private
+     *
+     * @param {string} key
+     * Registry key of the connector class.
+     *
+     * @param {DataConnectorType} DataConnectorClass
+     * Connector class (aka class constructor) to register.
+     *
+     * @return {boolean}
+     * Returns true, if the registration was successful. False is returned, if
+     * their is already a connector registered with this key.
+     */
+    static registerType(key, DataConnectorClass) {
+        return (!!key &&
+            !DataConnector.types[key] &&
+            !!(DataConnector.types[key] = DataConnectorClass));
+    }
     /**
      * Whether the connector is currently polling for new data.
      */
@@ -8393,7 +8381,7 @@ class DataConnector {
         let dataTableIndex = 0;
         if (options.options) {
             // eslint-disable-next-line no-console
-            console.error('The `DataConnectorOptions.options` property was removed in Dashboards v4.0.0. Check how to upgrade your connector to use the new options structure here: https://api.highcharts.com/dashboards/#interfaces/Data_DataTableOptions.DataTableOptions-1');
+            console.error('The `DataConnectorOptions.options` property was removed in Dashboards v4.0.0. Check how to upgrade your connector to use the new options structure here: https://api.highcharts.com/dashboards/#interfaces/Data_DataTableOptions.DataTableOptions');
         }
         if (dataTables && dataTables?.length > 0) {
             for (let i = 0, iEnd = dataTables.length; i < iEnd; ++i) {
@@ -8405,9 +8393,10 @@ class DataConnector {
                     dataTableIndex++;
                 }
             }
-            // If user options dataTables is not defined, generate a default table.
         }
         else {
+            // If user options dataTables is not defined, generate a default
+            // table.
             this.dataTables[0] = new Data_DataTable({
                 id: options.id // Required by DataTableCore
             });
@@ -8440,7 +8429,7 @@ class DataConnector {
      * @param {string} name
      * The name of the column to be described.
      *
-     * @param {DataConnector.MetaColumn} columnMeta
+     * @param {MetaColumn} columnMeta
      * The metadata to apply to the column.
      */
     describeColumn(name, columnMeta) {
@@ -8451,7 +8440,7 @@ class DataConnector {
     /**
      * Method for applying columns meta information to the whole DataConnector.
      *
-     * @param {Highcharts.Dictionary<DataConnector.MetaColumn>} columns
+     * @param {Record<string, MetaColumn>} columns
      * Pairs of column names and MetaColumn objects.
      */
     describeColumns(columns) {
@@ -8497,6 +8486,34 @@ class DataConnector {
         }
     }
     /**
+     * Updates the connector with new options.
+     *
+     * @param newOptions
+     * The new options to be applied to the connector.
+     *
+     * @param reload
+     * Whether to reload the connector after applying the new options.
+     */
+    async update(newOptions, reload = true) {
+        this.emit({ type: 'beforeUpdate' });
+        DataConnector_merge(true, this.options, newOptions);
+        const { options } = this;
+        if ('enablePolling' in newOptions || 'dataRefreshRate' in newOptions) {
+            if ('enablePolling' in options && options.enablePolling) {
+                this.stopPolling();
+                this.startPolling(('dataRefreshRate' in options &&
+                    typeof options.dataRefreshRate === 'number') ? Math.max(options.dataRefreshRate, 1) * 1000 : 1000);
+            }
+            else {
+                this.stopPolling();
+            }
+        }
+        if (reload) {
+            await this.load();
+        }
+        this.emit({ type: 'afterUpdate' });
+    }
+    /**
      * The default load method, which fires the `afterLoad` event
      *
      * @return {Promise<DataConnector>}
@@ -8539,7 +8556,9 @@ class DataConnector {
         this.pollingController = new AbortController();
         // Clear the polling timeout.
         window.clearTimeout(connector._polling);
-        connector._polling = window.setTimeout(() => connector
+        connector._polling = window.setTimeout(
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        () => connector
             .load()['catch']((error) => connector.emit({
             type: 'loadError',
             error
@@ -8568,7 +8587,7 @@ class DataConnector {
      * Emits an event on the connector to all registered callbacks of this
      * event.
      *
-     * @param {DataConnector.Event} e
+     * @param {Event} e
      * Event object containing additional event information.
      */
     emit(e) {
@@ -8596,10 +8615,10 @@ class DataConnector {
      * @param {T}[data]
      * Data specific to the corresponding converter.
      *
-     * @param {DataConnector.CreateConverterFunction}[createConverter]
+     * @param {CreateConverterFunction}[createConverter]
      * Creates a specific converter combining the dataTable options.
      *
-     * @param {DataConnector.ParseDataFunction<T>}[parseData]
+     * @param {ParseDataFunction<T>}[parseData]
      * Runs the converter parse method with the specific data type.
      */
     initConverters(data, createConverter, parseData) {
@@ -8621,53 +8640,13 @@ class DataConnector {
 }
 /* *
  *
- *  Class Namespace
+ *  Static Properties
  *
  * */
-(function (DataConnector) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     * Registry as a record object with connector names and their class.
-     */
-    DataConnector.types = {};
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Adds a connector class to the registry. The connector has to provide the
-     * `DataConnector.options` property and the `DataConnector.load` method to
-     * modify the table.
-     *
-     * @private
-     *
-     * @param {string} key
-     * Registry key of the connector class.
-     *
-     * @param {DataConnectorType} DataConnectorClass
-     * Connector class (aka class constructor) to register.
-     *
-     * @return {boolean}
-     * Returns true, if the registration was successful. False is returned, if
-     * their is already a connector registered with this key.
-     */
-    function registerType(key, DataConnectorClass) {
-        return (!!key &&
-            !DataConnector.types[key] &&
-            !!(DataConnector.types[key] = DataConnectorClass));
-    }
-    DataConnector.registerType = registerType;
-})(DataConnector || (DataConnector = {}));
+/**
+ * Registry as a record object with connector names and their class.
+ */
+DataConnector.types = {};
 /* *
  *
  *  Default Export
@@ -8678,11 +8657,11 @@ class DataConnector {
 ;// ./code/dashboards/es-modules/Data/Connectors/CSVConnector.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Torstein Hønsi
@@ -8736,7 +8715,7 @@ class CSVConnector extends Connectors_DataConnector {
      * Overrides the DataConnector method. Emits an event on the connector to
      * all registered callbacks of this event.
      *
-     * @param {CSVConnector.Event} e
+     * @param {Event} e
      * Event object containing additional event information.
      */
     emit(e) {
@@ -8745,7 +8724,7 @@ class CSVConnector extends Connectors_DataConnector {
     /**
      * Initiates the loading of the CSV source to the connector
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits CSVConnector#load
@@ -8829,11 +8808,11 @@ Connectors_DataConnector.registerType('CSV', CSVConnector);
 ;// ./code/dashboards/es-modules/Data/Converters/GoogleSheetsConverter.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Torstein Hønsi
@@ -8887,7 +8866,7 @@ class GoogleSheetsConverter extends Converters_DataConverter {
      * @param {Partial<GoogleSheetsConverterOptions>}[options]
      * Options for the parser
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits GoogleSheetsParser#parse
@@ -8966,11 +8945,11 @@ function isDateObject(value) {
 ;// ./code/dashboards/es-modules/Data/Connectors/GoogleSheetsConnector.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Torstein Hønsi
@@ -9013,50 +8992,50 @@ function isGoogleError(json) {
  */
 class GoogleSheetsConnector extends Connectors_DataConnector {
     /* *
-     *
-     *  Constructor
-     *
-     * */
+ *
+ *  Constructor
+ *
+ * */
     /**
-     * Constructs an instance of GoogleSheetsConnector
-     *
-     * @param {Partial<GoogleSheetsConnectorOptions>} [options]
-     * Options for the connector and converter.
-     */
+ * Constructs an instance of GoogleSheetsConnector
+ *
+ * @param {Partial<GoogleSheetsConnectorOptions>} [options]
+ * Options for the connector and converter.
+ */
     constructor(options) {
         const mergedOptions = GoogleSheetsConnector_merge(GoogleSheetsConnector.defaultOptions, options);
         super(mergedOptions);
         this.options = mergedOptions;
     }
     /* *
-     *
-     *  Functions
-     *
-     * */
+ *
+ *  Functions
+ *
+ * */
     /**
-     * Overrides the DataConnector method. Emits an event on the connector to
-     * all registered callbacks of this event.
-     *
-     * @param {GoogleSheetsConnector.Event} e
-     * Event object containing additional event information.
-     */
+ * Overrides the DataConnector method. Emits an event on the connector to
+ * all registered callbacks of this event.
+ *
+ * @param {Event} e
+ * Event object containing additional event information.
+ */
     emit(e) {
         GoogleSheetsConnector_fireEvent(this, e.type, e);
     }
     /**
-     * Loads data from a Google Spreadsheet.
-     *
-     * @param {DataEvent.Detail} [eventDetail]
-     * Custom information for pending events.
-     *
-     * @return {Promise<this>}
-     * Same connector instance with modified table.
-     */
+ * Loads data from a Google Spreadsheet.
+ *
+ * @param {DataEventDetail} [eventDetail]
+ * Custom information for pending events.
+ *
+ * @return {Promise<this>}
+ * Same connector instance with modified table.
+ */
     load(eventDetail) {
         const connector = this;
         const options = connector.options;
         const { dataRefreshRate, enablePolling, googleAPIKey, googleSpreadsheetKey, dataTables } = options;
-        const url = GoogleSheetsConnector.buildFetchURL(googleAPIKey, googleSpreadsheetKey, options);
+        const url = buildFetchURL(googleAPIKey, googleSpreadsheetKey, options);
         connector.emit({
             type: 'load',
             detail: eventDetail,
@@ -9106,10 +9085,10 @@ class GoogleSheetsConnector extends Connectors_DataConnector {
     }
 }
 /* *
- *
- *  Static Properties
- *
- * */
+*
+*  Static Properties
+*
+* */
 GoogleSheetsConnector.defaultOptions = {
     id: 'google-sheets-connector',
     type: 'GoogleSheets',
@@ -9121,63 +9100,49 @@ GoogleSheetsConnector.defaultOptions = {
 };
 /* *
  *
- *  Class Namespace
+ *  Constants
  *
  * */
-(function (GoogleSheetsConnector) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Creates GoogleSheets API v4 URL.
-     * @private
-     */
-    function buildFetchURL(apiKey, sheetKey, options = {}) {
-        const url = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${sheetKey}/values/`);
-        const range = options.onlyColumnIds ?
-            'A1:Z1' : buildQueryRange(options);
-        url.pathname += range;
-        const searchParams = url.searchParams;
-        searchParams.set('alt', 'json');
-        if (!options.onlyColumnIds) {
-            searchParams.set('dateTimeRenderOption', 'FORMATTED_STRING');
-            searchParams.set('majorDimension', 'COLUMNS');
-            searchParams.set('valueRenderOption', 'UNFORMATTED_VALUE');
-        }
-        searchParams.set('prettyPrint', 'false');
-        searchParams.set('key', apiKey);
-        return url.href;
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+/* *
+ *
+ *  Functions
+ *
+ * */
+/**
+ * Creates GoogleSheets API v4 URL.
+ * @private
+ */
+function buildFetchURL(apiKey, sheetKey, options = {}) {
+    const url = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${sheetKey}/values/`);
+    const range = options.onlyColumnIds ?
+        'A1:Z1' : buildQueryRange(options);
+    url.pathname += range;
+    const searchParams = url.searchParams;
+    searchParams.set('alt', 'json');
+    if (!options.onlyColumnIds) {
+        searchParams.set('dateTimeRenderOption', 'FORMATTED_STRING');
+        searchParams.set('majorDimension', 'COLUMNS');
+        searchParams.set('valueRenderOption', 'UNFORMATTED_VALUE');
     }
-    GoogleSheetsConnector.buildFetchURL = buildFetchURL;
-    /**
-     * Creates sheets range.
-     * @private
-     */
-    function buildQueryRange(options = {}) {
-        const { endColumn, endRow, googleSpreadsheetRange, startColumn, startRow } = options;
-        return googleSpreadsheetRange || ((alphabet[startColumn || 0] || 'A') +
-            (Math.max((startRow || 0), 0) + 1) +
-            ':' +
-            (alphabet[GoogleSheetsConnector_pick(endColumn, 25)] || 'Z') +
-            (endRow ?
-                Math.max(endRow, 0) :
-                'Z'));
-    }
-    GoogleSheetsConnector.buildQueryRange = buildQueryRange;
-})(GoogleSheetsConnector || (GoogleSheetsConnector = {}));
+    searchParams.set('prettyPrint', 'false');
+    searchParams.set('key', apiKey);
+    return url.href;
+}
+/**
+ * Creates sheets range.
+ * @private
+ */
+function buildQueryRange(options = {}) {
+    const { endColumn, endRow, googleSpreadsheetRange, startColumn, startRow } = options;
+    return googleSpreadsheetRange || ((alphabet[startColumn || 0] || 'A') +
+        (Math.max((startRow || 0), 0) + 1) +
+        ':' +
+        (alphabet[GoogleSheetsConnector_pick(endColumn, 25)] || 'Z') +
+        (endRow ?
+            Math.max(endRow, 0) :
+            'Z'));
+}
 /* *
  *
  *  Registry
@@ -9194,11 +9159,11 @@ Connectors_DataConnector.registerType('GoogleSheets', GoogleSheetsConnector);
 ;// ./code/dashboards/es-modules/Data/Converters/HTMLTableConverter.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Torstein Hønsi
@@ -9443,7 +9408,7 @@ class HTMLTableConverter extends Converters_DataConverter {
      * @param {Partial<HTMLTableConverterOptions>}[options]
      * Options for the parser
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits CSVDataParser#parse
@@ -9558,11 +9523,11 @@ Converters_DataConverter.registerType('HTMLTable', HTMLTableConverter);
 ;// ./code/dashboards/es-modules/Data/Connectors/HTMLTableConnector.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Torstein Hønsi
@@ -9598,7 +9563,7 @@ class HTMLTableConnector extends Connectors_DataConnector {
     /**
      * Constructs an instance of HTMLTableConnector.
      *
-     * @param {HTMLTableConnector.CombinedHTMLTableConnectorOptions} [options]
+     * @param {CombinedHTMLTableConnectorOptions} [options]
      * Options for the connector and converter.
      */
     constructor(options) {
@@ -9610,7 +9575,7 @@ class HTMLTableConnector extends Connectors_DataConnector {
     /**
      * Initiates creating the dataconnector from the HTML table
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits HTMLTableConnector#load
@@ -9679,11 +9644,11 @@ Connectors_DataConnector.registerType('HTMLTable', HTMLTableConnector);
 ;// ./code/dashboards/es-modules/Data/Converters/JSONConverter.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Pawel Lysy
@@ -9740,7 +9705,7 @@ class JSONConverter extends Converters_DataConverter {
      * @param {Partial<JSONConverterOptions>}[options]
      * Options for the parser
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits JSONConverter#parse
@@ -9783,7 +9748,7 @@ class JSONConverter extends Converters_DataConverter {
     /**
      * Helper for parsing data in 'columns' orientation.
      *
-     * @param {DataTable.BasicColumn[]} [columnsArray]
+     * @param {DataTableBasicColumn[]} [columnsArray]
      * Array of columns.
      *
      * @param {unknown[]} [data]
@@ -9821,7 +9786,7 @@ class JSONConverter extends Converters_DataConverter {
     /**
      * Helper for parsing data in 'rows' orientation.
      *
-     * @param {DataTable.BasicColumn[]} [columnsArray]
+     * @param {DataTableBasicColumn[]} [columnsArray]
      * Array of columns.
      *
      * Helper for parsing data in 'rows' orientation.
@@ -9835,7 +9800,7 @@ class JSONConverter extends Converters_DataConverter {
      * @param {Array<string>} [columnIds]
      * Column ids to retrieve.
      *
-     * @return {DataTable.BasicColumn[]}
+     * @return {DataTableBasicColumn[]}
      * Parsed columns.
      */
     parseRowsOrientation(columnsArray, data, firstRowAsNames, columnIds) {
@@ -9920,11 +9885,11 @@ Converters_DataConverter.registerType('JSON', JSONConverter);
 ;// ./code/dashboards/es-modules/Data/Connectors/JSONConnector.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Pawel Lysy
@@ -9975,7 +9940,7 @@ class JSONConnector extends Connectors_DataConnector {
      * Overrides the DataConnector method. Emits an event on the connector to
      * all registered callbacks of this event.
      *
-     * @param {JSONConnector.Event} e
+     * @param {Event} e
      * Event object containing additional event information.
      */
     emit(e) {
@@ -9984,7 +9949,7 @@ class JSONConnector extends Connectors_DataConnector {
     /**
      * Initiates the loading of the JSON source to the connector
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits JSONConnector#load
@@ -10078,11 +10043,11 @@ Connectors_DataConnector.registerType('JSON', JSONConnector);
 ;// ./code/dashboards/es-modules/Data/Modifiers/ChainModifier.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -10111,7 +10076,7 @@ class ChainModifier extends Modifiers_DataModifier {
     /**
      * Constructs an instance of the modifier chain.
      *
-     * @param {Partial<ChainModifier.Options>} [options]
+     * @param {Partial<ChainModifierOptions>} [options]
      * Options to configure the modifier chain.
      *
      * @param {...DataModifier} [chain]
@@ -10145,7 +10110,7 @@ class ChainModifier extends Modifiers_DataModifier {
      * @param {DataModifier} modifier
      * Configured modifier to add.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      */
     add(modifier, eventDetail) {
@@ -10164,7 +10129,7 @@ class ChainModifier extends Modifiers_DataModifier {
     /**
      * Clears all modifiers from the chain.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      */
     clear(eventDetail) {
@@ -10187,7 +10152,7 @@ class ChainModifier extends Modifiers_DataModifier {
      * @param {Highcharts.DataTable} table
      * Table to modify.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @return {Promise<Highcharts.DataTable>}
@@ -10226,7 +10191,7 @@ class ChainModifier extends Modifiers_DataModifier {
      * @param {DataTable} table
      * Table to modify.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @return {DataTable}
@@ -10265,7 +10230,7 @@ class ChainModifier extends Modifiers_DataModifier {
      * @param {DataModifier} modifier
      * Configured modifier to remove.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      */
     remove(modifier, eventDetail) {
@@ -10311,11 +10276,11 @@ Modifiers_DataModifier.registerType('Chain', ChainModifier);
 ;// ./code/dashboards/es-modules/Data/Modifiers/InvertModifier.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Wojciech Chmiel
@@ -10345,7 +10310,7 @@ class InvertModifier extends Modifiers_DataModifier {
     /**
      * Constructs an instance of the invert modifier.
      *
-     * @param {Partial<InvertModifier.Options>} [options]
+     * @param {Partial<InvertModifierOptions>} [options]
      * Options to configure the invert modifier.
      */
     constructor(options) {
@@ -10365,7 +10330,7 @@ class InvertModifier extends Modifiers_DataModifier {
      * @param {DataTable} table
      * Table to invert.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @return {DataTable}
@@ -10429,11 +10394,11 @@ Modifiers_DataModifier.registerType('Invert', InvertModifier);
 ;// ./code/dashboards/es-modules/Data/Modifiers/RangeModifier.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -10461,7 +10426,7 @@ class RangeModifier extends Modifiers_DataModifier {
     /**
      * Constructs an instance of the range modifier.
      *
-     * @param {Partial<RangeModifier.Options>} [options]
+     * @param {Partial<RangeModifierOptions>} [options]
      * Options to configure the range modifier.
      */
     constructor(options) {
@@ -10481,7 +10446,7 @@ class RangeModifier extends Modifiers_DataModifier {
      * @param {DataTable} table
      * Table to modify.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @return {DataTable}
@@ -10527,11 +10492,11 @@ Modifiers_DataModifier.registerType('Range', RangeModifier);
 ;// ./code/dashboards/es-modules/Data/Modifiers/SortModifier.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -10586,7 +10551,7 @@ class SortModifier extends Modifiers_DataModifier {
     /**
      * Constructs an instance of the sort modifier.
      *
-     * @param {Partial<SortDataModifier.Options>} [options]
+     * @param {Partial<SortModifierOptions>} [options]
      * Options to configure the sort modifier.
      */
     constructor(options) {
@@ -10606,7 +10571,7 @@ class SortModifier extends Modifiers_DataModifier {
      * @param {Highcharts.DataTable} table
      * Table with rows to reference.
      *
-     * @return {Array<SortModifier.RowReference>}
+     * @return {Array<SortRowReference>}
      * Array of row references.
      */
     getRowReferences(table) {
@@ -10622,9 +10587,35 @@ class SortModifier extends Modifiers_DataModifier {
     modifyTable(table, eventDetail) {
         const modifier = this;
         modifier.emit({ type: 'modify', detail: eventDetail, table });
-        const columnIds = table.getColumnIds(), rowCount = table.getRowCount(), rowReferences = this.getRowReferences(table), { direction, orderByColumn, orderInColumn, compare: customCompare } = modifier.options, compare = SortModifier.compareFactory(direction, customCompare), orderByColumnIndex = columnIds.indexOf(orderByColumn), modified = table.getModified();
-        if (orderByColumnIndex !== -1) {
-            rowReferences.sort((a, b) => compare(a.row[orderByColumnIndex], b.row[orderByColumnIndex]));
+        const columnIds = table.getColumnIds(), rowCount = table.getRowCount(), rowReferences = this.getRowReferences(table), { direction, orderInColumn, compare: customCompare } = modifier.options, modified = table.getModified();
+        const orderBy = ('columns' in modifier.options ?
+            modifier.options.columns :
+            [modifier.options.orderByColumn]);
+        const orderByIndexes = [];
+        for (let i = 0, iEnd = orderBy.length; i < iEnd; ++i) {
+            const sort = orderBy[i];
+            const isString = typeof sort === 'string';
+            const column = isString ? sort : sort.column;
+            const columnIndex = columnIds.indexOf(column);
+            if (columnIndex === -1) {
+                continue;
+            }
+            orderByIndexes.push({
+                columnIndex,
+                compare: SortModifier.compareFactory(isString ? direction : (sort.direction || direction), isString ? customCompare : (sort.compare || customCompare))
+            });
+        }
+        if (orderByIndexes.length) {
+            rowReferences.sort((a, b) => {
+                for (let i = 0, iEnd = orderByIndexes.length; i < iEnd; ++i) {
+                    const { columnIndex, compare } = orderByIndexes[i];
+                    const result = compare(a.row[columnIndex], b.row[columnIndex]);
+                    if (result) {
+                        return result;
+                    }
+                }
+                return a.index - b.index;
+            });
         }
         if (orderInColumn) {
             const column = [];
@@ -10673,11 +10664,11 @@ Modifiers_DataModifier.registerType('Sort', SortModifier);
 ;// ./code/dashboards/es-modules/Data/Modifiers/FilterModifier.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -10769,7 +10760,7 @@ class FilterModifier extends Modifiers_DataModifier {
     /**
      * Constructs an instance of the filter modifier.
      *
-     * @param {Partial<FilterModifier.Options>} [options]
+     * @param {Partial<FilterModifierOptions>} [options]
      * Options to configure the filter modifier.
      */
     constructor(options) {
@@ -10789,7 +10780,7 @@ class FilterModifier extends Modifiers_DataModifier {
      * @param {DataTable} table
      * Table to modify.
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @return {DataTable}
@@ -10847,11 +10838,11 @@ Modifiers_DataModifier.registerType('Filter', FilterModifier);
 ;// ./code/dashboards/es-modules/Dashboards/Serializable.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -10860,146 +10851,129 @@ Modifiers_DataModifier.registerType('Filter', FilterModifier);
 
 /* *
  *
- *  Namespace
+ *  Constants
  *
  * */
 /**
- * Contains the toolset to serialize class instance to JSON and deserialize JSON
- * to class instances.
- * @internal
- * @private
+ * Registry of serializable classes.
  */
-var Serializable;
-(function (Serializable) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     * Registry of serializable classes.
-     */
-    const classRegistry = {};
-    /**
-     * Registry of function sets.
-     */
-    const helperRegistry = {};
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Creates a class instance from the given JSON, if a suitable serializer
-     * has been found.
-     *
-     * @function Serializable.fromJSON
-     *
-     * @param {Serializable.JSON} json
-     * JSON to create a class instance or object from.
-     *
-     * @return {Globals.AnyRecord}
-     * Returns the class instance or object, or throws an exception.
-     */
-    function fromJSON(json) {
-        const $class = json.$class;
-        if (typeof $class !== 'string') {
-            throw new Error('JSON has no $class property.');
-        }
-        const classs = classRegistry[$class];
-        if (classs) {
-            return classs.fromJSON(json);
-        }
-        const helper = helperRegistry[$class];
-        if (helper) {
-            return helper.fromJSON(json);
-        }
-        throw new Error(`'${$class}' unknown.`);
+const classRegistry = {};
+/**
+ * Registry of function sets.
+ */
+const helperRegistry = {};
+/* *
+ *
+ *  Functions
+ *
+ * */
+/**
+ * Creates a class instance from the given JSON, if a suitable serializer
+ * has been found.
+ *
+ * @function Serializable.fromJSON
+ *
+ * @param {JSON} json
+ * JSON to create a class instance or object from.
+ *
+ * @return {AnyRecord}
+ * Returns the class instance or object, or throws an exception.
+ */
+function fromJSON(json) {
+    const $class = json.$class;
+    if (typeof $class !== 'string') {
+        throw new Error('JSON has no $class property.');
     }
-    Serializable.fromJSON = fromJSON;
-    /**
-     * Registers a class prototype for the given JSON $class.
-     *
-     * @function Serializable.registerClassPrototype
-     *
-     * @param {string} $class
-     * JSON $class to register for.
-     *
-     * @param {Serializable} classPrototype
-     * Class to register.
-     */
-    function registerClassPrototype($class, classPrototype) {
-        if (classRegistry[$class]) {
-            throw new Error('A serializer for \'' + $class + '\' is already registered.');
-        }
-        classRegistry[$class] = classPrototype;
+    const classs = classRegistry[$class];
+    if (classs) {
+        return classs.fromJSON(json);
     }
-    Serializable.registerClassPrototype = registerClassPrototype;
-    /**
-     * Registers helper functions for the given JSON $class.
-     *
-     * @function Serializable.registerHelper
-     *
-     * @param {Helper} helperFunctions
-     * Helper functions to register.
-     */
-    function registerHelper(helperFunctions) {
-        if (helperRegistry[helperFunctions.$class]) {
-            throw new Error('A serializer for \'' + helperFunctions.$class +
-                '\' is already registered.');
-        }
-        helperRegistry[helperFunctions.$class] = helperFunctions;
+    const helper = helperRegistry[$class];
+    if (helper) {
+        return helper.fromJSON(json);
     }
-    Serializable.registerHelper = registerHelper;
-    /**
-     * Creates JSON from a class instance.
-     *
-     * @function Serializable.toJSON
-     *
-     * @param {Globals.AnyRecord} obj
-     * Class instance or object to serialize as JSON.
-     *
-     * @return {Serializable.JSON}
-     * JSON of the class instance.
-     */
-    function toJSON(obj) {
-        if (typeof obj.fromJSON === 'function' &&
-            typeof obj.toJSON === 'function') {
-            return obj.toJSON();
-        }
-        const classes = Object.keys(helperRegistry), numberOfHelpers = classes.length;
-        let $class, serializer;
-        for (let i = 0; i < numberOfHelpers; ++i) {
-            $class = classes[i];
-            serializer = helperRegistry[$class];
-            if (serializer.jsonSupportFor(obj)) {
-                return serializer.toJSON(obj);
-            }
-        }
-        throw new Error('Object is not supported.');
+    throw new Error(`'${$class}' unknown.`);
+}
+/**
+ * Registers a class prototype for the given JSON $class.
+ *
+ * @function Serializable.registerClassPrototype
+ *
+ * @param {string} $class
+ * JSON $class to register for.
+ *
+ * @param {Serializable} classPrototype
+ * Class to register.
+ */
+function registerClassPrototype($class, classPrototype) {
+    if (classRegistry[$class]) {
+        throw new Error('A serializer for \'' + $class + '\' is already registered.');
     }
-    Serializable.toJSON = toJSON;
-})(Serializable || (Serializable = {}));
+    classRegistry[$class] = classPrototype;
+}
+/**
+ * Registers helper functions for the given JSON $class.
+ *
+ * @function Serializable.registerHelper
+ *
+ * @param {Helper} helperFunctions
+ * Helper functions to register.
+ */
+function registerHelper(helperFunctions) {
+    if (helperRegistry[helperFunctions.$class]) {
+        throw new Error('A serializer for \'' + helperFunctions.$class +
+            '\' is already registered.');
+    }
+    helperRegistry[helperFunctions.$class] = helperFunctions;
+}
+/**
+ * Creates JSON from a class instance.
+ *
+ * @function Serializable.toJSON
+ *
+ * @param {AnyRecord} obj
+ * Class instance or object to serialize as JSON.
+ *
+ * @return {JSON}
+ * JSON of the class instance.
+ */
+function toJSON(obj) {
+    if (typeof obj.fromJSON === 'function' &&
+        typeof obj.toJSON === 'function') {
+        return obj.toJSON();
+    }
+    const classes = Object.keys(helperRegistry), numberOfHelpers = classes.length;
+    let $class, serializer;
+    for (let i = 0; i < numberOfHelpers; ++i) {
+        $class = classes[i];
+        serializer = helperRegistry[$class];
+        if (serializer.jsonSupportFor(obj)) {
+            return serializer.toJSON(obj);
+        }
+    }
+    throw new Error('Object is not supported.');
+}
 /* *
  *
  *  Default Export
  *
  * */
+const Serializable = {
+    fromJSON,
+    registerClassPrototype,
+    registerHelper,
+    toJSON
+};
 /* harmony default export */ const Dashboards_Serializable = (Serializable);
 
 ;// ./code/dashboards/es-modules/Dashboards/SerializeHelper/DataTableHelper.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -11016,19 +10990,19 @@ var Serializable;
 /**
  * Converts the given JSON to a class instance.
  *
- * @param {DataTableHelper.JSON} json
+ * @param {JSON} json
  * JSON to deserialize as a class instance or object.
  *
  * @return {DataTable}
  * Returns the class instance or object, or throws an exception.
  */
-function fromJSON(json) {
+function DataTableHelper_fromJSON(json) {
     return new Data_DataTable({ columns: json.columns, id: json.id });
 }
 /**
  * Validates the given class instance for JSON support.
  *
- * @param {Globals.AnyRecord} obj
+ * @param {AnyRecord} obj
  * Class instance or object to validate.
  *
  * @return {boolean}
@@ -11044,10 +11018,10 @@ function jsonSupportFor(obj) {
  * @param {DataTable} obj
  * Class instance or object to serialize as JSON.
  *
- * @return {DataTableHelper.JSON}
+ * @return {JSON}
  * Returns the JSON of the class instance or object.
  */
-function toJSON(obj) {
+function DataTableHelper_toJSON(obj) {
     const json = {
         $class: 'Data.DataTable',
         columns: obj.getColumns(void 0, false, true)
@@ -11066,9 +11040,9 @@ function toJSON(obj) {
  * */
 const DataTableHelper = {
     $class: 'Data.DataTable',
-    fromJSON,
+    fromJSON: DataTableHelper_fromJSON,
     jsonSupportFor,
-    toJSON
+    toJSON: DataTableHelper_toJSON
 };
 Dashboards_Serializable.registerHelper(DataTableHelper);
 /* *
@@ -11081,11 +11055,11 @@ Dashboards_Serializable.registerHelper(DataTableHelper);
 ;// ./code/dashboards/es-modules/Dashboards/SerializeHelper/CSVConnectorHelper.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -11105,7 +11079,7 @@ const { merge: CSVConnectorHelper_merge } = Core_Utilities;
 /**
  * Converts the given JSON to a class instance.
  *
- * @param {CSVConnectorHelper.JSON} json
+ * @param {JSON} json
  * JSON to deserialize as a class instance or object.
  *
  * @return {CSVConnector}
@@ -11117,7 +11091,7 @@ function CSVConnectorHelper_fromJSON(json) {
 /**
  * Validates the given class instance for JSON support.
  *
- * @param {Globals.AnyRecord} obj
+ * @param {AnyRecord} obj
  * Class instance or object to validate.
  *
  * @return {boolean}
@@ -11133,7 +11107,7 @@ function CSVConnectorHelper_jsonSupportFor(obj) {
  * @param {CSVConnector} obj
  * Class instance or object to serialize as JSON.
  *
- * @return {CSVConnectorHelper.JSON}
+ * @return {JSON}
  * Returns the JSON of the class instance or object.
  */
 function CSVConnectorHelper_toJSON(obj) {
@@ -11166,11 +11140,11 @@ Dashboards_Serializable.registerHelper(CSVConnectorHelper);
 ;// ./code/dashboards/es-modules/Dashboards/SerializeHelper/DataConverterHelper.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Pawel Lysy
@@ -11236,11 +11210,11 @@ Dashboards_Serializable.registerHelper(DataConverterHelper);
 ;// ./code/dashboards/es-modules/Data/DataCursor.js
 /* *
  *
- *  (c) 2020-2025 Highsoft AS
+ *  (c) 2020-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -11286,7 +11260,7 @@ class DataCursor {
      *
      * @example
      * ```TypeScript
-     * dataCursor.addListener(myTable.id, 'hover', (e: DataCursor.Event) => {
+     * dataCursor.addListener(myTable.id, 'hover', (e: DataCursorEvent) => {
      *     if (e.cursor.type === 'position') {
      *         console.log(`Hover over row #${e.cursor.row}.`);
      *     }
@@ -11295,13 +11269,13 @@ class DataCursor {
      *
      * @function #addListener
      *
-     * @param {Data.DataCursor.TableId} tableId
+     * @param {Data.DataCursorTableId} tableId
      * The ID of the table to listen to.
      *
-     * @param {Data.DataCursor.State} state
+     * @param {Data.DataCursorState} state
      * The state on the table to listen to.
      *
-     * @param {Data.DataCursor.Listener} listener
+     * @param {Data.DataCursorListener} listener
      * The listener to register.
      *
      * @return {Data.DataCursor}
@@ -11353,7 +11327,7 @@ class DataCursor {
      * @param {Data.DataTable} table
      * The related table of the cursor.
      *
-     * @param {Data.DataCursor.Type} cursor
+     * @param {Data.DataCursorType} cursor
      * The state cursor to emit.
      *
      * @param {Event} [event]
@@ -11376,7 +11350,7 @@ class DataCursor {
                 if (!cursors.length) {
                     stateMap[cursor.state] = cursors;
                 }
-                if (DataCursor.getIndex(cursor, cursors) === -1) {
+                if (getIndex(cursor, cursors) === -1) {
                     cursors.push(cursor);
                 }
             }
@@ -11416,7 +11390,7 @@ class DataCursor {
      * @param {string} tableId
      * ID of the related cursor table.
      *
-     * @param {Data.DataCursor.Type} cursor
+     * @param {Data.DataCursorType} cursor
      * Copy or reference of the cursor.
      *
      * @return {Data.DataCursor}
@@ -11426,7 +11400,7 @@ class DataCursor {
         const cursors = (this.stateMap[tableId] &&
             this.stateMap[tableId][cursor.state]);
         if (cursors) {
-            const index = DataCursor.getIndex(cursor, cursors);
+            const index = getIndex(cursor, cursors);
             if (index >= 0) {
                 cursors.splice(index, 1);
             }
@@ -11438,13 +11412,13 @@ class DataCursor {
      *
      * @function #addListener
      *
-     * @param {Data.DataCursor.TableId} tableId
+     * @param {Data.DataCursorTableId} tableId
      * The ID of the table the listener is connected to.
      *
-     * @param {Data.DataCursor.State} state
+     * @param {Data.DataCursorState} state
      * The state on the table the listener is listening to.
      *
-     * @param {Data.DataCursor.Listener} listener
+     * @param {Data.DataCursorListener} listener
      * The listener to deregister.
      *
      * @return {Data.DataCursor}
@@ -11464,149 +11438,129 @@ class DataCursor {
 }
 /* *
  *
- *  Class Namespace
+ *  Functions
  *
  * */
 /**
- * @class Data.DataCursor
+ * Finds the index of an cursor in an array.
+ * @private
  */
-(function (DataCursor) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Finds the index of an cursor in an array.
-     * @private
-     */
-    function getIndex(needle, cursors) {
-        if (needle.type === 'position') {
-            for (let cursor, i = 0, iEnd = cursors.length; i < iEnd; ++i) {
-                cursor = cursors[i];
-                if (cursor.type === 'position' &&
-                    cursor.state === needle.state &&
-                    cursor.column === needle.column &&
-                    cursor.row === needle.row) {
-                    return i;
-                }
+function getIndex(needle, cursors) {
+    if (needle.type === 'position') {
+        for (let cursor, i = 0, iEnd = cursors.length; i < iEnd; ++i) {
+            cursor = cursors[i];
+            if (cursor.type === 'position' &&
+                cursor.state === needle.state &&
+                cursor.column === needle.column &&
+                cursor.row === needle.row) {
+                return i;
             }
         }
-        else {
-            const columnNeedle = JSON.stringify(needle.columns);
-            for (let cursor, i = 0, iEnd = cursors.length; i < iEnd; ++i) {
-                cursor = cursors[i];
-                if (cursor.type === 'range' &&
-                    cursor.state === needle.state &&
-                    cursor.firstRow === needle.firstRow &&
-                    cursor.lastRow === needle.lastRow &&
-                    JSON.stringify(cursor.columns) === columnNeedle) {
-                    return i;
-                }
+    }
+    else {
+        const columnNeedle = JSON.stringify(needle.columns);
+        for (let cursor, i = 0, iEnd = cursors.length; i < iEnd; ++i) {
+            cursor = cursors[i];
+            if (cursor.type === 'range' &&
+                cursor.state === needle.state &&
+                cursor.firstRow === needle.firstRow &&
+                cursor.lastRow === needle.lastRow &&
+                JSON.stringify(cursor.columns) === columnNeedle) {
+                return i;
             }
         }
-        return -1;
     }
-    DataCursor.getIndex = getIndex;
-    /**
-     * Checks whether two cursor share the same properties.
-     * @private
-     */
-    function isEqual(cursorA, cursorB) {
-        if (cursorA.type === 'position' && cursorB.type === 'position') {
-            return (cursorA.column === cursorB.column &&
-                cursorA.row === cursorB.row &&
-                cursorA.state === cursorB.state);
-        }
-        if (cursorA.type === 'range' && cursorB.type === 'range') {
-            return (cursorA.firstRow === cursorB.firstRow &&
-                cursorA.lastRow === cursorB.lastRow &&
-                (JSON.stringify(cursorA.columns) ===
-                    JSON.stringify(cursorB.columns)));
-        }
-        return false;
+    return -1;
+}
+/**
+ * Checks whether two cursor share the same properties.
+ * @private
+ */
+function isEqual(cursorA, cursorB) {
+    if (cursorA.type === 'position' && cursorB.type === 'position') {
+        return (cursorA.column === cursorB.column &&
+            cursorA.row === cursorB.row &&
+            cursorA.state === cursorB.state);
     }
-    DataCursor.isEqual = isEqual;
-    /**
-     * Checks whether a cursor is in a range.
-     * @private
-     */
-    function isInRange(needle, range) {
-        if (range.type === 'position') {
-            range = toRange(range);
-        }
-        if (needle.type === 'position') {
-            needle = toRange(needle, range);
-        }
-        const needleColumns = needle.columns;
-        const rangeColumns = range.columns;
-        return (needle.firstRow >= range.firstRow &&
-            needle.lastRow <= range.lastRow &&
-            (!needleColumns ||
-                !rangeColumns ||
-                needleColumns.every((column) => rangeColumns.indexOf(column) >= 0)));
+    if (cursorA.type === 'range' && cursorB.type === 'range') {
+        return (cursorA.firstRow === cursorB.firstRow &&
+            cursorA.lastRow === cursorB.lastRow &&
+            (JSON.stringify(cursorA.columns) ===
+                JSON.stringify(cursorB.columns)));
     }
-    DataCursor.isInRange = isInRange;
-    /**
-     * @private
-     */
-    function toPositions(cursor) {
-        if (cursor.type === 'position') {
-            return [cursor];
-        }
-        const columns = (cursor.columns || []);
-        const positions = [];
-        const state = cursor.state;
-        for (let row = cursor.firstRow, rowEnd = cursor.lastRow; row < rowEnd; ++row) {
-            if (!columns.length) {
-                positions.push({
-                    type: 'position',
-                    row,
-                    state
-                });
-                continue;
-            }
-            for (let column = 0, columnEnd = columns.length; column < columnEnd; ++column) {
-                positions.push({
-                    type: 'position',
-                    column: columns[column],
-                    row,
-                    state
-                });
-            }
-        }
-        return positions;
+    return false;
+}
+/**
+ * Checks whether a cursor is in a range.
+ * @private
+ */
+function isInRange(needle, range) {
+    if (range.type === 'position') {
+        range = toRange(range);
     }
-    DataCursor.toPositions = toPositions;
-    /**
-     * @private
-     */
-    function toRange(cursor, defaultRange) {
-        if (cursor.type === 'range') {
-            return cursor;
-        }
-        const range = {
-            type: 'range',
-            firstRow: (cursor.row ??
-                (defaultRange && defaultRange.firstRow) ??
-                0),
-            lastRow: (cursor.row ??
-                (defaultRange && defaultRange.lastRow) ??
-                Number.MAX_VALUE),
-            state: cursor.state
-        };
-        if (typeof cursor.column !== 'undefined') {
-            range.columns = [cursor.column];
-        }
-        return range;
+    if (needle.type === 'position') {
+        needle = toRange(needle, range);
     }
-    DataCursor.toRange = toRange;
-})(DataCursor || (DataCursor = {}));
+    const needleColumns = needle.columns;
+    const rangeColumns = range.columns;
+    return (needle.firstRow >= range.firstRow &&
+        needle.lastRow <= range.lastRow &&
+        (!needleColumns ||
+            !rangeColumns ||
+            needleColumns.every((column) => rangeColumns.indexOf(column) >= 0)));
+}
+/**
+ * @private
+ */
+function toPositions(cursor) {
+    if (cursor.type === 'position') {
+        return [cursor];
+    }
+    const columns = (cursor.columns || []);
+    const positions = [];
+    const state = cursor.state;
+    for (let row = cursor.firstRow, rowEnd = cursor.lastRow; row < rowEnd; ++row) {
+        if (!columns.length) {
+            positions.push({
+                type: 'position',
+                row,
+                state
+            });
+            continue;
+        }
+        for (let column = 0, columnEnd = columns.length; column < columnEnd; ++column) {
+            positions.push({
+                type: 'position',
+                column: columns[column],
+                row,
+                state
+            });
+        }
+    }
+    return positions;
+}
+/**
+ * @private
+ */
+function toRange(cursor, defaultRange) {
+    if (cursor.type === 'range') {
+        return cursor;
+    }
+    const range = {
+        type: 'range',
+        firstRow: (cursor.row ??
+            (defaultRange && defaultRange.firstRow) ??
+            0),
+        lastRow: (cursor.row ??
+            (defaultRange && defaultRange.lastRow) ??
+            Number.MAX_VALUE),
+        state: cursor.state
+    };
+    if (typeof cursor.column !== 'undefined') {
+        range.columns = [cursor.column];
+    }
+    return range;
+}
 /* *
  *
  *  Default Export
@@ -11617,11 +11571,11 @@ class DataCursor {
 ;// ./code/dashboards/es-modules/Dashboards/SerializeHelper/DataCursorHelper.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -11638,7 +11592,7 @@ class DataCursor {
 /**
  * Converts the given JSON to a class instance.
  *
- * @param {DataCursorHelper.JSON} json
+ * @param {JSON} json
  * JSON to deserialize as a class instance or object.
  *
  * @return {DataCursor}
@@ -11650,7 +11604,7 @@ function DataCursorHelper_fromJSON(json) {
 /**
  * Validates the given class instance for JSON support.
  *
- * @param {Globals.AnyRecord} obj
+ * @param {AnyRecord} obj
  * Class instance or object to validate.
  *
  * @return {boolean}
@@ -11712,11 +11666,11 @@ Dashboards_Serializable.registerHelper(DataCursorHelper);
 ;// ./code/dashboards/es-modules/Dashboards/SerializeHelper/GoogleSheetsConnectorHelper.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -11736,7 +11690,7 @@ const { merge: GoogleSheetsConnectorHelper_merge } = Core_Utilities;
 /**
  * Converts the given JSON to a class instance.
  *
- * @param {GoogleSheetsConnectorHelper.JSON} json
+ * @param {JSON} json
  * JSON to deserialize as a class instance or object.
  *
  * @return {GoogleSheetsConnector}
@@ -11748,7 +11702,7 @@ function GoogleSheetsConnectorHelper_fromJSON(json) {
 /**
  * Validates the given class instance for JSON support.
  *
- * @param {Globals.AnyRecord} obj
+ * @param {AnyRecord} obj
  * Class instance or object to validate.
  *
  * @return {boolean}
@@ -11764,7 +11718,7 @@ function GoogleSheetsConnectorHelper_jsonSupportFor(obj) {
  * @param {GoogleSheetsConnector} obj
  * Class instance or object to serialize as JSON.
  *
- * @return {GoogleSheetsConnectorHelper.JSON}
+ * @return {JSON}
  * Returns the JSON of the class instance or object.
  */
 function GoogleSheetsConnectorHelper_toJSON(obj) {
@@ -11797,11 +11751,11 @@ Dashboards_Serializable.registerHelper(GoogleSheetsConnectorHelper);
 ;// ./code/dashboards/es-modules/Dashboards/SerializeHelper/HTMLTableConnectorHelper.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -11821,7 +11775,7 @@ const { merge: HTMLTableConnectorHelper_merge } = Core_Utilities;
 /**
  * Converts the given JSON to a class instance.
  *
- * @param {HTMLTableConnectorHelper.JSON} json
+ * @param {JSON} json
  * JSON to deserialize as a class instance or object.
  *
  * @return {HTMLTableConnector}
@@ -11833,7 +11787,7 @@ function HTMLTableConnectorHelper_fromJSON(json) {
 /**
  * Validates the given class instance for JSON support.
  *
- * @param {Globals.AnyRecord} obj
+ * @param {AnyRecord} obj
  * Class instance or object to validate.
  *
  * @return {boolean}
@@ -11849,7 +11803,7 @@ function HTMLTableConnectorHelper_jsonSupportFor(obj) {
  * @param {HTMLTableConnector} obj
  * Class instance or object to serialize as JSON.
  *
- * @return {HTMLTableConnectorHelper.JSON}
+ * @return {JSON}
  * Returns the JSON of the class instance or object.
  */
 function HTMLTableConnectorHelper_toJSON(obj) {
@@ -11882,11 +11836,11 @@ Dashboards_Serializable.registerHelper(HTMLTableConnectorHelper);
 ;// ./code/dashboards/es-modules/Dashboards/SerializeHelper/JSONConnectorHelper.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Pawel Lysy
@@ -11905,7 +11859,7 @@ const { merge: JSONConnectorHelper_merge } = Core_Utilities;
 /**
  * Converts the given JSON to a class instance.
  *
- * @param {JSONConnectorHelper.JSON} json
+ * @param {JSON} json
  * JSON to deserialize as a class instance or object.
  *
  * @return {JSONConnector}
@@ -11917,7 +11871,7 @@ function JSONConnectorHelper_fromJSON(json) {
 /**
  * Validates the given class instance for JSON support.
  *
- * @param {Globals.AnyRecord} obj
+ * @param {AnyRecord} obj
  * Class instance or object to validate.
  *
  * @return {boolean}
@@ -11933,7 +11887,7 @@ function JSONConnectorHelper_jsonSupportFor(obj) {
  * @param {JSONConnector} obj
  * Class instance or object to serialize as JSON.
  *
- * @return {JSONConnectorHelper.JSON}
+ * @return {JSON}
  * Returns the JSON of the class instance or object.
  */
 function JSONConnectorHelper_toJSON(obj) {
@@ -11965,69 +11919,64 @@ const JSONConnectorHelper = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/ComponentRegistry.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
 /* *
  *
- *  Namespace
+ *  Constants
  *
  * */
-var ComponentRegistry;
-(function (ComponentRegistry) {
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     *
-     * Record of component classes
-     * @todo
-     *
-     */
-    ComponentRegistry.types = {};
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Method used to register new component classes.
-     *
-     * @param {string} key
-     * Registry key of the component class.
-     *
-     * @param {ComponentType} DataConnectorClass
-     * Component class (aka class constructor) to register.
-     */
-    function registerComponent(key, ComponentClass) {
-        return (!!key &&
-            !ComponentRegistry.types[key] &&
-            !!(ComponentRegistry.types[key] = ComponentClass));
-    }
-    ComponentRegistry.registerComponent = registerComponent;
-})(ComponentRegistry || (ComponentRegistry = {}));
+/**
+ *
+ * Record of component classes
+ * @todo
+ *
+ */
+const types = {};
+/* *
+ *
+ *  Functions
+ *
+ * */
+/**
+ * Method used to register new component classes.
+ *
+ * @param {string} key
+ * Registry key of the component class.
+ *
+ * @param {ComponentType} DataConnectorClass
+ * Component class (aka class constructor) to register.
+ */
+function registerComponent(key, ComponentClass) {
+    return (!!key &&
+        !types[key] &&
+        !!(types[key] = ComponentClass));
+}
 /* *
  *
  *  Default Export
  *
  * */
+const ComponentRegistry = {
+    registerComponent,
+    types
+};
 /* harmony default export */ const Components_ComponentRegistry = (ComponentRegistry);
 
 ;// ./code/dashboards/es-modules/Dashboards/Layout/CellHTML.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -12057,7 +12006,7 @@ class CellHTML extends Layout_GUIElement {
     /**
      * Constructs an instance of the CellHTML class.
      *
-     * @param {Cell.Options} options
+     * @param {Options} options
      * Options for the cell.
      */
     constructor(options) {
@@ -12099,18 +12048,15 @@ class CellHTML extends Layout_GUIElement {
 }
 /* *
  *
- *  Namespace
+ *  Type Declarations
  *
  * */
-(function (CellHTML) {
-    /**
-     * Checks if a valid cell HTML instance.
-     */
-    function isCellHTML(cellHTML) {
-        return cellHTML instanceof CellHTML;
-    }
-    CellHTML.isCellHTML = isCellHTML;
-})(CellHTML || (CellHTML = {}));
+/**
+ * Checks if a valid cell HTML instance.
+ */
+function isCellHTML(cellHTML) {
+    return cellHTML instanceof CellHTML;
+}
 /* *
  *
  *  Default Export
@@ -12121,11 +12067,11 @@ class CellHTML extends Layout_GUIElement {
 ;// ./code/dashboards/es-modules/Dashboards/Actions/Bindings.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -12142,173 +12088,162 @@ class CellHTML extends Layout_GUIElement {
 const { addEvent: Bindings_addEvent, fireEvent: Bindings_fireEvent } = Core_Utilities;
 /* *
  *
- *  Namespace
+ *  Functions
  *
  * */
-var Bindings;
-(function (Bindings) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    function getGUIElement(idOrElement, parentElement) {
-        let guiElement;
-        if (typeof idOrElement === 'string' &&
-            document.querySelectorAll('#' + idOrElement).length > 1) {
-            // eslint-disable-next-line no-console
-            console.warn(`Multiple cells have identical ID %c${idOrElement}%c, potentially leading to unexpected behavior. \nEnsure that each cell has a unique ID on the page.`, 'font-weight: bold', '');
-        }
-        const container = parentElement ?
-            parentElement.querySelector('#' + idOrElement) :
-            document.getElementById(idOrElement);
-        if (container !== null) {
-            Bindings_fireEvent(container, 'bindedGUIElement', {}, function (e) {
-                guiElement = e.guiElement;
-            });
-        }
-        return guiElement;
+function getGUIElement(idOrElement, parentElement) {
+    let guiElement;
+    if (typeof idOrElement === 'string' &&
+        document.querySelectorAll('#' + idOrElement).length > 1) {
+        // eslint-disable-next-line no-console
+        console.warn(`Multiple cells have identical ID %c${idOrElement}%c, potentially leading to unexpected behavior. \nEnsure that each cell has a unique ID on the page.`, 'font-weight: bold', '');
     }
-    async function addComponent(options, board, cell) {
-        const optionsStates = options.states;
-        const optionsEvents = options.events;
-        const renderTo = options.renderTo;
-        if (!renderTo) {
-            // eslint-disable-next-line no-console
-            console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
-            return;
-        }
-        if (board.mountedComponents.filter((el) => el.options.renderTo === renderTo).length > 0) {
-            // eslint-disable-next-line no-console
-            console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
-            return;
-        }
-        cell = cell || Bindings.getCell(renderTo, board.container);
-        const componentContainer = cell?.container || document.querySelector('#' + renderTo);
-        if (!componentContainer || !options.type) {
-            // eslint-disable-next-line no-console
-            console.error(`The component is unable to find the HTML cell element %c${renderTo}%c to render the content.`, 'font-weight: bold', '');
-            return;
-        }
-        let ComponentClass = Components_ComponentRegistry.types[options.type];
-        if (!ComponentClass) {
-            // eslint-disable-next-line no-console
-            console.error(`The component's type %c${options.type}%c does not exist.`, 'font-weight: bold', '');
-            if (cell) {
-                ComponentClass =
-                    Components_ComponentRegistry.types['HTML'];
-                options.title = {
-                    text: board.editMode?.lang.errorMessage ||
-                        'Something went wrong',
-                    className: Dashboards_Globals.classNamePrefix + 'component-title-error ' +
-                        Dashboards_Globals.classNamePrefix + 'component-title'
-                };
-            }
-        }
-        const component = new ComponentClass(cell, options, board);
-        const promise = component.load()['catch']((e) => {
-            // eslint-disable-next-line no-console
-            console.error(e);
-            component.update({
-                connector: {
-                    id: ''
-                },
-                title: {
-                    text: board.editMode?.lang.errorMessage ||
-                        'Something went wrong',
-                    className: Dashboards_Globals.classNamePrefix + 'component-title-error ' +
-                        Dashboards_Globals.classNamePrefix + 'component-title'
-                }
-            });
+    const container = parentElement ?
+        parentElement.querySelector('#' + idOrElement) :
+        document.getElementById(idOrElement);
+    if (container !== null) {
+        Bindings_fireEvent(container, 'bindedGUIElement', {}, function (e) {
+            guiElement = e.guiElement;
         });
+    }
+    return guiElement;
+}
+async function addComponent(options, board, cell) {
+    const optionsStates = options.states;
+    const optionsEvents = options.events;
+    const renderTo = options.renderTo;
+    if (!renderTo) {
+        // eslint-disable-next-line no-console
+        console.error('The%c renderTo%c option is required to render the component.', 'font-weight: bold', '');
+        return;
+    }
+    if (board.mountedComponents.filter((el) => el.options.renderTo === renderTo).length > 0) {
+        // eslint-disable-next-line no-console
+        console.error(`A component has already been declared in the cell %c${renderTo}%c use a different cell.`, 'font-weight: bold', '');
+        return;
+    }
+    cell = cell || Bindings.getCell(renderTo, board.container);
+    const componentContainer = cell?.container || document.querySelector('#' + renderTo);
+    if (!componentContainer || !options.type) {
+        // eslint-disable-next-line no-console
+        console.error(`The component is unable to find the HTML cell element %c${renderTo}%c to render the content.`, 'font-weight: bold', '');
+        return;
+    }
+    let ComponentClass = Components_ComponentRegistry.types[options.type];
+    if (!ComponentClass) {
+        // eslint-disable-next-line no-console
+        console.error(`The component's type %c${options.type}%c does not exist.`, 'font-weight: bold', '');
         if (cell) {
-            component.setCell(cell);
-            cell.mountedComponent = component;
+            ComponentClass =
+                Components_ComponentRegistry.types['HTML'];
+            options.title = {
+                text: board.editMode?.lang.errorMessage ||
+                    'Something went wrong',
+                className: Dashboards_Globals.classNamePrefix + 'component-title-error ' +
+                    Dashboards_Globals.classNamePrefix + 'component-title'
+            };
         }
-        board.mountedComponents.push({
-            options: options,
-            component: component,
-            cell: cell || new Layout_CellHTML({
-                id: renderTo,
-                container: componentContainer,
-                mountedComponent: component
-            })
+    }
+    const component = new ComponentClass(cell, options, board);
+    const promise = component.load()['catch']((e) => {
+        // eslint-disable-next-line no-console
+        console.error(e);
+        component.update({
+            connector: {
+                id: ''
+            },
+            title: {
+                text: board.editMode?.lang.errorMessage ||
+                    'Something went wrong',
+                className: Dashboards_Globals.classNamePrefix + 'component-title-error ' +
+                    Dashboards_Globals.classNamePrefix + 'component-title'
+            }
         });
+    });
+    if (cell) {
+        component.setCell(cell);
+        cell.mountedComponent = component;
+    }
+    board.mountedComponents.push({
+        options: options,
+        component: component,
+        cell: cell || new Layout_CellHTML({
+            id: renderTo,
+            container: componentContainer,
+            mountedComponent: component
+        })
+    });
+    if (cell &&
+        optionsStates?.active?.enabled &&
+        optionsStates?.active?.isActive) {
+        cell.setActiveState();
+        component.isActive = true;
+    }
+    Bindings_fireEvent(component, 'mount');
+    // Events
+    Bindings_addEvent(componentContainer, 'click', () => {
+        // Call the component's click callback
+        if (optionsEvents && optionsEvents.click) {
+            optionsEvents.click.call(component);
+        }
+        // Default behavior
         if (cell &&
-            optionsStates?.active?.enabled &&
-            optionsStates?.active?.isActive) {
+            component &&
+            componentContainer &&
+            optionsStates?.active?.enabled) {
             cell.setActiveState();
             component.isActive = true;
         }
-        Bindings_fireEvent(component, 'mount');
-        // Events
-        Bindings_addEvent(componentContainer, 'click', () => {
-            // Call the component's click callback
-            if (optionsEvents && optionsEvents.click) {
-                optionsEvents.click.call(component);
-            }
-            // Default behavior
-            if (cell &&
-                component &&
-                componentContainer &&
-                optionsStates?.active?.enabled) {
-                cell.setActiveState();
-                component.isActive = true;
-            }
-        });
-        // States
-        if (optionsStates?.hover?.enabled) {
-            componentContainer.classList.add(Dashboards_Globals.classNames.cellHover);
-        }
-        Bindings_fireEvent(component, 'afterLoad');
-        return promise;
+    });
+    // States
+    if (optionsStates?.hover?.enabled) {
+        componentContainer.classList.add(Dashboards_Globals.classNames.cellHover);
     }
-    Bindings.addComponent = addComponent;
-    function getCell(idOrElement, parentElement) {
-        const cell = getGUIElement(idOrElement, parentElement);
-        if (!(cell && cell.getType() === 'cell')) {
-            return;
-        }
-        return cell;
+    Bindings_fireEvent(component, 'afterLoad');
+    return promise;
+}
+function getCell(idOrElement, parentElement) {
+    const cell = getGUIElement(idOrElement, parentElement);
+    if (!(cell && cell.getType() === 'cell')) {
+        return;
     }
-    Bindings.getCell = getCell;
-    function getRow(idOrElement, parentElement) {
-        const row = getGUIElement(idOrElement, parentElement);
-        if (!(row && row.getType() === 'row')) {
-            return;
-        }
-        return row;
+    return cell;
+}
+function getRow(idOrElement, parentElement) {
+    const row = getGUIElement(idOrElement, parentElement);
+    if (!(row && row.getType() === 'row')) {
+        return;
     }
-    Bindings.getRow = getRow;
-    function getLayout(idOrElement, parentElement) {
-        const layout = getGUIElement(idOrElement, parentElement);
-        if (!(layout && layout.getType() === 'layout')) {
-            return;
-        }
-        return layout;
+    return row;
+}
+function getLayout(idOrElement, parentElement) {
+    const layout = getGUIElement(idOrElement, parentElement);
+    if (!(layout && layout.getType() === 'layout')) {
+        return;
     }
-    Bindings.getLayout = getLayout;
-})(Bindings || (Bindings = {}));
+    return layout;
+}
 /* *
  *
  *  Default Export
  *
  * */
+const Bindings = {
+    addComponent,
+    getCell,
+    getLayout,
+    getRow
+};
 /* harmony default export */ const Actions_Bindings = (Bindings);
 
 ;// ./code/dashboards/es-modules/Dashboards/Accessibility/DashboardsAccessibility.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -12351,7 +12286,6 @@ class DashboardsAccessibility {
         }
     }
 }
-/// namespace DashboardsAccessibility { }
 /* *
  *
  *  Default Export
@@ -12362,11 +12296,11 @@ class DashboardsAccessibility {
 ;// ./code/dashboards/es-modules/Data/DataPool.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -12410,7 +12344,7 @@ class DataPool {
      * Emits an event on this data pool to all registered callbacks of the given
      * event.
      *
-     * @param {DataTable.Event} e
+     * @param {DataTableEvent} e
      * Event object with event information.
      */
     emit(e) {
@@ -12577,8 +12511,12 @@ class DataPool {
      *
      * @param options
      * Connector options to set.
+     *
+     * @param update
+     * Whether to update the existing connector with the new options and reload
+     * it (`true`) or replace it with a new connector instance (`false`).
      */
-    setConnectorOptions(options) {
+    async setConnectorOptions(options, update) {
         const connectorsOptions = this.options.connectors;
         const connectorsInstances = this.connectors;
         this.emit({
@@ -12591,12 +12529,20 @@ class DataPool {
                 break;
             }
         }
-        // TODO: Check if can be refactored
-        if (connectorsInstances[options.id]) {
-            connectorsInstances[options.id].stopPolling();
-            delete connectorsInstances[options.id];
+        let existingConnector = connectorsInstances[options.id];
+        if (existingConnector) {
+            if (update) {
+                await existingConnector.update(options, true);
+            }
+            else {
+                existingConnector.stopPolling();
+                existingConnector = void 0;
+                delete connectorsInstances[options.id];
+            }
         }
-        connectorsOptions.push(options);
+        if (!existingConnector) {
+            connectorsOptions.push(options);
+        }
         this.emit({
             type: 'afterSetConnectorOptions',
             options
@@ -12618,14 +12564,585 @@ DataPool.defaultOptions = {
  * */
 /* harmony default export */ const Data_DataPool = (DataPool);
 
+;// ./code/dashboards/es-modules/Dashboards/Defaults.js
+/* *
+ *
+ *  Dashboards default options
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
+ *
+ *
+ * */
+
+
+const { merge: Defaults_merge } = Core_Utilities;
+/**
+ * Default options for the Board.
+ */
+const defaultOptions = {
+    gui: {
+        enabled: true,
+        layoutOptions: {
+            rowClassName: void 0,
+            cellClassName: void 0
+        },
+        layouts: []
+    },
+    components: []
+};
+/**
+ * Merge the default options with custom options. Commonly used for defining
+ * reusable templates.
+ *
+ * @param options
+ * The new custom board options.
+ */
+function setOptions(options) {
+    Defaults_merge(true, defaultOptions, options);
+}
+/* *
+ *
+ *  Default Export
+ *
+ * */
+const Defaults = {
+    defaultOptions,
+    setOptions
+};
+/* harmony default export */ const Dashboards_Defaults = (Defaults);
+
+;// ./code/dashboards/es-modules/Dashboards/Layout/Row.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+
+
+
+
+
+const { pick: Row_pick, defined: Row_defined, merge: Row_merge, objectEach: Row_objectEach, fireEvent: Row_fireEvent } = Core_Utilities;
+/**
+ * @internal
+ **/
+class Row extends Layout_GUIElement {
+    /* *
+    *
+    *  Static Properties
+    *
+    * */
+    static setContainerHeight(rowContainer, height) {
+        if (height) {
+            rowContainer.style.height = height + 'px';
+        }
+    }
+    /* *
+    *
+    *  Constructor
+    *
+    * */
+    /**
+     * Constructs an instance of the Row class.
+     *
+     * @param {Layout} layout
+     * Reference to the layout instance.
+     *
+     * @param {Options} options
+     * Options for the row.
+     *
+     * @param {HTMLElement} rowElement
+     * The container of the row HTML element.
+     */
+    constructor(layout, options, rowElement) {
+        super();
+        /**
+         * The type of GUI element.
+         */
+        this.type = Dashboards_Globals.guiElementType.row;
+        this.layout = layout;
+        this.cells = [];
+        this.options = options;
+        this.isVisible = true;
+        // Get parent container
+        const parentContainer = document.getElementById(options.parentContainerId || '') ||
+            layout.container;
+        const layoutOptions = (layout.options || {}), rowClassName = layoutOptions.rowClassName || '';
+        this.container = this.getElementContainer({
+            render: layout.board.guiEnabled,
+            parentContainer: parentContainer,
+            attribs: {
+                id: options.id,
+                className: Dashboards_Globals.classNames.row + ' ' +
+                    rowClassName
+            },
+            element: rowElement,
+            elementId: options.id,
+            style: Row_merge(layoutOptions.style, options.style)
+        });
+        // Init rows from options.
+        if (this.options.cells) {
+            this.setCells();
+        }
+    }
+    /* *
+    *
+    *  Functions
+    *
+    * */
+    /**
+     * Set the row cells using cell options or cellClassName.
+     */
+    setCells() {
+        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = Row_pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
+        let cellElement, i, iEnd;
+        for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
+            cellElement = cellsElements[i];
+            row.addCell(row.layout.board.guiEnabled ? cellElement : { id: '' }, cellElement instanceof HTMLElement ? cellElement : void 0);
+        }
+    }
+    /**
+     * Add a new Cell instance to the row cells array.
+     *
+     * @param {CellOptions} [options]
+     * Options for the row cell.
+     *
+     * @param {HTMLElement} [cellElement]
+     * The container for a new cell HTML element.
+     *
+     * @return {Cell}
+     * Returns the Cell object.
+     */
+    addCell(options, cellElement, index) {
+        const row = this, cell = new Layout_Cell(row, options, cellElement);
+        if (!Row_defined(index)) {
+            row.cells.push(cell);
+        }
+        else {
+            row.mountCell(cell, index);
+        }
+        // Set editMode events.
+        if (row.layout.board.editMode) {
+            row.layout.board.editMode.setCellEvents(cell);
+        }
+        return cell;
+    }
+    /**
+     * Destroy the element, its container, event hooks
+     * and inner cells.
+     */
+    destroy() {
+        const row = this;
+        const { layout } = row;
+        const board = row.layout.board;
+        const editMode = board.editMode;
+        // Destroy cells.
+        if (row.cells) {
+            // Copy to avoid problem with index when shifting array of cells
+            // during the destroy.
+            const rowCells = [...row.cells];
+            for (let i = 0, iEnd = rowCells.length; i < iEnd; ++i) {
+                if (rowCells[i]) {
+                    rowCells[i].destroy();
+                }
+            }
+        }
+        if (row.layout) {
+            row.layout.unmountRow(row);
+            super.destroy();
+            if (layout.rows?.length === 0) {
+                layout.destroy();
+            }
+        }
+        Row_fireEvent(editMode, 'rowDestroyed', {
+            target: row,
+            board: board
+        });
+    }
+    /**
+     * Get the row's options.
+     * @returns
+     * The JSON of row's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        const row = this, cells = [];
+        for (let i = 0, iEnd = row.cells.length; i < iEnd; ++i) {
+            cells.push(row.cells[i].getOptions());
+        }
+        return {
+            id: this.options.id,
+            style: this.options.style,
+            cells
+        };
+    }
+    setSize(height) {
+        Row.setContainerHeight(this.container, height);
+    }
+    // Get cell index from the row.cells array.
+    getCellIndex(cell) {
+        for (let i = 0, iEnd = this.cells?.length; i < iEnd; ++i) {
+            if (this.cells[i].id === cell.id) {
+                return i;
+            }
+        }
+    }
+    // Add cell to the row.cells array and move cell container.
+    mountCell(cell, index = 0) {
+        const row = this, nextCell = row.cells[index], prevCell = row.cells[index - 1];
+        if (cell.container) {
+            if (nextCell && nextCell.container) {
+                nextCell.container.parentNode.insertBefore(cell.container, nextCell.container);
+            }
+            else if (prevCell && prevCell.container) {
+                prevCell.container.parentNode.insertBefore(cell.container, prevCell.container.nextSibling);
+            }
+            else if (!prevCell && !nextCell && row.container) {
+                row.container.appendChild(cell.container);
+            }
+            row.cells.splice(index, 0, cell);
+            cell.row = row;
+            setTimeout(() => {
+                Row_fireEvent(row, 'cellChange', { row, cell });
+            }, 0);
+        }
+    }
+    // Remove cell from the row.cells array.
+    unmountCell(cell) {
+        const cellIndex = this.getCellIndex(cell);
+        if (Row_defined(cellIndex)) {
+            this.cells.splice(cellIndex, 1);
+        }
+        setTimeout(() => {
+            Row_fireEvent(this, 'cellChange', { row: this, cell });
+        }, 0);
+    }
+    getVisibleCells() {
+        const cells = [];
+        for (let i = 0, iEnd = this.cells.length; i < iEnd; ++i) {
+            if (this.cells[i].isVisible) {
+                cells.push(this.cells[i]);
+            }
+        }
+        return cells;
+    }
+    changeVisibility(setVisible = true, displayStyle) {
+        const row = this;
+        super.changeVisibility(setVisible, displayStyle);
+        // Change layout visibility if needed.
+        if (!row.layout.getVisibleRows().length) {
+            row.layout.hide();
+        }
+        else if (row.isVisible && !row.layout.isVisible) {
+            row.layout.show();
+        }
+    }
+    show() {
+        this.changeVisibility(true, 'flex');
+    }
+    setHighlight(remove) {
+        const classList = this.container.classList;
+        const highlightClass = EditMode_EditGlobals.classNames.rowContextHighlight;
+        if (remove === true) {
+            classList.remove(highlightClass);
+        }
+        else {
+            classList.toggle(highlightClass, !remove);
+        }
+    }
+    // Row can have cells below each others.
+    // This method returns cells split into levels.
+    getRowLevels() {
+        const row = this, rowLevels = {}, rowLevelsArray = [];
+        let cell, cellOffsets;
+        for (let k = 0, kEnd = row.cells.length; k < kEnd; ++k) {
+            cell = row.cells[k];
+            if (cell.isVisible) {
+                cellOffsets = Layout_GUIElement.getOffsets(cell);
+                if (!rowLevels[cellOffsets.top]) {
+                    rowLevels[cellOffsets.top] = {
+                        top: cellOffsets.top,
+                        bottom: cellOffsets.bottom,
+                        cells: []
+                    };
+                }
+                if (rowLevels[cellOffsets.top].bottom < cellOffsets.bottom) {
+                    rowLevels[cellOffsets.top].bottom = cellOffsets.bottom;
+                }
+                rowLevels[cellOffsets.top].cells.push(cell);
+            }
+        }
+        Row_objectEach(rowLevels, (value) => {
+            rowLevelsArray.push(value);
+        });
+        return rowLevelsArray;
+    }
+    // Get row level with additional info
+    // on a specific Y position.
+    getRowLevelInfo(posY) {
+        const rowLevels = this.getRowLevels();
+        let rowLevelInfo;
+        for (let i = 0, iEnd = rowLevels.length; i < iEnd; ++i) {
+            if (rowLevels[i].top <= posY && rowLevels[i].bottom > posY) {
+                rowLevelInfo = {
+                    index: i,
+                    rowLevels: rowLevels,
+                    rowLevel: rowLevels[i]
+                };
+            }
+        }
+        return rowLevelInfo;
+    }
+}
+/* harmony default export */ const Layout_Row = (Row);
+
+;// ./code/dashboards/es-modules/Dashboards/Layout/Layout.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+const { pick: Layout_pick, defined: Layout_defined } = Core_Utilities;
+
+
+
+/**
+ * @internal
+ **/
+class Layout extends Layout_GUIElement {
+    /* *
+    *
+    *  Constructor
+    *
+    * */
+    /**
+     * Constructs an instance of the Layout class.
+     *
+     * @param {Dashboard} board
+     * Reference to the dashboard instance.
+     *
+     * @param {Options} options
+     * Options for the layout.
+     */
+    constructor(board, options, parentCell) {
+        super();
+        /**
+         * The type of GUI element.
+         */
+        this.type = Dashboards_Globals.guiElementType.layout;
+        this.board = board;
+        this.rows = [];
+        this.options = options;
+        this.isVisible = true;
+        // Get parent container
+        const parentContainer = parentCell ? parentCell.container :
+            document.getElementById(options.parentContainerId || '') || board.layoutsWrapper;
+        // Set layout level.
+        if (parentCell) {
+            this.parentCell = parentCell;
+            this.level = parentCell.row.layout.level + 1;
+        }
+        else {
+            this.level = 0;
+        }
+        // GUI structure
+        if (options.copyId) {
+            this.copyId = options.copyId;
+        }
+        const layoutOptions = (this.options || {}), layoutClassName = layoutOptions.rowClassName || '';
+        this.container = this.getElementContainer({
+            render: board.guiEnabled,
+            parentContainer: parentContainer,
+            attribs: {
+                id: (options.id || '') + (this.copyId ? '_' + this.copyId : ''),
+                className: Dashboards_Globals.classNames.layout + ' ' +
+                    layoutClassName
+            },
+            elementId: options.id,
+            style: this.options.style
+        });
+        // Init rows from options.
+        if (this.options.rows) {
+            this.setRows();
+        }
+    }
+    /* *
+    *
+    *  Functions
+    *
+    * */
+    /**
+     * Set the layout rows using rows options or rowClassName.
+     */
+    setRows() {
+        const layout = this, rowsElements = Layout_pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
+        let rowElement, i, iEnd;
+        for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
+            rowElement = rowsElements[i];
+            layout.addRow(layout.board.guiEnabled ? rowElement : {}, rowElement instanceof HTMLElement ? rowElement : void 0);
+        }
+    }
+    /**
+     * Add a new Row instance to the layout rows array.
+     *
+     * @param {RowOptions} options
+     * Options of a row.
+     *
+     * @param {HTMLElement} rowElement
+     * The container for a new row HTML element.
+     *
+     * @return {Row}
+     * Returns the Row object.
+     */
+    addRow(options, rowElement, index) {
+        const layout = this, row = new Layout_Row(layout, options, rowElement);
+        if (!Layout_defined(index)) {
+            layout.rows.push(row);
+        }
+        else {
+            layout.mountRow(row, index);
+        }
+        // Set editMode events.
+        if (layout.board.editMode) {
+            layout.board.editMode.setRowEvents(row);
+        }
+        return row;
+    }
+    /**
+     * Destroy the element, its container, event hooks
+     * and inner rows.
+     */
+    destroy() {
+        const layout = this;
+        for (let i = layout.board.layouts.length - 1; i >= 0; i--) {
+            if (layout.board.layouts[i] === layout) {
+                layout.board.layouts.splice(i, 1);
+            }
+        }
+        if (layout.parentCell) {
+            delete layout.parentCell.nestedLayout;
+        }
+        // Destroy rows.
+        for (let i = layout.rows.length - 1; i >= 0; i--) {
+            layout.rows[i].destroy();
+        }
+        if (layout.parentCell) {
+            layout.parentCell.destroy();
+        }
+        super.destroy();
+    }
+    // Get row index from the layout.rows array.
+    getRowIndex(row) {
+        for (let i = 0, iEnd = this.rows.length; i < iEnd; ++i) {
+            if (this.rows[i] === row) {
+                return i;
+            }
+        }
+    }
+    // Add cell to the layout.rows array and move row container.
+    mountRow(row, index) {
+        const nextRow = this.rows[index], prevRow = this.rows[index - 1];
+        if (row.container) {
+            if (nextRow && nextRow.container) {
+                nextRow.container.parentNode.insertBefore(row.container, nextRow.container);
+            }
+            else if (prevRow && prevRow.container) {
+                prevRow.container.parentNode.insertBefore(row.container, prevRow.container.nextSibling);
+            }
+            this.rows.splice(index, 0, row);
+            row.layout = this;
+        }
+    }
+    // Remove row from the layout.rows array.
+    unmountRow(row) {
+        const rowIndex = this.getRowIndex(row);
+        if (Layout_defined(rowIndex)) {
+            this.rows.splice(rowIndex, 1);
+        }
+    }
+    getVisibleRows() {
+        const rows = [];
+        for (let i = 0, iEnd = this.rows.length; i < iEnd; ++i) {
+            if (this.rows[i].isVisible) {
+                rows.push(this.rows[i]);
+            }
+        }
+        return rows;
+    }
+    changeVisibility(setVisible = true) {
+        const layout = this;
+        super.changeVisibility(setVisible);
+        // Change parentCell visibility.
+        if (layout.parentCell) {
+            if (layout.isVisible && !layout.parentCell.isVisible) {
+                layout.parentCell.show();
+            }
+            else if (!layout.isVisible && layout.parentCell.isVisible) {
+                layout.parentCell.hide();
+            }
+        }
+    }
+    /**
+     * Get the layout's options.
+     * @returns
+     * Layout's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        const layout = this, rows = [];
+        // Get rows JSON.
+        for (let i = 0, iEnd = layout.rows.length; i < iEnd; ++i) {
+            rows.push(layout.rows[i].getOptions());
+        }
+        return {
+            id: this.options.id,
+            layoutClassName: this.options.layoutClassName,
+            rowClassName: this.options.rowClassName,
+            cellClassName: this.options.cellClassName,
+            style: this.options.style,
+            rows
+        };
+    }
+}
+/* harmony default export */ const Layout_Layout = (Layout);
+
 ;// ./code/dashboards/es-modules/Dashboards/Board.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -12645,7 +13162,9 @@ DataPool.defaultOptions = {
 
 
 
-const { merge: Board_merge, addEvent: Board_addEvent, error: Board_error, objectEach: Board_objectEach, uniqueKey: Board_uniqueKey } = Core_Utilities;
+
+
+const { merge: Board_merge, addEvent: Board_addEvent, createElement: Board_createElement, error: Board_error, objectEach: Board_objectEach, uniqueKey: Board_uniqueKey } = Core_Utilities;
 /* *
  *
  *  Class
@@ -12704,7 +13223,7 @@ class Board {
          * @internal
          */
         this.componentTypes = Components_ComponentRegistry.types;
-        this.options = Board_merge(Board.defaultOptions, options);
+        this.options = Board_merge(Dashboards_Defaults.defaultOptions, options);
         this.dataPool = new Data_DataPool(options.dataPool);
         this.id = Board_uniqueKey();
         this.guiEnabled = !options.gui ?
@@ -12776,11 +13295,11 @@ class Board {
     /**
      * Inits creating a layouts and setup the EditMode tools.
      * @internal
-     *
      */
     initEditMode() {
-        if (Dashboards.EditMode) {
-            this.editMode = new Dashboards.EditMode(this, this.options.editMode);
+        const { EditMode } = Dashboards_Globals.win.Dashboards;
+        if (EditMode) {
+            this.editMode = new EditMode(this, this.options.editMode);
         }
         else if (this.editModeEnabled) {
             throw new Error('Missing layout.js module');
@@ -12807,6 +13326,7 @@ class Board {
      */
     destroy() {
         const board = this;
+        const index = this.index;
         // Cancel all data connectors pending requests.
         this.dataPool.cancelPendingRequests();
         // Destroy layouts.
@@ -12831,7 +13351,7 @@ class Board {
         Board_objectEach(board, function (val, key) {
             delete board[key];
         });
-        Dashboards_Globals.boards[this.index] = void 0;
+        Dashboards_Globals.boards[index] = void 0;
         return;
     }
     /**
@@ -12849,6 +13369,68 @@ class Board {
                 editModeTools.contextMenu
                     .updatePosition(editModeTools.contextButtonElement);
             }
+        }
+    }
+    /**
+     * Update the dashboard with new options.
+     *
+     * @param newOptions
+     * The new options to apply to the dashboard.
+     */
+    update(newOptions) {
+        const board = this;
+        // Merge new options with existing ones
+        board.options = Board_merge(board.options, newOptions);
+        // Update dataPool if dataPool options changed
+        if (newOptions.dataPool) {
+            board.dataPool = new Data_DataPool(board.options.dataPool);
+        }
+        // Update guiEnabled and editModeEnabled flags if changed
+        if (newOptions.gui !== void 0) {
+            board.guiEnabled = !newOptions.gui ?
+                false : board.options?.gui?.enabled;
+        }
+        if (newOptions.editMode !== void 0) {
+            board.editModeEnabled = !newOptions.editMode ?
+                false : board.options?.editMode?.enabled;
+        }
+        // Destroy existing components
+        for (const mountedComponent of board.mountedComponents) {
+            mountedComponent.component.destroy();
+        }
+        board.mountedComponents = [];
+        // Destroy existing layouts if GUI is enabled
+        if (board.guiEnabled && board.layouts) {
+            for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
+                board.layouts[i].destroy();
+            }
+            board.layouts = [];
+            // Ensure layoutsWrapper exists
+            if (!board.layoutsWrapper && board.container) {
+                board.layoutsWrapper = Board_createElement('div', {
+                    className: Dashboards_Globals.classNames.layoutsWrapper
+                }, {}, board.container);
+            }
+            // Create new layouts if they are provided
+            if (board.options.gui?.layouts) {
+                const guiOptions = board.options.gui;
+                for (let i = 0, iEnd = guiOptions.layouts.length; i < iEnd; ++i) {
+                    board.layouts.push(new Layout_Layout(board, Board_merge({}, guiOptions.layoutOptions, guiOptions.layouts[i])));
+                }
+                // Re-initialize editMode events if editMode exists
+                if (board.editMode) {
+                    // Re-initialize events for all layouts
+                    let j = 0;
+                    const jEnd = board.layouts.length;
+                    for (j; j < jEnd; ++j) {
+                        board.editMode.setLayoutEvents(board.layouts[j]);
+                    }
+                }
+            }
+        }
+        // Add new components
+        if (board.options.components) {
+            void board.setComponents(board.options.components);
         }
     }
     /**
@@ -12909,37 +13491,6 @@ class Board {
 }
 /* *
  *
- *  Class Namespace
- *
- * */
-(function (Board) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /**
-     * Global dashboard settings.
-     */
-    Board.defaultOptions = {
-        gui: {
-            enabled: true,
-            layoutOptions: {
-                rowClassName: void 0,
-                cellClassName: void 0
-            },
-            layouts: []
-        },
-        components: []
-    };
-})(Board || (Board = {}));
-/* *
- *
  *  Registry
  *
  * */
@@ -12954,11 +13505,11 @@ Components_ComponentRegistry.registerComponent('HTML', HTMLComponent_HTMLCompone
 ;// ./code/dashboards/es-modules/Dashboards/Components/GridComponent/GridSyncs/GridExtremesSync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -12970,7 +13521,7 @@ Components_ComponentRegistry.registerComponent('HTML', HTMLComponent_HTMLCompone
  *  Constants
  *
  * */
-const defaultOptions = {};
+const GridExtremesSync_defaultOptions = {};
 const syncPair = {
     emitter: void 0,
     handler: function () {
@@ -13025,16 +13576,16 @@ const syncPair = {
 *  Default export
 *
 * */
-/* harmony default export */ const GridExtremesSync = ({ defaultOptions, syncPair });
+/* harmony default export */ const GridExtremesSync = ({ defaultOptions: GridExtremesSync_defaultOptions, syncPair });
 
 ;// ./code/dashboards/es-modules/Dashboards/Components/GridComponent/GridSyncs/GridHighlightSync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -13065,7 +13616,7 @@ const GridHighlightSync_syncPair = {
             return;
         }
         const { dataCursor: cursor } = board;
-        const table = this.connectorHandlers[0]?.presentationTable;
+        const table = this.getDataTable();
         const onCellHover = (e) => {
             if (table) {
                 const cell = e.target;
@@ -13110,7 +13661,7 @@ const GridHighlightSync_syncPair = {
         if (!highlightOptions?.enabled) {
             return;
         }
-        const table = component.connectorHandlers[0]?.presentationTable;
+        const table = component.getDataTable();
         const handleCursor = (e) => {
             const cursor = e.cursor;
             if (cursor.sourceId === component.id ||
@@ -13175,11 +13726,11 @@ const GridHighlightSync_syncPair = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/GridComponent/GridSyncs/GridVisibilitySync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -13217,7 +13768,7 @@ const GridVisibilitySync_syncPair = {
             if (!cursor) {
                 return;
             }
-            const table = component.connectorHandlers?.[0]?.presentationTable;
+            const table = component.getDataTable();
             if (!table) {
                 return;
             }
@@ -13225,7 +13776,7 @@ const GridVisibilitySync_syncPair = {
             cursor.addListener(table.id, 'series.hide' + groupKey, handleVisibilityChange);
         };
         const unregisterCursorListeners = () => {
-            const table = component.connectorHandlers?.[0]?.presentationTable;
+            const table = component.getDataTable();
             const { dataCursor: cursor } = board;
             if (!table) {
                 return;
@@ -13249,11 +13800,11 @@ const GridVisibilitySync_syncPair = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/GridComponent/GridSyncs/GridSyncs.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -13265,7 +13816,7 @@ const GridVisibilitySync_syncPair = {
 
 /* *
 *
-*  Namespace
+*  Constants
 *
 * */
 const GridSyncs_predefinedSyncConfig = {
@@ -13290,11 +13841,11 @@ const GridSyncs_predefinedSyncConfig = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/GridComponent/GridComponentDefaults.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Karol Kolodziej
@@ -13379,7 +13930,7 @@ const GridComponentDefaults = {
                                 'gridOptions',
                                 'columnDefaults',
                                 'sorting',
-                                'sortable'
+                                'enabled'
                             ],
                             type: 'toggle'
                         }, {
@@ -13443,11 +13994,11 @@ const GridComponentDefaults = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/GridComponent/GridComponent.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Karol Kolodziej
@@ -13494,13 +14045,13 @@ class GridComponent extends Components_Component {
         this.setOptions();
         if (this.grid) {
             this.grid.update(options.gridOptions, false);
-            if (this.grid?.viewport?.dataTable?.id !==
-                this.getFirstConnector()?.getTable()?.id) {
+            const table = this.getDataTable();
+            if (this.grid?.viewport?.dataTable?.id !== table?.id) {
                 this.grid.update({
-                    dataTable: this.getFirstConnector()?.getTable()?.getModified()
+                    dataTable: table?.getModified()
                 }, false);
             }
-            this.grid.renderViewport();
+            await this.grid.redraw();
         }
         this.emit({ type: 'afterUpdate' });
     }
@@ -13533,8 +14084,8 @@ class GridComponent extends Components_Component {
         if (!grid) {
             return;
         }
-        const dataTable = this.connectorHandlers[0]?.presentationTable;
-        if (!dataTable?.getModified()) {
+        const dataTable = this.getDataTable()?.getModified();
+        if (!dataTable) {
             grid.update({ dataTable: void 0 });
             return;
         }
@@ -13542,7 +14093,7 @@ class GridComponent extends Components_Component {
             // If the header is not defined, we need to check if the column
             // names have changed, so we can update the whole grid. If they
             // have not changed, we can just update the rows (more efficient).
-            const newColumnIds = dataTable.getModified().getColumnIds();
+            const newColumnIds = dataTable.getColumnIds();
             const { columnOptionsMap, enabledColumns } = grid;
             let index = 0;
             for (const newColumn of newColumnIds) {
@@ -13552,13 +14103,13 @@ class GridComponent extends Components_Component {
                 if (enabledColumns?.[index] !== newColumn) {
                     // If the visible columns have changed,
                     // update the whole grid.
-                    grid.update({ dataTable: dataTable.getModified() });
+                    grid.update({ dataTable });
                     return;
                 }
                 index++;
             }
         }
-        grid.dataTable = dataTable?.getModified();
+        grid.dataTable = dataTable;
         // Data has changed and the whole grid is not re-rendered, so mark in
         // the querying that data table was modified.
         grid.querying.shouldBeUpdated = true;
@@ -13643,7 +14194,7 @@ class GridComponent extends Components_Component {
         if (!DGN) {
             throw new Error('Grid not connected.');
         }
-        const dataTable = this.connectorHandlers[0]?.presentationTable, options = this.options, gridOptions = options.gridOptions;
+        const dataTable = this.getDataTable(), options = this.options, gridOptions = options.gridOptions;
         if (!gridOptions) {
             throw new Error('Grid options are not set.');
         }
@@ -13678,11 +14229,11 @@ GridComponent.defaultOptions = GridComponent_merge(Components_Component.defaultO
 ;// ./code/dashboards/es-modules/Dashboards/Plugins/GridPlugin.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Karol Kolodziej
@@ -13742,11 +14293,11 @@ const GridPlugin = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsExtremesSync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -13962,11 +14513,11 @@ const HighchartsExtremesSync_syncPair = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsHighlightSync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -14004,13 +14555,14 @@ const HighchartsHighlightSync_syncPair = {
             const series = chart.series[i];
             const seriesId = series.options.id ?? '';
             const connectorHandler = component.seriesFromConnector[seriesId];
-            const table = connectorHandler?.connector?.getTable();
+            const connectorId = connectorHandler?.options.id;
+            const table = this.getDataTable(connectorId);
             let columnId;
             if (!table) {
                 continue;
             }
             const presTable = table?.getModified();
-            const colAssignment = connectorHandler.columnAssignment?.find((s) => s.seriesId === seriesId);
+            const colAssignment = connectorHandler?.columnAssignment?.find((s) => s.seriesId === seriesId);
             // TODO: Better way to recognize the column name.
             if (colAssignment) {
                 const { data } = colAssignment;
@@ -14102,7 +14654,9 @@ const HighchartsHighlightSync_syncPair = {
                     for (let i = 0, iEnd = seriesIds.length; i < iEnd; ++i) {
                         const seriesId = seriesIds[i];
                         const connectorHandler = component.seriesFromConnector[seriesId];
-                        if (connectorHandler?.connector?.getTable() !== table) {
+                        const dataTableKey = connectorHandler?.options.dataTableKey;
+                        const connectorTable = connectorHandler?.connector?.getTable(dataTableKey);
+                        if (connectorTable !== table) {
                             continue;
                         }
                         const colAssignment = connectorHandler.columnAssignment;
@@ -14258,7 +14812,8 @@ const HighchartsHighlightSync_syncPair = {
                 return;
             }
             for (let i = 0, iEnd = connectorHandlers.length; i < iEnd; ++i) {
-                const table = connectorHandlers[i]?.connector?.getTable();
+                const connectorId = connectorHandlers[i]?.options.id;
+                const table = this.getDataTable(connectorId);
                 if (!table) {
                     continue;
                 }
@@ -14297,11 +14852,11 @@ const HighchartsHighlightSync_syncPair = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsVisibilitySync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -14323,11 +14878,10 @@ const HighchartsVisibilitySync_syncPair = {
         const syncOptions = this.sync.syncConfig.visibility;
         const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
         const { chart, board } = component;
-        const connector = this.getFirstConnector();
         if (!board || !chart) {
             return;
         }
-        const table = connector?.getTable();
+        const table = this.getDataTable();
         if (table) { // Has a connector
             const { dataCursor: cursor } = board;
             const { series } = chart;
@@ -14412,7 +14966,7 @@ const HighchartsVisibilitySync_syncPair = {
             if (!dataCursor) {
                 return;
             }
-            const table = component.connectorHandlers?.[0]?.connector?.getTable();
+            const table = component.getDataTable();
             if (!table) {
                 return;
             }
@@ -14420,7 +14974,7 @@ const HighchartsVisibilitySync_syncPair = {
             dataCursor.addListener(table.id, 'series.hide' + groupKey, handleHide);
         };
         const unregisterCursorListeners = () => {
-            const table = component.connectorHandlers?.[0]?.connector?.getTable();
+            const table = component.getDataTable();
             if (table) {
                 board.dataCursor.removeListener(table.id, 'series.show' + groupKey, handleShow);
                 board.dataCursor.removeListener(table.id, 'series.hide' + groupKey, handleHide);
@@ -14442,11 +14996,11 @@ const HighchartsVisibilitySync_syncPair = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HighchartsComponent/HighchartsSyncs/HighchartsSyncs.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -14483,11 +15037,11 @@ const HighchartsSyncs_predefinedSyncConfig = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HighchartsComponent/HighchartsComponentDefaults.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Karol Kolodziej
@@ -14694,17 +15248,18 @@ const HighchartsComponentDefaults = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/HighchartsComponent/HighchartsComponent.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Gøran Slettemark
  *  - Wojciech Chmiel
  *  - Sebastian Bochan
  *  - Sophie Bremer
+ *  - Dawid Dragula
  *
  * */
 
@@ -14767,7 +15322,6 @@ class HighchartsComponent extends Components_Component {
      *  Functions
      *
      * */
-    /** @private */
     async load() {
         this.emit({ type: 'load' });
         await super.load();
@@ -14804,9 +15358,8 @@ class HighchartsComponent extends Components_Component {
     }
     /**
      * Adds call update value in store, when chart's point is updated.
-     *
      * @private
-     * */
+     */
     setupConnectorUpdate() {
         const { connectorHandlers, chart } = this;
         if (!chart || !this.options.allowConnectorUpdate) {
@@ -14835,7 +15388,7 @@ class HighchartsComponent extends Components_Component {
      * @param connectorHandler Connector handler with data to update.
      */
     onChartUpdate(point, connectorHandler) {
-        const table = connectorHandler.presentationTable;
+        const table = connectorHandler.dataTable;
         const columnAssignment = connectorHandler.columnAssignment;
         const seriesId = point.series.options.id;
         const converter = new Converters_DataConverter();
@@ -14863,7 +15416,6 @@ class HighchartsComponent extends Components_Component {
     }
     /**
      * Internal method for handling option updates.
-     *
      * @internal
      */
     setOptions() {
@@ -14878,9 +15430,9 @@ class HighchartsComponent extends Components_Component {
     }
     /**
      * Handles updating via options.
+     *
      * @param options
      * The options to apply.
-     *
      */
     async update(options, shouldRerender = true) {
         await super.update(options, false);
@@ -14911,14 +15463,8 @@ class HighchartsComponent extends Components_Component {
         for (const connectorHandler of connectorHandlers) {
             const options = connectorHandler.options;
             let columnAssignment = options.columnAssignment;
-            // Set the new data table based on the data table key.
-            const connector = connectorHandler.connector;
-            const dataTableKey = connectorHandler.options.dataTableKey;
-            if (connector && dataTableKey) {
-                connectorHandler.setTable(connector.dataTables[dataTableKey]);
-            }
-            if (!columnAssignment && connectorHandler.presentationTable) {
-                columnAssignment = this.getDefaultColumnAssignment(connectorHandler.presentationTable.getColumnIds(), connectorHandler.presentationTable);
+            if (!columnAssignment && connectorHandler.dataTable) {
+                columnAssignment = this.getDefaultColumnAssignment(connectorHandler.dataTable.getColumnIds(), connectorHandler.dataTable);
             }
             if (columnAssignment) {
                 connectorHandler.columnAssignment = columnAssignment;
@@ -14957,11 +15503,11 @@ class HighchartsComponent extends Components_Component {
         const chart = this.chart;
         if (!connectorHandler.connector ||
             !chart ||
-            !connectorHandler.presentationTable) {
+            !connectorHandler.dataTable) {
             return;
         }
-        const table = connectorHandler.presentationTable.getModified();
-        const modifierOptions = connectorHandler.presentationTable.getModifier()?.options;
+        const table = connectorHandler.dataTable.getModified();
+        const modifierOptions = connectorHandler.dataTable.getModifier()?.options;
         const columnAssignment = connectorHandler.columnAssignment ?? [];
         // Create the series or update the existing ones.
         for (let i = 0, iEnd = columnAssignment.length; i < iEnd; ++i) {
@@ -15039,7 +15585,19 @@ class HighchartsComponent extends Components_Component {
      */
     destroy() {
         // Cleanup references in the global Highcharts scope
-        this.chart?.destroy();
+        // Destroy chart before destroying the component element
+        // to ensure chart has access to its renderTo element
+        if (this.chart && this.chart.renderTo && this.chart.renderer) {
+            try {
+                this.chart.destroy();
+            }
+            catch (e) {
+                // Chart may already be destroyed or renderTo/renderer
+                // eslint-disable-next-line no-console
+                console.warn('Error destroying chart:', e);
+            }
+            this.chart = void 0;
+        }
         super.destroy();
     }
     /**
@@ -15102,53 +15660,6 @@ class HighchartsComponent extends Components_Component {
             throw new Error('Chart constructor not found');
         }
         return this.chart;
-    }
-    /**
-     * Registers events from the chart options to the callback register.
-     *
-     * @private
-     */
-    registerChartEvents() {
-        if (this.chart && this.chart.options) {
-            const options = this.chart.options;
-            const allEvents = [
-                'chart',
-                'series',
-                'yAxis',
-                'xAxis',
-                'colorAxis',
-                'annotations',
-                'navigation'
-            ].map((optionKey) => {
-                let seriesOrAxisOptions = options[optionKey] || {};
-                if (!Array.isArray(seriesOrAxisOptions) &&
-                    seriesOrAxisOptions.events) {
-                    seriesOrAxisOptions = [seriesOrAxisOptions];
-                }
-                if (seriesOrAxisOptions &&
-                    typeof seriesOrAxisOptions === 'object' &&
-                    Array.isArray(seriesOrAxisOptions)) {
-                    return seriesOrAxisOptions.reduce((acc, seriesOrAxis, i) => {
-                        if (seriesOrAxis && seriesOrAxis.events) {
-                            acc[seriesOrAxis.id || `${optionKey}-${i}`] = seriesOrAxis.events;
-                        }
-                        return acc;
-                    }, {}) || {};
-                }
-                return {};
-            });
-            allEvents.forEach((options) => {
-                Object.keys(options).forEach((key) => {
-                    const events = options[key];
-                    Object.keys(events).forEach((callbackKey) => {
-                        this.callbackRegistry.addCallback(`${key}-${callbackKey}`, {
-                            type: 'seriesEvent',
-                            func: events[callbackKey]
-                        });
-                    });
-                });
-            });
-        }
     }
     getOptionsOnDrop(sidebar) {
         const connectorsIds = sidebar.editMode.board.dataPool.getConnectorIds();
@@ -15240,11 +15751,11 @@ HighchartsComponent.defaultOptions = HighchartsComponent_merge(Components_Compon
 ;// ./code/dashboards/es-modules/Dashboards/Components/KPIComponent/KPISyncs/KPIExtremesSync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -15288,14 +15799,14 @@ const KPIExtremesSync_syncPair = {
             if (!cursor) {
                 return;
             }
-            const table = this.getFirstConnector()?.getTable();
+            const table = this.getDataTable();
             if (!table) {
                 return;
             }
             cursor.addListener(table.id, 'xAxis.extremes.max' + groupKey, handleChangeExtremes);
         };
         const unregisterCursorListeners = () => {
-            const table = this.getFirstConnector()?.getTable();
+            const table = this.getDataTable();
             const { dataCursor: cursor } = board;
             if (!table) {
                 return;
@@ -15318,11 +15829,11 @@ const KPIExtremesSync_syncPair = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/KPIComponent/KPISyncs/KPISyncs.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -15353,11 +15864,11 @@ const KPISyncs_predefinedSyncConfig = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/KPIComponent/KPIComponentDefaults.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -15415,11 +15926,11 @@ const KPIComponentDefaults = {
 ;// ./code/dashboards/es-modules/Data/Formula/FormulaTypes.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -15552,11 +16063,11 @@ const MathFormula = {
 ;// ./code/dashboards/es-modules/Data/Formula/FormulaProcessor.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -15642,7 +16153,7 @@ function asLogicalString(value) {
  * @return {number}
  * Number value. `NaN` if not convertable.
  */
-function asNumber(value) {
+function FormulaProcessor_asNumber(value) {
     switch (typeof value) {
         case 'boolean':
             return value ? 1 : 0;
@@ -15696,8 +16207,8 @@ function basicOperation(operator, x, y) {
             }
             return asLogicalNumber(x) >= asLogicalNumber(y);
     }
-    x = asNumber(x);
-    y = asNumber(y);
+    x = FormulaProcessor_asNumber(x);
+    y = FormulaProcessor_asNumber(y);
     let result;
     switch (operator) {
         case '+':
@@ -16068,7 +16579,7 @@ function translateReferences(formula, columnDelta = 0, rowDelta = 0) {
  *
  * */
 const FormulaProcessor = {
-    asNumber,
+    asNumber: FormulaProcessor_asNumber,
     getArgumentValue,
     getArgumentsValues,
     getRangeValues,
@@ -16083,11 +16594,11 @@ const FormulaProcessor = {
 ;// ./code/dashboards/es-modules/Data/Formula/Functions/SUM.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -16150,11 +16661,11 @@ Formula_FormulaProcessor.registerProcessorFunction('SUM', SUM); // 🐝
 ;// ./code/dashboards/es-modules/Data/Formula/Functions/AVERAGE.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -16226,11 +16737,11 @@ Formula_FormulaProcessor.registerProcessorFunction('AVERAGE', AVERAGE);
 ;// ./code/dashboards/es-modules/Data/Formula/Functions/MEDIAN.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -16306,11 +16817,11 @@ Formula_FormulaProcessor.registerProcessorFunction('MEDIAN', MEDIAN);
 ;// ./code/dashboards/es-modules/Data/Formula/Functions/MAX.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -16377,11 +16888,11 @@ Formula_FormulaProcessor.registerProcessorFunction('MAX', MAX);
 ;// ./code/dashboards/es-modules/Data/Formula/Functions/MIN.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -16448,11 +16959,11 @@ Formula_FormulaProcessor.registerProcessorFunction('MIN', MIN);
 ;// ./code/dashboards/es-modules/Data/Formula/Functions/COUNT.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -16515,11 +17026,11 @@ Formula_FormulaProcessor.registerProcessorFunction('COUNT', COUNT);
 ;// ./code/dashboards/es-modules/Data/Formula/Functions/PRODUCT.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -16585,11 +17096,12 @@ Formula_FormulaProcessor.registerProcessorFunction('PRODUCT', PRODUCT);
 ;// ./code/dashboards/es-modules/Core/Chart/ChartDefaults.js
 /* *
  *
- *  (c) 2010-2025 Torstein Honsi
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
@@ -17708,13 +18220,9 @@ const ChartDefaults = {
              * @since 10.2.1
              */
             position: {
-                /**
-                 * The horizontal alignment of the button.
-                 */
+                /** @internal */
                 align: 'right',
-                /**
-                 * The horizontal offset of the button.
-                 */
+                /** @internal */
                 x: -10,
                 /**
                  * The vertical alignment of the button.
@@ -17723,9 +18231,7 @@ const ChartDefaults = {
                  * @default    top
                  * @apioption  chart.zooming.resetButton.position.verticalAlign
                  */
-                /**
-                 * The vertical offset of the button.
-                 */
+                /** @internal */
                 y: 10
             }
         }
@@ -17892,7 +18398,7 @@ const ChartDefaults = {
 /**
  * Series palettes for Highcharts. Series colors are defined in highcharts.css.
  * **Do not edit this file!** This file is generated using the 'gulp palette' task.
- * @private
+ * @internal
  */
 const SeriesPalettes = {
     /**
@@ -17911,16 +18417,18 @@ const SeriesPalettes = {
         '#91e8e1'
     ],
 };
+/** @internal */
 /* harmony default export */ const Palettes = (SeriesPalettes);
 
 ;// ./code/dashboards/es-modules/Shared/TimeBase.js
 /* *
  *
- *  (c) 2010-2025 Torstein Honsi
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
@@ -18030,7 +18538,7 @@ class TimeBase {
      * initializing Highcharts, after running `Highcharts.setOptions` and on
      * `Chart.update`.
      *
-     * @private
+     * @internal
      * @function Highcharts.Time#update
      *
      * @param {Highcharts.TimeOptions} [options]
@@ -18510,7 +19018,7 @@ class TimeBase {
     /**
      * Resolve legacy formats of dateTimeLabelFormats (strings and arrays) into
      * an object.
-     * @private
+     * @internal
      * @param {string|Array<T>|Highcharts.Dictionary<T>} f
      * General format description
      * @return {Highcharts.Dictionary<T>}
@@ -18534,7 +19042,7 @@ class TimeBase {
     /**
      * Get the optimal date format for a point, based on a range.
      *
-     * @private
+     * @internal
      * @function Highcharts.Time#getDateFormat
      *
      * @param {number} range
@@ -18726,7 +19234,7 @@ class TimeBase {
 * The number of fractional digits to use. 3 means milliseconds.
 *
 * @name Highcharts.DateTimeFormatOptions#fractionalSecondDigits
-* @type {number|undefined}
+* @type {1|2|3|undefined}
 */ /**
 * The representation of the time zone name.
 *
@@ -18748,11 +19256,12 @@ class TimeBase {
 ;// ./code/dashboards/es-modules/Core/Time.js
 /* *
  *
- *  (c) 2010-2025 Torstein Honsi
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
@@ -18922,11 +19431,12 @@ class Time extends Shared_TimeBase {
 ;// ./code/dashboards/es-modules/Core/Defaults.js
 /* *
  *
- *  (c) 2010-2025 Torstein Honsi
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
@@ -18936,7 +19446,7 @@ const { isTouchDevice } = Core_Globals;
 
 
 
-const { fireEvent: Defaults_fireEvent, merge: Defaults_merge } = Core_Utilities;
+const { fireEvent: Defaults_fireEvent, merge: Core_Defaults_merge } = Core_Utilities;
 /* *
  *
  *  API Options
@@ -18949,7 +19459,7 @@ const { fireEvent: Defaults_fireEvent, merge: Defaults_merge } = Core_Utilities;
  * @type {Highcharts.Options}
  */ /**
 * @optionparent
-* @private
+* @internal
 */
 const Defaults_defaultOptions = {
     /**
@@ -19185,16 +19695,16 @@ const Defaults_defaultOptions = {
          */
         resetZoom: 'Reset zoom',
         /**
-         * The tooltip title for the label appearing when a chart is zoomed.
-         *
-         * @since 1.2.4
-         */
-        /**
          * The default title of the Y axis
          *
          * @since 12.2.0
          */
         yAxisTitle: 'Values',
+        /**
+         * The tooltip title for the label appearing when a chart is zoomed.
+         *
+         * @since 1.2.4
+         */
         resetZoomTitle: 'Reset zoom level 1:1'
     },
     /**
@@ -19406,7 +19916,7 @@ const Defaults_defaultOptions = {
          * `"UTC"`. Setting `useUTC` to false is equivalent to setting
          * `time.timezone` to `undefined`.
          *
-         * @see [time.timezone](#timezone)
+         * @see [timezone](#time.timezone)
          *
          * @sample {highcharts} highcharts/time/useutc-true/
          *         True by default
@@ -19633,27 +20143,6 @@ const Defaults_defaultOptions = {
          * @default   false
          * @since     2.1
          * @apioption subtitle.floating
-         */
-        /**
-         * CSS styles for the title.
-         *
-         * In styled mode, the subtitle style is given in the
-         * `.highcharts-subtitle` class.
-         *
-         * @sample {highcharts} highcharts/subtitle/style/
-         *         Custom color and weight
-         * @sample {highcharts} highcharts/css/titles/
-         *         Styled mode
-         * @sample {highstock} stock/chart/subtitle-style
-         *         Custom color and weight
-         * @sample {highstock} highcharts/css/titles/
-         *         Styled mode
-         * @sample {highmaps} highcharts/css/titles/
-         *         Styled mode
-         *
-         * @type      {Highcharts.CSSObject}
-         * @default   {"color": "#666666"}
-         * @apioption subtitle.style
          */
         /**
          * Whether to
@@ -19946,7 +20435,7 @@ const Defaults_defaultOptions = {
          *
          * @declare Highcharts.LegendEventsOptionsObject
          *
-         * @private
+         * @internal
          */
         events: {},
         /**
@@ -20798,8 +21287,17 @@ const Defaults_defaultOptions = {
          * @apioption tooltip.borderColor
          */
         /**
-         * A CSS class name to apply to the tooltip's container div,
-         * allowing unique CSS styling for each chart.
+         * A CSS class name to apply to the tooltip, allowing unique CSS
+         * styling for each chart.
+         *
+         * **Note:** The class is applied to the SVG element of the tooltip
+         * (the tooltip label group), not to a container div. This allows you
+         * to style the tooltip using CSS applicable to SVG elements.
+         *
+         * When [tooltip.outside](#tooltip.outside) is `true`, a separate
+         * container div with class `highcharts-tooltip-container` is created
+         * as the parent to the SVG tooltip element, but the `className` option
+         * is still applied to the SVG element itself, not to the container.
          *
          * @type      {string}
          * @apioption tooltip.className
@@ -21071,35 +21569,6 @@ const Defaults_defaultOptions = {
          * @since     5.0.0
          * @product   highcharts highstock
          * @apioption tooltip.split
-         */
-        /**
-         * Prevents the tooltip from switching or closing, when touched or
-         * pointed.
-         *
-         * @sample highcharts/tooltip/stickoncontact/
-         *         Tooltip sticks on pointer contact
-         *
-         * @type      {boolean}
-         * @since     8.0.1
-         * @apioption tooltip.stickOnContact
-         */
-        /**
-         * Use HTML to render the contents of the tooltip instead of SVG. Using
-         * HTML allows advanced formatting like tables and images in the
-         * tooltip. It is also recommended for rtl languages as it works around
-         * rtl bugs in early Firefox.
-         *
-         * @sample {highcharts|highstock} highcharts/tooltip/footerformat/
-         *         A table for value alignment
-         * @sample {highcharts|highstock} highcharts/tooltip/fullhtml/
-         *         Full HTML tooltip
-         * @sample {highmaps} maps/tooltip/usehtml/
-         *         Pure HTML tooltip
-         *
-         * @type      {boolean}
-         * @default   false
-         * @since     2.2
-         * @apioption tooltip.useHTML
          */
         /**
          * How many decimals to show in each series' y value. This is
@@ -21423,6 +21892,9 @@ const Defaults_defaultOptions = {
          * contains the category name, x value or datetime string depending on
          * the type of axis. For datetime axes, the `point.key` date format can
          * be set using `tooltip.xDateFormat`.
+         * In v12+, locale-aware date names follow the browser's casing and can
+         * be lower-case, so use the `ucfirst` helper (for example
+         * `{ucfirst point.key}`) if you want a capitalized header.
          *
          * @sample {highcharts} highcharts/tooltip/footerformat/
          *         An HTML table in the tooltip
@@ -21537,13 +22009,14 @@ const Defaults_defaultOptions = {
          * @apioption tooltip.shadow
          */
         /**
-         * Prevents the tooltip from switching or closing when touched or
+         * Prevents the tooltip from switching or closing, when touched or
          * pointed.
          *
          * @sample highcharts/tooltip/stickoncontact/
          *         Tooltip sticks on pointer contact
          *
-         * @since 8.0.1
+         * @type      {boolean}
+         * @since     8.0.1
          */
         stickOnContact: false,
         /**
@@ -21582,7 +22055,7 @@ const Defaults_defaultOptions = {
          * @sample {highmaps} maps/tooltip/usehtml/
          *         Pure HTML tooltip
          *
-         * @since 2.2
+         * @since     2.2
          */
         useHTML: false
     },
@@ -21726,10 +22199,10 @@ function getOptions() {
  * @return {Highcharts.Options}
  * Updated options.
  */
-function setOptions(options) {
+function Defaults_setOptions(options) {
     Defaults_fireEvent(Core_Globals, 'setOptions', { options });
     // Copy in the default options
-    Defaults_merge(true, Defaults_defaultOptions, options);
+    Core_Defaults_merge(true, Defaults_defaultOptions, options);
     // Update the time object
     if (options.time) {
         defaultTime.update(Defaults_defaultOptions.time);
@@ -21756,9 +22229,9 @@ const DefaultOptions = {
     defaultOptions: Defaults_defaultOptions,
     defaultTime,
     getOptions,
-    setOptions
+    setOptions: Defaults_setOptions
 };
-/* harmony default export */ const Defaults = (DefaultOptions);
+/* harmony default export */ const Core_Defaults = (DefaultOptions);
 /* *
  *
  *  API Declarations
@@ -21901,20 +22374,22 @@ const DefaultOptions = {
 ;// ./code/dashboards/es-modules/Core/Templating.js
 /* *
  *
- *  (c) 2010-2025 Torstein Honsi
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  * */
 
 
-const { defaultOptions: Templating_defaultOptions, defaultTime: Templating_defaultTime } = Defaults;
+const { defaultOptions: Templating_defaultOptions, defaultTime: Templating_defaultTime } = Core_Defaults;
 
 const { pageLang: Templating_pageLang } = Core_Globals;
 
 const { extend: Templating_extend, getNestedProperty: Templating_getNestedProperty, isArray: Templating_isArray, isNumber: Templating_isNumber, isObject: Templating_isObject, isString: Templating_isString, pick: Templating_pick, ucfirst: Templating_ucfirst } = Core_Utilities;
+/** @internal */
 const helpers = {
     // Built-in helpers
     add: (a, b) => a + b,
@@ -21949,7 +22424,10 @@ const numberFormatCache = {};
  *  Functions
  *
  * */
-// Internal convenience function
+/**
+ * Internal convenience function.
+ * @internal
+ */
 const isQuotedString = (str) => /^["'].+["']$/.test(str);
 /**
  * Formats a JavaScript date timestamp (milliseconds since Jan 1st 1970) into a
@@ -22028,12 +22506,13 @@ function dateFormat(format, timestamp, upperCaseFirst) {
  *         The formatted string.
  */
 function format(str = '', ctx, owner) {
-    // Notice: using u flag will require a refactor for ES5 (#22450).
-    const regex = /\{([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'’= #\(\)]+)\}/g, // eslint-disable-line max-len
+    // eslint-disable-next-line prefer-regex-literals
+    const regex = new RegExp('\\{([\\p{L}\\d:\\.,;\\-\\/<>\\[\\]%_@+"\'’= #\\(\\)]+)\\}', 'gu'), 
     // The sub expression regex is the same as the top expression regex,
     // but except parens and block helpers (#), and surrounded by parens
     // instead of curly brackets.
-    subRegex = /\(([a-zA-Z\u00C0-\u017F\d:\.,;\-\/<>\[\]%_@+"'= ]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || Templating_defaultOptions.lang, time = owner?.time || Templating_defaultTime, numberFormatter = owner?.numberFormatter || numberFormat.bind(owner);
+    // eslint-disable-next-line prefer-regex-literals
+    subRegex = new RegExp('\\(([\\p{L}\\d:\\.,;\\-\\/<>\\[\\]%_@+"\'= ]+)\\)', 'gu'), matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || Templating_defaultOptions.lang, time = owner?.time || Templating_defaultTime, numberFormatter = owner?.numberFormatter || numberFormat.bind(owner);
     /*
      * Get a literal or variable value inside a template expression. May be
      * extended with other types like string or null if needed, but keep it
@@ -22168,11 +22647,9 @@ function format(str = '', ctx, owner) {
                 [expression] : expression.split(':');
             replacement = resolveProperty(valueAndFormat.shift() || '');
             // Format the replacement
-            const isFloat = replacement % 1 !== 0;
-            if (typeof replacement === 'number' &&
-                (valueAndFormat.length || isFloat)) {
+            if (valueAndFormat.length && typeof replacement === 'number') {
                 const segment = valueAndFormat.join(':');
-                if (floatRegex.test(segment) || isFloat) { // Float
+                if (floatRegex.test(segment)) { // Float
                     const decimals = parseInt((segment.match(decRegex) || ['', '-1'])[1], 10);
                     if (replacement !== null) {
                         replacement = numberFormatter(replacement, decimals, lang.decimalPoint, segment.indexOf(',') > -1 ? lang.thousandsSep : '');
@@ -22331,11 +22808,11 @@ const Templating = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/KPIComponent/KPIComponent.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -22481,8 +22958,7 @@ class KPIComponent extends Components_Component {
      */
     getFormulaValue() {
         const formula = this.options.formula;
-        const connector = this.getFirstConnector();
-        const table = connector?.getTable().getModified();
+        const table = this.getDataTable();
         const column = table?.getColumn(this.options.columnId);
         if (!column || !formula) {
             return;
@@ -22518,13 +22994,13 @@ class KPIComponent extends Components_Component {
         if (KPIComponent_defined(this.options.value)) {
             return this.options.value;
         }
-        const connector = this.getFirstConnector();
-        if (connector && this.options.columnId) {
+        const dataTable = this.getDataTable()?.getModified();
+        if (dataTable && this.options.columnId) {
             if (KPIComponent_defined(this.options.formula)) {
                 return this.getFormulaValue();
             }
-            const table = connector.getTable().getModified(), column = table.getColumn(this.options.columnId), length = column?.length || 0;
-            return String(table.getCell(this.options.columnId, length - 1));
+            const column = dataTable.getColumn(this.options.columnId), length = column?.length || 0;
+            return String(dataTable.getCell(this.options.columnId, length - 1));
         }
     }
     /**
@@ -22833,11 +23309,11 @@ KPIComponent.formulaFunctions = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/NavigatorComponent/NavigatorComponentDefaults.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -22940,11 +23416,11 @@ const NavigatorComponentDefaults = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncUtils.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -22955,136 +23431,130 @@ const NavigatorComponentDefaults = {
 const { defined: NavigatorSyncUtils_defined } = Core_Utilities;
 /* *
 *
-*  Namespace
+*  Utility Functions
 *
 * */
-var NavigatorSyncUtils;
-(function (NavigatorSyncUtils) {
-    /* *
-    *
-    *  Utility Functions
-    *
-    * */
-    /**
-     * Adds or updates range options for a specific column.
-     * @param filterOptions Filter modifier options object reference.
-     * @param column Column name.
-     * @param minValue Minimum value.
-     * @param maxValue Maximum value.
-     * @internal
-     */
-    function setRangeOptions(filterOptions, column, minValue, maxValue) {
-        let changedMin = false;
-        let changedMax = false;
-        if (typeof filterOptions.condition !== 'object' ||
-            filterOptions.condition.operator !== 'and') {
-            filterOptions.condition = {
-                operator: 'and',
-                conditions: []
-            };
-        }
-        const { conditions } = filterOptions.condition;
-        for (let i = 0, iEnd = conditions.length; i < iEnd; ++i) {
-            const condition = conditions[i];
-            if (!condition ||
-                typeof condition !== 'object' ||
-                !(condition.operator === '<=' || condition.operator === '>=') ||
-                condition.columnId !== column) {
-                continue;
-            }
-            if (condition.operator === '<=') {
-                condition.value = maxValue;
-                changedMax = true;
-            }
-            else {
-                condition.value = minValue;
-                changedMin = true;
-            }
-            if (changedMin && changedMax) {
-                return;
-            }
-        }
-        if (!changedMax) {
-            conditions.push({
-                operator: '<=',
-                columnId: column,
-                value: maxValue
-            });
-        }
-        if (!changedMin) {
-            conditions.push({
-                operator: '>=',
-                columnId: column,
-                value: minValue
-            });
-        }
+/**
+ * Adds or updates range options for a specific column.
+ * @param filterOptions Filter modifier options object reference.
+ * @param column Column name.
+ * @param minValue Minimum value.
+ * @param maxValue Maximum value.
+ * @internal
+ */
+function setRangeOptions(filterOptions, column, minValue, maxValue) {
+    let changedMin = false;
+    let changedMax = false;
+    if (typeof filterOptions.condition !== 'object' ||
+        filterOptions.condition.operator !== 'and') {
+        filterOptions.condition = {
+            operator: 'and',
+            conditions: []
+        };
     }
-    NavigatorSyncUtils.setRangeOptions = setRangeOptions;
-    /**
-     * Removes range options for a specific column.
-     * @param filterOptions Filter modifier options object reference.
-     * @param column Column name.
-     * @internal
-     */
-    function unsetRangeOptions(filterOptions, column) {
-        if (typeof filterOptions.condition !== 'object' ||
-            filterOptions.condition.operator !== 'and') {
+    const { conditions } = filterOptions.condition;
+    for (let i = 0, iEnd = conditions.length; i < iEnd; ++i) {
+        const condition = conditions[i];
+        if (!condition ||
+            typeof condition !== 'object' ||
+            !(condition.operator === '<=' || condition.operator === '>=') ||
+            condition.columnId !== column) {
+            continue;
+        }
+        if (condition.operator === '<=') {
+            condition.value = maxValue;
+            changedMax = true;
+        }
+        else {
+            condition.value = minValue;
+            changedMin = true;
+        }
+        if (changedMin && changedMax) {
             return;
         }
-        const { conditions } = filterOptions.condition;
-        for (let i = 0, iEnd = conditions.length; i < iEnd; ++i) {
-            const condition = conditions[i];
-            if (!condition ||
-                typeof condition !== 'object' ||
-                !(condition.operator === '<=' || condition.operator === '>=') ||
-                condition.columnId !== column) {
-                continue;
-            }
-            conditions.splice(i, 1)[0];
+    }
+    if (!changedMax) {
+        conditions.push({
+            operator: '<=',
+            columnId: column,
+            value: maxValue
+        });
+    }
+    if (!changedMin) {
+        conditions.push({
+            operator: '>=',
+            columnId: column,
+            value: minValue
+        });
+    }
+}
+/**
+ * Removes range options for a specific column.
+ * @param filterOptions Filter modifier options object reference.
+ * @param column Column name.
+ * @internal
+ */
+function unsetRangeOptions(filterOptions, column) {
+    if (typeof filterOptions.condition !== 'object' ||
+        filterOptions.condition.operator !== 'and') {
+        return;
+    }
+    const { conditions } = filterOptions.condition;
+    for (let i = 0, iEnd = conditions.length; i < iEnd; ++i) {
+        const condition = conditions[i];
+        if (!condition ||
+            typeof condition !== 'object' ||
+            !(condition.operator === '<=' || condition.operator === '>=') ||
+            condition.columnId !== column) {
+            continue;
+        }
+        conditions.splice(i, 1)[0];
+    }
+}
+/**
+ * Converts filter options to ranges array.
+ *
+ * @param filterOptions
+ * Filter modifier options object reference.
+ */
+function NavigatorSyncUtils_toRange(filterOptions) {
+    const rangesMap = {};
+    if (typeof filterOptions.condition !== 'object' ||
+        filterOptions.condition.operator !== 'and') {
+        return [];
+    }
+    const { conditions } = filterOptions.condition;
+    for (let i = 0, iEnd = conditions.length; i < iEnd; ++i) {
+        const condition = conditions[i];
+        if (!condition ||
+            typeof condition !== 'object' ||
+            !(condition.operator === '<=' || condition.operator === '>=') ||
+            typeof condition.columnId !== 'string' ||
+            !NavigatorSyncUtils_defined(condition.value)) {
+            continue;
+        }
+        const colName = condition.columnId;
+        if (!rangesMap[colName]) {
+            rangesMap[colName] = {
+                maxValue: Infinity,
+                minValue: -Infinity,
+                columnId: colName
+            };
+        }
+        if (condition.operator === '<=') {
+            rangesMap[colName].maxValue = condition.value;
+        }
+        else {
+            rangesMap[colName].minValue = condition.value;
         }
     }
-    NavigatorSyncUtils.unsetRangeOptions = unsetRangeOptions;
-    /**
-     * Converts filter options to ranges array.
-     *
-     * @param filterOptions
-     * Filter modifier options object reference.
-     */
-    function toRange(filterOptions) {
-        const rangesMap = {};
-        if (typeof filterOptions.condition !== 'object' ||
-            filterOptions.condition.operator !== 'and') {
-            return [];
-        }
-        const { conditions } = filterOptions.condition;
-        for (let i = 0, iEnd = conditions.length; i < iEnd; ++i) {
-            const condition = conditions[i];
-            if (!condition ||
-                typeof condition !== 'object' ||
-                !(condition.operator === '<=' || condition.operator === '>=') ||
-                typeof condition.columnId !== 'string' ||
-                !NavigatorSyncUtils_defined(condition.value)) {
-                continue;
-            }
-            const colName = condition.columnId;
-            if (!rangesMap[colName]) {
-                rangesMap[colName] = {
-                    maxValue: Infinity,
-                    minValue: -Infinity,
-                    columnId: colName
-                };
-            }
-            if (condition.operator === '<=') {
-                rangesMap[colName].maxValue = condition.value;
-            }
-            else {
-                rangesMap[colName].minValue = condition.value;
-            }
-        }
-        return Object.values(rangesMap);
-    }
-    NavigatorSyncUtils.toRange = toRange;
-})(NavigatorSyncUtils || (NavigatorSyncUtils = {}));
+    return Object.values(rangesMap);
+}
+const NavigatorSyncUtils = {
+    setRangeOptions,
+    unsetRangeOptions,
+    toRange: NavigatorSyncUtils_toRange
+};
 /* *
  *
  *  Default Export
@@ -23095,11 +23565,11 @@ var NavigatorSyncUtils;
 ;// ./code/dashboards/es-modules/Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorCrossfilterSync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -23183,11 +23653,11 @@ const NavigatorCrossfilterSync_syncPair = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorExtremesSync.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -23308,11 +23778,11 @@ const NavigatorExtremesSync_syncPair = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/NavigatorComponent/NavigatorSyncs/NavigatorSyncs.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -23346,11 +23816,11 @@ const NavigatorSyncs_predefinedSyncConfig = {
 ;// ./code/dashboards/es-modules/Dashboards/Components/NavigatorComponent/NavigatorComponent.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -23447,9 +23917,9 @@ class NavigatorComponent extends Components_Component {
                 return [column, columnsAssignment];
             }
         }
-        const connector = this.getFirstConnector();
-        if (connector) {
-            const columns = connector.getTable().getColumnIds();
+        const table = this.getDataTable();
+        if (table) {
+            const columns = table.getColumnIds();
             if (columns.length) {
                 return [columns[0], 'y'];
             }
@@ -23521,9 +23991,9 @@ class NavigatorComponent extends Components_Component {
     /** @private */
     renderNavigator() {
         const chart = this.chart;
-        const connector = this.getFirstConnector();
-        if (connector) {
-            const table = connector.getTable(), column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
+        const table = this.getDataTable();
+        if (table) {
+            const column = this.getColumnAssignment(), columnValues = table.getColumn(column[0], true) || [];
             let data;
             if (this.sync.syncConfig.crossfilter?.enabled) {
                 data = this.generateCrossfilterData();
@@ -23545,7 +24015,7 @@ class NavigatorComponent extends Components_Component {
      */
     generateCrossfilterData() {
         const crossfilterOptions = this.sync.syncConfig.crossfilter;
-        const table = this.getFirstConnector()?.getTable();
+        const table = this.getDataTable();
         const columnValues = table?.getColumn(this.getColumnAssignment()[0], true) || [];
         if (!table || columnValues.length < 1 || !crossfilterOptions) {
             return [];
@@ -23673,11 +24143,11 @@ NavigatorComponent.predefinedSyncConfig = NavigatorSyncs;
 ;// ./code/dashboards/es-modules/Dashboards/Plugins/HighchartsPlugin.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -23743,11 +24213,11 @@ const HighchartsPlugin = {
 ;// ./code/dashboards/es-modules/Dashboards/PluginHandler.js
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sophie Bremer
@@ -23759,89 +24229,80 @@ const HighchartsPlugin = {
 
 /* *
  *
- *  Namespace
+ *  Constants
  *
  * */
-var PluginHandler;
-(function (PluginHandler) {
-    /* *
-     *
-     *  Declarations
-     *
-     * */
-    /* *
-     *
-     *  Constants
-     *
-     * */
-    /** @internal */
-    PluginHandler.registry = {};
-    /**
-     * Revision of the Dashboard plugin API.
-     *
-     * @internal
-     */
-    PluginHandler.revision = 0;
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Adds a dashboard plugin.
-     *
-     * @param {Dashboards.Plugin} plugin
-     * Dashboard plugin to register.
-     *
-     * @param {string} [key]
-     * Plugin key for the registry. (Default: `plugin.name`)
-     */
-    function addPlugin(plugin, key = plugin.name) {
-        const { maxRevision, minRevision, onRegister } = plugin;
-        if (PluginHandler.registry[key]) {
-            // Only throw error with custom key
-            if (key !== plugin.name) {
-                throw new Error(`Plugin '${key}' already registered.`);
-            }
-            return;
+/** @internal */
+const registry = {};
+/**
+ * Revision of the Dashboard plugin API.
+ *
+ * @internal
+ */
+const revision = 0;
+/* *
+ *
+ *  Functions
+ *
+ * */
+/**
+ * Adds a dashboard plugin.
+ *
+ * @param {Dashboards.Plugin} plugin
+ * Dashboard plugin to register.
+ *
+ * @param {string} [key]
+ * Plugin key for the registry. (Default: `plugin.name`)
+ */
+function addPlugin(plugin, key = plugin.name) {
+    const { maxRevision, minRevision, onRegister } = plugin;
+    if (registry[key]) {
+        // Only throw error with custom key
+        if (key !== plugin.name) {
+            throw new Error(`Plugin '${key}' already registered.`);
         }
-        if ((typeof minRevision === 'number' && minRevision > PluginHandler.revision) ||
-            (typeof maxRevision === 'number' && maxRevision < PluginHandler.revision)) {
-            throw new Error(`Plugin '${key}' does not support revision ${PluginHandler.revision}.`);
-        }
-        onRegister({
-            Board: Dashboards_Board,
+        return;
+    }
+    if ((typeof minRevision === 'number' && minRevision > revision) ||
+        (typeof maxRevision === 'number' && maxRevision < revision)) {
+        throw new Error(`Plugin '${key}' does not support revision ${revision}.`);
+    }
+    onRegister({
+        Board: Dashboards_Board,
+        ComponentRegistry: Components_ComponentRegistry,
+        Sync: Sync_Sync,
+        revision
+    });
+    registry[key] = plugin;
+}
+/**
+ * Removes a dashboard plugin.
+ *
+ * @param {string} key
+ * Plugin key in the registry.
+ */
+function removePlugin(key) {
+    if (registry[key]) {
+        registry[key].onUnregister({
             ComponentRegistry: Components_ComponentRegistry,
+            Board: Dashboards_Board,
             Sync: Sync_Sync,
-            revision: PluginHandler.revision
+            revision
         });
-        PluginHandler.registry[key] = plugin;
+        delete registry[key];
     }
-    PluginHandler.addPlugin = addPlugin;
-    /**
-     * Removes a dashboard plugin.
-     *
-     * @param {string} key
-     * Plugin key in the registry.
-     */
-    function removePlugin(key) {
-        if (PluginHandler.registry[key]) {
-            PluginHandler.registry[key].onUnregister({
-                ComponentRegistry: Components_ComponentRegistry,
-                Board: Dashboards_Board,
-                Sync: Sync_Sync,
-                revision: PluginHandler.revision
-            });
-            delete PluginHandler.registry[key];
-        }
-    }
-    PluginHandler.removePlugin = removePlugin;
-})(PluginHandler || (PluginHandler = {}));
+}
 /* *
  *
  *  Default Export
  *
  * */
+const PluginHandler = {
+    addPlugin,
+    removePlugin,
+    registry,
+    revision
+};
 /* harmony default export */ const Dashboards_PluginHandler = (PluginHandler);
 
 ;// ./code/dashboards/es-modules/masters/dashboards.src.js
@@ -23883,6 +24344,7 @@ var PluginHandler;
 
 
 
+
 /* *
  *
  *  Namespace
@@ -23894,6 +24356,7 @@ G.addEvent = Dashboards_Utilities.addEvent;
 G.error = Dashboards_Utilities.error;
 G.merge = Dashboards_Utilities.merge;
 G.removeEvent = Dashboards_Utilities.removeEvent;
+G.setOptions = Dashboards_Defaults.setOptions;
 G.uniqueKey = Dashboards_Utilities.uniqueKey;
 G.AST = HTML_AST;
 G.Board = Dashboards_Board;
@@ -23905,6 +24368,7 @@ G.DataCursor = Data_DataCursor;
 G.DataModifier = Modifiers_DataModifier;
 G.DataPool = Data_DataPool;
 G.DataTable = Data_DataTable;
+G.defaultOptions = Dashboards_Defaults.defaultOptions;
 G.GridPlugin = Plugins_GridPlugin;
 G.HighchartsPlugin = Plugins_HighchartsPlugin;
 G.PluginHandler = Dashboards_PluginHandler;

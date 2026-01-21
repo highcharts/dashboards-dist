@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -48,14 +48,14 @@ const syncPair = {
             if (!cursor) {
                 return;
             }
-            const table = this.getFirstConnector()?.getTable();
+            const table = this.getDataTable();
             if (!table) {
                 return;
             }
             cursor.addListener(table.id, 'xAxis.extremes.max' + groupKey, handleChangeExtremes);
         };
         const unregisterCursorListeners = () => {
-            const table = this.getFirstConnector()?.getTable();
+            const table = this.getDataTable();
             const { dataCursor: cursor } = board;
             if (!table) {
                 return;

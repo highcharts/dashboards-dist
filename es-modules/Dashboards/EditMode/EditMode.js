@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -13,8 +13,8 @@
  *  - Sophie Bremer
  *
  * */
-import Cell from '../Layout/Cell.js';
-import CellHTML from '../Layout/CellHTML.js';
+import { isCell } from '../Layout/Cell.js';
+import { isCellHTML } from '../Layout/CellHTML.js';
 import EditGlobals from './EditGlobals.js';
 import EditRenderer from './EditRenderer.js';
 import CellEditToolbar from './Toolbar/CellEditToolbar.js';
@@ -67,7 +67,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/3.6.0/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.1.0/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(
@@ -82,6 +82,9 @@ class EditMode {
                 icon: this.iconsURLPrefix + 'menu.svg'
             },
             dragDrop: {
+                enabled: true
+            },
+            viewFullscreen: {
                 enabled: true
             },
             enabled: true,
@@ -130,7 +133,7 @@ class EditMode {
                 className: EditGlobals.classNames.editOverlay
             }, {}, board.container);
             this.isEditOverlayActive = false;
-            board.fullscreen = new Dashboards.Fullscreen(board);
+            board.fullscreen = new Globals.win.Dashboards.Fullscreen(board);
             if (this.customHTMLMode) {
                 board.container.classList.add(Globals.classNames.boardContainer);
             }
@@ -328,7 +331,7 @@ class EditMode {
      */
     setCellEvents(cell) {
         const editMode = this;
-        if (CellHTML.isCellHTML(cell)) {
+        if (isCellHTML(cell)) {
             addEvent(cell.container, 'mouseenter', function () {
                 if (editMode.isContextDetectionActive) {
                     editMode.mouseCellContext = cell;
@@ -399,7 +402,7 @@ class EditMode {
         // Hide toolbars.
         editMode.hideToolbars();
         // Remove highlight from the context row if exists.
-        if (this.editCellContext && Cell.isCell(this.editCellContext)) {
+        if (this.editCellContext && isCell(this.editCellContext)) {
             this.editCellContext.row?.setHighlight();
         }
         // TODO all buttons should be deactivated.
@@ -629,8 +632,8 @@ class EditMode {
     setEditCellContext(editCellContext, oldEditCellContext) {
         const editMode = this;
         const oldContext = oldEditCellContext;
-        if (CellHTML.isCellHTML(editCellContext) ||
-            CellHTML.isCellHTML(oldContext)) {
+        if (isCellHTML(editCellContext) ||
+            isCellHTML(oldContext)) {
             editMode.editCellContext = editCellContext;
             editMode.cellToolbar?.showToolbar(editCellContext);
         }

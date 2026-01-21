@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -39,7 +39,7 @@ class Cell extends GUIElement {
      * @param {Row} row
      * Reference to the row instance.
      *
-     * @param {Cell.Options} options
+     * @param {Options} options
      * Options for the cell.
      *
      * @param {HTMLElement} cellElement
@@ -122,7 +122,14 @@ class Cell extends GUIElement {
      *
      */
     getOptions() {
-        return this.options;
+        const cell = this;
+        if (cell.options.layout && cell.nestedLayout) {
+            return {
+                ...cell.options,
+                layout: cell.nestedLayout.getOptions()
+            };
+        }
+        return cell.options;
     }
     changeVisibility(setVisible = true) {
         super.changeVisibility(setVisible);
@@ -267,20 +274,12 @@ class Cell extends GUIElement {
         return GUIElement.getPercentageWidth(width) || '';
     }
 }
-/* *
- *
- *  Namespace
- *
- * */
-(function (Cell) {
-    /**
-     * Checks if a valid cell instance.
-     */
-    function isCell(cell) {
-        return (!!cell && 'row' in cell && cell.type === 'cell');
-    }
-    Cell.isCell = isCell;
-})(Cell || (Cell = {}));
+/**
+ * Checks if a valid cell instance.
+ */
+export function isCell(cell) {
+    return (!!cell && 'row' in cell && cell.type === 'cell');
+}
 /* *
  *
  *  Default Export

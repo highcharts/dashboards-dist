@@ -1,6 +1,6 @@
 import type MenuItem from './Menu/MenuItem.js';
 import type CSSObject from '../../Core/Renderer/CSSObject';
-import EditGlobals from './EditGlobals.js';
+import type { LangOptions } from './EditGlobals';
 /**
  * Function to create select element.
  *
@@ -186,7 +186,7 @@ export interface ToggleFormFieldOptions {
     onchange?: (value: boolean) => void;
     id: string;
     name: string;
-    lang: EditGlobals.LangOptions;
+    lang: LangOptions;
     langKey?: string;
     isNested?: boolean;
 }
@@ -198,6 +198,6 @@ export interface NestedHeaderFormFieldOptions {
     isEnabled?: boolean;
     isNested?: boolean;
     iconsURLPrefix?: string;
-    lang: EditGlobals.LangOptions;
+    lang: LangOptions;
 }
 export type RendererElement = ('select' | 'toggle' | 'text' | 'collapse' | 'icon' | 'contextButton' | 'input' | 'textarea' | 'checkbox' | 'button');

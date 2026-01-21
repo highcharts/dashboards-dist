@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Dawid Dragula
@@ -26,11 +26,10 @@ const syncPair = {
         const syncOptions = this.sync.syncConfig.visibility;
         const groupKey = syncOptions.group ? ':' + syncOptions.group : '';
         const { chart, board } = component;
-        const connector = this.getFirstConnector();
         if (!board || !chart) {
             return;
         }
-        const table = connector?.getTable();
+        const table = this.getDataTable();
         if (table) { // Has a connector
             const { dataCursor: cursor } = board;
             const { series } = chart;
@@ -115,7 +114,7 @@ const syncPair = {
             if (!dataCursor) {
                 return;
             }
-            const table = component.connectorHandlers?.[0]?.connector?.getTable();
+            const table = component.getDataTable();
             if (!table) {
                 return;
             }
@@ -123,7 +122,7 @@ const syncPair = {
             dataCursor.addListener(table.id, 'series.hide' + groupKey, handleHide);
         };
         const unregisterCursorListeners = () => {
-            const table = component.connectorHandlers?.[0]?.connector?.getTable();
+            const table = component.getDataTable();
             if (table) {
                 board.dataCursor.removeListener(table.id, 'series.show' + groupKey, handleShow);
                 board.dataCursor.removeListener(table.id, 'series.hide' + groupKey, handleHide);

@@ -1,7 +1,7 @@
-import type DataEvent from '../DataEvent';
+import type { DataEventDetail } from '../DataEvent';
 import type GoogleSheetsConverterOptions from './GoogleSheetsConverterOptions';
 import DataConverter from './DataConverter.js';
-import DataTable from '../DataTable.js';
+import type { ColumnCollection as DataTableColumnCollection } from '../DataTable.js';
 /**
  * Handles parsing and transformation of an Google Sheets to a table.
  *
@@ -30,13 +30,13 @@ declare class GoogleSheetsConverter extends DataConverter {
      * @param {Partial<GoogleSheetsConverterOptions>}[options]
      * Options for the parser
      *
-     * @param {DataEvent.Detail} [eventDetail]
+     * @param {DataEventDetail} [eventDetail]
      * Custom information for pending events.
      *
      * @emits GoogleSheetsParser#parse
      * @emits GoogleSheetsParser#afterParse
      */
-    parse(options: Partial<GoogleSheetsConverterOptions>, eventDetail?: DataEvent.Detail): DataTable.ColumnCollection;
+    parse(options: Partial<GoogleSheetsConverterOptions>, eventDetail?: DataEventDetail): DataTableColumnCollection;
 }
 declare module './DataConverterType' {
     interface DataConverterTypes {

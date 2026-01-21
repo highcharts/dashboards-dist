@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Sebastian Bochan
@@ -33,7 +33,7 @@ class Layout extends GUIElement {
      * @param {Dashboard} board
      * Reference to the dashboard instance.
      *
-     * @param {Layout.Options} options
+     * @param {Options} options
      * Options for the layout.
      */
     constructor(board, options, parentCell) {
@@ -97,7 +97,7 @@ class Layout extends GUIElement {
     /**
      * Add a new Row instance to the layout rows array.
      *
-     * @param {Row.Options} options
+     * @param {RowOptions} options
      * Options of a row.
      *
      * @param {HTMLElement} rowElement

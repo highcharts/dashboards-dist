@@ -1,3 +1,4 @@
+import type { ConnectorTypes as ComponentConnectorTypes } from './Component';
 import Component from './Component';
 import DataTable from '../../Data/DataTable.js';
 declare module '../../Data/Connectors/DataConnector' {
@@ -12,19 +13,24 @@ declare class ConnectorHandler {
     /**
      * Connector options for the component.
      */
-    options: ConnectorHandler.ConnectorOptions;
+    options: ConnectorOptions;
     /**
-     * Connector that allows you to load data via URL or from a local source.
+     * Data connector instance that is used in this connector handler.
      */
-    connector?: Component.ConnectorTypes;
+    connector?: ComponentConnectorTypes;
     /**
-     * The id of the connector configuration in the data pool of the dashboard.
+     * The ID of the data connector configuration in the data pool of the
+     * dashboard.
      */
     connectorId?: string;
     /**
      * The component that the connector is tied to.
      */
     component: Component;
+    /**
+     * The data table bound to the connector handler.
+     */
+    dataTable?: DataTable;
     /**
      * Helper flag for detecting whether the connector handler has been
      * destroyed, used to check and prevent further operations if the connector
@@ -41,7 +47,7 @@ declare class ConnectorHandler {
      * The options for the connector.
      *
      */
-    constructor(component: Component, options: ConnectorHandler.ConnectorOptions);
+    constructor(component: Component, options: ConnectorOptions);
     /**
      * Inits connectors for the component and rerenders it.
      *
@@ -55,14 +61,14 @@ declare class ConnectorHandler {
      * @param table
      * The data table instance for settings and events.
      */
-    setTable(table: DataTable): void;
+    private setTable;
     /**
      * Sets the connector for the component connector handler.
      *
      * @param connector
      * The connector to set.
      */
-    setConnector(connector?: Component.ConnectorTypes): Component;
+    setConnector(connector?: ComponentConnectorTypes): Component;
     /**
      * Adds the component to the provided connector.
      * Starts the connector polling if inactive and one component is provided.
@@ -83,23 +89,21 @@ declare class ConnectorHandler {
      * @param newOptions
      * The new options to update.
      */
-    updateOptions(newOptions: ConnectorHandler.ConnectorOptions): void;
+    updateOptions(newOptions: ConnectorOptions): void;
 }
-declare namespace ConnectorHandler {
+/**
+ * Contains information to connect the component to a connector in the data
+ * pool of the dashboard.
+ */
+export interface ConnectorOptions {
     /**
-     * Contains information to connect the component to a connector in the data
-     * pool of the dashboard.
+     * The id of the connector configuration in the data pool of the
+     * dashboard.
      */
-    interface ConnectorOptions {
-        /**
-         * The id of the connector configuration in the data pool of the
-         * dashboard.
-         */
-        id: string;
-        /**
-         * Reference to the specific connector data table.
-         */
-        dataTableKey?: string;
-    }
+    id: string;
+    /**
+     * Reference to the specific connector data table.
+     */
+    dataTableKey?: string;
 }
 export default ConnectorHandler;

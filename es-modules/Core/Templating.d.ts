@@ -113,12 +113,28 @@ declare namespace Templating {
         (this: T): string;
     }
     interface OwnerOptions {
+        /**
+         * Language options. See {@link Highcharts.LangOptions} for details.
+         */
         lang?: LangOptionsCore;
     }
     interface Owner {
+        /**
+         * The chart options. See {@link Highcharts.Options} for details.
+         */
         options?: OwnerOptions;
+        /**
+         * The time object. See {@link Highcharts.Time} for details.
+         */
         time?: TimeBase;
+        /**
+         * A function to format numbers. See {@link Highcharts.numberFormat} for
+         * details.
+         */
         numberFormatter?: Function;
+        /**
+         * The locale to use for number formatting.
+         */
         locale?: string | string[];
     }
 }

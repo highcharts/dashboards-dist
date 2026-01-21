@@ -1,10 +1,10 @@
 /* *
  *
- *  (c) 2009-2025 Highsoft AS
+ *  (c) 2009-2026 Highsoft AS
  *
- *  License: www.highcharts.com/license
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
  *
- *  !!!!!!! SOURCE GETS TRANSPILED BY TYPESCRIPT. EDIT TS FILE ONLY. !!!!!!!
  *
  *  Authors:
  *  - Gøran Slettemark
@@ -44,7 +44,7 @@ class SharedComponentState {
      * Emits an event on this table to all registered callbacks of the given
      * event.
      *
-     * @param {DataPresentationState.Event} e
+     * @param {Event} e
      * Event object with event information.
      */
     emit(e) {
@@ -66,7 +66,7 @@ class SharedComponentState {
      * Returns a function for `Array.sort` to change the order of an array of
      * column names. Unknown column names come last.
      *
-     * @return {DataPresentationState.ColumnOrderCallback}
+     * @return {ColumnOrderCallback}
      * Sort function to change the order.
      */
     getColumnSorter() {
@@ -101,7 +101,7 @@ class SharedComponentState {
      * @param {string} type
      * Event type as a string.
      *
-     * @param {DataEventEmitter.Callback} callback
+     * @param {Function} callback
      * Function to register for an event callback.
      *
      * @return {Function}
@@ -116,7 +116,7 @@ class SharedComponentState {
      * @param {Array<string>} columnOrder
      * Array of column names in order.
      *
-     * @param {DataEventEmitter.Detail} [eventDetail]
+     * @param {AnyRecord} [eventDetail]
      * Custom information for pending events.
      */
     setColumnOrder(columnOrder, eventDetail) {
@@ -197,10 +197,10 @@ class SharedComponentState {
      * Converts JSON to a presentation state.
      * @internal
      *
-     * @param {DataPresentationState.ClassJSON} json
+     * @param {JSON} json
      * JSON (usually with a $class property) to convert.
      *
-     * @return {DataPresentationState}
+     * @return {SharedComponentState}
      * Class instance from the JSON.
      */
     fromJSON(json) {
@@ -224,7 +224,7 @@ class SharedComponentState {
      * Converts the presentation state to JSON.
      * @internal
      *
-     * @return {SharedComponentState.JSON}
+     * @return {JSON}
      * JSON of this class instance.
      */
     toJSON() {

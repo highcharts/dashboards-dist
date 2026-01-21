@@ -29,7 +29,7 @@ class Resizer {
      * @param {EditMode} editMode
      * The parent editMode reference.
      *
-     * @param {Resizer.Options} options
+     * @param {Options} options
      * Options for the Resizer.
      */
     constructor(editMode, options) {
@@ -294,7 +294,7 @@ class Resizer {
      * Converts the class instance to a class JSON.
      * @internal
      *
-     * @return {Resizer.JSON}
+     * @return {JSON}
      * Class JSON of this Resizer instance.
      */
     toJSON() {

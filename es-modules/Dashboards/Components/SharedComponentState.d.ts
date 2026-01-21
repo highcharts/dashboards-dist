@@ -1,10 +1,11 @@
 import type { AnyRecord } from '../../Shared/Types';
 import Serializable from '../Serializable.js';
+import type { JSON as SerializableJSON } from '../Serializable';
 /**
  * Contains presentation information like column order, usually in relation to a
  * table instance.
  */
-declare class SharedComponentState implements Serializable<SharedComponentState, SharedComponentState.JSON> {
+declare class SharedComponentState implements Serializable<SharedComponentState, JSON> {
     /**
      * Sorted array of column names.
      */
@@ -22,10 +23,10 @@ declare class SharedComponentState implements Serializable<SharedComponentState,
      * Emits an event on this table to all registered callbacks of the given
      * event.
      *
-     * @param {DataPresentationState.Event} e
+     * @param {Event} e
      * Event object with event information.
      */
-    emit(e: SharedComponentState.Event): void;
+    emit(e: Event): void;
     /**
      * Returns an ordered array of column names.
      *
@@ -38,10 +39,10 @@ declare class SharedComponentState implements Serializable<SharedComponentState,
      * Returns a function for `Array.sort` to change the order of an array of
      * column names. Unknown column names come last.
      *
-     * @return {DataPresentationState.ColumnOrderCallback}
+     * @return {ColumnOrderCallback}
      * Sort function to change the order.
      */
-    getColumnSorter(): SharedComponentState.ColumnOrderCallback;
+    getColumnSorter(): ColumnOrderCallback;
     /**
      * @return {boolean}
      * Returns true, if the state was changed since initialization.
@@ -53,111 +54,109 @@ declare class SharedComponentState implements Serializable<SharedComponentState,
      * @param {string} type
      * Event type as a string.
      *
-     * @param {DataEventEmitter.Callback} callback
+     * @param {Function} callback
      * Function to register for an event callback.
      *
      * @return {Function}
      * Function to unregister callback from the event.
      */
-    on(type: SharedComponentState.Event['type'], callback: (this: this, e: SharedComponentState.Event) => void): Function;
+    on(type: Event['type'], callback: (this: this, e: Event) => void): Function;
     /**
      * Sets the order of the columns in place.
      *
      * @param {Array<string>} columnOrder
      * Array of column names in order.
      *
-     * @param {DataEventEmitter.Detail} [eventDetail]
+     * @param {AnyRecord} [eventDetail]
      * Custom information for pending events.
      */
     setColumnOrder(columnOrder: Array<string>, eventDetail?: AnyRecord): void;
     setColumnVisibility(columnVisibility: Record<string, boolean>, eventDetail?: {}): void;
     setHiddenRows(rowIndexes: number[], hidden?: boolean): void;
     getHiddenRows(): number[];
-    setHoverPoint(point?: SharedComponentState.PresentationHoverPointType | HTMLElement, eventDetail?: SharedComponentState.HoverPointEventDetails): void;
-    getHoverPoint(): (SharedComponentState.PresentationHoverPointType | undefined);
-    getSelection(): SharedComponentState.SelectionObjectType;
-    setSelection(selection: SharedComponentState.SelectionObjectType, reset?: boolean, eventDetail?: {}): void;
+    setHoverPoint(point?: PresentationHoverPointType | HTMLElement, eventDetail?: HoverPointEventDetails): void;
+    getHoverPoint(): (PresentationHoverPointType | undefined);
+    getSelection(): SelectionObjectType;
+    setSelection(selection: SelectionObjectType, reset?: boolean, eventDetail?: {}): void;
 }
 /**
  * Additionally provided types for events and JSON conversion.
  */
-declare namespace SharedComponentState {
-    /**
-     * Event types related to the column order.
-     */
-    type ColumnOrderEventType = ('columnOrderChange' | 'afterColumnOrderChange');
-    type ColumnVisibilityEventType = ('columnVisibilityChange' | 'afterColumnVisibilityChange');
-    type HoverPointEventType = ('hoverPointChange' | 'afterHoverPointChange');
-    type selectionEventType = ('selectionChange' | 'afterSelectionChange');
-    type eventTypes = (selectionEventType | HoverPointEventType | ColumnVisibilityEventType);
-    /**
-     * Function to sort an array of column names.
-     */
-    interface ColumnOrderCallback {
-        (a: string, b: string): number;
-    }
-    interface HoverPointEventDetails {
-        detail?: AnyRecord;
-        isGrid?: boolean;
-        sender?: string;
-    }
-    /**
-     * All information objects of DataPresentationState events.
-     */
-    type Event = (ColumnOrderEvent | ColumnVisibilityEvent | PointHoverEvent | SelectionEvent | HiddenRowEvent);
-    /**
-     * Describes the information object for order-related events.
-     */
-    interface ColumnOrderEvent {
-        type: ColumnOrderEventType;
-        detail?: AnyRecord;
-        newColumnOrder: Array<string>;
-        oldColumnOrder: Array<string>;
-    }
-    interface ColumnVisibilityEvent {
-        type: ColumnVisibilityEventType;
-        detail?: AnyRecord;
-        visibilityMap: Record<string, boolean>;
-    }
-    interface HiddenRowEvent {
-        type: ('afterSetHiddenRows');
-        detail?: AnyRecord;
-        hiddenRows: number[];
-    }
-    interface PointHoverEvent {
-        type: HoverPointEventType;
-        detail?: AnyRecord;
-        hoverPoint?: PresentationHoverPointType;
-        hoverRow?: HTMLElement;
-    }
-    type ColumnVisibilityType = Record<string, boolean>;
-    type SelectionObjectType = Record<string, {
-        columnId?: string;
-        min?: number;
-        max?: number;
+/**
+ * Event types related to the column order.
+ */
+export type ColumnOrderEventType = ('columnOrderChange' | 'afterColumnOrderChange');
+export type ColumnVisibilityEventType = ('columnVisibilityChange' | 'afterColumnVisibilityChange');
+export type HoverPointEventType = ('hoverPointChange' | 'afterHoverPointChange');
+export type selectionEventType = ('selectionChange' | 'afterSelectionChange');
+export type eventTypes = (selectionEventType | HoverPointEventType | ColumnVisibilityEventType);
+/**
+ * Function to sort an array of column names.
+ */
+export interface ColumnOrderCallback {
+    (a: string, b: string): number;
+}
+export interface HoverPointEventDetails {
+    detail?: AnyRecord;
+    isGrid?: boolean;
+    sender?: string;
+}
+/**
+ * All information objects of DataPresentationState events.
+ */
+export type Event = (ColumnOrderEvent | ColumnVisibilityEvent | PointHoverEvent | SelectionEvent | HiddenRowEvent);
+/**
+ * Describes the information object for order-related events.
+ */
+export interface ColumnOrderEvent {
+    type: ColumnOrderEventType;
+    detail?: AnyRecord;
+    newColumnOrder: Array<string>;
+    oldColumnOrder: Array<string>;
+}
+export interface ColumnVisibilityEvent {
+    type: ColumnVisibilityEventType;
+    detail?: AnyRecord;
+    visibilityMap: Record<string, boolean>;
+}
+export interface HiddenRowEvent {
+    type: ('afterSetHiddenRows');
+    detail?: AnyRecord;
+    hiddenRows: number[];
+}
+export interface PointHoverEvent {
+    type: HoverPointEventType;
+    detail?: AnyRecord;
+    hoverPoint?: PresentationHoverPointType;
+    hoverRow?: HTMLElement;
+}
+export type ColumnVisibilityType = Record<string, boolean>;
+export type SelectionObjectType = Record<string, {
+    columnId?: string;
+    min?: number;
+    max?: number;
+}>;
+export type PresentationHoverPointType = Partial<AnyRecord>;
+export interface SelectionEvent {
+    type: selectionEventType;
+    detail?: AnyRecord;
+    reset: boolean;
+    selection: Record<string, {
+        min?: number | undefined;
+        max?: number | undefined;
     }>;
-    type PresentationHoverPointType = Partial<AnyRecord>;
-    interface SelectionEvent {
-        type: selectionEventType;
-        detail?: AnyRecord;
-        reset: boolean;
-        selection: Record<string, {
-            min?: number | undefined;
-            max?: number | undefined;
-        }>;
-    }
-    /**
-     * Describes the class JSON of a presentation state.
-     */
-    interface JSON extends Serializable.JSON<'Dashboards.SharedComponentState'> {
-        columnOrder?: Array<string>;
-        visibilityMap?: ColumnVisibilityType;
-        hoverpoint?: {
-            x: number;
-            y: number;
-            id: string;
-        };
-        selection?: SelectionObjectType;
-    }
+}
+/**
+ * Describes the class JSON of a presentation state.
+ */
+export interface JSON extends SerializableJSON<'Dashboards.SharedComponentState'> {
+    columnOrder?: Array<string>;
+    visibilityMap?: ColumnVisibilityType;
+    hoverpoint?: {
+        x: number;
+        y: number;
+        id: string;
+    };
+    selection?: SelectionObjectType;
 }
 export default SharedComponentState;
