@@ -10,7 +10,7 @@ With built-in data synchronization, ready-made components and completely customi
 - Demos: [https://www.highcharts.com/demo](https://www.highcharts.com/demo#highcharts-dashboards-demo-basic)
 - Download page: [www.highcharts.com/download](http://www.highcharts.com/download)
 
-- Licensing: [shop.highcharts.com](https://shop.highcharts.com/)
+- License: [www.highcharts.com/license]([https://shop.highcharts.com/](https://www.highcharts.com/license))
 - Support: [www.highcharts.com/support](http://www.highcharts.com/support)
 - Issues: [Repo guidelines](/repo-guidelines.md)
 
