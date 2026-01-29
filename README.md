@@ -4,15 +4,16 @@ Highcharts Dashboards is a JavaScript library for interactive dashboards from th
 
 With built-in data synchronization, ready-made components and completely customizable options, Highcharts Dashboards does all the heavy lifting out of the box, saving you valuable time on your dashboard projects.
 
-- Official website: [www.highcharts.com](http://www.highcharts.com)
-- Product page: [www.highcharts.com/products/dashboards](https://www.highcharts.com/products/dashboards/)
-- Documentation: [www.highcharts.com/docs/dashboards/installation](https://www.highcharts.com/docs/dashboards/installation)
-- Demos: [https://www.highcharts.com/demo](https://www.highcharts.com/demo#highcharts-dashboards-demo-basic)
-- Download page: [www.highcharts.com/download](http://www.highcharts.com/download)
+## Links
 
-- License: [www.highcharts.com/license](https://www.highcharts.com/license)
-- Support: [www.highcharts.com/support](http://www.highcharts.com/support)
-- Issues: [Repo guidelines](/repo-guidelines.md)
+* Official website: [www.highcharts.com](http://www.highcharts.com)
+* Product page: [www.highcharts.com/products/dashboards](https://www.highcharts.com/products/dashboards/)
+* Demos: [https://www.highcharts.com/demo](https://www.highcharts.com/demo#highcharts-dashboards-demo-basic)
+* Download: [www.highcharts.com/download](http://www.highcharts.com/download)
+* License: [www.highcharts.com/license](https://www.highcharts.com/license)
+* Documentation: [www.highcharts.com/docs/dashboards/installation](https://www.highcharts.com/docs/dashboards/installation)
+* Support: [www.highcharts.com/support](http://www.highcharts.com/support)
+* Issues: [Repo guidelines](/repo-guidelines.md)
 
 Highcharts Dashboards is a [source available](https://en.wikipedia.org/wiki/Source-available_software) product. Please refer to [shop.highcharts.com](https://shop.highcharts.com/) for details on licensing.
 
