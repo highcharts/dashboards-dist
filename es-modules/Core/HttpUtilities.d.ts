@@ -72,7 +72,7 @@ export interface AjaxSuccessCallbackFunction {
  * @return {false | undefined}
  * Returns false, if error occurred.
  */
-declare function ajax(settings: AjaxSettingsObject): (false | undefined);
+export declare function ajax(settings: AjaxSettingsObject): (false | undefined);
 /**
  * Get a JSON resource over XHR, also supporting CORS without preflight.
  *

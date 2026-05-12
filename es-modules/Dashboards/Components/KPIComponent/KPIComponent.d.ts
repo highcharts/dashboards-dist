@@ -3,7 +3,7 @@ import type Cell from '../../Layout/Cell';
 import type { Chart, Options as ChartOptions } from '../../Plugins/HighchartsTypes';
 import type Options from './KPIComponentOptions';
 import type SidebarPopup from '../../EditMode/SidebarPopup';
-import type Types from '../../../Shared/Types';
+import type { DeepPartial } from '../../../Shared/Types';
 import Component from '../Component.js';
 import SUM from '../../../Data/Formula/Functions/SUM.js';
 import AVERAGE from '../../../Data/Formula/Functions/AVERAGE.js';
@@ -21,7 +21,7 @@ declare class KPIComponent extends Component {
     /**
      * Default options of the KPI component.
      */
-    static defaultOptions: Partial<import("../Component.js").Options> & Types.DeepPartial<Options>;
+    static defaultOptions: Partial<import("../Component.js").Options> & DeepPartial<Options>;
     /**
      * Predefined sync config for the KPI component.
      */
@@ -68,7 +68,7 @@ declare class KPIComponent extends Component {
         }
     }
      */
-    static defaultChartOptions: Types.DeepPartial<ChartOptions>;
+    static defaultChartOptions: DeepPartial<ChartOptions>;
     /**
      * The formula option's default formula functions map.
      */

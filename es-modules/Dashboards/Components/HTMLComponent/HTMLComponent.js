@@ -2,8 +2,9 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -19,8 +20,7 @@ import Component from '../Component.js';
 import HTMLComponentDefaults from './HTMLComponentDefaults.js';
 import HTMLSyncs from './HTMLSyncs/HTMLSyncs.js';
 import DU from '../../Utilities.js';
-import U from '../../../Core/Utilities.js';
-const { merge, diffObjects } = U;
+import { diffObjects, merge } from '../../../Shared/Utilities.js';
 const { deepClone } = DU;
 // TODO: This may affect the AST parsing in Highcharts
 // should look into adding these as options if possible

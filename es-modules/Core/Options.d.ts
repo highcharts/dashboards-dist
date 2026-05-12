@@ -194,7 +194,7 @@ export interface LoadingOptions {
      * @sample highcharts/loading/hideduration/
      *         Fade in and out over a second
      *
-     * @default   100
+     * @default   0
      * @since     1.2.0
      */
     showDuration?: number;
@@ -223,7 +223,7 @@ export interface LoadingOptions {
  * The input number to format.
  *
  * @param {number} decimals
- * The amount of decimals. A value of -1 preserves the amount in the inpu
+ * The amount of decimals. A value of -1 preserves the amount in the input
  * number.
  *
  * @param {string} [decimalPoint]
@@ -233,11 +233,15 @@ export interface LoadingOptions {
  * The thousands separator, defaults to the one given in the lang options, or a
  * space character.
  *
+ * @param {Highcharts.Chart} [ctx]
+ * Since v12.6.0, the chart context passed as an extra argument for arrow
+ * functions.
+ *
  * @return {string}
  * The formatted number.
  */
 export interface NumberFormatterCallbackFunction {
-    (this: Chart | object | void, number: number, decimals: number, decimalPoint?: string, thousandsSep?: string): string;
+    (this: Chart | object | void, number: number, decimals: number, decimalPoint?: string, thousandsSep?: string, ctx?: Chart): string;
 }
 /**
  * Global options for all charts.

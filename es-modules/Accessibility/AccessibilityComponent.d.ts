@@ -5,9 +5,9 @@ import type HTMLElement from '../Core/Renderer/HTML/HTMLElement';
 import type KeyboardNavigationHandler from './KeyboardNavigationHandler';
 import type SVGElement from '../Core/Renderer/SVG/SVGElement';
 import type ProxyProvider from './ProxyProvider';
+import type { EventOptions } from '../Shared/Utilities.js';
 import DOMElementProvider from './Utils/DOMElementProvider.js';
 import EventProvider from './Utils/EventProvider.js';
-import U from '../Core/Utilities.js';
 /**
  * The AccessibilityComponent base class, representing a part of the chart that
  * has accessibility logic connected to it. This class can be inherited from to
@@ -75,7 +75,7 @@ declare class AccessibilityComponent {
      * See EventProvider for details.
      * @private
      */
-    addEvent<T>(el: (T | Class<T>), type: string, fn: (Function | EventCallback<T>), options?: U.EventOptions): Function;
+    addEvent<T>(el: (T | Class<T>), type: string, fn: (Function | EventCallback<T>), options?: EventOptions): Function;
     /**
      * Create an element and keep track of it for later removal.
      * See DOMElementProvider for details.

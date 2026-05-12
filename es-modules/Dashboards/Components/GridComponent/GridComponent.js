@@ -2,22 +2,23 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Karol Kolodziej
- *  - Dawid Dragula
+ *  - Karol Kołodziej
+ *  - Dawid Draguła
  *
  * */
 'use strict';
 import Component from '../Component.js';
 import GridSyncs from './GridSyncs/GridSyncs.js';
 import GridComponentDefaults from './GridComponentDefaults.js';
-import U from '../../../Core/Utilities.js';
+import { hasDataTableProvider } from './GridDataProvider.js';
 import DU from '../../Utilities.js';
-const { merge, diffObjects, getStyle } = U;
+import { diffObjects, getStyle, merge } from '../../../Shared/Utilities.js';
 const { deepClone } = DU;
 /* *
  *
@@ -46,18 +47,42 @@ class GridComponent extends Component {
      *  Functions
      *
      * */
-    async update(options) {
-        await super.update(options);
+    async update(options, shouldRerender = true) {
+        const previousGridDataTableId = this.getGridDataTable(true)?.id;
+        // Avoid triggering GridComponent.render() from Component.update().
+        // That render starts a fire-and-forget renderViewport() which can
+        // race with the awaited redraw() below when connector data changes.
+        await super.update(options, false);
         this.setOptions();
-        if (this.grid) {
-            this.grid.update(options.gridOptions, false);
-            const table = this.getDataTable();
-            if (this.grid?.viewport?.dataTable?.id !== table?.id) {
-                this.grid.update({
-                    dataTable: table?.getModified()
-                }, false);
+        const grid = this.grid;
+        const table = this.getDataTable();
+        if (grid &&
+            this.options.connector &&
+            previousGridDataTableId !== table?.id) {
+            this.recreateGrid(shouldRerender);
+            this.emit({ type: 'afterUpdate' });
+            return;
+        }
+        if (grid && shouldRerender) {
+            super.render();
+        }
+        if (grid) {
+            void grid.update(options.gridOptions, false);
+            if (
+            // #24067 - Update dataTable in options when changed.
+            options.gridOptions?.dataTable &&
+                this.options.gridOptions) {
+                this.options.gridOptions.dataTable =
+                    options.gridOptions.dataTable;
             }
-            await this.grid.redraw();
+            await grid.redraw();
+            this.options.gridOptions = this.getGridOptionsSnapshot(grid);
+            if (shouldRerender) {
+                this.finalizeGridRender();
+            }
+        }
+        else if (shouldRerender) {
+            this.render();
         }
         this.emit({ type: 'afterUpdate' });
     }
@@ -67,12 +92,9 @@ class GridComponent extends Component {
             this.grid = this.constructGrid();
         }
         else {
-            this.grid.renderViewport();
+            void this.grid.renderViewport();
         }
-        this.grid.initialContainerHeight =
-            getStyle(this.parentElement, 'height', true) || 0;
-        this.sync.start();
-        this.emit({ type: 'afterRender' });
+        this.finalizeGridRender();
         return this;
     }
     resize(width, height) {
@@ -90,9 +112,24 @@ class GridComponent extends Component {
         if (!grid) {
             return;
         }
+        // Check if the grid is of the legacy version (not using the data
+        // provider).
+        if (!('dataProvider' in grid)) {
+            // eslint-disable-next-line no-console
+            console.warn('GridComponent: Legacy Grid detected. Using legacy handler ' +
+                'for table changes. Consider upgrading the Highcharts Grid ' +
+                'Library to the latest version.');
+            this.onTableChangedLegacy();
+            return;
+        }
+        if (!grid?.dataProvider ||
+            !hasDataTableProvider(grid.dataProvider) ||
+            !this.connectorHandlers?.length) {
+            return;
+        }
         const dataTable = this.getDataTable()?.getModified();
         if (!dataTable) {
-            grid.update({ dataTable: void 0 });
+            this.recreateGrid(true);
             return;
         }
         if (!grid.options?.header) {
@@ -100,31 +137,80 @@ class GridComponent extends Component {
             // names have changed, so we can update the whole grid. If they
             // have not changed, we can just update the rows (more efficient).
             const newColumnIds = dataTable.getColumnIds();
-            const { columnOptionsMap, enabledColumns } = grid;
+            const { enabledColumns, columnPolicy } = grid;
             let index = 0;
             for (const newColumn of newColumnIds) {
-                if (columnOptionsMap[newColumn]?.options?.enabled === false) {
+                if (columnPolicy.getIndividualColumnOptions(newColumn)
+                    ?.enabled === false) {
                     continue;
                 }
                 if (enabledColumns?.[index] !== newColumn) {
                     // If the visible columns have changed,
                     // update the whole grid.
-                    grid.update({ dataTable });
+                    this.recreateGrid(true);
                     return;
                 }
                 index++;
             }
         }
-        grid.dataTable = dataTable;
+        if (this.getGridDataTable() !== dataTable) {
+            this.recreateGrid(true);
+            return;
+        }
         // Data has changed and the whole grid is not re-rendered, so mark in
         // the querying that data table was modified.
         grid.querying.shouldBeUpdated = true;
         // If the column names have not changed, just update the rows.
-        grid.viewport?.updateRows();
+        void grid.viewport?.updateRows();
+    }
+    /**
+     * Legacy handler for table changes.
+     */
+    onTableChangedLegacy() {
+        const { grid } = this;
+        if (!grid) {
+            return;
+        }
+        const dataTable = this.getDataTable()?.getModified();
+        if (!dataTable) {
+            void grid.update({ dataTable: void 0 });
+            return;
+        }
+        if (!grid.options?.header) {
+            // If the header is not defined, we need to check if the column
+            // names have changed, so we can update the whole grid. If they
+            // have not changed, we can just update the rows (more efficient).
+            const newColumnIds = dataTable.getColumnIds();
+            const { enabledColumns, columnPolicy } = grid;
+            let index = 0;
+            for (const newColumn of newColumnIds) {
+                if (columnPolicy.getIndividualColumnOptions(newColumn)
+                    ?.enabled === false) {
+                    continue;
+                }
+                if (enabledColumns?.[index] !== newColumn) {
+                    // If the visible columns have changed,
+                    // update the whole grid.
+                    void grid.update({ dataTable });
+                    return;
+                }
+                index++;
+            }
+        }
+        // Workaround for legacy Grid component.
+        grid.dataTable =
+            dataTable;
+        // Data has changed and the whole grid is not re-rendered, so mark in
+        // the querying that data table was modified.
+        grid.querying.shouldBeUpdated = true;
+        // If the column names have not changed, just update the rows.
+        void grid.viewport?.updateRows();
     }
     getEditableOptions() {
         const componentOptions = this.options;
-        const gridOptions = this.grid?.options;
+        const gridOptions = this.grid ?
+            this.getGridOptionsSnapshot(this.grid) :
+            void 0;
         return deepClone(merge({
             gridOptions: gridOptions
         }, componentOptions), ['editableOptions', 'dataTable']);
@@ -154,7 +240,9 @@ class GridComponent extends Component {
      */
     getOptions() {
         const optionsCopy = merge(this.options);
-        optionsCopy.gridOptions = this.grid?.getOptions();
+        optionsCopy.gridOptions = this.grid ?
+            this.getGridOptionsSnapshot(this.grid) :
+            void 0;
         // Remove the table from the options copy if the connector is set.
         if (optionsCopy.connector?.id) {
             delete optionsCopy.gridOptions?.dataTable;
@@ -190,6 +278,74 @@ class GridComponent extends Component {
             this.contentElement.id = gridID;
         }
     }
+    finalizeGridRender() {
+        const { grid } = this;
+        if (!grid) {
+            return;
+        }
+        grid.initialContainerHeight =
+            getStyle(this.parentElement, 'height', true) || 0;
+        this.sync.start();
+        this.emit({ type: 'afterRender' });
+    }
+    getGridOptionsSnapshot(grid) {
+        const gridOptions = merge(grid.getOptions());
+        if (!this.options.connector) {
+            return gridOptions;
+        }
+        delete gridOptions.dataTable;
+        if (gridOptions.data?.providerType === 'local') {
+            delete gridOptions.data.dataTable;
+            delete gridOptions.data.columns;
+            if (Object.keys(gridOptions.data).length === 1 &&
+                gridOptions.data.providerType === 'local') {
+                delete gridOptions.data;
+            }
+        }
+        return gridOptions;
+    }
+    getGridOptionsWithConnectorData() {
+        const gridOptions = merge(this.options.gridOptions) ?? {};
+        if (!this.options.connector) {
+            return gridOptions;
+        }
+        delete gridOptions.dataTable;
+        if (gridOptions.data?.providerType === 'local') {
+            delete gridOptions.data.dataTable;
+            delete gridOptions.data.columns;
+            if (Object.keys(gridOptions.data).length === 1 &&
+                gridOptions.data.providerType === 'local') {
+                delete gridOptions.data;
+            }
+        }
+        const dataTable = this.getDataTable();
+        if (dataTable) {
+            gridOptions.data = merge(gridOptions.data?.providerType === 'local' ?
+                gridOptions.data :
+                {}, {
+                providerType: 'local',
+                dataTable: dataTable.getModified()
+            });
+        }
+        return gridOptions;
+    }
+    recreateGrid(shouldRerender) {
+        this.sync.stop();
+        this.grid?.destroy();
+        delete this.grid;
+        if (shouldRerender) {
+            this.render();
+            return;
+        }
+        this.grid = this.constructGrid();
+        this.finalizeGridRender();
+    }
+    getGridDataTable(presentation = false) {
+        const dataProvider = this.grid?.dataProvider;
+        return hasDataTableProvider(dataProvider) ?
+            dataProvider.getDataTable(presentation) :
+            void 0;
+    }
     /**
      * Function to create the Grid.
      *
@@ -200,15 +356,9 @@ class GridComponent extends Component {
         if (!DGN) {
             throw new Error('Grid not connected.');
         }
-        const dataTable = this.getDataTable(), options = this.options, gridOptions = options.gridOptions;
-        if (!gridOptions) {
-            throw new Error('Grid options are not set.');
-        }
-        if (dataTable) {
-            gridOptions.dataTable = dataTable.getModified();
-        }
-        const gridInstance = new DGN.Grid(this.contentElement, gridOptions);
-        this.options.gridOptions = gridInstance.options;
+        const gridOptions = this.getGridOptionsWithConnectorData();
+        const gridInstance = new DGN.Grid(this.contentElement, gridOptions ?? {});
+        this.options.gridOptions = this.getGridOptionsSnapshot(gridInstance);
         return gridInstance;
     }
 }

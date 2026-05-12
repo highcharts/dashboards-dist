@@ -2,8 +2,9 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -27,8 +28,7 @@ import ConfirmationPopup from './ConfirmationPopup.js';
 import GUIElement from '../Layout/GUIElement.js';
 import Globals from '../Globals.js';
 import Layout from '../Layout/Layout.js';
-import U from '../../Core/Utilities.js';
-const { addEvent, createElement, css, merge } = U;
+import { addEvent, createElement, css, merge } from '../../Shared/Utilities.js';
 /* *
  *
  *  Class
@@ -67,7 +67,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.1.0/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.2.0/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = merge(

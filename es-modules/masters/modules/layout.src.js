@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards Layout 4.1.0 (2026-01-21)
+ * @license Highcharts Dashboards Layout 4.2.0 (2026-05-12)
  * @module dashboards/modules/layout
  * @requires dashboards
  *
  * (c) 2009-2026 Highsoft AS
  *
- * A commercial license may be required depending on use.
- * See www.highcharts.com/license
+ * A commercial license may be required depending on use,
+ * see www.highcharts.com/license
  */
 'use strict';
 /* *

@@ -14,8 +14,41 @@ declare module './Options' {
 }
 declare module './Series/SeriesOptions' {
     interface SeriesOptions {
-        tooltip?: Partial<TooltipOptions>;
+        /**
+         * A configuration object for the tooltip rendering of each single
+         * series. Properties are inherited from [tooltip](#tooltip), but only
+         * the following properties can be defined on a series level.
+         *
+         * @since 2.3
+         */
+        tooltip?: SeriesTooltipOptions;
     }
+}
+export interface SeriesTooltipOptions extends Partial<TooltipOptions> {
+    animation?: undefined;
+    backgroundColor?: undefined;
+    borderColor?: undefined;
+    borderRadius?: undefined;
+    borderWidth?: undefined;
+    className?: undefined;
+    crosshairs?: undefined;
+    enabled?: undefined;
+    fixed?: undefined;
+    formatter?: undefined;
+    headerShape?: undefined;
+    hideDelay?: undefined;
+    outside?: undefined;
+    padding?: undefined;
+    positioner?: undefined;
+    shadow?: undefined;
+    shape?: undefined;
+    shared?: undefined;
+    showDelay?: number;
+    snap?: undefined;
+    split?: undefined;
+    stickOnContact?: undefined;
+    style?: undefined;
+    useHTML?: undefined;
 }
 /**
  * Options for the tooltip that appears when the user hovers over a
@@ -127,8 +160,8 @@ export interface TooltipOptions {
      * @sample {highcharts} highcharts/tooltip/crosshairs-x/
      *         Enable a crosshair for the x value
      *
-     * @deprecated
-     * @default   true
+     * @deprecated 4.1.0
+     * @default true
      */
     crosshairs?: any;
     /**
@@ -142,11 +175,28 @@ export interface TooltipOptions {
      *
      * @product highcharts highstock gantt
      */
-    dateTimeLabelFormats: Time.DateTimeLabelFormatsOption;
+    dateTimeLabelFormats: Time.DateTimeLabelFormatsOption & {
+        /** @default '%[AebHMSL]' */
+        millisecond: Time.DateTimeLabelFormatsOption['millisecond'];
+        /** @default '%[AebHMS]' */
+        second: Time.DateTimeLabelFormatsOption['second'];
+        /** @default '%[AebHM]' */
+        minute: Time.DateTimeLabelFormatsOption['minute'];
+        /** @default '%[AebHM]' */
+        hour: Time.DateTimeLabelFormatsOption['hour'];
+        /** @default '%[AebY]' */
+        day: Time.DateTimeLabelFormatsOption['day'];
+        /** @default '%v %[AebY]' */
+        week: Time.DateTimeLabelFormatsOption['week'];
+        /** @default '%[BY]' */
+        month: Time.DateTimeLabelFormatsOption['month'];
+        /** @default '%Y' */
+        year: Time.DateTimeLabelFormatsOption['year'];
+    };
     /**
      * Distance from point to tooltip in pixels.
      *
-     * @default   16
+     * @default 16
      */
     distance?: number;
     /**
@@ -533,6 +583,17 @@ export interface TooltipOptions {
      */
     shared: boolean;
     /**
+    * The number of milliseconds to wait until the crosshair is shown when
+    * mouse over a point. Works on initial hover.
+    *
+    * @sample {highcharts|highstock} highcharts/tooltip/showdelay/
+    *         Show crosshair after 2 seconds
+    *
+    * @default 0
+    * @since   12.6.0
+    */
+    showDelay?: number;
+    /**
      * Proximity snap for graphs or single points. It defaults to 10 for
      * mouse-powered devices and 25 for touch devices.
      *
@@ -587,6 +648,8 @@ export interface TooltipOptions {
      *
      * @sample highcharts/tooltip/stickoncontact/
      *         Tooltip sticks on pointer contact
+     * @sample highcharts/tooltip/stickoncontact-anchor-link/
+     *         Tooltip with clickable links
      *
      * @since     8.0.1
      */
@@ -602,7 +665,14 @@ export interface TooltipOptions {
      * @sample {highcharts} highcharts/tooltip/style/
      *         Greater padding, bold text
      */
-    style: CSSObject;
+    style: CSSObject & {
+        /** @default ${palette.neutralColor80} */
+        color?: CSSObject['color'];
+        /** @default 'default' */
+        cursor?: CSSObject['cursor'];
+        /** @default '0.8em' */
+        fontSize?: CSSObject['fontSize'];
+    };
     /**
      * Use HTML to render the contents of the tooltip instead of SVG. Using
      * HTML allows advanced formatting like tables and images in the

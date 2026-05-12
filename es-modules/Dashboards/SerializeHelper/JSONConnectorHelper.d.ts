@@ -1,7 +1,7 @@
 import type { JSONObject } from '../JSON';
 import type JSONConnectorOptions from '../../Data/Connectors/JSONConnectorOptions';
-import JSONConnector from '../../Data/Connectors/JSONConnector.js';
 import type { Helper as SerializableHelper, JSON as SerializableJSON } from '../Serializable';
+import JSONConnector from '../../Data/Connectors/JSONConnector.js';
 export interface JSON extends SerializableJSON<'Data.JSONConnector'> {
     options: OptionsJSON;
 }

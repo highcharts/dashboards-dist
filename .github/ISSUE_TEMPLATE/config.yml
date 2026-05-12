@@ -1,8 +1,0 @@
-blank_issues_enabled: true
-contact_links:
-  - name: Bug Report
-    url: https://github.com/highcharts/highcharts/issues
-    about: Please report new bugs in our main repository.
-  - name: Questions & Support
-    url: https://www.highcharts.com/support/
-    about: Please check our support page for questions and requests.

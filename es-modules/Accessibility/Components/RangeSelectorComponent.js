@@ -5,8 +5,9 @@
  *
  *  Accessibility component for the range selector.
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -16,8 +17,7 @@ import Announcer from '../Utils/Announcer.js';
 import ChartUtilities from '../Utils/ChartUtilities.js';
 const { unhideChartElementFromAT, getAxisRangeDescription } = ChartUtilities;
 import KeyboardNavigationHandler from '../KeyboardNavigationHandler.js';
-import U from '../../Core/Utilities.js';
-const { addEvent, attr } = U;
+import { addEvent, attr } from '../../Shared/Utilities.js';
 /* *
  *
  *  Functions
@@ -53,7 +53,6 @@ class RangeSelectorComponent extends AccessibilityComponent {
      *  Functions
      *
      * */
-    /* eslint-disable valid-jsdoc */
     /**
      * Init the component
      * @private

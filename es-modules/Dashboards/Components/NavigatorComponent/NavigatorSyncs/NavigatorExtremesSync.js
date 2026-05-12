@@ -2,20 +2,20 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 'use strict';
 import DataModifier from '../../../../Data/Modifiers/DataModifier.js';
 import NavigatorSyncUtils from './NavigatorSyncUtils.js';
-import U from '../../../../Core/Utilities.js';
+import { addEvent, defined, pick } from '../../../../Shared/Utilities.js';
 const { Filter: FilterModifier } = DataModifier.types;
-const { addEvent, pick, defined } = U;
 /* *
  *
  *  Constants

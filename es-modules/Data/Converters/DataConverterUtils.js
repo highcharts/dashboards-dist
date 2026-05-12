@@ -2,16 +2,16 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
  *  - Kamil Kubik
  *
  * */
-import U from '../../Core/Utilities.js';
-const { isNumber } = U;
+import { isNumber } from '../../Shared/Utilities.js';
 /* *
  *
  *  Functions
@@ -155,12 +155,12 @@ export function guessType(value, converter) {
  * Remove all spaces between numbers.
  *
  * @return {string}
- * Trimed string
+ * Trimmed string
  */
 export function trim(str, inside) {
     if (typeof str === 'string') {
         str = str.replace(/^\s+|\s+$/g, '');
-        // Clear white space insdie the string, like thousands separators
+        // Clear white space inside the string, like thousands separators
         if (inside && /^[\d\s]+$/.test(str)) {
             str = str.replace(/\s/g, '');
         }

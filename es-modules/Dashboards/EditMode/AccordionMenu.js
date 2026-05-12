@@ -2,21 +2,22 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Pawel Lysy
+ *  - Paweł Lysy
  *  - Sebastian Bochan
  *
  * */
 'use strict';
 import EditRenderer from './EditRenderer.js';
-import U from '../../Core/Utilities.js';
 import EditGlobals from './EditGlobals.js';
 import ConfirmationPopup from './ConfirmationPopup.js';
-const { createElement, merge, error, fireEvent } = U;
+import { createElement, fireEvent, merge } from '../../Shared/Utilities.js';
+import { error } from '../../Core/Utilities.js';
 /* *
  *
  *  Class
@@ -127,7 +128,9 @@ class AccordionMenu {
             }
             catch (e) {
                 // TODO: Handle the wrong config passed from the user.
-                error(`Dashboards Error: Wrong JSON config structure passed as a chart options. \n____________\n${e}`);
+                error('Dashboards Error: Wrong JSON config structure passed ' +
+                    'as chart options. \n____________\n' +
+                    String(e));
             }
         }
         for (let i = 0; i < pathLength; i++) {

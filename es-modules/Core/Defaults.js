@@ -1,10 +1,11 @@
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -14,8 +15,7 @@ import H from './Globals.js';
 const { isTouchDevice } = H;
 import Palettes from './Color/Palettes.js';
 import Time from './Time.js';
-import U from './Utilities.js';
-const { fireEvent, merge } = U;
+import { fireEvent, merge } from '../Shared/Utilities.js';
 /* *
  *
  *  API Options
@@ -48,7 +48,7 @@ const defaultOptions = {
      * @sample highcharts/members/theme-v10/
      *         Latest release styled like version 10
      *
-     * @type    {Array<(Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject)>}
+     * @type    {Array<Highcharts.ColorType>}
      * @default [
      *     "#2caffe",
      *     "#544fc5",
@@ -326,6 +326,9 @@ const defaultOptions = {
              * CSS styling for the buttons' text
              */
             style: {
+                /**
+                 * @type {Highcharts.ColorType}
+                 */
                 color: "#333333" /* Palette.neutralColor80 */,
                 cursor: 'pointer',
                 fontSize: '0.8em',
@@ -347,8 +350,14 @@ const defaultOptions = {
                  * addition to the normal state options
                  */
                 select: {
+                    /**
+                     * @type {Highcharts.ColorType}
+                     */
                     fill: "#e6e9ff" /* Palette.highlightColor10 */,
                     style: {
+                        /**
+                         * @type {Highcharts.ColorType}
+                         */
                         color: "#000000" /* Palette.neutralColor100 */,
                         fontWeight: 'bold'
                     }
@@ -598,6 +607,9 @@ const defaultOptions = {
          * @default   {highstock} { "color": "#333333", "fontSize": "16px" }
          */
         style: {
+            /**
+             * @type {Highcharts.ColorType}
+             */
             color: "#333333" /* Palette.neutralColor80 */,
             fontWeight: 'bold'
         },
@@ -785,6 +797,9 @@ const defaultOptions = {
          * @default   {"color": "#666666"}
          */
         style: {
+            /**
+             * @type {Highcharts.ColorType}
+             */
             color: "#666666" /* Palette.neutralColor60 */,
             /**
              * @type {number|string}
@@ -860,6 +875,9 @@ const defaultOptions = {
          * @default   {"color": "#666666"}
          */
         style: {
+            /**
+             * @type {Highcharts.ColorType}
+             */
             color: "#666666" /* Palette.neutralColor60 */,
             /**
              * @type {number|string}
@@ -929,7 +947,7 @@ const defaultOptions = {
          * @sample {highmaps} maps/legend/border-background/
          *         Border and background options
          *
-         * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+         * @type      {Highcharts.ColorType}
          * @apioption legend.backgroundColor
          */
         /**
@@ -990,6 +1008,9 @@ const defaultOptions = {
          * columns. Setting this to `false` makes room for more items, but will
          * look more messy.
          *
+         * @sample highcharts/legend/aligncolumns
+         *         Align columns
+         *
          * @since 6.1.0
          */
         alignColumns: true,
@@ -1003,15 +1024,13 @@ const defaultOptions = {
          * `Highcharts.addEvent` function.
          *
          * @declare Highcharts.LegendEventsOptionsObject
-         *
-         * @internal
          */
-        events: {},
+        events: {
         /**
-         * Fires when the legend item belonging to the series is clicked. One
-         * parameter, `event`, is passed to the function. The default action
-         * is to toggle the visibility of the series, point or data class. This
-         * can be prevented by returning `false` or calling
+         * Fires when the legend item belonging to the series is clicked.
+         * One parameter, `event`, is passed to the function. The default
+         * action is to toggle the visibility of the series, point or data
+         * class. This can be prevented by returning `false` or calling
          * `event.preventDefault()`.
          *
          * @sample {highcharts} highcharts/legend/itemclick/
@@ -1023,6 +1042,7 @@ const defaultOptions = {
          * @context   Highcharts.Legend
          * @apioption legend.events.itemClick
          */
+        },
         /**
          * When the legend is floating, the plot area ignores it and is allowed
          * to be placed below it.
@@ -1066,10 +1086,10 @@ const defaultOptions = {
          * In a legend with horizontal layout, the itemDistance defines the
          * pixel distance between each item.
          *
-         * @sample {highcharts} highcharts/legend/layout-horizontal/
-         *         50px item distance
-         * @sample {highstock} highcharts/legend/layout-horizontal/
-         *         50px item distance
+         * @sample {highcharts} highcharts/legend/itemwidth-default/
+         *         40px item distance
+         * @sample {highstock} highcharts/legend/itemwidth-default/
+         *         40px item distance
          *
          * @type      {number}
          * @default   {highcharts} 20
@@ -1120,16 +1140,21 @@ const defaultOptions = {
          * for each legend label. Available variables relates to properties on
          * the series, or the point in case of pies.
          *
+         * @sample {highcharts} highcharts/legend/labelformat/
+         *         Add text
+         *
          * @type      {string}
          * @default   {name}
          * @since     1.3
          * @apioption legend.labelFormat
          */
-        /* eslint-disable valid-jsdoc */
         /**
          * Callback function to format each of the series' labels. The `this`
          * keyword refers to the series object, or the point object in case of
-         * pie charts. By default the series or point name is printed.
+         * pie charts. By default the series or point name is printed. Since
+         * v12.5.0, the callback also receives `ctx` as the first argument, so
+         * that arrow functions can access the same context as regular
+         * functions using `this`.
          *
          * @productdesc {highmaps}
          * In Highmaps the context can also be a data class in case of a
@@ -1140,7 +1165,7 @@ const defaultOptions = {
          * @sample {highmaps} maps/legend/labelformatter/
          *         Data classes with label formatter
          *
-         * @type {Highcharts.FormatterCallbackFunction<Point|Series>}
+         * @type {Highcharts.FormatterCallbackFunction<Highcharts.Point|Highcharts.Series>}
          */
         labelFormatter: function () {
             // eslint-enable valid-jsdoc
@@ -1209,7 +1234,7 @@ const defaultOptions = {
          * @sample {highmaps} maps/legend/border-background/
          *         Border and background options
          *
-         * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+         * @type {Highcharts.ColorType}
          */
         borderColor: "#999999" /* Palette.neutralColor40 */,
         /**
@@ -1314,7 +1339,7 @@ const defaultOptions = {
              * @sample  {highstock} highcharts/legend/navigation/
              *          Legend page navigation demonstrated
              *
-             * @type  {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+             * @type  {Highcharts.ColorType}
              * @since 2.2.4
              */
             activeColor: "#0022ff" /* Palette.highlightColor100 */,
@@ -1330,7 +1355,7 @@ const defaultOptions = {
              * @sample {highstock} highcharts/legend/navigation/
              *         Legend page navigation demonstrated
              *
-             * @type  {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+             * @type  {Highcharts.ColorType}
              * @since 2.2.4
              */
             inactiveColor: "#cccccc" /* Palette.neutralColor20 */
@@ -1852,7 +1877,7 @@ const defaultOptions = {
          * @sample {highmaps} maps/tooltip/background-border/ Background and
          *         border demo
          *
-         * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+         * @type {Highcharts.ColorType}
          * @apioption tooltip.borderColor
          */
         /**
@@ -2025,13 +2050,18 @@ const defaultOptions = {
          * @sample {highmaps} maps/tooltip/formatter/
          *         String formatting
          *
+         * Since v12.6.0, the callback also receives `ctx` as the second
+         * argument, so that arrow functions can access the same context as
+         * regular functions using `this`.
+         *
          * @type      {Highcharts.TooltipFormatterCallbackFunction}
          * @apioption tooltip.formatter
          */
         /**
          * Callback function to format the text of the tooltip for
          * visible null points.
-         * Works analogously to [formatter](#tooltip.formatter).
+         * Works analogously to [formatter](#tooltip.formatter), including the
+         * `ctx` callback argument added in v12.5.0.
          *
          * @sample highcharts/plotoptions/series-nullformat
          *         Format data label and tooltip for null point.
@@ -2065,7 +2095,9 @@ const defaultOptions = {
         /**
          * A callback function for formatting the HTML output for a single point
          * in the tooltip. Like the `pointFormat` string, but with more
-         * flexibility.
+         * flexibility. Since v12.6.0, the callback also receives `ctx` as the
+         * first argument, so that arrow functions can access the same context
+         * as regular functions using `this`.
          *
          * @type      {Highcharts.FormatterCallbackFunction<Highcharts.Point>}
          * @since     4.1.0
@@ -2074,10 +2106,13 @@ const defaultOptions = {
          */
         /**
          * A callback function to place the tooltip in a custom position. The
-         * callback receives three parameters: `labelWidth`, `labelHeight` and
-         * `point`, where point contains values for `plotX` and `plotY` telling
-         * where the reference point is in the plot area. Add `chart.plotLeft`
-         * and `chart.plotTop` to get the full coordinates.
+         * callback receives four parameters: `labelWidth`, `labelHeight`,
+         * `point`, and `ctx`, where point contains values for `plotX` and
+         * `plotY` telling where the reference point is in the plot area, and
+         * `ctx` is the tooltip context (so that arrow-functions can access the
+         * same context as a normal function using `this`). Add
+         * `chart.plotLeft` and `chart.plotTop` to get the full coordinates.
+         * Since v12.6.0, the callback receives `ctx`.
          *
          * To find the actual hovered `Point` instance, use
          * `this.chart.hoverPoint`. For shared or split tooltips, all the hover
@@ -2247,21 +2282,13 @@ const defaultOptions = {
          * @product highcharts highstock gantt
          */
         dateTimeLabelFormats: {
-            /** @internal */
             millisecond: '%[AebHMSL]',
-            /** @internal */
             second: '%[AebHMS]',
-            /** @internal */
             minute: '%[AebHM]',
-            /** @internal */
             hour: '%[AebHM]',
-            /** @internal */
             day: '%[AebY]',
-            /** @internal */
             week: '%v %[AebY]',
-            /** @internal */
             month: '%[BY]',
-            /** @internal */
             year: '%Y'
         },
         /**
@@ -2301,6 +2328,16 @@ const defaultOptions = {
          * @since 3.0
          */
         hideDelay: 500,
+        /**
+         * The number of milliseconds to wait until the tooltip is shown when
+         * mouse over a point. Works on initial hover.
+         *
+         * @sample {highcharts|highstock} highcharts/tooltip/showdelay/
+         *         Show tooltip after 2 seconds
+         *
+         * @since 12.6.0
+         */
+        showDelay: 0,
         /**
          * Padding inside the tooltip, in pixels.
          *
@@ -2534,7 +2571,7 @@ const defaultOptions = {
          * @sample {highmaps} highcharts/css/tooltip-border-background/
          *         Tooltip in styled mode
          *
-         * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+         * @type {Highcharts.ColorType}
          */
         backgroundColor: "#ffffff" /* Palette.backgroundColor */,
         /**
@@ -2583,6 +2620,8 @@ const defaultOptions = {
          *
          * @sample highcharts/tooltip/stickoncontact/
          *         Tooltip sticks on pointer contact
+         * @sample highcharts/tooltip/stickoncontact-anchor-link/
+         *         Tooltip with clickable links
          *
          * @type      {boolean}
          * @since     8.0.1
@@ -2602,13 +2641,10 @@ const defaultOptions = {
          * @type {Highcharts.CSSObject}
          */
         style: {
-            /** @internal */
+            /** @type {Highcharts.ColorType} */
             color: "#333333" /* Palette.neutralColor80 */,
-            /** @internal */
             cursor: 'default',
-            /**
-             * @type {number|string}
-             */
+            /** @type {number|string} */
             fontSize: '0.8em'
         },
         /**
@@ -2629,7 +2665,7 @@ const defaultOptions = {
         useHTML: false
     },
     /**
-     * Highchart by default puts a credits label in the lower right corner
+     * Highcharts by default puts a credits label in the lower right corner
      * of the chart. This can be changed using these options.
      */
     credits: {
@@ -2662,6 +2698,30 @@ const defaultOptions = {
          * @apioption credits.mapTextFull
          */
         /**
+         * Events for the credits label.
+         *
+         * @type     {object}
+         * @since    12.6.0
+         * @apioption credits.events
+         */
+        /**
+         * Callback function to handle click events on the credits label.
+         * The callback can call `event.preventDefault()` to prevent the
+         * default navigation behavior. Alternatively, you can add a general
+         * event handler using `Highcharts.addEvent(Chart, 'creditsClick',
+         * callback)` instead of providing it in the options tree.
+         *
+         * @sample {highcharts} highcharts/credits/events-click/
+         *         Custom click handler
+         *
+         * @param {Event} event
+         *        The click event object.
+         *
+         * @type  {Function}
+         * @since 12.6.0
+         * @apioption credits.events.click
+         */
+        /**
          * Whether to show the credits text.
          *
          * @sample {highcharts} highcharts/credits/enabled-false/
@@ -2686,24 +2746,16 @@ const defaultOptions = {
          *
          * @sample {highcharts} highcharts/credits/position-left/
          *         Left aligned
-         * @sample {highcharts} highcharts/credits/position-left/
-         *         Left aligned
-         * @sample {highmaps} maps/credits/customized/
-         *         Left aligned
          * @sample {highmaps} maps/credits/customized/
          *         Left aligned
          *
-         * @type    {Highcharts.AlignObject}
-         * @since   2.1
+         * @type  {Highcharts.AlignObject}
+         * @since 2.1
          */
         position: {
-            /** @internal */
             align: 'right',
-            /** @internal */
-            x: -10,
-            /** @internal */
             verticalAlign: 'bottom',
-            /** @internal */
+            x: -10,
             y: -5
         },
         /**
@@ -2715,9 +2767,10 @@ const defaultOptions = {
          * @type {Highcharts.CSSObject}
          */
         style: {
-            /** @internal */
             cursor: 'pointer',
-            /** @internal */
+            /**
+             * @type {Highcharts.ColorType}
+             */
             color: "#999999" /* Palette.neutralColor40 */,
             /**
              * @type {number|string}
@@ -2751,7 +2804,7 @@ const defaultTime = new Time(defaultOptions.time, defaultOptions.lang);
  * @return {Highcharts.Options}
  * Default options.
  */
-function getOptions() {
+export function getOptions() {
     return defaultOptions;
 }
 /**
@@ -2831,7 +2884,7 @@ export default DefaultOptions;
 * @name Highcharts.ChartAddSeriesEventObject#options
 * @type {Highcharts.SeriesOptionsType}
 */ /**
-* Prevents the default behaviour of the event.
+* Prevents the default behavior of the event.
 * @name Highcharts.ChartAddSeriesEventObject#preventDefault
 * @type {Function}
 */ /**
@@ -2933,7 +2986,7 @@ export default DefaultOptions;
  *        The chart on which the event occurred.
  *
  * @param {Highcharts.SelectEventObject} event
- *        Event informations
+ *        Event information
  *
  * @return {boolean|undefined}
  *         Return false to prevent the default action, usually zoom.

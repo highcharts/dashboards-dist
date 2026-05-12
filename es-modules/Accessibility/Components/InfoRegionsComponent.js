@@ -5,8 +5,9 @@
  *
  *  Accessibility component for chart info region and table.
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -25,14 +26,12 @@ import H from '../../Core/Globals.js';
 const { doc } = H;
 import HU from '../Utils/HTMLUtilities.js';
 const { addClass, getElement, getHeadingTagNameForElement, stripHTMLTagsFromString, visuallyHideElement } = HU;
-import U from '../../Core/Utilities.js';
-const { attr, pick, replaceNested } = U;
+import { attr, pick, replaceNested } from '../../Shared/Utilities.js';
 /* *
  *
  *  Functions
  *
  * */
-/* eslint-disable valid-jsdoc */
 /**
  * @private
  */
@@ -74,6 +73,7 @@ function buildTypeDescriptionFromSeries(chart, types, context) {
  *
  * @private
  * @function Highcharts.Chart#getTypeDescription
+ * @param {Highcharts.Chart} chart The associated Chart instance.
  * @param {Array<string>} types The series types in this chart.
  * @return {string} The text description of the chart type.
  */
@@ -130,7 +130,6 @@ class InfoRegionsComponent extends AccessibilityComponent {
      *  Functions
      *
      * */
-    /* eslint-disable valid-jsdoc */
     /**
      * Init the component
      * @private
@@ -179,8 +178,8 @@ class InfoRegionsComponent extends AccessibilityComponent {
                 buildContent: function (chart) {
                     const formatter = accessibilityOptions.screenReaderSection
                         .beforeChartFormatter;
-                    return formatter ? formatter(chart) :
-                        component.defaultBeforeChartFormatter(chart);
+                    return formatter ? formatter(chart, component) :
+                        component.defaultBeforeChartFormatter();
                 },
                 insertIntoDOM: function (el, chart) {
                     chart.renderTo.insertBefore(el, chart.renderTo.firstChild);
@@ -199,7 +198,7 @@ class InfoRegionsComponent extends AccessibilityComponent {
                 buildContent: function (chart) {
                     const formatter = accessibilityOptions.screenReaderSection
                         .afterChartFormatter;
-                    return formatter ? formatter(chart) :
+                    return formatter ? formatter(chart, component) :
                         component.defaultAfterChartFormatter();
                 },
                 insertIntoDOM: function (el, chart) {
@@ -272,11 +271,11 @@ class InfoRegionsComponent extends AccessibilityComponent {
             AST.setElementHTML(hiddenDiv, content);
             sectionDiv.appendChild(hiddenDiv);
             region.insertIntoDOM(sectionDiv, chart);
+            // Apply inline hidden styles too as the class alone depends on
+            // `highcharts.css` being loaded
+            visuallyHideElement(hiddenDiv);
             if (chart.styledMode) {
                 addClass(hiddenDiv, 'highcharts-visually-hidden');
-            }
-            else {
-                visuallyHideElement(hiddenDiv);
             }
             unhideChartElementFromAT(chart, hiddenDiv);
             if (region.afterInserted) {
@@ -477,7 +476,7 @@ class InfoRegionsComponent extends AccessibilityComponent {
                 const onPlayAsSoundClick = (chart.options.accessibility &&
                     chart.options.accessibility.screenReaderSection
                         .onPlayAsSoundClick);
-                (onPlayAsSoundClick || defaultHandler).call(this, e, chart);
+                (onPlayAsSoundClick || defaultHandler).call(this, e, chart, this);
             };
         }
     }

@@ -1,6 +1,6 @@
 export declare namespace JSON {
     /**
-     * Type structor of arrays as it is supported in JSON.
+     * Array structure as supported in JSON.
      */
     interface Array extends globalThis.Array<(Primitive | Type)> {
         [index: number]: (Primitive | Type);

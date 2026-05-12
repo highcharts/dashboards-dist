@@ -1,10 +1,11 @@
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -13,9 +14,8 @@ import Chart from './Chart.js';
 import D from '../Defaults.js';
 const { getOptions } = D;
 import SVGRenderer from '../Renderer/SVG/SVGRenderer.js';
-import U from '../Utilities.js';
-const { isNumber, merge, pick } = U;
 import '../../Maps/MapSymbols.js';
+import { isNumber, merge, pick } from '../../Shared/Utilities.js';
 /* *
  *
  *  Class
@@ -165,6 +165,7 @@ class MapChart extends Chart {
      *  Functions
      *
      * */
+    /* eslint-disable jsdoc/check-param-names */
     /**
      * The factory function for creating new map charts. Creates a new {@link
      * Highcharts.MapChart|MapChart} object with different default options than
@@ -195,6 +196,7 @@ class MapChart extends Chart {
         return new MapChart(a, b, c);
     }
     MapChart.mapChart = mapChart;
+    /* eslint-enable jsdoc/check-param-names */
     /**
      * Utility for reading SVG paths directly.
      *

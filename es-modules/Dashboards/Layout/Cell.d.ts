@@ -52,6 +52,14 @@ export interface Options {
      **/
     style?: CSSJSONObject;
     /**
+     * Set width of the cell.
+     **/
+    width?: (string | number);
+    /**
+     * Set height of the cell.
+     **/
+    height?: (string | number);
+    /**
      * Id of the container that holds the cell.
      **/
     parentContainerId?: string;

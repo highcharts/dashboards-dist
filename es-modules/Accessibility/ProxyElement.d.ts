@@ -35,8 +35,8 @@ declare class ProxyElement {
     /**
      * Update the target to be proxied. The position and events are updated to
      * match the new target.
-     * @param target The new target definition
-     * @param attributes New HTML attributes to apply to the proxy. Set an
+     * @param {object} target The new target definition
+     * @param {object} attributes New HTML attributes to apply to the proxy. Set an
      * attribute to null to remove.
      */
     updateTarget(target: ProxyElement.Target, attributes?: NullableHTMLAttributes): void;

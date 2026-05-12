@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards v4.1.0 (2026-01-21)
+ * @license Highcharts Dashboards v4.2.0 (2026-05-12)
  * @module dashboards/dashboards
  *
  * (c) 2009-2026 Highsoft AS
  *
- * A commercial license may be required depending on use.
- * See www.highcharts.com/license
+ * A commercial license may be required depending on use,
+ * see www.highcharts.com/license
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -53,10 +53,11 @@ __webpack_require__.d(__webpack_exports__, {
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -77,7 +78,7 @@ var Globals;
      *  Constants
      *
      * */
-    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '4.1.0', Globals.win = (typeof window !== 'undefined' ?
+    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '4.2.0', Globals.win = (typeof window !== 'undefined' ?
         window :
         {}), // eslint-disable-line node/no-unsupported-features/es-builtins
     Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -177,148 +178,182 @@ var Globals;
  */
 (''); // Keeps doclets above in JS file
 
-;// ./code/dashboards/es-modules/Core/Utilities.js
+;// ./code/dashboards/es-modules/Shared/Utilities.js
 /* *
  *
- *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
 
-
-const { charts, doc, win } = Core_Globals;
-/* *
- *
- *  Functions
- *
- * */
+const { doc, win } = Core_Globals;
 /**
- * Provide error messages for debugging, with links to online explanation. This
- * function can be overridden to provide custom error handling.
+ * Add an event listener.
  *
- * @sample highcharts/chart/highcharts-error/
- *         Custom error handler
+ * @function Highcharts.addEvent<T>
  *
- * @function Highcharts.error
+ * @param  {Highcharts.Class<T>|T} el
+ *         The element or object to add a listener to. It can be a
+ *         {@link HTMLDOMElement}, an {@link SVGElement} or any other object.
  *
- * @param {number|string} code
- *        The error code. See
- *        [errors.xml](https://github.com/highcharts/highcharts/blob/master/errors/errors.xml)
- *        for available codes. If it is a string, the error message is printed
- *        directly in the console.
+ * @param  {string} type
+ *         The event type.
  *
- * @param {boolean} [stop=false]
- *        Whether to throw an error or just log a warning in the console.
+ * @param  {Highcharts.EventCallbackFunction<T>|Function} fn
+ *         The function callback to execute when the event is fired.
  *
- * @param {Highcharts.Chart} [chart]
- *        Reference to the chart that causes the error. Used in 'debugger'
- *        module to display errors directly on the chart.
- *        Important note: This argument is undefined for errors that lack
- *        access to the Chart instance. In such case, the error will be
- *        displayed on the last created chart.
+ * @param  {Highcharts.EventOptionsObject} [options]
+ *         Options for adding the event.
  *
- * @param {Highcharts.Dictionary<string>} [params]
- *        Additional parameters for the generated message.
+ * @sample highcharts/members/addevent
+ *         Use a general `render` event to draw shapes on a chart
  *
- * @return {void}
+ * @return {Function}
+ *         A callback function to remove the added event.
  */
-function error(code, stop, chart, params) {
-    const severity = stop ? 'Highcharts error' : 'Highcharts warning';
-    if (code === 32) {
-        code = `${severity}: Deprecated member`;
+function addEvent(el, type, fn, options = {}) {
+    // Add hcEvents to either the prototype (in case we're running addEvent on a
+    // class) or the instance. If hasOwnProperty('hcEvents') is false, it is
+    // inherited down the prototype chain, in which case we need to set the
+    // property on this instance (which may itself be a prototype).
+    const owner = typeof el === 'function' && el.prototype || el;
+    if (!Object.hasOwnProperty.call(owner, 'hcEvents')) {
+        owner.hcEvents = {};
     }
-    const isCode = isNumber(code);
-    let message = isCode ?
-        `${severity} #${code}: www.highcharts.com/errors/${code}/` :
-        code.toString();
-    const defaultHandler = function () {
-        if (stop) {
-            throw new Error(message);
-        }
-        // Else ...
-        if (win.console &&
-            error.messages.indexOf(message) === -1 // Prevent console flooting
-        ) {
-            console.warn(message); // eslint-disable-line no-console
-        }
+    const events = owner.hcEvents;
+    // Allow click events added to points, otherwise they will be prevented by
+    // the TouchPointer.pinch function after a pinch zoom operation (#7091).
+    if (Core_Globals.Point && // Without H a dependency loop occurs
+        el instanceof Core_Globals.Point &&
+        el.series &&
+        el.series.chart) {
+        el.series.chart.runTrackerClick = true;
+    }
+    // Handle DOM events
+    // If the browser supports passive events, add it to improve performance
+    // on touch events (#11353).
+    const addEventListener = el.addEventListener;
+    if (addEventListener) {
+        addEventListener.call(el, type, fn, Core_Globals.supportsPassiveEvents ? {
+            passive: options.passive === void 0 ?
+                type.indexOf('touch') !== -1 : options.passive,
+            capture: false
+        } : false);
+    }
+    if (!events[type]) {
+        events[type] = [];
+    }
+    const eventObject = {
+        fn,
+        order: typeof options.order === 'number' ? options.order : Infinity
     };
-    if (typeof params !== 'undefined') {
-        let additionalMessages = '';
-        if (isCode) {
-            message += '?';
-        }
-        objectEach(params, function (value, key) {
-            additionalMessages += `\n - ${key}: ${value}`;
-            if (isCode) {
-                message += encodeURI(key) + '=' + encodeURI(value);
-            }
-        });
-        message += additionalMessages;
-    }
-    fireEvent(Core_Globals, 'displayError', { chart, code, message, params }, defaultHandler);
-    error.messages.push(message);
+    events[type].push(eventObject);
+    // Order the calls
+    events[type].sort((a, b) => a.order - b.order);
+    // Return a function that can be called to remove this event.
+    return function () {
+        removeEvent(el, type, fn);
+    };
 }
-(function (error) {
-    error.messages = [];
-})(error || (error = {}));
 /**
- * Utility function to deep merge two or more objects and return a third object.
- * If the first argument is true, the contents of the second object is copied
- * into the first object. The merge function can also be used with a single
- * object argument to create a deep copy of an object.
+ * Non-recursive method to find the lowest member of an array. `Math.min` raises
+ * a maximum call stack size exceeded error in Chrome when trying to apply more
+ * than 150.000 points. This method is slightly slower, but safe.
  *
- * @function Highcharts.merge<T>
+ * @function Highcharts.arrayMin
  *
- * @param {true | T} extendOrSource
- *        Whether to extend the left-side object,
- *        or the first object to merge as a deep copy.
+ * @param {Array<*>} data
+ *        An array of numbers.
  *
- * @param {...Array<object|undefined>} [sources]
- *        Object(s) to merge into the previous one.
- *
- * @return {T}
- *         The merged object. If the first argument is true, the return is the
- *         same as the second argument.
+ * @return {number}
+ *         The lowest number.
  */
-function merge(extendOrSource, ...sources) {
-    let i, args = [extendOrSource, ...sources], ret = {};
-    const doCopy = function (copy, original) {
-        // An object is replacing a primitive
-        if (typeof copy !== 'object') {
-            copy = {};
+function arrayMin(data) {
+    let i = data.length, min = data[0];
+    while (i--) {
+        if (data[i] < min) {
+            min = data[i];
         }
-        objectEach(original, function (value, key) {
-            // Prototype pollution (#14883)
-            if (key === '__proto__' || key === 'constructor') {
-                return;
-            }
-            // Copy the contents of objects, but not arrays or DOM nodes
-            if (isObject(value, true) &&
-                !isClass(value) &&
-                !isDOMElement(value)) {
-                copy[key] = doCopy(copy[key] || {}, value);
-                // Primitives and arrays are copied over directly
-            }
-            else {
-                copy[key] = original[key];
-            }
-        });
-        return copy;
-    };
-    // If first argument is true, copy into the existing object. Used in
-    // setOptions.
-    if (extendOrSource === true) {
-        ret = args[1];
-        args = Array.prototype.slice.call(args, 2);
     }
-    // For each argument, extend the return
-    const len = args.length;
-    for (i = 0; i < len; i++) {
-        ret = doCopy(ret, args[i]);
+    return min;
+}
+/**
+ * Non-recursive method to find the lowest member of an array. `Math.max` raises
+ * a maximum call stack size exceeded error in Chrome when trying to apply more
+ * than 150.000 points. This method is slightly slower, but safe.
+ *
+ * @function Highcharts.arrayMax
+ *
+ * @param {Array<*>} data
+ *        An array of numbers.
+ *
+ * @return {number}
+ *         The highest number.
+ */
+function arrayMax(data) {
+    let i = data.length, max = data[0];
+    while (i--) {
+        if (data[i] > max) {
+            max = data[i];
+        }
+    }
+    return max;
+}
+/**
+ * Set or get an attribute or an object of attributes.
+ *
+ * To use as a setter, pass a key and a value, or let the second argument be a
+ * collection of keys and values. When using a collection, passing a value of
+ * `null` or `undefined` will remove the attribute.
+ *
+ * To use as a getter, pass only a string as the second argument.
+ *
+ * @function Highcharts.attr
+ *
+ * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} elem
+ *        The DOM element to receive the attribute(s).
+ *
+ * @param {string|Highcharts.HTMLAttributes|Highcharts.SVGAttributes} [keyOrAttribs]
+ *        The property or an object of key-value pairs.
+ *
+ * @param {number|string} [value]
+ *        The value if a single property is set.
+ *
+ * @return {string|null|undefined}
+ *         When used as a getter, return the value.
+ */
+function attr(elem, keyOrAttribs, value) {
+    const isGetter = isString(keyOrAttribs) && !defined(value);
+    let ret;
+    const attrSingle = (value, key) => {
+        // Set the value
+        if (defined(value)) {
+            elem.setAttribute(key, value);
+            // Get the value
+        }
+        else if (isGetter) {
+            ret = elem.getAttribute(key);
+            // IE7 and below cannot get class through getAttribute (#7850)
+            if (!ret && key === 'class') {
+                ret = elem.getAttribute(key + 'Name');
+            }
+            // Remove the value
+        }
+        else {
+            elem.removeAttribute(key);
+        }
+    };
+    // If keyOrAttribs is a string
+    if (isString(keyOrAttribs)) {
+        attrSingle(value, keyOrAttribs);
+        // Else if keyOrAttribs is defined, it is a hash of key/value pairs
+    }
+    else {
+        objectEach(keyOrAttribs, attrSingle);
     }
     return ret;
 }
@@ -335,8 +370,67 @@ function clamp(value, min, max) {
     return value > min ? value < max ? value : max : min;
 }
 /**
- * Utility for crisping a line position to the nearest full pixel depening on
- * the line width
+ * Fix JS round off float errors.
+ *
+ * @function Highcharts.correctFloat
+ *
+ * @param {number} num
+ *        A float number to fix.
+ *
+ * @param {number} [prec=14]
+ *        The precision.
+ *
+ * @return {number}
+ *         The corrected float number.
+ */
+function correctFloat(num, prec) {
+    // When the number is higher than 1e14 use the number (#16275)
+    return num > 1e14 ? num : parseFloat(num.toPrecision(prec || 14));
+}
+/**
+ * Utility function to create an HTML element with attributes and styles.
+ *
+ * @function Highcharts.createElement
+ *
+ * @param {string} tag
+ *        The HTML tag.
+ *
+ * @param {Highcharts.HTMLAttributes} [attribs]
+ *        Attributes as an object of key-value pairs.
+ *
+ * @param {Highcharts.CSSObject} [styles]
+ *        Styles as an object of key-value pairs.
+ *
+ * @param {Highcharts.HTMLDOMElement} [parent]
+ *        The parent HTML object.
+ *
+ * @param {boolean} [nopad=false]
+ *        If true, remove all padding, border and margin.
+ *
+ * @return {Highcharts.HTMLDOMElement}
+ *         The created DOM element.
+ */
+function createElement(tag, attribs, styles, parent, nopad) {
+    const el = doc.createElement(tag);
+    if (attribs) {
+        extend(el, attribs);
+    }
+    if (nopad) {
+        css(el, { padding: '0', border: 'none', margin: '0' });
+    }
+    if (styles) {
+        css(el, styles);
+    }
+    if (parent) {
+        parent.appendChild(el);
+    }
+    return el;
+}
+/**
+ * Utility for crisping a line position to the nearest full pixel depending on
+ * the line width.
+ *
+ * @internal
  * @param {number} value       The raw pixel position
  * @param {number} lineWidth   The line width
  * @param {boolean} [inverted] Whether the containing group is inverted.
@@ -348,6 +442,73 @@ function clamp(value, min, max) {
 function crisp(value, lineWidth = 0, inverted) {
     const mod = lineWidth % 2 / 2, inverter = inverted ? -1 : 1;
     return (Math.round(value * inverter - mod) + mod) * inverter;
+}
+/**
+ * Set CSS on a given element.
+ *
+ * @function Highcharts.css
+ *
+ * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} el
+ *        An HTML DOM element.
+ *
+ * @param {Highcharts.CSSObject} styles
+ *        Style object with camel case property names.
+ *
+ * @return {void}
+ */
+function css(el, styles) {
+    extend(el.style, styles);
+}
+/**
+ * Check if an object is null or undefined.
+ *
+ * @function Highcharts.defined
+ *
+ * @param {*} obj
+ *        The object to check.
+ *
+ * @return {boolean}
+ *         False if the object is null or undefined, otherwise true.
+ */
+function defined(obj) {
+    return typeof obj !== 'undefined' && obj !== null;
+}
+/**
+ * Utility method that destroys any SVGElement instances that are properties on
+ * the given object. It loops all properties and invokes destroy if there is a
+ * destroy method. The property is then delete.
+ *
+ * @function Highcharts.destroyObjectProperties
+ *
+ * @param {*} obj
+ *        The object to destroy properties on.
+ *
+ * @param {*} [except]
+ *        Exception, do not destroy this property, only delete it.
+ */
+function destroyObjectProperties(obj, except, destructablesOnly) {
+    objectEach(obj, function (val, n) {
+        // If the object is non-null and destroy is defined
+        if (val !== except && val?.destroy) {
+            // Invoke the destroy
+            val.destroy();
+        }
+        // Delete the property from the object
+        if (val?.destroy || !destructablesOnly) {
+            delete obj[n];
+        }
+    });
+}
+/**
+ * Discard a HTML element
+ *
+ * @function Highcharts.discardElement
+ *
+ * @param {Highcharts.HTMLDOMElement} element
+ *        The HTML node to discard.
+ */
+function discardElement(element) {
+    element?.parentElement?.removeChild(element);
 }
 // eslint-disable-next-line valid-jsdoc
 /**
@@ -417,119 +578,7 @@ function diffObjects(newer, older, keepOlder, collectionsWithUpdate) {
     return ret;
 }
 /**
- * Shortcut for parseInt
- *
- * @internal
- * @function Highcharts.pInt
- *
- * @param {*} s
- *        any
- *
- * @param {number} [mag]
- *        Magnitude
- *
- * @return {number}
- *         number
- */
-function pInt(s, mag) {
-    return parseInt(s, mag || 10);
-}
-/**
- * Utility function to check for string type.
- *
- * @function Highcharts.isString
- *
- * @param {*} s
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is a string.
- */
-function isString(s) {
-    return typeof s === 'string';
-}
-/**
- * Utility function to check if an item is an array.
- *
- * @function Highcharts.isArray
- *
- * @param {*} obj
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is an array.
- */
-function isArray(obj) {
-    const str = Object.prototype.toString.call(obj);
-    return str === '[object Array]' || str === '[object Array Iterator]';
-}
-/**
- * Utility function to check if an item is of type object.
- *
- * @function Highcharts.isObject
- *
- * @param {*} obj
- *        The item to check.
- *
- * @param {boolean} [strict=false]
- *        Also checks that the object is not an array.
- *
- * @return {boolean}
- *         True if the argument is an object.
- */
-function isObject(obj, strict) {
-    return (!!obj &&
-        typeof obj === 'object' &&
-        (!strict || !isArray(obj))); // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-/**
- * Utility function to check if an Object is a HTML Element.
- *
- * @function Highcharts.isDOMElement
- *
- * @param {*} obj
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is a HTML Element.
- */
-function isDOMElement(obj) {
-    return isObject(obj) && typeof obj.nodeType === 'number';
-}
-/**
- * Utility function to check if an Object is a class.
- *
- * @function Highcharts.isClass
- *
- * @param {object|undefined} obj
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is a class.
- */
-function isClass(obj) {
-    const c = obj?.constructor;
-    return !!(isObject(obj, true) &&
-        !isDOMElement(obj) &&
-        (c?.name && c.name !== 'Object'));
-}
-/**
- * Utility function to check if an item is a number and it is finite (not NaN,
- * Infinity or -Infinity).
- *
- * @function Highcharts.isNumber
- *
- * @param {*} n
- *        The item to check.
- *
- * @return {boolean}
- *         True if the item is a finite number
- */
-function isNumber(n) {
-    return typeof n === 'number' && !isNaN(n) && n < Infinity && n > -Infinity;
-}
-/**
- * Remove the last occurence of an item from an array.
+ * Remove the last occurrence of an item from an array.
  *
  * @function Highcharts.erase
  *
@@ -551,183 +600,6 @@ function erase(arr, item) {
     }
 }
 /**
- * Insert a series or an axis in a collection with other items, either the
- * chart series or yAxis series or axis collections, in the correct order
- * according to the index option and whether it is internal. Used internally
- * when adding series and axes.
- *
- * @internal
- * @function Highcharts.Chart#insertItem
- * @param  {Highcharts.Series|Highcharts.Axis} item
- *         The item to insert
- * @param  {Array<Highcharts.Series>|Array<Highcharts.Axis>} collection
- *         A collection of items, like `chart.series` or `xAxis.series`.
- * @return {number} The index of the series in the collection.
- */
-function insertItem(item, collection) {
-    const indexOption = item.options.index, length = collection.length;
-    let i;
-    for (
-    // Internal item (navigator) should always be pushed to the end
-    i = item.options.isInternal ? length : 0; i < length + 1; i++) {
-        if (
-        // No index option, reached the end of the collection,
-        // equivalent to pushing
-        !collection[i] ||
-            // Handle index option, the element to insert has lower index
-            (isNumber(indexOption) &&
-                indexOption < pick(collection[i].options.index, collection[i]._i)) ||
-            // Insert the new item before other internal items
-            // (navigator)
-            collection[i].options.isInternal) {
-            collection.splice(i, 0, item);
-            break;
-        }
-    }
-    return i;
-}
-/**
- * Adds an item to an array, if it is not present in the array.
- *
- * @function Highcharts.pushUnique
- *
- * @param {Array<unknown>} array
- * The array to add the item to.
- *
- * @param {unknown} item
- * The item to add.
- *
- * @return {boolean}
- * Returns true, if the item was not present and has been added.
- */
-function pushUnique(array, item) {
-    return array.indexOf(item) < 0 && !!array.push(item);
-}
-/**
- * Check if an object is null or undefined.
- *
- * @function Highcharts.defined
- *
- * @param {*} obj
- *        The object to check.
- *
- * @return {boolean}
- *         False if the object is null or undefined, otherwise true.
- */
-function defined(obj) {
-    return typeof obj !== 'undefined' && obj !== null;
-}
-/**
- * Set or get an attribute or an object of attributes.
- *
- * To use as a setter, pass a key and a value, or let the second argument be a
- * collection of keys and values. When using a collection, passing a value of
- * `null` or `undefined` will remove the attribute.
- *
- * To use as a getter, pass only a string as the second argument.
- *
- * @function Highcharts.attr
- *
- * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} elem
- *        The DOM element to receive the attribute(s).
- *
- * @param {string|Highcharts.HTMLAttributes|Highcharts.SVGAttributes} [keyOrAttribs]
- *        The property or an object of key-value pairs.
- *
- * @param {number|string} [value]
- *        The value if a single property is set.
- *
- * @return {string|null|undefined}
- *         When used as a getter, return the value.
- */
-function attr(elem, keyOrAttribs, value) {
-    const isGetter = isString(keyOrAttribs) && !defined(value);
-    let ret;
-    const attrSingle = (value, key) => {
-        // Set the value
-        if (defined(value)) {
-            elem.setAttribute(key, value);
-            // Get the value
-        }
-        else if (isGetter) {
-            ret = elem.getAttribute(key);
-            // IE7 and below cannot get class through getAttribute (#7850)
-            if (!ret && key === 'class') {
-                ret = elem.getAttribute(key + 'Name');
-            }
-            // Remove the value
-        }
-        else {
-            elem.removeAttribute(key);
-        }
-    };
-    // If keyOrAttribs is a string
-    if (isString(keyOrAttribs)) {
-        attrSingle(value, keyOrAttribs);
-        // Else if keyOrAttribs is defined, it is a hash of key/value pairs
-    }
-    else {
-        objectEach(keyOrAttribs, attrSingle);
-    }
-    return ret;
-}
-/**
- * Check if an element is an array, and if not, make it into an array.
- *
- * @function Highcharts.splat
- *
- * @param {*} obj
- *        The object to splat.
- *
- * @return {Array}
- *         The produced or original array.
- */
-function splat(obj) {
-    return isArray(obj) ? obj : [obj];
-}
-/**
- * Set a timeout if the delay is given, otherwise perform the function
- * synchronously.
- *
- * @function Highcharts.syncTimeout
- *
- * @param {Function} fn
- *        The function callback.
- *
- * @param {number} delay
- *        Delay in milliseconds.
- *
- * @param {*} [context]
- *        An optional context to send to the function callback.
- *
- * @return {number}
- *         An identifier for the timeout that can later be cleared with
- *         Highcharts.clearTimeout. Returns -1 if there is no timeout.
- */
-function syncTimeout(fn, delay, context) {
-    if (delay > 0) {
-        return setTimeout(fn, delay, context);
-    }
-    fn.call(0, context);
-    return -1;
-}
-/**
- * Internal clear timeout. The function checks that the `id` was not removed
- * (e.g. by `chart.destroy()`). For the details see
- * [issue #7901](https://github.com/highcharts/highcharts/issues/7901).
- *
- * @function Highcharts.clearTimeout
- *
- * @param {number|undefined} id
- * Id of a timeout.
- */
-function internalClearTimeout(id) {
-    if (defined(id)) {
-        clearTimeout(id);
-    }
-}
-/* eslint-disable valid-jsdoc */
-/**
  * Utility function to extend an object with the members of another.
  *
  * @function Highcharts.extend<T>
@@ -742,7 +614,6 @@ function internalClearTimeout(id) {
  *         Object a, the original object.
  */
 function extend(a, b) {
-    /* eslint-enable valid-jsdoc */
     let n;
     if (!a) {
         a = {};
@@ -751,83 +622,6 @@ function extend(a, b) {
         a[n] = b[n];
     }
     return a;
-}
-/* eslint-disable valid-jsdoc */
-/**
- * Return the first value that is not null or undefined.
- *
- * @function Highcharts.pick<T>
- *
- * @param {...Array<T|null|undefined>} items
- *        Variable number of arguments to inspect.
- *
- * @return {T}
- *         The value of the first argument that is not null or undefined.
- */
-function pick() {
-    const args = arguments;
-    const length = args.length;
-    for (let i = 0; i < length; i++) {
-        const arg = args[i];
-        if (typeof arg !== 'undefined' && arg !== null) {
-            return arg;
-        }
-    }
-}
-/**
- * Set CSS on a given element.
- *
- * @function Highcharts.css
- *
- * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} el
- *        An HTML DOM element.
- *
- * @param {Highcharts.CSSObject} styles
- *        Style object with camel case property names.
- *
- * @return {void}
- */
-function css(el, styles) {
-    extend(el.style, styles);
-}
-/**
- * Utility function to create an HTML element with attributes and styles.
- *
- * @function Highcharts.createElement
- *
- * @param {string} tag
- *        The HTML tag.
- *
- * @param {Highcharts.HTMLAttributes} [attribs]
- *        Attributes as an object of key-value pairs.
- *
- * @param {Highcharts.CSSObject} [styles]
- *        Styles as an object of key-value pairs.
- *
- * @param {Highcharts.HTMLDOMElement} [parent]
- *        The parent HTML object.
- *
- * @param {boolean} [nopad=false]
- *        If true, remove all padding, border and margin.
- *
- * @return {Highcharts.HTMLDOMElement}
- *         The created DOM element.
- */
-function createElement(tag, attribs, styles, parent, nopad) {
-    const el = doc.createElement(tag);
-    if (attribs) {
-        extend(el, attribs);
-    }
-    if (nopad) {
-        css(el, { padding: '0', border: 'none', margin: '0' });
-    }
-    if (styles) {
-        css(el, styles);
-    }
-    if (parent) {
-        parent.appendChild(el);
-    }
-    return el;
 }
 // eslint-disable-next-line valid-jsdoc
 /**
@@ -853,352 +647,98 @@ function extendClass(parent, members) {
     return obj;
 }
 /**
- * Left-pad a string to a given length by adding a character repetitively.
+ * Fire an event that was registered with {@link Highcharts#addEvent}.
  *
- * @function Highcharts.pad
+ * @function Highcharts.fireEvent<T>
  *
- * @param {number} number
- *        The input string or number.
+ * @param {T} el
+ *        The object to fire the event on. It can be a {@link HTMLDOMElement},
+ *        an {@link SVGElement} or any other object.
  *
- * @param {number} [length]
- *        The desired string length.
+ * @param {string} type
+ *        The type of event.
  *
- * @param {string} [padder=0]
- *        The character to pad with.
+ * @param {Highcharts.Dictionary<*>|Event} [eventArguments]
+ *        Custom event arguments that are passed on as an argument to the event
+ *        handler.
  *
- * @return {string}
- *         The padded string.
+ * @param {Highcharts.EventCallbackFunction<T>|Function} [defaultFunction]
+ *        The default function to execute if the other listeners haven't
+ *        returned false.
+ *
+ * @return {void}
  */
-function pad(number, length, padder) {
-    return new Array((length || 2) +
-        1 -
-        String(number)
-            .replace('-', '')
-            .length).join(padder || '0') + number;
-}
-/**
- * Return a length based on either the integer value, or a percentage of a base.
- *
- * @function Highcharts.relativeLength
- *
- * @param {Highcharts.RelativeSize} value
- *        A percentage string or a number.
- *
- * @param {number} base
- *        The full length that represents 100%.
- *
- * @param {number} [offset=0]
- *        A pixel offset to apply for percentage values. Used internally in
- *        axis positioning.
- *
- * @return {number}
- *         The computed length.
- */
-function relativeLength(value, base, offset) {
-    return (/%$/).test(value) ?
-        (base * parseFloat(value) / 100) + (offset || 0) :
-        parseFloat(value);
-}
-/**
- * Replaces text in a string with a given replacement in a loop to catch nested
- * matches after previous replacements.
- *
- * @function Highcharts.replaceNested
- *
- * @param {string} text
- * Text to search and modify.
- *
- * @param {...Array<(RegExp|string)>} replacements
- * One or multiple tuples with search pattern (`[0]: (string|RegExp)`) and
- * replacement (`[1]: string`) for matching text.
- *
- * @return {string}
- * Text with replacements.
- */
-function replaceNested(text, ...replacements) {
-    let previous, replacement;
-    do {
-        previous = text;
-        for (replacement of replacements) {
-            text = text.replace(replacement[0], replacement[1]);
+function fireEvent(el, type, eventArguments, defaultFunction) {
+    eventArguments = eventArguments || {};
+    if (doc?.createEvent &&
+        (el.dispatchEvent ||
+            (el.fireEvent &&
+                // Enable firing events on Highcharts instance.
+                el !== Core_Globals))) {
+        const e = doc.createEvent('Events');
+        e.initEvent(type, true, true);
+        eventArguments = extend(e, eventArguments);
+        if (el.dispatchEvent) {
+            el.dispatchEvent(eventArguments);
         }
-    } while (text !== previous);
-    return text;
-}
-/**
- * Wrap a method with extended functionality, preserving the original function.
- *
- * @function Highcharts.wrap
- *
- * @param {*} obj
- *        The context object that the method belongs to. In real cases, this is
- *        often a prototype.
- *
- * @param {string} method
- *        The name of the method to extend.
- *
- * @param {Highcharts.WrapProceedFunction} func
- *        A wrapper function callback. This function is called with the same
- *        arguments as the original function, except that the original function
- *        is unshifted and passed as the first argument.
- */
-function wrap(obj, method, func) {
-    const proceed = obj[method];
-    obj[method] = function () {
-        const outerArgs = arguments, scope = this;
-        return func.apply(this, [
-            function () {
-                return proceed.apply(scope, arguments.length ? arguments : outerArgs);
+        else {
+            el.fireEvent(type, eventArguments);
+        }
+    }
+    else if (el.hcEvents) {
+        if (!eventArguments.target) {
+            // We're running a custom event
+            extend(eventArguments, {
+                // Attach a simple preventDefault function to skip
+                // default handler if called. The built-in
+                // defaultPrevented property is not overwritable (#5112)
+                preventDefault: function () {
+                    eventArguments.defaultPrevented = true;
+                },
+                // Setting target to native events fails with clicking
+                // the zoom-out button in Chrome.
+                target: el,
+                // If the type is not set, we're running a custom event
+                // (#2297). If it is set, we're running a browser event.
+                type: type
+            });
+        }
+        const events = [];
+        let object = el;
+        let multilevel = false;
+        // Recurse up the inheritance chain and collect hcEvents set as own
+        // objects on the prototypes.
+        while (object.hcEvents) {
+            if (Object.hasOwnProperty.call(object, 'hcEvents') &&
+                object.hcEvents[type]) {
+                if (events.length) {
+                    multilevel = true;
+                }
+                events.unshift.apply(events, object.hcEvents[type]);
             }
-        ].concat([].slice.call(arguments)));
-    };
-}
-/**
- * Get the magnitude of a number.
- *
- * @function Highcharts.getMagnitude
- *
- * @param {number} num
- *        The number.
- *
- * @return {number}
- *         The magnitude, where 1-9 are magnitude 1, 10-99 magnitude 2 etc.
- */
-function getMagnitude(num) {
-    return Math.pow(10, Math.floor(Math.log(num) / Math.LN10));
-}
-/**
- * Take an interval and normalize it to multiples of round numbers.
- *
- * @deprecated
- * @function Highcharts.normalizeTickInterval
- *
- * @param {number} interval
- *        The raw, un-rounded interval.
- *
- * @param {Array<*>} [multiples]
- *        Allowed multiples.
- *
- * @param {number} [magnitude]
- *        The magnitude of the number.
- *
- * @param {boolean} [allowDecimals]
- *        Whether to allow decimals.
- *
- * @param {boolean} [hasTickAmount]
- *        If it has tickAmount, avoid landing on tick intervals lower than
- *        original.
- *
- * @return {number}
- *         The normalized interval.
- *
- * @todo
- * Move this function to the Axis prototype. It is here only for historical
- * reasons.
- */
-function normalizeTickInterval(interval, multiples, magnitude, allowDecimals, hasTickAmount) {
-    let i, retInterval = interval;
-    // Round to a tenfold of 1, 2, 2.5 or 5
-    magnitude = pick(magnitude, getMagnitude(interval));
-    const normalized = interval / magnitude;
-    // Multiples for a linear scale
-    if (!multiples) {
-        multiples = hasTickAmount ?
-            // Finer grained ticks when the tick amount is hard set, including
-            // when alignTicks is true on multiple axes (#4580).
-            [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10] :
-            // Else, let ticks fall on rounder numbers
-            [1, 2, 2.5, 5, 10];
-        // The allowDecimals option
-        if (allowDecimals === false) {
-            if (magnitude === 1) {
-                multiples = multiples.filter(function (num) {
-                    return num % 1 === 0;
-                });
+            object = Object.getPrototypeOf(object);
+        }
+        // For performance reasons, only sort the event handlers in case we are
+        // dealing with multiple levels in the prototype chain. Otherwise, the
+        // events are already sorted in the addEvent function.
+        if (multilevel) {
+            // Order the calls
+            events.sort((a, b) => a.order - b.order);
+        }
+        // Call the collected event handlers
+        events.forEach((obj) => {
+            // If the event handler returns false, prevent the default handler
+            // from executing
+            if (obj.fn.call(el, eventArguments, el) === false) {
+                eventArguments.preventDefault();
             }
-            else if (magnitude <= 0.1) {
-                multiples = [1 / magnitude];
-            }
-        }
+        });
     }
-    // Normalize the interval to the nearest multiple
-    for (i = 0; i < multiples.length; i++) {
-        retInterval = multiples[i];
-        // Only allow tick amounts smaller than natural
-        if ((hasTickAmount &&
-            retInterval * magnitude >= interval) ||
-            (!hasTickAmount &&
-                (normalized <=
-                    (multiples[i] +
-                        (multiples[i + 1] || multiples[i])) / 2))) {
-            break;
-        }
-    }
-    // Multiply back to the correct magnitude. Correct floats to appropriate
-    // precision (#6085).
-    retInterval = correctFloat(retInterval * magnitude, -Math.round(Math.log(0.001) / Math.LN10));
-    return retInterval;
-}
-/**
- * Sort an object array and keep the order of equal items. The ECMAScript
- * standard does not specify the behaviour when items are equal.
- *
- * @function Highcharts.stableSort
- *
- * @param {Array<*>} arr
- *        The array to sort.
- *
- * @param {Function} sortFunction
- *        The function to sort it with, like with regular Array.prototype.sort.
- */
-function stableSort(arr, sortFunction) {
-    // @todo It seems like Chrome since v70 sorts in a stable way internally,
-    // plus all other browsers do it, so over time we may be able to remove this
-    // function
-    const length = arr.length;
-    let sortValue, i;
-    // Add index to each item
-    for (i = 0; i < length; i++) {
-        arr[i].safeI = i; // Stable sort index
-    }
-    arr.sort(function (a, b) {
-        sortValue = sortFunction(a, b);
-        return sortValue === 0 ? a.safeI - b.safeI : sortValue;
-    });
-    // Remove index from items
-    for (i = 0; i < length; i++) {
-        delete arr[i].safeI; // Stable sort index
+    // Run the default if not prevented
+    if (defaultFunction && !eventArguments.defaultPrevented) {
+        defaultFunction.call(el, eventArguments);
     }
 }
-/**
- * Non-recursive method to find the lowest member of an array. `Math.min` raises
- * a maximum call stack size exceeded error in Chrome when trying to apply more
- * than 150.000 points. This method is slightly slower, but safe.
- *
- * @function Highcharts.arrayMin
- *
- * @param {Array<*>} data
- *        An array of numbers.
- *
- * @return {number}
- *         The lowest number.
- */
-function arrayMin(data) {
-    let i = data.length, min = data[0];
-    while (i--) {
-        if (data[i] < min) {
-            min = data[i];
-        }
-    }
-    return min;
-}
-/**
- * Non-recursive method to find the lowest member of an array. `Math.max` raises
- * a maximum call stack size exceeded error in Chrome when trying to apply more
- * than 150.000 points. This method is slightly slower, but safe.
- *
- * @function Highcharts.arrayMax
- *
- * @param {Array<*>} data
- *        An array of numbers.
- *
- * @return {number}
- *         The highest number.
- */
-function arrayMax(data) {
-    let i = data.length, max = data[0];
-    while (i--) {
-        if (data[i] > max) {
-            max = data[i];
-        }
-    }
-    return max;
-}
-/**
- * Utility method that destroys any SVGElement instances that are properties on
- * the given object. It loops all properties and invokes destroy if there is a
- * destroy method. The property is then delete.
- *
- * @function Highcharts.destroyObjectProperties
- *
- * @param {*} obj
- *        The object to destroy properties on.
- *
- * @param {*} [except]
- *        Exception, do not destroy this property, only delete it.
- */
-function destroyObjectProperties(obj, except, destructablesOnly) {
-    objectEach(obj, function (val, n) {
-        // If the object is non-null and destroy is defined
-        if (val !== except && val?.destroy) {
-            // Invoke the destroy
-            val.destroy();
-        }
-        // Delete the property from the object
-        if (val?.destroy || !destructablesOnly) {
-            delete obj[n];
-        }
-    });
-}
-/**
- * Discard a HTML element
- *
- * @function Highcharts.discardElement
- *
- * @param {Highcharts.HTMLDOMElement} element
- *        The HTML node to discard.
- */
-function discardElement(element) {
-    element?.parentElement?.removeChild(element);
-}
-/**
- * Fix JS round off float errors.
- *
- * @function Highcharts.correctFloat
- *
- * @param {number} num
- *        A float number to fix.
- *
- * @param {number} [prec=14]
- *        The precision.
- *
- * @return {number}
- *         The corrected float number.
- */
-function correctFloat(num, prec) {
-    // When the number is higher than 1e14 use the number (#16275)
-    return num > 1e14 ? num : parseFloat(num.toPrecision(prec || 14));
-}
-/**
- * The time unit lookup
- *
- * @ignore
- */
-const timeUnits = {
-    millisecond: 1,
-    second: 1000,
-    minute: 60000,
-    hour: 3600000,
-    day: 24 * 3600000,
-    week: 7 * 24 * 3600000,
-    month: 28 * 24 * 3600000,
-    year: 364 * 24 * 3600000
-};
-/**
- * Easing definition
- *
- * @internal
- * @function Math.easeInOutSine
- *
- * @param {number} pos
- * Current position, ranging from 0 to 1.
- *
- * @return {number}
- * Ease result
- */
-Math.easeInOutSine = function (pos) {
-    return -0.5 * (Math.cos(Math.PI * pos) - 1);
-};
 /**
  * Convenience function to get the align factor, used several places for
  * computing positions
@@ -1243,6 +783,20 @@ function getClosestDistance(arrays, onError) {
     return closest;
 }
 /**
+ * Get the magnitude of a number.
+ *
+ * @function Highcharts.getMagnitude
+ *
+ * @param {number} num
+ *        The number.
+ *
+ * @return {number}
+ *         The magnitude, where 1-9 are magnitude 1, 10-99 magnitude 2 etc.
+ */
+function getMagnitude(num) {
+    return Math.pow(10, Math.floor(Math.log(num) / Math.LN10));
+}
+/**
  * Returns the value of a property path on a given object.
  *
  * @internal
@@ -1251,7 +805,7 @@ function getClosestDistance(arrays, onError) {
  * @param {string} path
  * Path to the property, for example `custom.myValue`.
  *
- * @param {unknown} obj
+ * @param {unknown} parent
  * Instance containing the property on the specific path.
  *
  * @return {unknown}
@@ -1335,7 +889,7 @@ function getStyle(el, prop, toInt) {
     const css = win.getComputedStyle(el, void 0); // eslint-disable-line no-undefined
     if (css) {
         style = css.getPropertyValue(prop);
-        if (pick(toInt, prop !== 'opacity')) {
+        if (Utilities_pick(toInt, prop !== 'opacity')) {
             style = pInt(style);
         }
     }
@@ -1372,6 +926,284 @@ const find = Array.prototype.find ?
         }
     };
 /**
+ * Internal clear timeout. The function checks that the `id` was not removed
+ * (e.g. by `chart.destroy()`). For the details see
+ * [issue #7901](https://github.com/highcharts/highcharts/issues/7901).
+ *
+ * @internal
+ *
+ * @function Highcharts.clearTimeout
+ *
+ * @param {number|undefined} id
+ * Id of a timeout.
+ */
+function internalClearTimeout(id) {
+    if (defined(id)) {
+        clearTimeout(id);
+    }
+}
+/**
+ * Utility function to check if an Object is a HTML Element.
+ *
+ * @function Highcharts.isDOMElement
+ *
+ * @param {*} obj
+ *        The item to check.
+ *
+ * @return {boolean}
+ *         True if the argument is a HTML Element.
+ */
+function isDOMElement(obj) {
+    return isObject(obj) && typeof obj.nodeType === 'number';
+}
+/**
+ * Utility function to check if an Object is a class.
+ *
+ * @function Highcharts.isClass
+ *
+ * @param {object|undefined} obj
+ *        The item to check.
+ *
+ * @return {boolean}
+ *         True if the argument is a class.
+ */
+function isClass(obj) {
+    const c = obj?.constructor;
+    return !!(isObject(obj, true) &&
+        !isDOMElement(obj) &&
+        (c?.name && c.name !== 'Object'));
+}
+/**
+ * Utility function to check if an item is a number and it is finite (not NaN,
+ * Infinity or -Infinity).
+ *
+ * @function Highcharts.isNumber
+ *
+ * @param {*} n
+ *        The item to check.
+ *
+ * @return {boolean}
+ *         True if the item is a finite number
+ */
+function Utilities_isNumber(n) {
+    return typeof n === 'number' && !isNaN(n) && n < Infinity && n > -Infinity;
+}
+/**
+ * Utility function to check for string type.
+ *
+ * @function Highcharts.isString
+ *
+ * @param {*} s
+ *        The item to check.
+ *
+ * @return {boolean}
+ *         True if the argument is a string.
+ */
+function isString(s) {
+    return typeof s === 'string';
+}
+/**
+ * Utility function to check if an item is an array.
+ *
+ * @function Highcharts.isArray
+ *
+ * @param {*} obj
+ *        The item to check.
+ *
+ * @return {boolean}
+ *         True if the argument is an array.
+ */
+function isArray(obj) {
+    const str = Object.prototype.toString.call(obj);
+    return str === '[object Array]' || str === '[object Array Iterator]';
+}
+/**
+ * Utility function to check if object is a function.
+ *
+ * @function Highcharts.isFunction
+ *
+ * @param {*} obj
+ *        The item to check.
+ *
+ * @return {boolean}
+ *         True if the argument is a function.
+ */
+function isFunction(obj) {
+    return typeof obj === 'function';
+}
+/**
+ * Utility function to check if an item is of type object.
+ *
+ * @function Highcharts.isObject
+ *
+ * @param {*} obj
+ *        The item to check.
+ *
+ * @param {boolean} [strict=false]
+ *        Also checks that the object is not an array.
+ *
+ * @return {boolean}
+ *         True if the argument is an object.
+ */
+function isObject(obj, strict) {
+    return (!!obj &&
+        typeof obj === 'object' &&
+        (!strict || !isArray(obj))); // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+/**
+ * Utility function to deep merge two or more objects and return a third object.
+ * If the first argument is true, the contents of the second object is copied
+ * into the first object. The merge function can also be used with a single
+ * object argument to create a deep copy of an object.
+ *
+ * @function Highcharts.merge<T>
+ *
+ * @param {true | T} extendOrSource
+ *        Whether to extend the left-side object,
+ *        or the first object to merge as a deep copy.
+ *
+ * @param {...Array<object|undefined>} [sources]
+ *        Object(s) to merge into the previous one.
+ *
+ * @return {T}
+ *         The merged object. If the first argument is true, the return is the
+ *         same as the second argument.
+ */
+function merge(extendOrSource, ...sources) {
+    let i, args = [extendOrSource, ...sources], ret = {};
+    const doCopy = function (copy, original) {
+        // An object is replacing a primitive
+        if (typeof copy !== 'object') {
+            copy = {};
+        }
+        objectEach(original, function (value, key) {
+            // Prototype pollution (#14883)
+            if (key === '__proto__' || key === 'constructor') {
+                return;
+            }
+            // Copy the contents of objects, but not arrays or DOM nodes
+            if (isObject(value, true) &&
+                !isClass(value) &&
+                !isDOMElement(value)) {
+                copy[key] = doCopy(copy[key] || {}, value);
+                // Primitives and arrays are copied over directly
+            }
+            else {
+                copy[key] = original[key];
+            }
+        });
+        return copy;
+    };
+    // If first argument is true, copy into the existing object. Used in
+    // setOptions.
+    if (extendOrSource === true) {
+        ret = args[1];
+        args = Array.prototype.slice.call(args, 2);
+    }
+    // For each argument, extend the return
+    const len = args.length;
+    for (i = 0; i < len; i++) {
+        ret = doCopy(ret, args[i]);
+    }
+    return ret;
+}
+/**
+ * Take an interval and normalize it to multiples of round numbers.
+ *
+ * @deprecated
+ * @function Highcharts.normalizeTickInterval
+ *
+ * @param {number} interval
+ *        The raw, un-rounded interval.
+ *
+ * @param {Array<*>} [multiples]
+ *        Allowed multiples.
+ *
+ * @param {number} [magnitude]
+ *        The magnitude of the number.
+ *
+ * @param {boolean} [allowDecimals]
+ *        Whether to allow decimals.
+ *
+ * @param {boolean} [hasTickAmount]
+ *        If it has tickAmount, avoid landing on tick intervals lower than
+ *        original.
+ *
+ * @return {number}
+ *         The normalized interval.
+ *
+ * @todo
+ * Move this function to the Axis prototype. It is here only for historical
+ * reasons.
+ */
+function normalizeTickInterval(interval, multiples, magnitude, allowDecimals, hasTickAmount) {
+    let i, retInterval = interval;
+    // Round to a tenfold of 1, 2, 2.5 or 5
+    magnitude = Utilities_pick(magnitude, getMagnitude(interval));
+    const normalized = interval / magnitude;
+    // Multiples for a linear scale
+    if (!multiples) {
+        multiples = hasTickAmount ?
+            // Finer grained ticks when the tick amount is hard set, including
+            // when alignTicks is true on multiple axes (#4580).
+            [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10] :
+            // Else, let ticks fall on rounder numbers
+            [1, 2, 2.5, 5, 10];
+        // The allowDecimals option
+        if (allowDecimals === false) {
+            if (magnitude === 1) {
+                multiples = multiples.filter(function (num) {
+                    return num % 1 === 0;
+                });
+            }
+            else if (magnitude <= 0.1) {
+                multiples = [1 / magnitude];
+            }
+        }
+    }
+    // Normalize the interval to the nearest multiple
+    for (i = 0; i < multiples.length; i++) {
+        retInterval = multiples[i];
+        // Only allow tick amounts smaller than natural
+        if ((hasTickAmount &&
+            retInterval * magnitude >= interval) ||
+            (!hasTickAmount &&
+                (normalized <=
+                    (multiples[i] +
+                        (multiples[i + 1] || multiples[i])) / 2))) {
+            break;
+        }
+    }
+    // Multiply back to the correct magnitude. Correct floats to appropriate
+    // precision (#6085).
+    retInterval = correctFloat(retInterval * magnitude, -Math.round(Math.log(0.001) / Math.LN10));
+    return retInterval;
+}
+/**
+ * Iterate over object key pairs in an object.
+ *
+ * @function Highcharts.objectEach<T>
+ *
+ * @param {*} obj
+ *        The object to iterate over.
+ *
+ * @param {Highcharts.ObjectEachCallbackFunction<T>} fn
+ *        The iterator callback. It passes three arguments:
+ *        * value - The property value.
+ *        * key - The property key.
+ *        * obj - The object that objectEach is being applied to.
+ *
+ * @param {T} [ctx]
+ *        The context.
+ */
+function objectEach(obj, fn, ctx) {
+    for (const key in obj) {
+        if (Object.hasOwnProperty.call(obj, key)) {
+            fn.call(ctx || obj[key], obj[key], key, obj);
+        }
+    }
+}
+/**
  * Get the element's offset position, corrected for `overflow: auto`.
  *
  * @function Highcharts.offset
@@ -1396,103 +1228,141 @@ function offset(el) {
         height: box.height
     };
 }
-/* eslint-disable valid-jsdoc */
 /**
- * Iterate over object key pairs in an object.
+ * Left-pad a string to a given length by adding a character repetitively.
  *
- * @function Highcharts.objectEach<T>
+ * @function Highcharts.pad
  *
- * @param {*} obj
- *        The object to iterate over.
+ * @param {number} number
+ *        The input string or number.
  *
- * @param {Highcharts.ObjectEachCallbackFunction<T>} fn
- *        The iterator callback. It passes three arguments:
- *        * value - The property value.
- *        * key - The property key.
- *        * obj - The object that objectEach is being applied to.
+ * @param {number} [length]
+ *        The desired string length.
  *
- * @param {T} [ctx]
- *        The context.
+ * @param {string} [padder=0]
+ *        The character to pad with.
+ *
+ * @return {string}
+ *         The padded string.
  */
-function objectEach(obj, fn, ctx) {
-    /* eslint-enable valid-jsdoc */
-    for (const key in obj) {
-        if (Object.hasOwnProperty.call(obj, key)) {
-            fn.call(ctx || obj[key], obj[key], key, obj);
+function pad(number, length, padder) {
+    return new Array((length || 2) +
+        1 -
+        String(number)
+            .replace('-', '')
+            .length).join(padder || '0') + number;
+}
+/* eslint-disable jsdoc/check-param-names */
+/**
+ * Return the first value that is not null or undefined.
+ *
+ * @function Highcharts.pick<T>
+ *
+ * @param {...Array<T|null|undefined>} items
+ *        Variable number of arguments to inspect.
+ *
+ * @return {T}
+ *         The value of the first argument that is not null or undefined.
+ */
+function Utilities_pick() {
+    const args = arguments;
+    const length = args.length;
+    for (let i = 0; i < length; i++) {
+        const arg = args[i];
+        if (typeof arg !== 'undefined' && arg !== null) {
+            return arg;
         }
     }
 }
-/* eslint-disable valid-jsdoc */
+/* eslint-enable jsdoc/check-param-names */
 /**
- * Add an event listener.
+ * Shortcut for parseInt
  *
- * @function Highcharts.addEvent<T>
+ * @internal
+ * @function Highcharts.pInt
  *
- * @param  {Highcharts.Class<T>|T} el
- *         The element or object to add a listener to. It can be a
- *         {@link HTMLDOMElement}, an {@link SVGElement} or any other object.
+ * @param {*} s
+ *        any
  *
- * @param  {string} type
- *         The event type.
+ * @param {number} [mag]
+ *        Magnitude
  *
- * @param  {Highcharts.EventCallbackFunction<T>|Function} fn
- *         The function callback to execute when the event is fired.
- *
- * @param  {Highcharts.EventOptionsObject} [options]
- *         Options for adding the event.
- *
- * @sample highcharts/members/addevent
- *         Use a general `render` event to draw shapes on a chart
- *
- * @return {Function}
- *         A callback function to remove the added event.
+ * @return {number}
+ *         number
  */
-function addEvent(el, type, fn, options = {}) {
-    /* eslint-enable valid-jsdoc */
-    // Add hcEvents to either the prototype (in case we're running addEvent on a
-    // class) or the instance. If hasOwnProperty('hcEvents') is false, it is
-    // inherited down the prototype chain, in which case we need to set the
-    // property on this instance (which may itself be a prototype).
-    const owner = typeof el === 'function' && el.prototype || el;
-    if (!Object.hasOwnProperty.call(owner, 'hcEvents')) {
-        owner.hcEvents = {};
-    }
-    const events = owner.hcEvents;
-    // Allow click events added to points, otherwise they will be prevented by
-    // the TouchPointer.pinch function after a pinch zoom operation (#7091).
-    if (Core_Globals.Point && // Without H a dependency loop occurs
-        el instanceof Core_Globals.Point &&
-        el.series &&
-        el.series.chart) {
-        el.series.chart.runTrackerClick = true;
-    }
-    // Handle DOM events
-    // If the browser supports passive events, add it to improve performance
-    // on touch events (#11353).
-    const addEventListener = el.addEventListener;
-    if (addEventListener) {
-        addEventListener.call(el, type, fn, Core_Globals.supportsPassiveEvents ? {
-            passive: options.passive === void 0 ?
-                type.indexOf('touch') !== -1 : options.passive,
-            capture: false
-        } : false);
-    }
-    if (!events[type]) {
-        events[type] = [];
-    }
-    const eventObject = {
-        fn,
-        order: typeof options.order === 'number' ? options.order : Infinity
-    };
-    events[type].push(eventObject);
-    // Order the calls
-    events[type].sort((a, b) => a.order - b.order);
-    // Return a function that can be called to remove this event.
-    return function () {
-        removeEvent(el, type, fn);
-    };
+function pInt(s, mag) {
+    return parseInt(s, mag || 10);
 }
-/* eslint-disable valid-jsdoc */
+/**
+ * Adds an item to an array, if it is not present in the array.
+ *
+ * @internal
+ *
+ * @function Highcharts.pushUnique
+ *
+ * @param {Array<unknown>} array
+ * The array to add the item to.
+ *
+ * @param {unknown} item
+ * The item to add.
+ *
+ * @return {boolean}
+ * Returns true, if the item was not present and has been added.
+ */
+function pushUnique(array, item) {
+    return array.indexOf(item) < 0 && !!array.push(item);
+}
+/**
+ * Return a length based on either the integer value, or a percentage of a base.
+ *
+ * @function Highcharts.relativeLength
+ *
+ * @param {Highcharts.RelativeSize} value
+ *        A percentage string or a number.
+ *
+ * @param {number} base
+ *        The full length that represents 100%.
+ *
+ * @param {number} [offset=0]
+ *        A pixel offset to apply for percentage values. Used internally in
+ *        axis positioning.
+ *
+ * @return {number}
+ *         The computed length.
+ */
+function relativeLength(value, base, offset) {
+    return (/%$/).test(value) ?
+        (base * parseFloat(value) / 100) + (offset || 0) :
+        parseFloat(value);
+}
+/**
+ * Replaces text in a string with a given replacement in a loop to catch nested
+ * matches after previous replacements.
+ *
+ * @internal
+ *
+ * @function Highcharts.replaceNested
+ *
+ * @param {string} text
+ * Text to search and modify.
+ *
+ * @param {...Array<(RegExp|string)>} replacements
+ * One or multiple tuples with search pattern (`[0]: (string|RegExp)`) and
+ * replacement (`[1]: string`) for matching text.
+ *
+ * @return {string}
+ * Text with replacements.
+ */
+function replaceNested(text, ...replacements) {
+    let previous, replacement;
+    do {
+        previous = text;
+        for (replacement of replacements) {
+            text = text.replace(replacement[0], replacement[1]);
+        }
+    } while (text !== previous);
+    return text;
+}
 /**
  * Remove an event that was added with {@link Highcharts#addEvent}.
  *
@@ -1512,7 +1382,6 @@ function addEvent(el, type, fn, options = {}) {
  * @return {void}
  */
 function removeEvent(el, type, fn) {
-    /* eslint-enable valid-jsdoc */
     /** @internal */
     function removeOneEvent(type, fn) {
         const removeEventListener = el.removeEventListener;
@@ -1564,4188 +1433,122 @@ function removeEvent(el, type, fn) {
         }
     }
 }
-/* eslint-disable valid-jsdoc */
 /**
- * Fire an event that was registered with {@link Highcharts#addEvent}.
+ * Check if an element is an array, and if not, make it into an array.
  *
- * @function Highcharts.fireEvent<T>
+ * @function Highcharts.splat
  *
- * @param {T} el
- *        The object to fire the event on. It can be a {@link HTMLDOMElement},
- *        an {@link SVGElement} or any other object.
+ * @param {*} obj
+ *        The object to splat.
  *
- * @param {string} type
- *        The type of event.
- *
- * @param {Highcharts.Dictionary<*>|Event} [eventArguments]
- *        Custom event arguments that are passed on as an argument to the event
- *        handler.
- *
- * @param {Highcharts.EventCallbackFunction<T>|Function} [defaultFunction]
- *        The default function to execute if the other listeners haven't
- *        returned false.
- *
- * @return {void}
+ * @return {Array}
+ *         The produced or original array.
  */
-function fireEvent(el, type, eventArguments, defaultFunction) {
-    /* eslint-enable valid-jsdoc */
-    eventArguments = eventArguments || {};
-    if (doc?.createEvent &&
-        (el.dispatchEvent ||
-            (el.fireEvent &&
-                // Enable firing events on Highcharts instance.
-                el !== Core_Globals))) {
-        const e = doc.createEvent('Events');
-        e.initEvent(type, true, true);
-        eventArguments = extend(e, eventArguments);
-        if (el.dispatchEvent) {
-            el.dispatchEvent(eventArguments);
-        }
-        else {
-            el.fireEvent(type, eventArguments);
-        }
+function splat(obj) {
+    return isArray(obj) ? obj : [obj];
+}
+/**
+ * Sort an object array and keep the order of equal items. The ECMAScript
+ * standard does not specify the behavior when items are equal.
+ *
+ * @function Highcharts.stableSort
+ *
+ * @param {Array<*>} arr
+ *        The array to sort.
+ *
+ * @param {Function} sortFunction
+ *        The function to sort it with, like with regular Array.prototype.sort.
+ */
+function stableSort(arr, sortFunction) {
+    // @todo It seems like Chrome since v70 sorts in a stable way internally,
+    // plus all other browsers do it, so over time we may be able to remove this
+    // function
+    const length = arr.length;
+    let sortValue, i;
+    // Add index to each item
+    for (i = 0; i < length; i++) {
+        arr[i].safeI = i; // Stable sort index
     }
-    else if (el.hcEvents) {
-        if (!eventArguments.target) {
-            // We're running a custom event
-            extend(eventArguments, {
-                // Attach a simple preventDefault function to skip
-                // default handler if called. The built-in
-                // defaultPrevented property is not overwritable (#5112)
-                preventDefault: function () {
-                    eventArguments.defaultPrevented = true;
-                },
-                // Setting target to native events fails with clicking
-                // the zoom-out button in Chrome.
-                target: el,
-                // If the type is not set, we're running a custom event
-                // (#2297). If it is set, we're running a browser event.
-                type: type
-            });
-        }
-        const events = [];
-        let object = el;
-        let multilevel = false;
-        // Recurse up the inheritance chain and collect hcEvents set as own
-        // objects on the prototypes.
-        while (object.hcEvents) {
-            if (Object.hasOwnProperty.call(object, 'hcEvents') &&
-                object.hcEvents[type]) {
-                if (events.length) {
-                    multilevel = true;
-                }
-                events.unshift.apply(events, object.hcEvents[type]);
-            }
-            object = Object.getPrototypeOf(object);
-        }
-        // For performance reasons, only sort the event handlers in case we are
-        // dealing with multiple levels in the prototype chain. Otherwise, the
-        // events are already sorted in the addEvent function.
-        if (multilevel) {
-            // Order the calls
-            events.sort((a, b) => a.order - b.order);
-        }
-        // Call the collected event handlers
-        events.forEach((obj) => {
-            // If the event handler returns false, prevent the default handler
-            // from executing
-            if (obj.fn.call(el, eventArguments) === false) {
-                eventArguments.preventDefault();
-            }
-        });
-    }
-    // Run the default if not prevented
-    if (defaultFunction && !eventArguments.defaultPrevented) {
-        defaultFunction.call(el, eventArguments);
+    arr.sort(function (a, b) {
+        sortValue = sortFunction(a, b);
+        return sortValue === 0 ? a.safeI - b.safeI : sortValue;
+    });
+    // Remove index from items
+    for (i = 0; i < length; i++) {
+        delete arr[i].safeI; // Stable sort index
     }
 }
-let serialMode;
 /**
- * Get a unique key for using in internal element id's and pointers. The key is
- * composed of a random hash specific to this Highcharts instance, and a
- * counter.
+ * Set a timeout if the delay is given, otherwise perform the function
+ * synchronously.
  *
- * @example
- * let id = uniqueKey(); // => 'highcharts-x45f6hp-0'
+ * @function Highcharts.syncTimeout
  *
- * @function Highcharts.uniqueKey
+ * @param {Function} fn
+ *        The function callback.
  *
- * @return {string}
- * A unique key.
+ * @param {number} delay
+ *        Delay in milliseconds.
+ *
+ * @param {*} [context]
+ *        An optional context to send to the function callback.
+ *
+ * @return {number}
+ *         An identifier for the timeout that can later be cleared with
+ *         Highcharts.clearTimeout. Returns -1 if there is no timeout.
  */
-const uniqueKey = (function () {
-    const hash = Math.random().toString(36).substring(2, 9) + '-';
-    let id = 0;
-    return function () {
-        return 'highcharts-' + (serialMode ? '' : hash) + id++;
-    };
-}());
+function syncTimeout(fn, delay, context) {
+    if (delay > 0) {
+        return setTimeout(fn, delay, context);
+    }
+    fn.call(0, context);
+    return -1;
+}
 /**
- * Activates a serial mode for element IDs provided by
- * {@link Highcharts.uniqueKey}. This mode can be used in automated tests, where
- * a simple comparison of two rendered SVG graphics is needed.
- *
- * **Note:** This is only for testing purposes and will break functionality in
- * webpages with multiple charts.
- *
- * @example
- * if (
- *   process &&
- *   process.env.NODE_ENV === 'development'
- * ) {
- *   Highcharts.useSerialIds(true);
- * }
- *
- * @function Highcharts.useSerialIds
- *
- * @param {boolean} [mode]
- * Changes the state of serial mode.
- *
- * @return {boolean|undefined}
- * State of the serial mode.
+ * @internal
  */
-function useSerialIds(mode) {
-    return (serialMode = pick(mode, serialMode));
-}
-function isFunction(obj) {
-    return typeof obj === 'function';
-}
 function ucfirst(s) {
     return ((isString(s) ?
         s.substring(0, 1).toUpperCase() + s.substring(1) :
         String(s)));
 }
-/* *
- *
- *  External
- *
- * */
-// Register Highcharts as a plugin in jQuery
-if (win.jQuery) {
-    /**
-     * Highcharts-extended JQuery.
-     *
-     * @external JQuery
-     */
-    /**
-     * Helper function to return the chart of the current JQuery selector
-     * element.
-     *
-     * @function external:JQuery#highcharts
-     *
-     * @return {Highcharts.Chart}
-     *         The chart that is linked to the JQuery selector element.
-     */ /**
-    * Factory function to create a chart in the current JQuery selector
-    * element.
-    *
-    * @function external:JQuery#highcharts
-    *
-    * @param {'Chart'|'Map'|'StockChart'|string} [className]
-    *        Name of the factory class in the Highcharts namespace.
-    *
-    * @param {Highcharts.Options} [options]
-    *        The chart options structure.
-    *
-    * @param {Highcharts.ChartCallbackFunction} [callback]
-    *        Function to run when the chart has loaded and all external
-    *        images are loaded. Defining a
-    *        [chart.events.load](https://api.highcharts.com/highcharts/chart.events.load)
-    *        handler is equivalent.
-    *
-    * @return {JQuery}
-    *         The current JQuery selector.
-    */
-    win.jQuery.fn.highcharts = function () {
-        const args = [].slice.call(arguments);
-        if (this[0]) { // `this[0]` is the renderTo div
-            // Create the chart
-            if (args[0]) {
-                new Core_Globals[ // eslint-disable-line computed-property-spacing, no-new
-                // Constructor defaults to Chart
-                isString(args[0]) ? args.shift() : 'Chart'](this[0], args[0], args[1]);
-                return this;
-            }
-            // When called without parameters or with the return argument,
-            // return an existing chart
-            return charts[attr(this[0], 'data-highcharts-chart')];
-        }
-    };
-}
-// TODO use named exports when supported.
-const Utilities = {
-    addEvent,
-    arrayMax,
-    arrayMin,
-    attr,
-    clamp,
-    clearTimeout: internalClearTimeout,
-    correctFloat,
-    createElement,
-    crisp,
-    css,
-    defined,
-    destroyObjectProperties,
-    diffObjects,
-    discardElement,
-    erase,
-    error,
-    extend,
-    extendClass,
-    find,
-    fireEvent,
-    getAlignFactor,
-    getClosestDistance,
-    getMagnitude,
-    getNestedProperty,
-    getStyle,
-    insertItem,
-    isArray,
-    isClass,
-    isDOMElement,
-    isFunction,
-    isNumber,
-    isObject,
-    isString,
-    merge,
-    normalizeTickInterval,
-    objectEach,
-    offset,
-    pad,
-    pick,
-    pInt,
-    pushUnique,
-    relativeLength,
-    removeEvent,
-    replaceNested,
-    splat,
-    stableSort,
-    syncTimeout,
-    timeUnits,
-    ucfirst,
-    uniqueKey,
-    useSerialIds,
-    wrap
-};
-/* harmony default export */ const Core_Utilities = (Utilities);
-/* *
- *
- *  API Declarations
- *
- * */
 /**
- * Creates a frame for the animated SVG element.
+ * Wrap a method with extended functionality, preserving the original function.
  *
- * @callback Highcharts.AnimationStepCallbackFunction
- *
- * @param {Highcharts.SVGElement} this
- *        The SVG element to animate.
- *
- * @return {void}
- */
-/**
- * Interface description for a class.
- *
- * @interface Highcharts.Class<T>
- * @extends Function
- */ /**
-* Class constructor.
-* @function Highcharts.Class<T>#new
-* @param {...Array<*>} args
-*        Constructor arguments.
-* @return {T}
-*         Class instance.
-*/
-/**
- * A style object with camel case property names to define visual appearance of
- * a SVG element or HTML element. The properties can be whatever styles are
- * supported on the given SVG or HTML element.
- *
- * @example
- * {
- *    fontFamily: 'monospace',
- *    fontSize: '1.2em'
- * }
- *
- * @interface Highcharts.CSSObject
- */ /**
-* @name Highcharts.CSSObject#[key:string]
-* @type {boolean|number|string|undefined}
-*/ /**
-* Background style for the element.
-* @name Highcharts.CSSObject#background
-* @type {string|undefined}
-*/ /**
-* Background color of the element.
-* @name Highcharts.CSSObject#backgroundColor
-* @type {Highcharts.ColorString|undefined}
-*/ /**
-* Border style for the element.
-* @name Highcharts.CSSObject#border
-* @type {string|undefined}
-*/ /**
-* Radius of the element border.
-* @name Highcharts.CSSObject#borderRadius
-* @type {number|undefined}
-*/ /**
-* Color used in the element. The 'contrast' option is a Highcharts custom
-* property that results in black or white, depending on the background of the
-* element.
-* @name Highcharts.CSSObject#color
-* @type {'contrast'|Highcharts.ColorString|undefined}
-*/ /**
-* Style of the mouse cursor when resting over the element.
-* @name Highcharts.CSSObject#cursor
-* @type {Highcharts.CursorValue|undefined}
-*/ /**
-* Font family of the element text. Multiple values have to be in decreasing
-* preference order and separated by comma.
-* @name Highcharts.CSSObject#fontFamily
-* @type {string|undefined}
-*/ /**
-* Font size of the element text.
-* @name Highcharts.CSSObject#fontSize
-* @type {string|undefined}
-*/ /**
-* Font weight of the element text.
-* @name Highcharts.CSSObject#fontWeight
-* @type {string|undefined}
-*/ /**
-* Height of the element.
-* @name Highcharts.CSSObject#height
-* @type {number|undefined}
-*/ /**
-* The maximum number of lines. If lines are cropped away, an ellipsis will be
-* added.
-* @name Highcharts.CSSObject#lineClamp
-* @type {number|undefined}
-*/ /**
-* Width of the element border.
-* @name Highcharts.CSSObject#lineWidth
-* @type {number|undefined}
-*/ /**
-* Opacity of the element.
-* @name Highcharts.CSSObject#opacity
-* @type {number|undefined}
-*/ /**
-* Space around the element content.
-* @name Highcharts.CSSObject#padding
-* @type {string|undefined}
-*/ /**
-* Behaviour of the element when the mouse cursor rests over it.
-* @name Highcharts.CSSObject#pointerEvents
-* @type {string|undefined}
-*/ /**
-* Positioning of the element.
-* @name Highcharts.CSSObject#position
-* @type {string|undefined}
-*/ /**
-* Alignment of the element text.
-* @name Highcharts.CSSObject#textAlign
-* @type {string|undefined}
-*/ /**
-* Additional decoration of the element text.
-* @name Highcharts.CSSObject#textDecoration
-* @type {string|undefined}
-*/ /**
-* Outline style of the element text.
-* @name Highcharts.CSSObject#textOutline
-* @type {string|undefined}
-*/ /**
-* Line break style of the element text. Highcharts SVG elements support
-* `ellipsis` when a `width` is set.
-* @name Highcharts.CSSObject#textOverflow
-* @type {string|undefined}
-*/ /**
-* Top spacing of the element relative to the parent element.
-* @name Highcharts.CSSObject#top
-* @type {string|undefined}
-*/ /**
-* Animated transition of selected element properties.
-* @name Highcharts.CSSObject#transition
-* @type {string|undefined}
-*/ /**
-* Line break style of the element text.
-* @name Highcharts.CSSObject#whiteSpace
-* @type {string|undefined}
-*/ /**
-* Width of the element.
-* @name Highcharts.CSSObject#width
-* @type {number|undefined}
-*/
-/**
- * All possible cursor styles.
- *
- * @typedef {'alias'|'all-scroll'|'auto'|'cell'|'col-resize'|'context-menu'|'copy'|'crosshair'|'default'|'e-resize'|'ew-resize'|'grab'|'grabbing'|'help'|'move'|'n-resize'|'ne-resize'|'nesw-resize'|'no-drop'|'none'|'not-allowed'|'ns-resize'|'nw-resize'|'nwse-resize'|'pointer'|'progress'|'row-resize'|'s-resize'|'se-resize'|'sw-resize'|'text'|'vertical-text'|'w-resize'|'wait'|'zoom-in'|'zoom-out'} Highcharts.CursorValue
- */
-/**
- * All possible dash styles.
- *
- * @typedef {'Dash'|'DashDot'|'Dot'|'LongDash'|'LongDashDot'|'LongDashDotDot'|'ShortDash'|'ShortDashDot'|'ShortDashDotDot'|'ShortDot'|'Solid'} Highcharts.DashStyleValue
- */
-/**
- * Generic dictionary in TypeScript notation.
- * Use the native `AnyRecord` instead.
- *
- * @deprecated
- * @interface Highcharts.Dictionary<T>
- */ /**
-* @name Highcharts.Dictionary<T>#[key:string]
-* @type {T}
-*/
-/**
- * @typedef {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} Highcharts.DOMElementType
- */
-/**
- * The function callback to execute when the event is fired. The `this` context
- * contains the instance, that fired the event.
- *
- * @callback Highcharts.EventCallbackFunction<T>
- *
- * @param {T} this
- *
- * @param {Highcharts.Dictionary<*>|Event} [eventArguments]
- *        Event arguments.
- *
- * @return {boolean|void}
- */
-/**
- * The event options for adding function callback.
- *
- * @interface Highcharts.EventOptionsObject
- */ /**
-* The order the event handler should be called. This opens for having one
-* handler be called before another, independent of in which order they were
-* added.
-* @name Highcharts.EventOptionsObject#order
-* @type {number}
-*/ /**
-* Whether an event should be passive or not.
-* When set to `true`, the function specified by listener will never call
-* `preventDefault()`.
-* @name Highcharts.EventOptionsObject#passive
-* @type boolean
-*/
-/**
- * Formats data as a string. Usually the data is accessible through the `this`
- * keyword.
- *
- * @callback Highcharts.FormatterCallbackFunction<T>
- *
- * @param {T} this
- *        Context to format
- *
- * @return {string}
- *         Formatted text
- */
-/**
- * An object of key-value pairs for HTML attributes.
- *
- * @typedef {Highcharts.Dictionary<boolean|number|string|Function>} Highcharts.HTMLAttributes
- */
-/**
- * An HTML DOM element. The type is a reference to the regular HTMLElement in
- * the global scope.
- *
- * @typedef {global.HTMLElement} Highcharts.HTMLDOMElement
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
- */
-/**
- * The iterator callback.
- *
- * @callback Highcharts.ObjectEachCallbackFunction<T>
- *
- * @param {T} this
- *        The context.
- *
- * @param {*} value
- *        The property value.
- *
- * @param {string} key
- *        The property key.
+ * @function Highcharts.wrap
  *
  * @param {*} obj
- *        The object that objectEach is being applied to.
+ *        The context object that the method belongs to. In real cases, this is
+ *        often a prototype.
+ *
+ * @param {string} method
+ *        The name of the method to extend.
+ *
+ * @param {Highcharts.WrapProceedFunction} func
+ *        A wrapper function callback. This function is called with the same
+ *        arguments as the original function, except that the original function
+ *        is unshifted and passed as the first argument.
  */
-/**
- * An object containing `left` and `top` properties for the position in the
- * page.
- *
- * @interface Highcharts.OffsetObject
- */ /**
-* Left distance to the page border.
-* @name Highcharts.OffsetObject#left
-* @type {number}
-*/ /**
-* Top distance to the page border.
-* @name Highcharts.OffsetObject#top
-* @type {number}
-*/
-/**
- * Describes a range.
- *
- * @interface Highcharts.RangeObject
- */ /**
-* Maximum number of the range.
-* @name Highcharts.RangeObject#max
-* @type {number}
-*/ /**
-* Minimum number of the range.
-* @name Highcharts.RangeObject#min
-* @type {number}
-*/
-/**
- * If a number is given, it defines the pixel length. If a percentage string is
- * given, like for example `'50%'`, the setting defines a length relative to a
- * base size, for example the size of a container.
- *
- * @typedef {number|string} Highcharts.RelativeSize
- */
-/**
- * Proceed function to call original (wrapped) function.
- *
- * @callback Highcharts.WrapProceedFunction
- *
- * @param {*} [arg1]
- *        Optional argument. Without any arguments defaults to first argument of
- *        the wrapping function.
- *
- * @param {*} [arg2]
- *        Optional argument. Without any arguments defaults to second argument
- *        of the wrapping function.
- *
- * @param {*} [arg3]
- *        Optional argument. Without any arguments defaults to third argument of
- *        the wrapping function.
- *
- * @return {*}
- *         Return value of the original function.
- */
-/**
- * The Highcharts object is the placeholder for all other members, and various
- * utility functions. The most important member of the namespace would be the
- * chart constructor.
- *
- * @example
- * let chart = Highcharts.chart('container', { ... });
- *
- * @namespace Highcharts
- */
-''; // Detach doclets above
-
-;// ./code/dashboards/es-modules/Core/Renderer/HTML/AST.js
-/* *
- *
- *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- * */
-
-
-const { SVG_NS, win: AST_win } = Core_Globals;
-
-const { attr: AST_attr, createElement: AST_createElement, css: AST_css, error: AST_error, isFunction: AST_isFunction, isString: AST_isString, objectEach: AST_objectEach, splat: AST_splat } = Core_Utilities;
-const { trustedTypes } = AST_win;
-/* *
- *
- *  Constants
- *
- * */
-// Create the trusted type policy. This should not be exposed.
-const trustedTypesPolicy = (trustedTypes &&
-    AST_isFunction(trustedTypes.createPolicy) &&
-    trustedTypes.createPolicy('highcharts', {
-        createHTML: (s) => s
-    }));
-const emptyHTML = trustedTypesPolicy ?
-    trustedTypesPolicy.createHTML('') :
-    '';
-/* *
- *
- *  Class
- *
- * */
-/**
- * The AST class represents an abstract syntax tree of HTML or SVG content. It
- * can take HTML as an argument, parse it, optionally transform it to SVG, then
- * perform sanitation before inserting it into the DOM.
- *
- * @class
- * @name Highcharts.AST
- *
- * @param {string|Array<Highcharts.ASTNode>} source
- * Either an HTML string or an ASTNode list to populate the tree.
- */
-class AST {
-    /* *
-     *
-     *  Static Functions
-     *
-     * */
-    /**
-     * Filter an object of SVG or HTML attributes against the allow list.
-     *
-     * @static
-     *
-     * @function Highcharts.AST#filterUserAttributes
-     *
-     * @param {Highcharts.SVGAttributes} attributes The attributes to filter
-     *
-     * @return {Highcharts.SVGAttributes}
-     * The filtered attributes
-     */
-    static filterUserAttributes(attributes) {
-        AST_objectEach(attributes, (val, key) => {
-            let valid = true;
-            if (AST.allowedAttributes.indexOf(key) === -1) {
-                valid = false;
+function wrap(obj, method, func) {
+    const proceed = obj[method];
+    obj[method] = function () {
+        const outerArgs = arguments, scope = this;
+        return func.apply(this, [
+            function () {
+                return proceed.apply(scope, arguments.length ? arguments : outerArgs);
             }
-            if (['background', 'dynsrc', 'href', 'lowsrc', 'src']
-                .indexOf(key) !== -1) {
-                valid = AST_isString(val) && AST.allowedReferences.some((ref) => val.indexOf(ref) === 0);
-            }
-            if (!valid) {
-                AST_error(33, false, void 0, {
-                    'Invalid attribute in config': `${key}`
-                });
-                delete attributes[key];
-            }
-            // #17753, < is not allowed in SVG attributes
-            if (AST_isString(val) && attributes[key]) {
-                attributes[key] = val.replace(/</g, '&lt;');
-            }
-        });
-        return attributes;
-    }
-    /**
-     * Utility function to parse a style string to a CSSObject.
-     *
-     * @internal
-     * @param {string} style
-     * The style string to parse.
-     * @return {Highcharts.CSSObject}
-     * The parsed CSSObject.
-     */
-    static parseStyle(style) {
-        return style
-            .split(';')
-            .reduce((styles, line) => {
-            const pair = line.split(':').map((s) => s.trim()), key = pair.shift();
-            if (key && pair.length) {
-                styles[key.replace(/-([a-z])/g, (g) => g[1].toUpperCase())] = pair.join(':'); // #17146
-            }
-            return styles;
-        }, {});
-    }
-    /**
-     * Utility function to set html content for an element by passing in a
-     * markup string. The markup is safely parsed by the AST class to avoid
-     * XSS vulnerabilities. This function should be used instead of setting
-     * `innerHTML` in all cases where the content is not fully trusted.
-     *
-     * @static
-     * @function Highcharts.AST#setElementHTML
-     *
-     * @param {SVGDOMElement|HTMLDOMElement} el
-     * Node to set content of.
-     *
-     * @param {string} html
-     * Markup string
-     */
-    static setElementHTML(el, html) {
-        el.innerHTML = AST.emptyHTML; // Clear previous
-        if (html) {
-            const ast = new AST(html);
-            ast.addToDOM(el);
-        }
-    }
-    /* *
-     *
-     *  Constructor
-     *
-     * */
-    // Construct an AST from HTML markup, or wrap an array of existing AST nodes
-    constructor(source) {
-        this.nodes = typeof source === 'string' ?
-            this.parseMarkup(source) : source;
-    }
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Add the tree defined as a hierarchical JS structure to the DOM
-     *
-     * @function Highcharts.AST#addToDOM
-     *
-     * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} parent
-     * The node where it should be added
-     *
-     * @return {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement}
-     * The inserted node.
-     */
-    addToDOM(parent) {
-        /**
-         * @internal
-         * @param {Highcharts.ASTNode} subtree
-         * HTML/SVG definition.
-         * @param {Element} [subParent]
-         * Parent node.
-         * @return {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement}
-         * The inserted node.
-         */
-        function recurse(subtree, subParent) {
-            let ret;
-            AST_splat(subtree).forEach(function (item) {
-                const tagName = item.tagName;
-                const textNode = item.textContent ?
-                    Core_Globals.doc.createTextNode(item.textContent) :
-                    void 0;
-                // Whether to ignore the AST filtering totally, #15345
-                const bypassHTMLFiltering = AST.bypassHTMLFiltering;
-                let node;
-                if (tagName) {
-                    if (tagName === '#text') {
-                        node = textNode;
-                    }
-                    else if (AST.allowedTags.indexOf(tagName) !== -1 ||
-                        bypassHTMLFiltering) {
-                        const NS = tagName === 'svg' ?
-                            SVG_NS :
-                            (subParent.namespaceURI || SVG_NS);
-                        const element = Core_Globals.doc.createElementNS(NS, tagName);
-                        const attributes = item.attributes || {};
-                        // Apply attributes from root of AST node, legacy from
-                        // from before TextBuilder
-                        AST_objectEach(item, function (val, key) {
-                            if (key !== 'tagName' &&
-                                key !== 'attributes' &&
-                                key !== 'children' &&
-                                key !== 'style' &&
-                                key !== 'textContent') {
-                                attributes[key] = val;
-                            }
-                        });
-                        AST_attr(element, bypassHTMLFiltering ?
-                            attributes :
-                            AST.filterUserAttributes(attributes));
-                        if (item.style) {
-                            AST_css(element, item.style);
-                        }
-                        // Add text content
-                        if (textNode) {
-                            element.appendChild(textNode);
-                        }
-                        // Recurse
-                        recurse(item.children || [], element);
-                        node = element;
-                    }
-                    else {
-                        AST_error(33, false, void 0, {
-                            'Invalid tagName in config': tagName
-                        });
-                    }
-                }
-                // Add to the tree
-                if (node) {
-                    subParent.appendChild(node);
-                }
-                ret = node;
-            });
-            // Return last node added (on top level it's the only one)
-            return ret;
-        }
-        return recurse(this.nodes, parent);
-    }
-    /**
-     * Parse HTML/SVG markup into AST Node objects. Used internally from the
-     * constructor.
-     *
-     * @internal
-     * @param {string} markup
-     * The markup string.
-     * @return {Array<Highcharts.ASTNode>}
-     * The parsed nodes.
-     */
-    parseMarkup(markup) {
-        const nodes = [];
-        markup = markup
-            .trim()
-            // The style attribute throws a warning when parsing when CSP is
-            // enabled (#6884), so use an alias and pick it up below
-            // Make all quotation marks parse correctly to DOM (#17627)
-            .replace(/ style=(["'])/g, ' data-style=$1');
-        let doc;
-        try {
-            doc = new DOMParser().parseFromString(trustedTypesPolicy ?
-                trustedTypesPolicy.createHTML(markup) :
-                markup, 'text/html');
-        }
-        catch {
-            // There are two cases where this fails:
-            // 1. IE9 and PhantomJS, where the DOMParser only supports parsing
-            //    XML
-            // 2. Due to a Chromium issue where chart redraws are triggered by
-            //    a `beforeprint` event (#16931),
-            //    https://issues.chromium.org/issues/40222135
-        }
-        if (!doc) {
-            const body = AST_createElement('div');
-            body.innerHTML = markup;
-            doc = { body };
-        }
-        const appendChildNodes = (node, addTo) => {
-            const tagName = node.nodeName.toLowerCase();
-            // Add allowed tags
-            const astNode = {
-                tagName
-            };
-            if (tagName === '#text') {
-                astNode.textContent = node.textContent || '';
-            }
-            const parsedAttributes = node.attributes;
-            // Add attributes
-            if (parsedAttributes) {
-                const attributes = {};
-                [].forEach.call(parsedAttributes, (attrib) => {
-                    if (attrib.name === 'data-style') {
-                        astNode.style = AST.parseStyle(attrib.value);
-                    }
-                    else {
-                        attributes[attrib.name] = attrib.value;
-                    }
-                });
-                astNode.attributes = attributes;
-            }
-            // Handle children
-            if (node.childNodes.length) {
-                const children = [];
-                [].forEach.call(node.childNodes, (childNode) => {
-                    appendChildNodes(childNode, children);
-                });
-                if (children.length) {
-                    astNode.children = children;
-                }
-            }
-            addTo.push(astNode);
-        };
-        [].forEach.call(doc.body.childNodes, (childNode) => appendChildNodes(childNode, nodes));
-        return nodes;
-    }
-}
-/* *
- *
- *  Static Properties
- *
- * */
-/**
- * The list of allowed SVG or HTML attributes, used for sanitizing
- * potentially harmful content from the chart configuration before adding to
- * the DOM.
- *
- * @see [Source code with default values](
- * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedAttributes)
- *
- * @example
- * // Allow a custom, trusted attribute
- * Highcharts.AST.allowedAttributes.push('data-value');
- *
- * @name Highcharts.AST.allowedAttributes
- * @type {Array<string>}
- */
-AST.allowedAttributes = [
-    'alt',
-    'aria-controls',
-    'aria-describedby',
-    'aria-expanded',
-    'aria-haspopup',
-    'aria-hidden',
-    'aria-label',
-    'aria-labelledby',
-    'aria-live',
-    'aria-pressed',
-    'aria-readonly',
-    'aria-roledescription',
-    'aria-selected',
-    'class',
-    'clip-path',
-    'color',
-    'colspan',
-    'cx',
-    'cy',
-    'd',
-    'disabled',
-    'dx',
-    'dy',
-    'fill',
-    'filterUnits',
-    'flood-color',
-    'flood-opacity',
-    'height',
-    'href',
-    'id',
-    'in',
-    'in2',
-    'markerHeight',
-    'markerWidth',
-    'offset',
-    'opacity',
-    'operator',
-    'orient',
-    'padding',
-    'paddingLeft',
-    'paddingRight',
-    'patternUnits',
-    'r',
-    'radius',
-    'refX',
-    'refY',
-    'result',
-    'role',
-    'rowspan',
-    'scope',
-    'slope',
-    'src',
-    'startOffset',
-    'stdDeviation',
-    'stroke-linecap',
-    'stroke-width',
-    'stroke',
-    'style',
-    'summary',
-    'tabindex',
-    'tableValues',
-    'target',
-    'text-align',
-    'text-anchor',
-    'textAnchor',
-    'textLength',
-    'title',
-    'type',
-    'valign',
-    'width',
-    'x',
-    'x1',
-    'x2',
-    'xlink:href',
-    'y',
-    'y1',
-    'y2',
-    'zIndex'
-];
-/**
- * The list of allowed references for referring attributes like `href` and
- * `src`. Attribute values will only be allowed if they start with one of
- * these strings.
- *
- * @see [Source code with default values](
- * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedReferences)
- *
- * @example
- * // Allow tel:
- * Highcharts.AST.allowedReferences.push('tel:');
- *
- * @name    Highcharts.AST.allowedReferences
- * @type    {Array<string>}
- */
-AST.allowedReferences = [
-    'https://',
-    'http://',
-    'mailto:',
-    '/',
-    '../',
-    './',
-    '#'
-];
-/**
- * The list of allowed SVG or HTML tags, used for sanitizing potentially
- * harmful content from the chart configuration before adding to the DOM.
- *
- * @see [Source code with default values](
- * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedTags)
- *
- * @example
- * // Allow a custom, trusted tag
- * Highcharts.AST.allowedTags.push('blink'); // ;)
- *
- * @name    Highcharts.AST.allowedTags
- * @type    {Array<string>}
- */
-AST.allowedTags = [
-    '#text',
-    'a',
-    'abbr',
-    'b',
-    'br',
-    'button',
-    'caption',
-    'circle',
-    'clipPath',
-    'code',
-    'dd',
-    'defs',
-    'div',
-    'dl',
-    'dt',
-    'em',
-    'feComponentTransfer',
-    'feComposite',
-    'feDropShadow',
-    'feFlood',
-    'feFuncA',
-    'feFuncB',
-    'feFuncG',
-    'feFuncR',
-    'feGaussianBlur',
-    'feMerge',
-    'feMergeNode',
-    'feMorphology',
-    'feOffset',
-    'filter',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'hr',
-    'i',
-    'img',
-    'li',
-    'linearGradient',
-    'marker',
-    'ol',
-    'p',
-    'path',
-    'pattern',
-    'pre',
-    'rect',
-    'small',
-    'span',
-    'stop',
-    'strong',
-    'style',
-    'sub',
-    'sup',
-    'svg',
-    'table',
-    'tbody',
-    'td',
-    'text',
-    'textPath',
-    'th',
-    'thead',
-    'title',
-    'tr',
-    'tspan',
-    'u',
-    'ul'
-];
-/** @internal */
-AST.emptyHTML = emptyHTML;
-/**
- * Allow all custom SVG and HTML attributes, references and tags (together
- * with potentially harmful ones) to be added to the DOM from the chart
- * configuration. In other words, disable the allow-listing which is the
- * primary functionality of the AST.
- *
- * WARNING: Setting this property to `true` while allowing untrusted user
- * data in the chart configuration will expose your application to XSS
- * security risks!
- *
- * Note that in case you want to allow a known set of tags or attributes,
- * you should allow-list them instead of disabling the filtering totally.
- * See [allowedAttributes](Highcharts.AST#.allowedAttributes),
- * [allowedReferences](Highcharts.AST#.allowedReferences) and
- * [allowedTags](Highcharts.AST#.allowedTags). The `bypassHTMLFiltering`
- * setting is intended only for those cases where allow-listing is not
- * practical, and the chart configuration already comes from a secure
- * source.
- *
- * @example
- * // Allow all custom attributes, references and tags (disable DOM XSS
- * // filtering)
- * Highcharts.AST.bypassHTMLFiltering = true;
- *
- * @name Highcharts.AST.bypassHTMLFiltering
- * @static
- */
-AST.bypassHTMLFiltering = false;
-/* *
- *
- *  Default Export
- *
- * */
-/* harmony default export */ const HTML_AST = (AST);
-/* *
- *
- *  API Declarations
- *
- * */
-/**
- * Serialized form of an SVG/HTML definition, including children.
- *
- * @interface Highcharts.ASTNode
- */ /**
-* @name Highcharts.ASTNode#attributes
-* @type {Highcharts.SVGAttributes|undefined}
-*/ /**
-* @name Highcharts.ASTNode#children
-* @type {Array<Highcharts.ASTNode>|undefined}
-*/ /**
-* @name Highcharts.ASTNode#tagName
-* @type {string|undefined}
-*/ /**
-* @name Highcharts.ASTNode#textContent
-* @type {string|undefined}
-*/
-(''); // Keeps doclets above in file
-
-;// ./code/dashboards/es-modules/Dashboards/Globals.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *  - Pawel Lysy
- *  - Karol Kolodziej
- *
- * */
-
-/* *
- *
- *  Constants
- *
- * */
-/**
- * Prefix of a GUIElement HTML class name.
- */
-const classNamePrefix = 'highcharts-dashboards-';
-const version = '4.1.0';
-/** @internal */
-const classNames = {
-    layout: classNamePrefix + 'layout',
-    cell: classNamePrefix + 'cell',
-    cellHover: classNamePrefix + 'cell-state-hover',
-    cellActive: classNamePrefix + 'cell-state-active',
-    cellLoading: classNamePrefix + 'cell-state-loading',
-    row: classNamePrefix + 'row',
-    layoutsWrapper: classNamePrefix + 'layouts-wrapper',
-    boardContainer: classNamePrefix + 'wrapper'
-};
-/** @internal */
-const guiElementType = {
-    row: 'row',
-    cell: 'cell',
-    layout: 'layout'
-};
-/**
- * Contains all Board instances of this window.
- */
-const boards = [];
-/**
- * Reference to the window used by Dashboards.
- */
-const Globals_win = window;
-const Globals_doc = document;
-const noop = function () { };
-const isMS = /(edge|msie|trident)/i
-    .test((Globals_win.navigator && Globals_win.navigator.userAgent) || '') && !Globals_win.opera;
-const supportsPassiveEvents = (function () {
-    // Checks whether the browser supports passive events, (#11353).
-    let supportsPassive = false;
-    // Object.defineProperty doesn't work on IE as well as passive
-    // events - instead of using polyfill, we can exclude IE totally.
-    if (!isMS) {
-        const opts = Object.defineProperty({}, 'passive', {
-            get: function () {
-                supportsPassive = true;
-            }
-        });
-        if (Globals_win.addEventListener && Globals_win.removeEventListener) {
-            Globals_win.addEventListener('testPassive', noop, opts);
-            Globals_win.removeEventListener('testPassive', noop, opts);
-        }
-    }
-    return supportsPassive;
-}());
-const Globals_Globals = {
-    boards,
-    classNamePrefix,
-    classNames,
-    doc: Globals_doc,
-    guiElementType,
-    isMS,
-    noop,
-    supportsPassiveEvents,
-    version,
-    win: Globals_win
-};
-/* *
- *
- *  Default Export
- *
- * */
-/* harmony default export */ const Dashboards_Globals = (Globals_Globals);
-
-;// ./code/dashboards/es-modules/Dashboards/EditMode/EditGlobals.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-
-
-const PREFIX = Dashboards_Globals.classNamePrefix + 'edit-';
-const EditGlobals = {
-    classNames: {
-        resizeSnap: PREFIX + 'resize-snap',
-        resizeSnapX: PREFIX + 'resize-snap-x',
-        resizeSnapY: PREFIX + 'resize-snap-y',
-        separator: PREFIX + 'separator',
-        contextMenuBtn: PREFIX + 'context-menu-btn',
-        contextMenuBtnText: PREFIX + 'context-menu-btn-text',
-        contextMenu: PREFIX + 'context-menu',
-        contextMenuItem: PREFIX + 'context-menu-item',
-        editModeEnabled: PREFIX + 'enabled',
-        editToolbar: PREFIX + 'toolbar',
-        editToolbarCellOutline: PREFIX + 'toolbar-cell-outline',
-        editToolbarRowOutline: PREFIX + 'toolbar-row-outline',
-        editToolbarItem: PREFIX + 'toolbar-item',
-        editToolbarRow: PREFIX + 'toolbar-row',
-        editToolbarCell: PREFIX + 'toolbar-cell',
-        editSidebar: PREFIX + 'sidebar',
-        editSidebarShow: PREFIX + 'sidebar-show',
-        editSidebarHide: PREFIX + 'sidebar-hide',
-        editSidebarHeader: PREFIX + 'sidebar-header',
-        editSidebarTitle: PREFIX + 'sidebar-title',
-        editSidebarMenuItem: PREFIX + 'sidebar-item',
-        rowContextHighlight: PREFIX + 'row-context-highlight',
-        cellEditHighlight: PREFIX + 'cell-highlight',
-        dashboardCellEditHighlightActive: PREFIX + 'cell-highlight-active',
-        dragMock: PREFIX + 'drag-mock',
-        dropPointer: PREFIX + 'drop-pointer',
-        contextDetectionPointer: PREFIX + 'ctx-detection-pointer',
-        resizePointer: PREFIX + 'resize-pointer',
-        currentEditedElement: PREFIX + 'unmask',
-        maskElement: PREFIX + 'mask',
-        menuItem: PREFIX + 'menu-item',
-        menu: PREFIX + 'menu',
-        menuVerticalSeparator: PREFIX + 'menu-vertical-separator',
-        menuHorizontalSeparator: PREFIX + 'menu-horizontal-separator',
-        menuDestroy: PREFIX + 'menu-destroy',
-        editSidebarWrapper: PREFIX + 'sidebar-wrapper',
-        customSelect: PREFIX + 'custom-select',
-        customSelectButton: PREFIX + 'custom-option-button',
-        toggleContainer: PREFIX + 'toggle-container',
-        toggleWrapper: PREFIX + 'toggle-wrapper',
-        toggleSlider: PREFIX + 'toggle-slider',
-        toggleWrapperColored: PREFIX + 'toggle-wrapper-colored',
-        toggleLabels: PREFIX + 'toggle-labels',
-        labeledToggleWrapper: PREFIX + 'labeled-toggle-wrapper',
-        button: PREFIX + 'button',
-        sidebarNavButton: PREFIX + 'sidebar-button-nav',
-        labelText: PREFIX + 'label-text',
-        editSidebarTabBtn: PREFIX + 'sidebar-tab-btn',
-        editToolsBtn: PREFIX + 'tools-btn',
-        editTools: PREFIX + 'tools',
-        editGridItems: PREFIX + 'grid-items',
-        editStandaloneToggle: PREFIX + 'standalone-toggle',
-        // Confirmation popup
-        confirmationPopup: PREFIX + 'confirmation-popup',
-        popupButtonContainer: PREFIX + 'confirmation-popup-button-container',
-        popupContentContainer: PREFIX + 'confirmation-popup-content',
-        popupCancelBtn: PREFIX + 'confirmation-popup-cancel-btn',
-        popupConfirmBtn: PREFIX + 'confirmation-popup-confirm-btn',
-        popupCloseButton: PREFIX + 'popup-close',
-        editOverlay: PREFIX + 'overlay',
-        editOverlayActive: PREFIX + 'overlay-active',
-        resizerMenuBtnActive: PREFIX + 'resizer-menu-btn-active',
-        sidebarCloseButton: PREFIX + 'close-btn',
-        editSidebarTabBtnWrapper: PREFIX + 'tabs-buttons-wrapper',
-        editSidebarRight: PREFIX + 'sidebar-right',
-        editSidebarRightShow: PREFIX + 'sidebar-right-show',
-        viewFullscreen: PREFIX + 'view-fullscreen',
-        // Accordion
-        accordionMenu: PREFIX + 'accordion-menu',
-        accordionContainer: PREFIX + 'accordion',
-        accordionHeader: PREFIX + 'accordion-header',
-        accordionHeaderBtn: PREFIX + 'accordion-header-btn',
-        accordionHeaderWrapper: PREFIX + 'accordion-header-wrapper',
-        accordionHeaderIcon: PREFIX + 'accordion-header-icon',
-        accordionContent: PREFIX + 'accordion-content',
-        accordionNestedWrapper: PREFIX + 'accordion-nested',
-        accordionMenuButtonsContainer: PREFIX + 'accordion-menu-buttons-container',
-        accordionMenuButton: PREFIX + 'accordion-menu-button',
-        accordionStandaloneWrapper: PREFIX + 'accordion-standalone-wrapper',
-        hiddenElement: PREFIX + 'hidden-element',
-        collapsableContentHeader: PREFIX + 'collapsable-content-header',
-        standaloneElement: PREFIX + 'standalone-element',
-        // Custom dropdown with icons
-        collapsedElement: PREFIX + 'collapsed-element',
-        dropdown: PREFIX + 'dropdown',
-        dropdownContent: PREFIX + 'dropdown-content',
-        dropdownButton: PREFIX + 'dropdown-button',
-        dropdownButtonContent: PREFIX + 'dropdown-button-content',
-        dropdownIcon: PREFIX + 'pointer',
-        icon: PREFIX + 'icon'
-    },
-    lang: {
-        accessibility: {
-            contextMenu: {
-                button: 'Context menu'
-            },
-            editMode: {
-                editMode: 'Edit mode toggle button'
-            }
-        },
-        addComponent: 'Add component',
-        cancelButton: 'Cancel',
-        caption: 'Caption',
-        chartClassName: 'Chart class name',
-        chartConfig: 'Chart configuration',
-        chartID: 'Chart ID',
-        chartOptions: 'Chart options',
-        chartType: 'Chart type',
-        connectorName: 'Connector name',
-        confirmButton: 'Confirm',
-        confirmDestroyCell: 'Do you really want to destroy the cell?',
-        confirmDestroyRow: 'Do you really want to destroy the row?',
-        confirmDiscardChanges: 'Do you really want to discard the changes?',
-        dataLabels: 'Data labels',
-        editMode: 'Edit mode',
-        errorMessage: 'Something went wrong',
-        exitFullscreen: 'Exit full screen',
-        htmlInput: 'HTML',
-        id: 'Id',
-        off: 'off',
-        on: 'on',
-        pointFormat: 'Point format',
-        settings: 'Settings',
-        style: 'Styles',
-        title: 'Title',
-        viewFullscreen: 'View in full screen',
-        sidebar: {
-            HTML: 'HTML',
-            row: 'Row',
-            Highcharts: 'Highcharts',
-            Grid: 'Grid',
-            KPI: 'KPI'
-        }
-    }
-};
-/* harmony default export */ const EditMode_EditGlobals = (EditGlobals);
-
-;// ./code/dashboards/es-modules/Dashboards/Layout/GUIElement.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-
-
-const { addEvent: GUIElement_addEvent, createElement: GUIElement_createElement, uniqueKey: GUIElement_uniqueKey, objectEach: GUIElement_objectEach, error: GUIElement_error } = Core_Utilities;
-class GUIElement {
-    /* *
-    *
-    *  Static Properties
-    *
-    * */
-    /**
-     * Get offsets of the guiElement relative to the referenceElement or the
-     * Viewport.
-     *
-     * @param guiElement
-     * The element to get the offsets from.
-     *
-     * @param referenceElement
-     * The element to get the offsets relative to.
-     *
-     * @returns
-     * The offsets of the guiElement.
-     */
-    static getOffsets(guiElement, referenceElement) {
-        const offset = { left: 0, top: 0, right: 0, bottom: 0 };
-        if (!guiElement.container) {
-            return offset;
-        }
-        const guiElementClientRect = guiElement.container.getBoundingClientRect();
-        const referenceClientRect = referenceElement ?
-            referenceElement.getBoundingClientRect() : { left: 0, top: 0 };
-        offset.left = guiElementClientRect.left - referenceClientRect.left;
-        offset.top = guiElementClientRect.top - referenceClientRect.top;
-        offset.right =
-            guiElementClientRect.right - referenceClientRect.left;
-        offset.bottom =
-            guiElementClientRect.bottom - referenceClientRect.top;
-        return offset;
-    }
-    /**
-     * Get dimensions of the guiElement container from offsets.
-     *
-     * @param offsets
-     * The offsets of the guiElement container.
-     *
-     * @returns
-     * The dimensions of the guiElement container.
-     */
-    static getDimFromOffsets(offsets) {
-        return {
-            width: offsets.right - offsets.left,
-            height: offsets.bottom - offsets.top
-        };
-    }
-    /**
-     * Based on the element provided, generate an unique id.
-     *
-     * @param elementType
-     * Type of the element.
-     *
-     * @returns
-     * The unique id.
-     */
-    static getElementId(elementType) {
-        return (Dashboards_Globals.classNamePrefix + elementType + '-' +
-            GUIElement_uniqueKey().slice(11));
-    }
-    /**
-     * Get width in percentages (0% - 100%).
-     *
-     * @param width
-     * The width of the element. Supported formats '50%' or '1/2'.
-     *
-     * @returns
-     * The width in percentages.
-     */
-    static getPercentageWidth(width) {
-        const fractionRegEx = /^(\d{1})[\-\/\.](\d{1,2})$/;
-        let result;
-        if (fractionRegEx.test(width)) {
-            const match = width.match(fractionRegEx) || [], multiplier = +match[1], divider = +match[2];
-            result = 100 * multiplier / divider;
-            result = (result <= 100 ? result : 100) + '%';
-        }
-        else if (width.indexOf('%') !== -1) {
-            const value = parseFloat(width);
-            result = (value <= 100 ?
-                (value >= 0 ? value : 0) : 100) + '%';
-        }
-        return result;
-    }
-    /* *
-    *
-    *  Functions
-    *
-    * */
-    /**
-     * Create or get existing HTML element as a GUIElement container.
-     *
-     * @param {GetElementContainerOptions} options
-     * Options.
-     *
-     * @returns
-     * The HTML element for the element container.
-     */
-    getElementContainer(options) {
-        const guiElement = this;
-        let elem;
-        if (options.render) {
-            if (options.attribs && !options.attribs.id) {
-                delete options.attribs.id;
-            }
-        }
-        else if (typeof options.elementId === 'string') {
-            const div = document.getElementById(options.elementId);
-            if (div) {
-                guiElement.container = div;
-            }
-            else {
-                GUIElement_error('Element ' + options.elementId + ' does not exist');
-            }
-        }
-        if (options.element instanceof HTMLElement) {
-            elem = options.element;
-        }
-        else {
-            elem = GUIElement_createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
-        }
-        // Set bindedGUIElement event on GUIElement container.
-        guiElement.removeBindedEventFn = GUIElement_addEvent(elem, 'bindedGUIElement', function (e) {
-            e.guiElement = guiElement;
-            e.stopImmediatePropagation();
-        });
-        return elem;
-    }
-    /**
-     * Destroy the element, its container, event hooks and all properties.
-     */
-    destroy() {
-        const guiElement = this;
-        // Remove bindedGUIElement event.
-        if (guiElement.removeBindedEventFn) {
-            guiElement.removeBindedEventFn();
-        }
-        // Remove HTML container.
-        if (guiElement.container && guiElement.container.parentNode) {
-            guiElement.container.parentNode.removeChild(guiElement.container);
-        }
-        // Delete all properties.
-        GUIElement_objectEach(guiElement, function (val, key) {
-            delete guiElement[key];
-        });
-    }
-    /**
-     * Return the GUIElement instance type.
-     *
-     * @returns
-     * The GUIElement instance type
-     */
-    getType() {
-        return this.type;
-    }
-    changeVisibility(setVisible = true, displayStyle) {
-        const visibilityChanged = (this.isVisible && !setVisible ||
-            !this.isVisible && setVisible);
-        if (this.container && visibilityChanged) {
-            this.container.style.display = (setVisible ?
-                (displayStyle || 'block') :
-                'none');
-            this.isVisible = setVisible;
-        }
-    }
-    hide() {
-        this.changeVisibility(false);
-    }
-    show() {
-        this.changeVisibility();
-    }
-}
-/* harmony default export */ const Layout_GUIElement = (GUIElement);
-
-;// ./code/dashboards/es-modules/Dashboards/Layout/Cell.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-
-
-
-
-
-const { merge: Cell_merge, fireEvent: Cell_fireEvent } = Core_Utilities;
-/* *
- *
- *  Class
- *
- * */
-/**
- * @internal
- **/
-class Cell extends Layout_GUIElement {
-    /* *
-     *
-     *  Constructor
-     *
-     * */
-    /**
-     * Constructs an instance of the Cell class.
-     *
-     * @param {Row} row
-     * Reference to the row instance.
-     *
-     * @param {Options} options
-     * Options for the cell.
-     *
-     * @param {HTMLElement} cellElement
-     * The container of the cell HTML element.
-     */
-    constructor(row, options, cellElement) {
-        super();
-        /**
-         * The type of GUI element.
-         */
-        this.type = Dashboards_Globals.guiElementType.cell;
-        this.id = options.id;
-        this.options = options;
-        this.row = row;
-        this.isVisible = true;
-        // Get parent container
-        const parentContainer = document.getElementById(options.parentContainerId || '') ||
-            row.container;
-        const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
-        this.container = this.getElementContainer({
-            render: row.layout.board.guiEnabled,
-            parentContainer: parentContainer,
-            attribs: {
-                id: options.id,
-                className: Dashboards_Globals.classNames.cell + ' ' +
-                    cellClassName
-            },
-            element: cellElement,
-            elementId: options.id,
-            style: Cell_merge(layoutOptions.style, rowOptions.style, options.style, {
-                height: this.height
-            })
-        });
-        // Nested layout
-        if (this.options.layout) {
-            this.setNestedLayout();
-        }
-    }
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Create a nested layout in the cell and assign it to the nestedCell
-     * property.
-     * @internal
-     */
-    setNestedLayout() {
-        const board = this.row.layout.board, Layout = this.row.layout.constructor;
-        const optionsGui = board.options.gui;
-        this.nestedLayout = new Layout(board, Cell_merge({}, optionsGui && optionsGui.layoutOptions, this.options.layout, {
-            parentContainerId: this.options.id
-        }), this);
-    }
-    /**
-     * Destroy the element, its container, event hooks
-     * and mounted component.
-     */
-    destroy() {
-        const cell = this;
-        const { row } = cell;
-        // Destroy mounted component.
-        cell.mountedComponent?.destroy();
-        // If layout exists in the cell - destroy it
-        cell.nestedLayout?.destroy();
-        row.unmountCell(cell);
-        const destroyRow = row.cells?.length === 0;
-        super.destroy();
-        if (destroyRow) {
-            row.destroy();
-        }
-    }
-    /**
-     * Get the cell's options.
-     * @returns
-     * The JSON of cell's options.
-     *
-     * @internal
-     *
-     */
-    getOptions() {
-        const cell = this;
-        if (cell.options.layout && cell.nestedLayout) {
-            return {
-                ...cell.options,
-                layout: cell.nestedLayout.getOptions()
-            };
-        }
-        return cell.options;
-    }
-    changeVisibility(setVisible = true) {
-        super.changeVisibility(setVisible);
-        const cell = this, row = cell.row;
-        // Change row visibility if needed.
-        if (!cell.row.getVisibleCells().length) {
-            cell.row.hide();
-        }
-        else if (cell.isVisible && !row.isVisible) {
-            cell.row.show();
-        }
-        setTimeout(() => {
-            Cell_fireEvent(row, 'cellChange', { row, cell });
-        }, 0);
-    }
-    getParentCell(level) {
-        const cell = this;
-        let parentCell;
-        if (level <= cell.row.layout.level) {
-            if (cell.row.layout.level === level) {
-                return cell;
-            }
-            if (cell.row.layout.level - 1 >= 0) {
-                parentCell = cell.row.layout.parentCell;
-                if (parentCell) {
-                    return parentCell.getParentCell(level);
-                }
-            }
-        }
-    }
-    // Method to get array of overlapping levels.
-    getOverlappingLevels(align, levelMaxGap, // Max distance between levels
-    offset // Analyzed cell offset
-    ) {
-        const cell = this, parentCell = cell.row.layout.parentCell;
-        let levels = [cell.row.layout.level];
-        if (parentCell) {
-            const cellOffset = offset || Layout_GUIElement.getOffsets(cell)[align];
-            const parentCellOffset = Layout_GUIElement.getOffsets(parentCell)[align];
-            if (Math.abs(cellOffset - parentCellOffset) < levelMaxGap) {
-                levels = [
-                    ...levels,
-                    ...parentCell.getOverlappingLevels(align, levelMaxGap, parentCellOffset)
-                ];
-            }
-        }
-        return levels;
-    }
-    /**
-     * Set cell size.
-     *
-     * @param width
-     * % value or 'auto' or px
-     *
-     * @param height
-     * value in px
-     */
-    setSize(width, height) {
-        const cell = this, editMode = cell.row.layout.board.editMode;
-        if (cell.container) {
-            if (width) {
-                if (width === 'auto' &&
-                    cell.container.style.flex !== '1 1 0%') {
-                    cell.container.style.flex = '1 1 0%';
-                }
-                else {
-                    const cellWidth = cell.convertWidthToValue(width);
-                    if (cellWidth &&
-                        cell.container.style.flex !== '0 0 ' + cellWidth) {
-                        cell.container.style.flex = '0 0 ' + cellWidth;
-                    }
-                }
-            }
-            if (height) {
-                cell.height = cell.container.style.height = height + 'px';
-            }
-            if (editMode) {
-                editMode.hideContextPointer();
-                if (editMode.cellToolbar &&
-                    editMode.cellToolbar.isVisible) {
-                    if (editMode.cellToolbar.cell === cell) {
-                        editMode.cellToolbar.showToolbar(cell);
-                    }
-                    else {
-                        editMode.cellToolbar.hide();
-                    }
-                }
-            }
-            // Call cellResize board event.
-            Cell_fireEvent(cell.row.layout.board, 'cellResize', { cell: cell });
-            Cell_fireEvent(cell.row, 'cellChange', { cell: cell, row: cell.row });
-        }
-    }
-    setHighlight(remove) {
-        const cell = this, editMode = cell.row?.layout.board.editMode;
-        if (cell.container && editMode) {
-            const cnt = cell.container, isSet = cnt.classList.contains(EditMode_EditGlobals.classNames.cellEditHighlight);
-            if (!remove && !isSet) {
-                cnt.classList.add(EditMode_EditGlobals.classNames.cellEditHighlight);
-                cell.row.layout.board.container.classList.add(EditMode_EditGlobals.classNames.dashboardCellEditHighlightActive);
-                cell.isHighlighted = true;
-            }
-            else if (remove && isSet) {
-                cnt.classList.remove(EditMode_EditGlobals.classNames.cellEditHighlight);
-                cell.row.layout.board.container.classList.remove(EditMode_EditGlobals.classNames.dashboardCellEditHighlightActive);
-                cell.isHighlighted = false;
-            }
-        }
-    }
-    /**
-     * Sets the active state of the cell and resets the state of other cells.
-     */
-    setActiveState() {
-        const cell = this;
-        // Reset other boxes
-        cell.row.layout.board.mountedComponents.forEach((mountedComponent) => {
-            if (mountedComponent.cell.container) {
-                mountedComponent.cell.container.classList.remove(Dashboards_Globals.classNames.cellActive);
-            }
-            mountedComponent.component.isActive = false;
-        });
-        // Apply class
-        if (cell.container) {
-            cell.container.classList.add(Dashboards_Globals.classNames.cellActive);
-        }
-    }
-    /**
-     * Enables or disables the loading indicator in the cell.
-     *
-     * @internal
-     */
-    setLoadingState(enabled = true) {
-        this.container?.classList?.toggle(Dashboards_Globals.classNames.cellLoading, enabled);
-    }
-    convertWidthToValue(width) {
-        if (typeof width === 'number') {
-            return width + 'px';
-        }
-        if (/px/.test(width)) {
-            return width;
-        }
-        return Layout_GUIElement.getPercentageWidth(width) || '';
-    }
-}
-/**
- * Checks if a valid cell instance.
- */
-function isCell(cell) {
-    return (!!cell && 'row' in cell && cell.type === 'cell');
-}
-/* *
- *
- *  Default Export
- *
- * */
-/* harmony default export */ const Layout_Cell = (Cell);
-
-;// ./code/dashboards/es-modules/Dashboards/CallbackRegistry.js
-class CallbackRegistry {
-    constructor() {
-        this.registry = {};
-    }
-    addCallback(id, callback) {
-        this.registry[id] = callback;
-    }
-    getCallback(id) {
-        return this.registry[id];
-    }
-    /** @internal */
-    toJSON() {
-        const json = {};
-        Object.keys(this.registry).forEach((key) => {
-            const entry = this.getCallback(key);
-            const { func, type } = entry;
-            json[key] = {
-                func: func.toString(),
-                type
-            };
-        });
-        return json;
-    }
-}
-/* harmony default export */ const Dashboards_CallbackRegistry = (CallbackRegistry);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/ConnectorHandler.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Dawid Dragula
- *
- * */
-
-
-/* *
- *
- *  Class
- *
- * */
-/**
- * A class that handles the connection between the component and the data
- * connector.
- */
-class ConnectorHandler {
-    /* *
-     *
-     *  Constructor
-     *
-     * */
-    /**
-     * Creates an object that manages the data layer for the component.
-     *
-     * @param component
-     * The component that the connector is tied to.
-     *
-     * @param options
-     * The options for the connector.
-     *
-     */
-    constructor(component, options) {
-        /**
-         * Event listeners tied to the current DataTable. Used for rerendering the
-         * component on data changes.
-         * @internal
-         */
-        this.tableEvents = [];
-        this.component = component;
-        this.options = options;
-    }
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Inits connectors for the component and rerenders it.
-     *
-     * @returns
-     * Promise resolving to the component.
-     */
-    async initConnector() {
-        const component = this.component;
-        const connectorId = this.options.id;
-        const dataPool = this.component.board.dataPool;
-        if (connectorId &&
-            (this.connectorId !== connectorId ||
-                dataPool.isNewConnector(connectorId))) {
-            if (isCell(component.cell)) {
-                component.cell.setLoadingState();
-            }
-            const connector = await dataPool.getConnector(connectorId);
-            // The connector shouldn't be set if the handler was destroyed
-            // during its creation.
-            if (!this.destroyed) {
-                this.setConnector(connector);
-            }
-        }
-        return component;
-    }
-    /**
-     * Sets the data table settings and events.
-     *
-     * @param table
-     * The data table instance for settings and events.
-     */
-    setTable(table) {
-        // Set up event listeners
-        this.clearTableListeners(table);
-        this.setupTableListeners(table);
-        // Re-setup if modifier changes
-        table.on('setModifier', () => this.clearTableListeners(table));
-        table.on('afterSetModifier', (e) => {
-            if (e.type === 'afterSetModifier' && e.modified) {
-                this.setupTableListeners(e.modified);
-                this.component.emit({
-                    type: 'tableChanged',
-                    connector: this.connector
-                });
-            }
-        });
-        this.dataTable = table;
-    }
-    /**
-     * Sets the connector for the component connector handler.
-     *
-     * @param connector
-     * The connector to set.
-     */
-    setConnector(connector) {
-        // Clean up old event listeners
-        while (this.tableEvents.length) {
-            const eventCallback = this.tableEvents.pop();
-            if (typeof eventCallback === 'function') {
-                eventCallback();
-            }
-        }
-        this.connector = connector;
-        if (connector) {
-            this.setTable(connector.getTable(this.options.dataTableKey));
-        }
-        this.addConnectorAssignment();
-        return this.component;
-    }
-    /**
-     * Adds event listeners to data table.
-     * @param table
-     * Data table that is source of data.
-     * @internal
-     */
-    setupTableListeners(table) {
-        const connector = this.connector;
-        if (connector) {
-            if (table) {
-                [
-                    'afterDeleteRows',
-                    'afterSetCell',
-                    'afterSetColumns',
-                    'afterSetRows'
-                ].forEach((event) => {
-                    this.tableEvents.push(table.on(event, (e) => {
-                        clearTimeout(this.tableEventTimeout);
-                        this.tableEventTimeout = Dashboards_Globals.win.setTimeout(() => {
-                            this.component.emit({
-                                ...e,
-                                type: 'tableChanged',
-                                targetConnector: connector
-                            });
-                            this.tableEventTimeout = void 0;
-                        });
-                    }));
-                });
-            }
-        }
-    }
-    /**
-     * Remove event listeners in data table.
-     *
-     * @param table
-     * The connector data table (data source).
-     *
-     * @internal
-     */
-    clearTableListeners(table) {
-        const connector = this.connector;
-        const tableEvents = this.tableEvents;
-        this.removeTableEvents();
-        if (connector) {
-            tableEvents.push(table.on('afterSetModifier', (e) => {
-                if (e.type === 'afterSetModifier') {
-                    clearTimeout(this.tableEventTimeout);
-                    this.tableEventTimeout = Dashboards_Globals.win.setTimeout(() => {
-                        this.component.emit({
-                            ...e,
-                            type: 'tableChanged',
-                            targetConnector: connector
-                        });
-                        this.tableEventTimeout = void 0;
-                    });
-                }
-            }));
-        }
-    }
-    /**
-     * Adds the component to the provided connector.
-     * Starts the connector polling if inactive and one component is provided.
-     */
-    addConnectorAssignment() {
-        const { connector } = this;
-        if (!connector) {
-            return;
-        }
-        if (!connector.components) {
-            connector.components = [];
-        }
-        if (!connector.components.includes(this.component)) {
-            const options = connector.options;
-            // Add the component assignment.
-            connector.components.push(this.component);
-            // Start the connector polling.
-            if ('enablePolling' in options &&
-                options.enablePolling &&
-                !connector.polling &&
-                connector.components.length === 1 &&
-                'dataRefreshRate' in options) {
-                connector.startPolling(Math.max(options.dataRefreshRate || 0, 1) * 1000);
-            }
-        }
-    }
-    /**
-     * Removes the component instance from the provided connector.
-     * Stops the connector polling if the last element is removed.
-     */
-    removeConnectorAssignment() {
-        const { connector } = this;
-        if (!connector?.components) {
-            return;
-        }
-        const index = connector.components.indexOf(this.component);
-        if (index > -1) {
-            connector.components.splice(index, 1);
-            if (!connector.components.length) {
-                connector.stopPolling();
-                delete connector.components;
-            }
-        }
-    }
-    /**
-     * Clears all event listeners in the table.
-     */
-    removeTableEvents() {
-        this.tableEvents.forEach((clearEvent) => clearEvent());
-        this.tableEvents.length = 0;
-    }
-    /**
-     * Updates the options for the connector handler.
-     *
-     * @param newOptions
-     * The new options to update.
-     */
-    updateOptions(newOptions) {
-        this.options = newOptions;
-    }
-    /**
-     * Destroys the connector handler.
-     * @internal
-     */
-    destroy() {
-        this.destroyed = true;
-        this.removeConnectorAssignment();
-        this.removeTableEvents();
-    }
-}
-/* harmony default export */ const Components_ConnectorHandler = (ConnectorHandler);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/EditableOptions.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-class EditableOptions {
-    constructor(component, bindings = EditableOptions.defaultBindings) {
-        this.component = component;
-        this.bindings = bindings;
-    }
-    getOptions() {
-        const options = this.component.options.editableOptions;
-        if (!options) {
-            return [];
-        }
-        for (let i = 0, iEnd = options.length; i < iEnd; i++) {
-            const option = options[i];
-            if (option.propertyPath?.some((path) => path === 'connector')) {
-                const board = this.component.board;
-                const selectOptions = !board ?
-                    [] :
-                    board.dataPool
-                        .getConnectorIds()
-                        .map((name) => ({ name }));
-                option.selectOptions = selectOptions;
-            }
-        }
-        return options;
-    }
-}
-EditableOptions.defaultBindings = {
-    keyMap: {
-        color: 'colorPicker',
-        title: 'text',
-        caption: 'text',
-        style: 'textarea'
-    },
-    typeMap: {
-        'string': 'text',
-        'number': 'input',
-        'boolean': 'toggle'
-    },
-    skipRedraw: []
-};
-// Bindings of basic types to "editor components"
-EditableOptions.defaultTypeMap = {
-    'string': 'text',
-    'number': 'input',
-    'boolean': 'toggle'
-};
-/* harmony default export */ const Components_EditableOptions = (EditableOptions);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Emitter.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-/**
- *  Class responsible for adding event listeners on a component
- *  @internal
- */
-class SyncEmitter {
-    /**
-     * Adds an emitter to the emitter registry.
-     *
-     * @param emitter the emitter to add to the registry.
-     */
-    static register(emitter) {
-        const { id } = emitter;
-        this.registry[id] = emitter;
-    }
-    /**
-     * Gets an emitter from emitter registry.
-     *
-     * @param emitterID The ID of the emitter to get.
-     */
-    static get(emitterID) {
-        return this.registry[emitterID];
-    }
-    /**
-     * Creates a new emitter instance.
-     *
-     * @param id An unique ID for the emitter.
-     *
-     * @param func
-     * The function to be called when the emitter is activated.
-     */
-    constructor(id, func) {
-        this.id = id;
-        this.func = func;
-        SyncEmitter.register(this);
-    }
-    /**
-     * Attaches the emitter to a component.
-     *
-     * @param component The component to attach to.
-     */
-    create(component) {
-        this.callback = this.func.call(component);
-    }
-    /**
-     * To be used when removing the emitter from the component.
-     * Calls the {@link callback} function.
-     */
-    remove() {
-        if (this.callback) {
-            this.callback();
-        }
-    }
-}
-/**
- * Registry for reusable emitter.
- * The emitter is stored by ID.
- */
-SyncEmitter.registry = {};
-/* harmony default export */ const Emitter = (SyncEmitter);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Handler.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-
-/* *
- *
- *  Class
- *
- * */
-/**
- * Class responsible for storing handler callbacks used in component sync.
- * @internal
- */
-class SyncHandler {
-    /**
-     * Adds a handler to the handler registry.
-     *
-     * @param handler
-     * The handler to add to the registry.
-     */
-    static register(handler) {
-        const { id } = handler;
-        this.registry[id] = handler;
-    }
-    /**
-     * Gets a handler from handler registry.
-     *
-     * @param handlerID
-     * The ID of the handler to get.
-     */
-    static get(handlerID) {
-        return this.registry[handlerID];
-    }
-    /**
-     * Creates a new handler instance.
-     *
-     * @param id
-     * An unique ID for the handler.
-     *
-     * @param func
-     * The function to be called when the handler is activated.
-     */
-    constructor(id, func) {
-        this.id = id;
-        this.func = func;
-        SyncHandler.register(this);
-    }
-    /**
-     * Calls the activation function on the component and sets the callback to
-     * the return function.
-     *
-     * @param component
-     * The component to register on.
-     */
-    register(component) {
-        const { func } = this;
-        this.callback = func.call(component);
-    }
-    /**
-     * To be used when removing the handler from the component.
-     * Calls the {@link callback} function.
-     */
-    remove() {
-        if (this.callback) {
-            this.callback();
-        }
-    }
-}
-/**
- * Registry for reusable handlers.
- * The handler is stored by ID.
- */
-SyncHandler.registry = {};
-/* *
- *
- *  Default Export
- *
- * */
-/* harmony default export */ const Handler = (SyncHandler);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Sync.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-
-
-
-
-const { merge: Sync_merge, isObject: Sync_isObject } = Core_Utilities;
-/* *
- *
- * Class
- *
- * */
-/** @internal */
-class Sync {
-    /* *
-     *
-     * Constructor
-     *
-     * */
-    /**
-     * Creates an instance of the sync class.
-     *
-     * @param component
-     * The component to which the emitters and handlers are attached.
-     *
-     * @param predefinedSyncConfig
-     * The predefined sync configuration.
-     */
-    constructor(component, predefinedSyncConfig) {
-        this.component = component;
-        this.predefinedSyncConfig = predefinedSyncConfig;
-        this.syncConfig = Sync.prepareSyncConfig(predefinedSyncConfig, component.options.sync);
-        this.registeredSyncHandlers = {};
-        this.registeredSyncEmitters = {};
-        this.isSyncing = false;
-        this.listeners = [];
-    }
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /**
-     * Method that prepares the sync configuration from the predefined config
-     * and current component options.
-     *
-     * @param predefinedConfig The predefined sync configuration.
-     * @param componentSyncOptions The current component sync options.
-     * @returns The sync configuration.
-     */
-    static prepareSyncConfig(predefinedConfig, componentSyncOptions = {}) {
-        const { defaultSyncPairs: defaultPairs, defaultSyncOptions: defaultOptionsList } = predefinedConfig;
-        return Object.keys(componentSyncOptions).reduce((acc, syncName) => {
-            if (syncName) {
-                const defaultPair = defaultPairs[syncName];
-                const defaultOptions = defaultOptionsList[syncName];
-                const entry = componentSyncOptions[syncName];
-                const preparedOptions = Sync_merge(defaultOptions || {}, { enabled: Sync_isObject(entry) ? entry.enabled : entry }, Sync_isObject(entry) ? entry : {});
-                if (defaultPair && preparedOptions.enabled) {
-                    const keys = [
-                        'emitter',
-                        'handler'
-                    ];
-                    for (const key of keys) {
-                        if (preparedOptions[key] === true ||
-                            preparedOptions[key] === void 0) {
-                            preparedOptions[key] =
-                                defaultPair[key];
-                        }
-                    }
-                }
-                acc[syncName] = preparedOptions;
-            }
-            return acc;
-        }, {});
-    }
-    /**
-     * Add new emitter to the registered emitters.
-     *
-     * @param emitter
-     * The emitter to register.
-     */
-    registerSyncEmitter(emitter) {
-        const { id } = emitter;
-        this.registeredSyncEmitters[id] = emitter;
-    }
-    /**
-     * Method that checks if the emitter is registered.
-     *
-     * @param id
-     * The id of the emitter to check.
-     *
-     * @returns
-     * Whether the emitter is registered.
-     */
-    isRegisteredEmitter(id) {
-        return Boolean(this.registeredSyncEmitters[id]);
-    }
-    /**
-     * Register new handler to the registered handlers.
-     *
-     * @param handler
-     * The handler to register.
-     */
-    registerSyncHandler(handler) {
-        const { id } = handler;
-        this.registeredSyncHandlers[id] = handler;
-    }
-    /**
-     * Method that checks if the handler is registered.
-     *
-     * @param handlerID
-     * The id of the handler to check.
-     *
-     * @returns
-     * Whether the handler is registered.
-     */
-    isRegisteredHandler(handlerID) {
-        return Boolean(this.registeredSyncHandlers[handlerID]);
-    }
-    /**
-     * Registers the handlers and emitters on the component
-     */
-    start() {
-        const { component } = this;
-        this.syncConfig = Sync.prepareSyncConfig(this.predefinedSyncConfig, component.options.sync);
-        for (const id of Object.keys(this.syncConfig)) {
-            const syncOptions = this.syncConfig[id];
-            if (!syncOptions) {
-                continue;
-            }
-            let { emitter: emitterConfig, handler: handlerConfig } = syncOptions;
-            if (handlerConfig) {
-                if (handlerConfig === true) {
-                    handlerConfig =
-                        Sync.defaultHandlers[id]
-                            .handler;
-                }
-                const handler = new Handler(id, handlerConfig);
-                if (!this.isRegisteredHandler(handler.id)) {
-                    this.registerSyncHandler(handler);
-                    handler.register(component);
-                }
-            }
-            if (emitterConfig) {
-                if (emitterConfig === true) {
-                    emitterConfig =
-                        Sync.defaultHandlers[id]
-                            .emitter;
-                }
-                const emitter = new Emitter(id, emitterConfig);
-                if (!this.isRegisteredEmitter(emitter.id)) {
-                    this.registerSyncEmitter(emitter);
-                    emitter.create(component);
-                }
-            }
-        }
-        this.isSyncing = true;
-        this.listeners.push(component.on('update', () => this.stop()));
-    }
-    /**
-     * Removes the handlers and emitters from the component.
-     */
-    stop() {
-        const { component, listeners, registeredSyncHandlers, registeredSyncEmitters } = this;
-        Object.keys(registeredSyncHandlers).forEach((id) => {
-            registeredSyncHandlers[id].remove();
-            delete registeredSyncHandlers[id];
-        });
-        Object.keys(registeredSyncEmitters).forEach((id) => {
-            registeredSyncEmitters[id].remove();
-            delete registeredSyncEmitters[id];
-        });
-        this.isSyncing = false;
-        for (let i = 0, iEnd = listeners.length; i < iEnd; ++i) {
-            listeners[i]();
-        }
-        this.listeners.length = 0;
-        this.listeners.push(component.on('afterUpdate', () => {
-            this.start();
-        }));
-    }
-}
-/**
- * Default handlers for the sync class. This property is extended by
- * different Components, where default syncs are added. Allows overwriting
- * the configuration before creating the dashboard.
- */
-Sync.defaultHandlers = {};
-/* *
- *
- *  Default Export
- *
- * */
-/* harmony default export */ const Sync_Sync = (Sync);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/ComponentUtilities.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-
-/* *
- *
- *  Functions
- *
- * */
-function getMargins(element, includeBorders = true) {
-    const borders = {
-        x: ['borderLeft', 'borderRight'],
-        y: ['borderTop', 'borderBottom']
-    };
-    return {
-        y: getStyles(element, [
-            'marginTop',
-            'marginBottom',
-            ...(includeBorders ? borders.y : [])
-        ]).reduce(sumPixels, 0),
-        x: getStyles(element, [
-            'marginLeft',
-            'marginTop',
-            ...(includeBorders ? borders.x : [])
-        ]).reduce(sumPixels, 0)
+        ].concat([].slice.call(arguments)));
     };
 }
-function getPaddings(element) {
-    return {
-        x: getStyles(element, ['paddingLeft', 'paddingRight']).reduce(sumPixels, 0),
-        y: getStyles(element, ['paddingTop', 'paddingBottom']).reduce(sumPixels, 0)
-    };
-}
-function getStyles(element, styles) {
-    const elementStyles = window.getComputedStyle(element);
-    return styles.map((style) => elementStyles[style]); // Cannot use getPropertyValue?
-}
-function sumPixels(accumulator, value) {
-    if (value) {
-        accumulator += (typeof value === 'number' ? value : parseFloat(value));
-    }
-    return accumulator;
-}
-/* *
- *
- *  Default Export
- *
- * */
-const ComponentUtilities = {
-    getMargins,
-    getPaddings,
-    getStyles,
-    sumPixels
-};
-/* harmony default export */ const Components_ComponentUtilities = (ComponentUtilities);
-
-;// ./code/dashboards/es-modules/Dashboards/Utilities.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-
-
-const { doc: Utilities_doc, supportsPassiveEvents: Utilities_supportsPassiveEvents } = Dashboards_Globals;
-
-const { error: coreError, isClass: Utilities_isClass, isDOMElement: Utilities_isDOMElement, isObject: Utilities_isObject, objectEach: Utilities_objectEach, uniqueKey: coreUniqueKey } = Core_Utilities;
-/* *
- *
- *  Functions
- *
- * */
-/**
- * Add an event listener.
- *
- * @function Highcharts.addEvent<T>
- *
- * @param  {D.Class<T>|T} el
- *         The element or object to add a listener to. It can be a
- *         {@link HTMLDOMElement}, an {@link SVGElement} or any other object.
- *
- * @param  {string} type
- *         The event type.
- *
- * @param  {Dashboards.EventCallbackFunction<T>|Function} fn
- *         The function callback to execute when the event is fired.
- *
- * @param  {Dashboards.EventOptionsObject} [options]
- *         Options for adding the event.
- *
- * @return {Function}
- *         A callback function to remove the added event.
- */
-function Utilities_addEvent(el, type, fn, options = {}) {
-    /* eslint-enable valid-jsdoc */
-    // Add hcEvents to either the prototype (in case we're running addEvent on a
-    // class) or the instance. If hasOwnProperty('hcEvents') is false, it is
-    // inherited down the prototype chain, in which case we need to set the
-    // property on this instance (which may itself be a prototype).
-    const owner = typeof el === 'function' && el.prototype || el;
-    if (!Object.hasOwnProperty.call(owner, 'hcEvents')) {
-        owner.hcEvents = {};
-    }
-    const events = owner.hcEvents;
-    // Handle DOM events
-    // If the browser supports passive events, add it to improve performance
-    // on touch events (#11353).
-    const addEventListener = el.addEventListener;
-    if (addEventListener) {
-        addEventListener.call(el, type, fn, Utilities_supportsPassiveEvents ? {
-            passive: options.passive === void 0 ?
-                type.indexOf('touch') !== -1 : options.passive,
-            capture: false
-        } : false);
-    }
-    if (!events[type]) {
-        events[type] = [];
-    }
-    const eventObject = {
-        fn,
-        order: typeof options.order === 'number' ? options.order : Infinity
-    };
-    events[type].push(eventObject);
-    // Order the calls
-    events[type].sort((a, b) => a.order - b.order);
-    // Return a function that can be called to remove this event.
-    return function () {
-        Utilities_removeEvent(el, type, fn);
-    };
-}
-/**
- * Utility function to deep merge two or more objects and return a third object.
- * If the first argument is true, the contents of the second object is copied
- * into the first object. The merge function can also be used with a single
- * object argument to create a deep copy of an object.
- *
- * @function Highcharts.merge<T>
- *
- * @param {boolean} extend
- *        Whether to extend the left-side object (a) or return a whole new
- *        object.
- *
- * @param {T|undefined} a
- *        The first object to extend. When only this is given, the function
- *        returns a deep copy.
- *
- * @param {...Array<object|undefined>} [n]
- *        An object to merge into the previous one.
- *
- * @return {T}
- *         The merged object. If the first argument is true, the return is the
- *         same as the second argument.
- */ /**
-* Utility function to deep merge two or more objects and return a third object.
-* The merge function can also be used with a single object argument to create a
-* deep copy of an object.
-*
-* @function Highcharts.merge<T>
-*
-* @param {T|undefined} a
-*        The first object to extend. When only this is given, the function
-*        returns a deep copy.
-*
-* @param {...Array<object|undefined>} [n]
-*        An object to merge into the previous one.
-*
-* @return {T}
-*         The merged object. If the first argument is true, the return is the
-*         same as the second argument.
-*/
-function Utilities_merge(a, ...n) {
-    let copyDepth = 0, obj = {};
-    // Descriptive error stack:
-    const copyDepthError = new Error('Recursive copy depth > 100'), doCopy = (copy, original) => {
-        // An object is replacing a primitive
-        if (typeof copy !== 'object') {
-            copy = {};
-        }
-        if (++copyDepth > 100) {
-            throw copyDepthError;
-        }
-        Utilities_objectEach(original, (value, key) => {
-            // Prototype pollution (#14883)
-            if (key === '__proto__' || key === 'constructor') {
-                return;
-            }
-            // Copy the contents of objects, but not arrays or DOM nodes
-            if (Utilities_isObject(value, true) &&
-                !Utilities_isClass(value) &&
-                !Utilities_isDOMElement(value)) {
-                copy[key] = doCopy(copy[key] || {}, value);
-                // Primitives and arrays are copied over directly
-            }
-            else {
-                copy[key] = original[key];
-            }
-        });
-        --copyDepth;
-        return copy;
-    };
-    // If first argument is true, copy into the existing object. Used in
-    // setOptions.
-    if (a === true) {
-        obj = n.shift();
-    }
-    else {
-        n.unshift(a);
-    }
-    // For each argument, extend the return
-    for (let i = 0, iEnd = n.length; i < iEnd; ++i) {
-        obj = doCopy(obj, n[i]);
-    }
-    return obj;
-}
-/**
- * Returns a deep copy of an argument. It differs from `merge` in that it copies
- * also arrays.
- *
- * @param value
- * The value to clone.
- *
- * @param excludedKeys
- * An array of keys to exclude from the clone.
- */
-function deepClone(value, excludedKeys) {
-    if (Array.isArray(value)) {
-        return value.map((v) => deepClone(v, excludedKeys));
-    }
-    if (value && typeof value === 'object') {
-        const clone = {};
-        const keys = Object.keys(value);
-        for (const key of keys) {
-            if (excludedKeys && excludedKeys.includes(key)) {
-                clone[key] = value[key];
-            }
-            else {
-                clone[key] = deepClone(value[key], excludedKeys);
-            }
-        }
-        return clone;
-    }
-    return value;
-}
-/**
- * Creates a session-dependent unique key string for reference purposes.
- *
- * @function Dashboards.uniqueKey
- *
- * @return {string}
- * Unique key string
- */
-function Utilities_uniqueKey() {
-    return `dashboard-${coreUniqueKey().replace('highcharts-', '')}`;
-}
-/**
- * Provide error messages for debugging, with links to online explanation. This
- * function can be overridden to provide custom error handling.
- *
- * @sample highcharts/chart/highcharts-error/
- *         Custom error handler
- *
- * @function Dashboards.error
- *
- * @param {number|string} code
- *        The error code. See
- *        [errors.xml](https://github.com/highcharts/highcharts/blob/master/errors/errors.xml)
- *        for available codes. If it is a string, the error message is printed
- *        directly in the console.
- *
- * @param {boolean} [stop=false]
- *        Whether to throw an error or just log a warning in the console.
- *
- * @return {void}
- */
-function Utilities_error(code, stop) {
-    // TODO- replace with proper error handling
-    if (code === 16) {
-        console.warn(// eslint-disable-line no-console
-        'Dashboard error: Dashboards library loaded more than once.' +
-            'This may cause undefined behavior.');
-        return;
-    }
-    coreError(code, stop);
-}
-/**
- * Utility function to extend an object with the members of another.
- *
- * @function Dashboards.extend<T>
- *
- * @param {T|undefined} a
- *        The object to be extended.
- *
- * @param {Partial<T>} b
- *        The object to add to the first one.
- *
- * @return {T}
- *         Object a, the original object.
- */
-function Utilities_extend(a, b) {
-    /* eslint-enable valid-jsdoc */
-    let n;
-    if (!a) {
-        a = {};
-    }
-    for (n in b) { // eslint-disable-line guard-for-in
-        a[n] = b[n];
-    }
-    return a;
-}
-/**
- * Fire an event that was registered with addEvent.
- *
- * @function Highcharts.fireEvent<T>
- *
- * @param {T} el
- *        The object to fire the event on. It can be a {@link HTMLDOMElement},
- *        an {@link SVGElement} or any other object.
- *
- * @param {string} type
- *        The type of event.
- *
- * @param {Dashboards.Dictionary<*>|Event} [eventArguments]
- *        Custom event arguments that are passed on as an argument to the event
- *        handler.
- *
- * @param {Dashboards.EventCallbackFunction<T>|Function} [defaultFunction]
- *        The default function to execute if the other listeners haven't
- *        returned false.
- *
- * @return {void}
- */
-function Utilities_fireEvent(el, type, eventArguments, defaultFunction) {
-    /* eslint-enable valid-jsdoc */
-    eventArguments = eventArguments || {};
-    if (Utilities_doc?.createEvent &&
-        (el.dispatchEvent ||
-            (el.fireEvent &&
-                // Enable firing events on Highcharts instance.
-                el !== Dashboards_Globals))) {
-        const e = Utilities_doc.createEvent('Events');
-        e.initEvent(type, true, true);
-        eventArguments = Utilities_extend(e, eventArguments);
-        if (el.dispatchEvent) {
-            el.dispatchEvent(eventArguments);
-        }
-        else {
-            el.fireEvent(type, eventArguments);
-        }
-    }
-    else if (el.hcEvents) {
-        if (!eventArguments.target) {
-            // We're running a custom event
-            Utilities_extend(eventArguments, {
-                // Attach a simple preventDefault function to skip
-                // default handler if called. The built-in
-                // defaultPrevented property is not overwritable (#5112)
-                preventDefault: function () {
-                    eventArguments.defaultPrevented = true;
-                },
-                // Setting target to native events fails with clicking
-                // the zoom-out button in Chrome.
-                target: el,
-                // If the type is not set, we're running a custom event
-                // (#2297). If it is set, we're running a browser event.
-                type: type
-            });
-        }
-        const events = [];
-        let object = el;
-        let multilevel = false;
-        // Recurse up the inheritance chain and collect hcEvents set as own
-        // objects on the prototypes.
-        while (object.hcEvents) {
-            if (Object.hasOwnProperty.call(object, 'hcEvents') &&
-                object.hcEvents[type]) {
-                if (events.length) {
-                    multilevel = true;
-                }
-                events.unshift.apply(events, object.hcEvents[type]);
-            }
-            object = Object.getPrototypeOf(object);
-        }
-        // For performance reasons, only sort the event handlers in case we are
-        // dealing with multiple levels in the prototype chain. Otherwise, the
-        // events are already sorted in the addEvent function.
-        if (multilevel) {
-            // Order the calls
-            events.sort((a, b) => a.order - b.order);
-        }
-        // Call the collected event handlers
-        events.forEach((obj) => {
-            // If the event handler returns false, prevent the default handler
-            // from executing
-            if (obj.fn.call(el, eventArguments) === false) {
-                eventArguments.preventDefault();
-            }
-        });
-    }
-    // Run the default if not prevented
-    if (defaultFunction && !eventArguments.defaultPrevented) {
-        defaultFunction.call(el, eventArguments);
-    }
-}
-/**
- * Remove an event that was added with {@link Highcharts#addEvent}.
- *
- * @function Dashboards.removeEvent<T>
- *
- * @param {Dashboards.Class<T>|T} el
- *        The element to remove events on.
- *
- * @param {string} [type]
- *        The type of events to remove. If undefined, all events are removed
- *        from the element.
- *
- * @param {Dashboards.EventCallbackFunction<T>} [fn]
- *        The specific callback to remove. If undefined, all events that match
- *        the element and optionally the type are removed.
- *
- * @return {void}
- */
-function Utilities_removeEvent(el, type, fn) {
-    /* eslint-enable valid-jsdoc */
-    /**
-     * @private
-     */
-    function removeOneEvent(type, fn) {
-        const removeEventListener = el.removeEventListener;
-        if (removeEventListener) {
-            removeEventListener.call(el, type, fn, false);
-        }
-    }
-    /**
-     * @private
-     */
-    function removeAllEvents(eventCollection) {
-        let types, len;
-        if (!el.nodeName) {
-            return; // Break on non-DOM events
-        }
-        if (type) {
-            types = {};
-            types[type] = true;
-        }
-        else {
-            types = eventCollection;
-        }
-        Utilities_objectEach(types, function (_val, n) {
-            if (eventCollection[n]) {
-                len = eventCollection[n].length;
-                while (len--) {
-                    removeOneEvent(n, eventCollection[n][len].fn);
-                }
-            }
-        });
-    }
-    const owner = typeof el === 'function' && el.prototype || el;
-    if (Object.hasOwnProperty.call(owner, 'hcEvents')) {
-        const events = owner.hcEvents;
-        if (type) {
-            const typeEvents = (events[type] || []);
-            if (fn) {
-                events[type] = typeEvents.filter(function (obj) {
-                    return fn !== obj.fn;
-                });
-                removeOneEvent(type, fn);
-            }
-            else {
-                removeAllEvents(events);
-                events[type] = [];
-            }
-        }
-        else {
-            removeAllEvents(events);
-            delete owner.hcEvents;
-        }
-    }
-}
-/* *
- *
- *  Default Export
- *
- * */
-const Utilities_Utilities = {
-    addEvent: Utilities_addEvent,
-    deepClone,
-    error: Utilities_error,
-    fireEvent: Utilities_fireEvent,
-    merge: Utilities_merge,
-    removeEvent: Utilities_removeEvent,
-    uniqueKey: Utilities_uniqueKey
-};
-/* harmony default export */ const Dashboards_Utilities = (Utilities_Utilities);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/Component.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *  - Dawid Dragula
- *
- * */
-
-
-
-
-
-
-
-const { classNamePrefix: Component_classNamePrefix } = Dashboards_Globals;
-
-const { createElement: Component_createElement, isArray: Component_isArray, merge: Component_merge, fireEvent: Component_fireEvent, addEvent: Component_addEvent, objectEach: Component_objectEach, isFunction: Component_isFunction, getStyle: Component_getStyle, diffObjects: Component_diffObjects, removeEvent: Component_removeEvent } = Core_Utilities;
-
-const { getMargins: Component_getMargins, getPaddings: Component_getPaddings } = Components_ComponentUtilities;
-
-const { deepClone: Component_deepClone, uniqueKey: Component_uniqueKey } = Dashboards_Utilities;
-/* *
- *
- *  Class
- *
- * */
-/**
- * Abstract class of component.
- */
-class Component {
-    /* *
-     *
-     *  Static Functions
-     *
-     * */
-    /**
-     * Creates HTML text element like header or title
-     *
-     * @param tagName
-     * HTML tag name used as wrapper of text like `h2` or `p`.
-     *
-     * @param elementName
-     * Name of element
-     *
-     * @param textOptions
-     * The options for the component
-     *
-     * @returns
-     * HTML object when title is created, otherwise undefined
-     *
-     * @internal
-     */
-    static createTextElement(tagName, elementName, textOptions) {
-        if (typeof textOptions === 'object') {
-            const { className, text, style } = textOptions;
-            return Component_createElement(tagName, {
-                className: className || `${Component_classNamePrefix}component-${elementName}`,
-                textContent: text
-            }, style);
-        }
-        if (typeof textOptions === 'string') {
-            return Component_createElement(tagName, {
-                className: `${Component_classNamePrefix}component-${elementName}`,
-                textContent: textOptions
-            }, {});
-        }
-    }
-    /* *
-     *
-     *  Constructor
-     *
-     * */
-    /**
-     * Creates a component in the cell.
-     *
-     * @param cell
-     * Instance of cell, where component is attached.
-     *
-     * @param options
-     * The options for the component.
-     */
-    constructor(cell, options, board) {
-        /**
-         * The connector handlers for the component. They are used to handle the
-         * connector options and data tables.
-         */
-        this.connectorHandlers = [];
-        /**
-         * Registry of callbacks registered on the component. Used in the Highcharts
-         * component to keep track of chart events.
-         * @internal
-         */
-        this.callbackRegistry = new Dashboards_CallbackRegistry();
-        /**
-         * Event listeners tied to the parent cell. Used for rendering/resizing the
-         * component on interactions.
-         * @internal
-         */
-        this.cellListeners = [];
-        /**
-         * Timeouts for calls to `Component.resizeTo()`.
-         * @internal
-         */
-        this.resizeTimeouts = [];
-        /**
-         * Timeouts for resizing the content. I.e. `chart.setSize()`.
-         * @internal
-         */
-        this.innerResizeTimeouts = [];
-        const renderTo = options.renderTo;
-        this.board = board || cell?.row?.layout?.board || {};
-        this.parentElement =
-            cell?.container || document.querySelector('#' + renderTo);
-        this.cell = cell;
-        this.options = Component_merge(Component.defaultOptions, options);
-        this.id = this.options.id && this.options.id.length ?
-            this.options.id :
-            Component_uniqueKey();
-        if (this.options.connector) {
-            const connectorOptionsArray = Component_isArray(this.options.connector) ?
-                this.options.connector :
-                [this.options.connector];
-            for (const connectorOptions of connectorOptionsArray) {
-                this.connectorHandlers.push(new Components_ConnectorHandler(this, connectorOptions));
-            }
-        }
-        this.editableOptions =
-            new Components_EditableOptions(this, options.editableOptionsBindings);
-        this.dimensions = {
-            width: null,
-            height: null
-        };
-        this.element = Component_createElement('div', {
-            className: this.options.className
-        }, {}, this.parentElement);
-        if (!Number(Component_getStyle(this.element, 'padding'))) {
-            // Fix flex problem, because of wrong height in internal elements
-            this.element.style.padding = '0.1px';
-        }
-        this.contentElement = Component_createElement('div', {
-            className: `${this.options.className}-content`
-        }, {}, this.element, true);
-        this.sync = new Sync_Sync(this, this.constructor.predefinedSyncConfig);
-        this.setupEventListeners();
-        if (cell) {
-            this.attachCellListeners();
-            this.on('update', () => {
-                if (isCell(this.cell)) {
-                    this.cell.setLoadingState();
-                }
-            });
-            this.on('afterRender', () => {
-                if (isCell(this.cell)) {
-                    this.cell.setLoadingState(false);
-                }
-            });
-        }
-        this.on('tableChanged', () => {
-            this.onTableChanged();
-        });
-    }
-    /**
-     * Returns the component's options when it is dropped from the sidebar.
-     *
-     * @param sidebar
-     * The sidebar popup.
-     */
-    getOptionsOnDrop(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    sidebar) {
-        return {};
-    }
-    /**
-     * Returns the first connector of the component if it exists.
-     *
-     * @internal
-     * @deprecated
-     */
-    getFirstConnector() {
-        return this.connectorHandlers[0]?.connector;
-    }
-    /**
-     * Returns the data table connected to the component by the `connectorId`
-     * and `dataTableKey`. If both args are undefined, the first data table is
-     * returned.
-     *
-     * @param connectorId
-     * The id of the connector.
-     *
-     * @param dataTableKey
-     * The key of the data table within the connector.
-     *
-     * @returns
-     * The data table, or undefined if no matching handler is found.
-     */
-    getDataTable(connectorId, dataTableKey) {
-        for (const handler of this.connectorHandlers) {
-            if ((!connectorId ||
-                handler.options.id === connectorId) && (!dataTableKey ||
-                handler.options.dataTableKey === dataTableKey)) {
-                return handler.dataTable;
-            }
-        }
-    }
-    /**
-     * Setup listeners on cell/other things up the chain
-     * @internal
-     */
-    attachCellListeners() {
-        // Remove old listeners
-        while (this.cellListeners.length) {
-            const destroy = this.cellListeners.pop();
-            if (destroy) {
-                destroy();
-            }
-        }
-        if (this.cell &&
-            isCell(this.cell) &&
-            Object.keys(this.cell).length) {
-            const board = this.cell.row.layout.board;
-            this.cellListeners.push(
-            // Listen for resize on dashboard
-            Component_addEvent(board, 'cellResize', () => {
-                this.resizeTo(this.parentElement);
-            }), 
-            // Listen for changed parent
-            Component_addEvent(this.cell.row, 'cellChange', (e) => {
-                const { row } = e;
-                if (row && this.cell) {
-                    const hasLeftTheRow = row.getCellIndex(this.cell) === void 0;
-                    if (hasLeftTheRow) {
-                        if (this.cell) {
-                            this.setCell(this.cell);
-                        }
-                    }
-                }
-            }));
-        }
-    }
-    /**
-     * Set a parent cell.
-     *
-     * @param cell
-     * Instance of a cell.
-     *
-     * @param resize
-     * Flag that allow to resize the component.
-     *
-     * @internal
-     */
-    setCell(cell, resize = false) {
-        this.cell = cell;
-        if (cell.container) {
-            this.parentElement = cell.container;
-        }
-        this.attachCellListeners();
-        if (resize) {
-            this.resizeTo(this.parentElement);
-        }
-    }
-    /**
-     * Initializes connector handlers for the component.
-     */
-    async initConnectors() {
-        Component_fireEvent(this, 'setConnectors', {
-            connectorHandlers: this.connectorHandlers
-        });
-        for (const connectorHandler of this.connectorHandlers) {
-            await connectorHandler.initConnector();
-        }
-        Component_fireEvent(this, 'afterSetConnectors', {
-            connectorHandlers: this.connectorHandlers
-        });
-        return this;
-    }
-    /**
-     * Gets height of the component's content.
-     *
-     * @returns
-     * Current height as number.
-     *
-     * @internal
-     */
-    getContentHeight() {
-        const titleHeight = this.titleElement ?
-            this.titleElement.clientHeight + Component_getMargins(this.titleElement).y :
-            0;
-        const captionHeight = this.captionElement ?
-            this.captionElement.clientHeight +
-                Component_getMargins(this.captionElement).y :
-            0;
-        return titleHeight + captionHeight;
-    }
-    /**
-     * Resize the component
-     *
-     * @param width
-     * The width to set the component to.
-     * Can be pixels, a percentage string or null.
-     * Null will unset the style
-     *
-     * @param height
-     * The height to set the component to.
-     * Can be pixels, a percentage string or null.
-     * Null will unset the style.
-     */
-    resize(width, height) {
-        if (height) {
-            // Get offset for border, padding
-            const pad = Component_getPaddings(this.element).y + Component_getMargins(this.element).y;
-            this.element.style.height = 'calc(100% - ' + pad + 'px)';
-            this.contentElement.style.height =
-                'calc(100% - ' + this.getContentHeight() + 'px)';
-        }
-        else if (height === null) {
-            this.dimensions.height = null;
-            this.element.style.removeProperty('height');
-        }
-        Component_fireEvent(this, 'resize', {
-            width,
-            height
-        });
-    }
-    /**
-     * It's a temporary alternative for the `resize` method. It sets the strict
-     * pixel height for the component so that the content can be distributed in
-     * the right way, without looping the resizers in the content and container.
-     *
-     * @param width
-     * The width to set the component to.
-     *
-     * @param height
-     * The height to set the component to.
-     */
-    resizeDynamicContent(width, height) {
-        const { element } = this;
-        if (height) {
-            const margins = Component_getMargins(element).y;
-            const paddings = Component_getPaddings(element).y;
-            if (typeof height === 'string') {
-                height = parseFloat(height);
-            }
-            height = Math.round(height);
-            element.style.height = `${height - margins - paddings}px`;
-            this.contentElement.style.height = `${element.clientHeight - this.getContentHeight() - paddings}px`;
-        }
-        else if (height === null) {
-            this.dimensions.height = null;
-            element.style.removeProperty('height');
-        }
-        Component_fireEvent(this, 'resize', {
-            width,
-            height
-        });
-    }
-    /**
-     * Adjusts size of component to parent's cell size when animation is done.
-     *
-     * @param element
-     * HTML element that is resized.
-     */
-    resizeTo(element) {
-        while (this.resizeTimeouts.length) {
-            const timeout = this.resizeTimeouts.pop();
-            if (timeout) {
-                cancelAnimationFrame(timeout);
-            }
-        }
-        const timeoutID = requestAnimationFrame(() => {
-            const { width, height } = element.getBoundingClientRect();
-            const padding = Component_getPaddings(element);
-            const margins = Component_getMargins(element);
-            this.resize(width - padding.x - margins.x, height - padding.y - margins.y);
-        });
-        this.resizeTimeouts.push(timeoutID);
-    }
-    /**
-     * Handles updating via options.
-     *
-     * @param newOptions
-     * The options to apply.
-     *
-     * @param shouldRerender
-     * Set to true if the update should rerender the component.
-     */
-    async update(newOptions, shouldRerender = true) {
-        const eventObject = {
-            options: newOptions,
-            shouldForceRerender: false
-        };
-        // Update options
-        Component_fireEvent(this, 'update', eventObject);
-        if (newOptions.connector && Array.isArray(this.options.connector)) {
-            this.options.connector = void 0;
-        }
-        this.options = Component_merge(this.options, newOptions);
-        const connectorOptions = (this.options.connector ? (Component_isArray(this.options.connector) ? this.options.connector :
-            [this.options.connector]) : []);
-        let connectorsHaveChanged = connectorOptions.length !== this.connectorHandlers.length;
-        if (!connectorsHaveChanged) {
-            for (let i = 0, iEnd = connectorOptions.length; i < iEnd; i++) {
-                const oldOptions = this.connectorHandlers[i]?.options;
-                const newOptions = connectorOptions[i];
-                // Check if the connector id has changed.
-                if (oldOptions.id !== newOptions.id) {
-                    connectorsHaveChanged = true;
-                    break;
-                }
-                // Check if the data table key has changed.
-                if (oldOptions.dataTableKey !== newOptions.dataTableKey) {
-                    connectorsHaveChanged = true;
-                    break;
-                }
-                this.connectorHandlers[i].updateOptions(newOptions);
-            }
-        }
-        if (connectorsHaveChanged) {
-            for (const connectorHandler of this.connectorHandlers) {
-                connectorHandler.destroy();
-            }
-            this.connectorHandlers.length = 0;
-            for (const options of connectorOptions) {
-                this.connectorHandlers.push(new Components_ConnectorHandler(this, options));
-            }
-            await this.initConnectors();
-        }
-        if (shouldRerender || eventObject.shouldForceRerender) {
-            this.render();
-        }
-    }
-    /**
-     * Private method which sets up event listeners for the component.
-     *
-     * @internal
-     */
-    setupEventListeners() {
-        const events = this.options.events;
-        if (events) {
-            Object.keys(events).forEach((key) => {
-                const eventCallback = events[key];
-                if (eventCallback) {
-                    this.callbackRegistry.addCallback(key, {
-                        type: 'component',
-                        func: eventCallback
-                    });
-                }
-            });
-            Component_objectEach(events, (eventCallback, eventType) => {
-                if (Component_isFunction(eventCallback)) {
-                    this.on(eventType, eventCallback);
-                }
-            });
-        }
-        const resizeObserverCallback = () => {
-            this.resizeTo(this.parentElement);
-        };
-        if (typeof ResizeObserver === 'function') {
-            this.resizeObserver = new ResizeObserver(resizeObserverCallback);
-            this.resizeObserver.observe(this.element);
-        }
-        else {
-            const unbind = Component_addEvent(window, 'resize', resizeObserverCallback);
-            Component_addEvent(this, 'destroy', unbind);
-        }
-    }
-    /**
-     * Adds title at the top of component's container.
-     *
-     * @param titleOptions
-     * The options for the title.
-     */
-    setTitle(titleOptions) {
-        const titleElement = this.titleElement, shouldExist = titleOptions &&
-            (typeof titleOptions === 'string' || titleOptions.text);
-        if (shouldExist) {
-            const newTitle = Component.createTextElement('h2', 'title', titleOptions);
-            if (newTitle) {
-                if (!titleElement) {
-                    this.element.insertBefore(newTitle, this.element.firstChild);
-                }
-                else {
-                    titleElement.replaceWith(newTitle);
-                }
-                this.titleElement = newTitle;
-            }
-        }
-        else {
-            if (titleElement) {
-                titleElement.remove();
-                delete this.titleElement;
-                return;
-            }
-        }
-    }
-    /**
-     * Adds caption at the bottom of component's container.
-     *
-     * @param captionOptions
-     * The options for the caption.
-     */
-    setCaption(captionOptions) {
-        const captionElement = this.captionElement, shouldExist = captionOptions &&
-            (typeof captionOptions === 'string' || captionOptions.text);
-        if (shouldExist) {
-            const newCaption = Component.createTextElement('div', 'caption', captionOptions);
-            if (newCaption) {
-                if (!captionElement) {
-                    this.element.appendChild(newCaption);
-                }
-                else {
-                    captionElement.replaceWith(newCaption);
-                }
-                this.captionElement = newCaption;
-            }
-        }
-        else {
-            if (captionElement) {
-                captionElement.remove();
-                delete this.captionElement;
-                return;
-            }
-        }
-    }
-    /**
-     * Handles setting things up on initial render.
-     *
-     * @returns
-     * The component for chaining.
-     *
-     * @internal
-     */
-    async load() {
-        await this.initConnectors();
-        this.render();
-        return this;
-    }
-    /**
-     * Renders the component.
-     *
-     * @returns
-     * The component for chaining.
-     *
-     * @internal
-     */
-    render() {
-        this.emit({ type: 'render' });
-        this.setTitle(this.options.title);
-        this.setCaption(this.options.caption);
-        this.resizeTo(this.parentElement);
-        return this;
-    }
-    /**
-     * Destroys the component.
-     */
-    destroy() {
-        /**
-         * TODO: Should perhaps set an `isActive` flag to false.
-         */
-        if (this.sync.isSyncing) {
-            this.sync.stop();
-        }
-        while (this.element.firstChild) {
-            this.element.firstChild.remove();
-        }
-        // Call unmount
-        Component_fireEvent(this, 'unmount');
-        for (const connectorHandler of this.connectorHandlers) {
-            connectorHandler.destroy();
-        }
-        // Used to removed the onTableChanged event.
-        Component_removeEvent(this);
-        this.element.remove();
-    }
-    /**
-     * Adds an event listener to the component.
-     *
-     * @param type
-     * The type of event to listen for.
-     *
-     * @param callback
-     * The callback to call when the event is triggered.
-     *
-     * @returns
-     * The function to remove the event listener.
-     *
-     * @internal
-     */
-    on(type, callback) {
-        return Component_addEvent(this, type, callback);
-    }
-    /** @internal */
-    emit(e) {
-        if (!e.target) {
-            e.target = this;
-        }
-        Component_fireEvent(this, e.type, e);
-    }
-    /**
-     * Get the component's options.
-     * @returns
-     * The JSON of component's options.
-     *
-     * @internal
-     *
-     */
-    getOptions() {
-        return Component_diffObjects(this.options, Component.defaultOptions);
-    }
-    getEditableOptions() {
-        const component = this;
-        // When refactoring, limit the copied options to the ones that are
-        // actually editable to avoid unnecessary memory usage.
-        return Component_deepClone(component.options, [
-            'dataTable', 'points', 'series', 'data', 'editableOptions'
-        ]);
-    }
-    getEditableOptionValue(propertyPath) {
-        const component = this;
-        if (!propertyPath) {
-            return;
-        }
-        let result = component.getEditableOptions();
-        for (let i = 0, end = propertyPath.length; i < end; i++) {
-            if (Component_isArray(result) &&
-                propertyPath[0] === 'connector' &&
-                result.length > 1) {
-                return 'multiple connectors';
-            }
-            if (!result) {
-                return;
-            }
-            result = result[propertyPath[i]];
-            if (result === false &&
-                (propertyPath.indexOf('title') >= 0 ||
-                    propertyPath.indexOf('subtitle') >= 0 ||
-                    propertyPath.indexOf('caption') >= 0)) {
-                result = '';
-            }
-        }
-        return result;
-    }
-}
-/* *
- *
- *  Static Properties
- *
- * */
-/** @internal */
-Component.Sync = Sync_Sync;
-/**
- * Predefined sync config for component.
- */
-Component.predefinedSyncConfig = {
-    defaultSyncOptions: {},
-    defaultSyncPairs: {}
-};
-/**
- * Default options of the component.
- */
-Component.defaultOptions = {
-    className: `${Component_classNamePrefix}component`,
-    id: '',
-    title: false,
-    caption: false,
-    sync: Sync_Sync.defaultHandlers,
-    editableOptions: [{
-            name: 'title',
-            propertyPath: ['title'],
-            type: 'input'
-        }, {
-            name: 'caption',
-            propertyPath: ['caption'],
-            type: 'input'
-        }]
-};
-/* harmony default export */ const Components_Component = (Component);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Karol Kolodziej
- *
- * */
-
-
-/* *
- *
- *  Constants
- *
- * */
-const HTMLComponentDefaults = {
-    type: 'HTML',
-    className: [
-        Components_Component.defaultOptions.className,
-        `${Components_Component.defaultOptions.className}-html`
-    ].join(' '),
-    elements: [],
-    editableOptions: [
-        ...Components_Component.defaultOptions.editableOptions || [],
-        {
-            name: 'htmlInput',
-            propertyPath: ['html'],
-            type: 'textarea'
-        }
-    ]
-};
-/* *
- *
- *  Default Export
- *
- * */
-/* harmony default export */ const HTMLComponent_HTMLComponentDefaults = (HTMLComponentDefaults);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Dawid Dragula
- *
- * */
-
-/* *
-*
-*  Constants
-*
-* */
-const predefinedSyncConfig = {
-    defaultSyncPairs: {},
-    defaultSyncOptions: {}
-};
-/* *
- *
- *  Default export
- *
- * */
-/* harmony default export */ const HTMLSyncs = (predefinedSyncConfig);
-
-;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLComponent.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-
-
-
-
-
-
-
-const { merge: HTMLComponent_merge, diffObjects: HTMLComponent_diffObjects } = Core_Utilities;
-const { deepClone: HTMLComponent_deepClone } = Dashboards_Utilities;
-// TODO: This may affect the AST parsing in Highcharts
-// should look into adding these as options if possible
-// Needs to go in a composition in the Highcharts plugin
-HTML_AST.allowedTags = [
-    ...HTML_AST.allowedTags,
-    'option',
-    'select',
-    'label',
-    'input',
-    'textarea'
-];
-HTML_AST.allowedAttributes = [
-    ...HTML_AST.allowedAttributes,
-    'for',
-    'value',
-    'checked',
-    'src',
-    'name',
-    'selected'
-];
-HTML_AST.allowedReferences = [
-    ...HTML_AST.allowedReferences,
-    'data:image/'
-];
-/* *
- *
- *  Class
- *
- * */
-/**
- *
- * Class that represents a HTML component.
- *
- */
-class HTMLComponent extends Components_Component {
-    /* *
-     *
-     *  Constructor
-     *
-     * */
-    /**
-     * Creates a HTML component in the cell.
-     *
-     * @param cell
-     * Instance of cell, where component is attached.
-     *
-     * @param options
-     * The options for the component.
-     */
-    constructor(cell, options) {
-        if (options.className) {
-            options.className = `${HTMLComponent.defaultOptions.className} ${options.className}`;
-        }
-        options = HTMLComponent_merge(HTMLComponent.defaultOptions, options);
-        super(cell, options);
-        this.options = options;
-        this.type = 'HTML';
-        this.elements = [];
-    }
-    /* *
-     *
-     *  Functions
-     *
-     * */
-    /** @internal */
-    async load() {
-        this.emit({
-            type: 'load'
-        });
-        await super.load();
-        const options = this.options;
-        let isError = false;
-        if (options.elements?.length) {
-            this.elements = options.elements.map(function (element) {
-                if (typeof element === 'string') {
-                    return new HTML_AST(element).nodes[0];
-                }
-                if (!element.textContent &&
-                    !element.tagName &&
-                    element.attributes) {
-                    isError = true;
-                }
-                return element;
-            });
-        }
-        else if (options.html) {
-            this.elements = this.getElementsFromString(options.html);
-            this.options.elements = this.elements;
-        }
-        this.constructTree();
-        this.emit({ type: 'afterLoad' });
-        if (isError) {
-            throw new Error(`Missing tagName param in component: ${options.renderTo}`);
-        }
-        return this;
-    }
-    render() {
-        super.render();
-        this.constructTree();
-        this.sync.start();
-        this.emit({ type: 'afterRender' });
-        return this;
-    }
-    resize(width, height) {
-        super.resize(width, height);
-        return this;
-    }
-    /**
-     * Handles updating via options.
-     *
-     * @param options
-     * The options to apply.
-     */
-    async update(options, shouldRerender = true) {
-        if (options.html) {
-            this.elements = this.getElementsFromString(options.html);
-            this.options.elements = this.elements;
-            this.constructTree();
-        }
-        else if (options.elements) {
-            this.elements = options.elements;
-        }
-        await super.update(options, shouldRerender);
-        this.emit({ type: 'afterUpdate' });
-    }
-    getOptionsOnDrop() {
-        return {
-            type: 'HTML',
-            elements: [{
-                    tagName: 'span',
-                    textContent: '[Your custom HTML here- edit the component]'
-                }]
-        };
-    }
-    /**
-     * Constructs the HTML tree.
-     * @internal
-     */
-    constructTree() {
-        // Remove old tree if rerendering.
-        while (this.contentElement.firstChild) {
-            this.contentElement.firstChild.remove();
-        }
-        const parser = new HTML_AST(this.options.elements || []);
-        parser.addToDOM(this.contentElement);
-    }
-    /**
-     * When HTML definition is a string, it needs to be parsed to AST.
-     *
-     * @internal
-     */
-    getElementsFromString(htmlString) {
-        return new HTML_AST(htmlString).nodes;
-    }
-    /**
-     * Get the HTML component's options.
-     * @returns
-     * HTML component's options.
-     *
-     * @internal
-     *
-     */
-    getOptions() {
-        return {
-            ...HTMLComponent_diffObjects(this.options, HTMLComponent.defaultOptions),
-            type: 'HTML'
-        };
-    }
-    /**
-     * Retrieves editable options for the HTML component.
-     */
-    getEditableOptions() {
-        return HTMLComponent_deepClone(this.options, ['editableOptions']);
-    }
-    /**
-     * Get the value of the editable option by property path. Parse the elements
-     * if the HTML options is not set.
-     *
-     * @param propertyPath
-     * The property path of the option.
-     */
-    getEditableOptionValue(propertyPath) {
-        if (!propertyPath) {
-            return;
-        }
-        if (propertyPath[0] === 'html') {
-            const result = this.getEditableOptions();
-            if (!result.html && result.elements) {
-                return this.getStringFromElements(result.elements);
-            }
-            return result[propertyPath[0]];
-        }
-        return super.getEditableOptionValue(propertyPath);
-    }
-    /**
-     * Returns the HTML string from the given elements.
-     *
-     * @param elements
-     * The array of elements to serialize.
-     */
-    getStringFromElements(elements) {
-        let html = '';
-        for (const element of elements) {
-            html += this.serializeNode(element);
-        }
-        return html;
-    }
-    /**
-     * Serializes the HTML node to string.
-     *
-     * @param node
-     * The HTML node to serialize.
-     */
-    serializeNode(node) {
-        if (!node.tagName || node.tagName === '#text') {
-            // Text node
-            return node.textContent || '';
-        }
-        const attributes = node.attributes;
-        let html = `<${node.tagName}`;
-        if (attributes) {
-            for (const key in attributes) {
-                if (Object.prototype.hasOwnProperty.call(attributes, key)) {
-                    const value = attributes[key];
-                    if (value !== void 0) {
-                        html += ` ${key}="${value}"`;
-                    }
-                }
-            }
-        }
-        html += '>';
-        html += node.textContent || '';
-        (node.children || []).forEach((child) => {
-            html += this.serializeNode(child);
-        });
-        html += `</${node.tagName}>`;
-        return html;
-    }
-    /**
-     * @internal
-     */
-    onTableChanged(e) {
-        if (e.detail?.sender !== this.id) {
-            this.render();
-        }
-    }
-}
-/* *
- *
- *  Static properties
- *
- * */
-/**
- * Default options of the HTML component.
- */
-HTMLComponent.defaultOptions = HTMLComponent_merge(Components_Component.defaultOptions, HTMLComponent_HTMLComponentDefaults);
-/**
- * Predefined sync config for HTML component.
- */
-HTMLComponent.predefinedSyncConfig = HTMLSyncs;
-/* *
- *
- *  Default export
- *
- * */
-/* harmony default export */ const HTMLComponent_HTMLComponent = (HTMLComponent);
 
 ;// ./code/dashboards/es-modules/Data/Converters/DataConverterUtils.js
 /* *
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -5753,7 +1556,6 @@ HTMLComponent.predefinedSyncConfig = HTMLSyncs;
  *
  * */
 
-const { isNumber: DataConverterUtils_isNumber } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -5878,7 +1680,7 @@ function guessType(value, converter) {
         else {
             // Determine if a date string
             const dateValue = converter.parseDate(value);
-            result = DataConverterUtils_isNumber(dateValue) ? 'Date' : 'string';
+            result = Utilities_isNumber(dateValue) ? 'Date' : 'string';
         }
     }
     if (typeof value === 'number') {
@@ -5897,12 +1699,12 @@ function guessType(value, converter) {
  * Remove all spaces between numbers.
  *
  * @return {string}
- * Trimed string
+ * Trimmed string
  */
 function trim(str, inside) {
     if (typeof str === 'string') {
         str = str.replace(/^\s+|\s+$/g, '');
-        // Clear white space insdie the string, like thousands separators
+        // Clear white space inside the string, like thousands separators
         if (inside && /^[\d\s]+$/.test(str)) {
             str = str.replace(/\s/g, '');
         }
@@ -5951,8 +1753,9 @@ const DataConverterUtils = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -5968,7 +1771,6 @@ const DataConverterUtils = {
 
 
 
-const { addEvent: DataConverter_addEvent, fireEvent: DataConverter_fireEvent, merge: DataConverter_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -6070,7 +1872,7 @@ class DataConverter {
                 }
             }
         };
-        const mergedOptions = DataConverter_merge(DataConverter.defaultOptions, options);
+        const mergedOptions = merge(DataConverter.defaultOptions, options);
         let regExpPoint = mergedOptions.decimalPoint;
         if (regExpPoint === '.' || regExpPoint === ',') {
             regExpPoint = regExpPoint === '.' ? '\\.' : ',';
@@ -6194,7 +1996,7 @@ class DataConverter {
                 guessedFormat[2] = 'YY';
             }
             format = guessedFormat.join('/');
-            // If the caculated format is not valid, we need to present an
+            // If the calculated format is not valid, we need to present an
             // error.
         }
         // Save the deduced format in the converter options.
@@ -6210,7 +2012,7 @@ class DataConverter {
      * Event object containing additional event data
      */
     emit(e) {
-        DataConverter_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     /**
      * Registers a callback for a specific event.
@@ -6225,7 +2027,7 @@ class DataConverter {
      * Function to unregister callback from the modifier event.
      */
     on(type, callback) {
-        return DataConverter_addEvent(this, type, callback);
+        return addEvent(this, type, callback);
     }
     /**
      * Parse a date and return it as a number.
@@ -6314,8 +2116,9 @@ DataConverter.types = {};
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -6330,7 +2133,6 @@ DataConverter.types = {};
 
 
 
-const { merge: CSVConverter_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -6354,7 +2156,7 @@ class CSVConverter extends Converters_DataConverter {
      * Options for the CSV parser.
      */
     constructor(options) {
-        const mergedOptions = CSVConverter_merge(CSVConverter.defaultOptions, options);
+        const mergedOptions = merge(CSVConverter.defaultOptions, options);
         super(mergedOptions);
         /* *
          *
@@ -6386,7 +2188,7 @@ class CSVConverter extends Converters_DataConverter {
      * @emits CSVDataParser#afterParse
      */
     parse(options, eventDetail) {
-        const converter = this, dataTypes = converter.dataTypes, parserOptions = CSVConverter_merge(this.options, options), { beforeParse, lineDelimiter, firstRowAsNames, itemDelimiter } = parserOptions;
+        const converter = this, dataTypes = converter.dataTypes, parserOptions = merge(this.options, options), { beforeParse, lineDelimiter, firstRowAsNames, itemDelimiter } = parserOptions;
         let lines, rowIt = 0, { csv, startRow, endRow } = parserOptions, column;
         const columnsArray = [];
         converter.emit({
@@ -6583,7 +2385,7 @@ class CSVConverter extends Converters_DataConverter {
         }, linesCount = lines.length;
         for (let i = 0; i < linesCount; i++) {
             let inStr = false, c, cn, cl, token = '';
-            // We should be able to detect dateformats within 13 rows
+            // We should be able to detect dateFormats within 13 rows
             if (i > 13) {
                 break;
             }
@@ -6690,19 +2492,19 @@ Converters_DataConverter.registerType('CSV', CSVConverter);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
  *  - Sophie Bremer
  *  - Gøran Slettemark
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
-const { addEvent: DataModifier_addEvent, fireEvent: DataModifier_fireEvent, merge: DataModifier_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -6765,7 +2567,7 @@ class DataModifier {
         const defaultOptions = {
             iterations: 1
         };
-        const { iterations } = DataModifier_merge(defaultOptions, options);
+        const { iterations } = merge(defaultOptions, options);
         modifier.on('afterBenchmarkIteration', () => {
             if (results.length === iterations) {
                 modifier.emit({
@@ -6797,10 +2599,10 @@ class DataModifier {
      * Emits an event on the modifier to all registered callbacks of this event.
      *
      * @param {DataModifierEvent} [e]
-     * Event object containing additonal event information.
+     * Event object containing additional event information.
      */
     emit(e) {
-        DataModifier_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     /**
      * Modifies the given table and sets its `modified` property as a reference
@@ -6848,7 +2650,7 @@ class DataModifier {
      * Function to unregister callback from the modifier event.
      */
     on(type, callback) {
-        return DataModifier_addEvent(this, type, callback);
+        return addEvent(this, type, callback);
     }
 }
 /* *
@@ -6873,12 +2675,13 @@ DataModifier.types = {};
  *
  *  (c) 2020-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 /* *
@@ -7000,13 +2803,593 @@ const ColumnUtils = {
 };
 /* harmony default export */ const Data_ColumnUtils = (ColumnUtils);
 
+;// ./code/dashboards/es-modules/Core/Utilities.js
+/* *
+ *
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Hønsi
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ * */
+
+
+
+const { charts, win: Utilities_win } = Core_Globals;
+/* *
+ *
+ *  Functions
+ *
+ * */
+/**
+ * Provide error messages for debugging, with links to online explanation. This
+ * function can be overridden to provide custom error handling.
+ *
+ * @sample highcharts/chart/highcharts-error/
+ *         Custom error handler
+ *
+ * @function Highcharts.error
+ *
+ * @param {number|string} code
+ *        The error code. See
+ *        [errors.xml](https://github.com/highcharts/highcharts/blob/master/errors/errors.xml)
+ *        for available codes. If it is a string, the error message is printed
+ *        directly in the console.
+ *
+ * @param {boolean} [stop=false]
+ *        Whether to throw an error or just log a warning in the console.
+ *
+ * @param {Highcharts.Chart} [chart]
+ *        Reference to the chart that causes the error. Used in 'debugger'
+ *        module to display errors directly on the chart.
+ *        Important note: This argument is undefined for errors that lack
+ *        access to the Chart instance. In such case, the error will be
+ *        displayed on the last created chart.
+ *
+ * @param {Highcharts.Dictionary<string>} [params]
+ *        Additional parameters for the generated message.
+ *
+ * @return {void}
+ */
+function error(code, stop, chart, params) {
+    const severity = stop ? 'Highcharts error' : 'Highcharts warning';
+    if (code === 32) {
+        code = `${severity}: Deprecated member`;
+    }
+    const isCode = Utilities_isNumber(code);
+    let message = isCode ?
+        `${severity} #${code}: www.highcharts.com/errors/${code}/` :
+        code.toString();
+    const defaultHandler = function () {
+        if (stop) {
+            throw new Error(message);
+        }
+        // Else ...
+        if (Utilities_win.console &&
+            error.messages.indexOf(message) === -1 // Prevent console floating
+        ) {
+            console.warn(message); // eslint-disable-line no-console
+        }
+    };
+    if (typeof params !== 'undefined') {
+        let additionalMessages = '';
+        if (isCode) {
+            message += '?';
+        }
+        objectEach(params, function (value, key) {
+            additionalMessages += `\n - ${key}: ${value}`;
+            if (isCode) {
+                message += encodeURI(key) + '=' + encodeURI(value);
+            }
+        });
+        message += additionalMessages;
+    }
+    fireEvent(Core_Globals, 'displayError', { chart, code, message, params }, defaultHandler);
+    error.messages.push(message);
+}
+(function (error) {
+    error.messages = [];
+})(error || (error = {}));
+/**
+ * Insert a series or an axis in a collection with other items, either the
+ * chart series or yAxis series or axis collections, in the correct order
+ * according to the index option and whether it is internal. Used internally
+ * when adding series and axes.
+ *
+ * @internal
+ * @function Highcharts.Chart#insertItem
+ * @param  {Highcharts.Series|Highcharts.Axis} item
+ *         The item to insert
+ * @param  {Array<Highcharts.Series>|Array<Highcharts.Axis>} collection
+ *         A collection of items, like `chart.series` or `xAxis.series`.
+ * @return {number} The index of the series in the collection.
+ */
+function insertItem(item, collection) {
+    const indexOption = item.options.index, length = collection.length;
+    let i;
+    for (
+    // Internal item (navigator) should always be pushed to the end
+    i = item.options.isInternal ? length : 0; i < length + 1; i++) {
+        if (
+        // No index option, reached the end of the collection,
+        // equivalent to pushing
+        !collection[i] ||
+            // Handle index option, the element to insert has lower index
+            (isNumber(indexOption) &&
+                indexOption < pick(collection[i].options.index, collection[i]._i)) ||
+            // Insert the new item before other internal items
+            // (navigator)
+            collection[i].options.isInternal) {
+            collection.splice(i, 0, item);
+            break;
+        }
+    }
+    return i;
+}
+/**
+ * The time unit lookup
+ *
+ * @ignore
+ */
+const timeUnits = {
+    millisecond: 1,
+    second: 1000,
+    minute: 60000,
+    hour: 3600000,
+    day: 24 * 3600000,
+    week: 7 * 24 * 3600000,
+    month: 28 * 24 * 3600000,
+    year: 364 * 24 * 3600000
+};
+/**
+ * Easing definition
+ *
+ * @internal
+ * @function Math.easeInOutSine
+ *
+ * @param {number} pos
+ * Current position, ranging from 0 to 1.
+ *
+ * @return {number}
+ * Ease result
+ */
+Math.easeInOutSine = function (pos) {
+    return -0.5 * (Math.cos(Math.PI * pos) - 1);
+};
+let serialMode;
+/**
+ * Get a unique key for using in internal element id's and pointers. The key is
+ * composed of a random hash specific to this Highcharts instance, and a
+ * counter.
+ *
+ * @example
+ * let id = uniqueKey(); // => 'highcharts-x45f6hp-0'
+ *
+ * @function Highcharts.uniqueKey
+ *
+ * @return {string}
+ * A unique key.
+ */
+const uniqueKey = (function () {
+    const hash = Math.random().toString(36).substring(2, 9) + '-';
+    let id = 0;
+    return function () {
+        return 'highcharts-' + (serialMode ? '' : hash) + id++;
+    };
+}());
+/**
+ * Activates a serial mode for element IDs provided by
+ * {@link Highcharts.uniqueKey}. This mode can be used in automated tests, where
+ * a simple comparison of two rendered SVG graphics is needed.
+ *
+ * **Note:** This is only for testing purposes and will break functionality in
+ * webpages with multiple charts.
+ *
+ * @example
+ * if (
+ *   process &&
+ *   process.env.NODE_ENV === 'development'
+ * ) {
+ *   Highcharts.useSerialIds(true);
+ * }
+ *
+ * @function Highcharts.useSerialIds
+ *
+ * @param {boolean} [mode]
+ * Changes the state of serial mode.
+ *
+ * @return {boolean|undefined}
+ * State of the serial mode.
+ */
+function useSerialIds(mode) {
+    return (serialMode = pick(mode, serialMode));
+}
+/* *
+ *
+ *  External
+ *
+ * */
+// Register Highcharts as a plugin in jQuery
+if (Utilities_win.jQuery) {
+    /**
+     * Highcharts-extended JQuery.
+     *
+     * @external JQuery
+     */
+    /* eslint-disable jsdoc/check-param-names */
+    /**
+     * Helper function to return the chart of the current JQuery selector
+     * element.
+     *
+     * @function external:JQuery#highcharts
+     *
+     * @return {Highcharts.Chart}
+     *         The chart that is linked to the JQuery selector element.
+     */ /**
+    * Factory function to create a chart in the current JQuery selector
+    * element.
+    *
+    * @function external:JQuery#highcharts
+    *
+    * @param {'Chart'|'Map'|'StockChart'|string} [className]
+    *        Name of the factory class in the Highcharts namespace.
+    *
+    * @param {Highcharts.Options} [options]
+    *        The chart options structure.
+    *
+    * @param {Highcharts.ChartCallbackFunction} [callback]
+    *        Function to run when the chart has loaded and all external
+    *        images are loaded. Defining a
+    *        [chart.events.load](https://api.highcharts.com/highcharts/chart.events.load)
+    *        handler is equivalent.
+    *
+    * @return {JQuery}
+    *         The current JQuery selector.
+    */
+    Utilities_win.jQuery.fn.highcharts = function () {
+        const args = [].slice.call(arguments);
+        if (this[0]) { // `this[0]` is the renderTo div
+            // Create the chart
+            if (args[0]) {
+                new Core_Globals[ // eslint-disable-line computed-property-spacing, no-new
+                // Constructor defaults to Chart
+                isString(args[0]) ? args.shift() : 'Chart'](this[0], args[0], args[1]);
+                return this;
+            }
+            // When called without parameters or with the return argument,
+            // return an existing chart
+            return charts[attr(this[0], 'data-highcharts-chart')];
+        }
+    };
+    /* eslint-enable jsdoc/check-param-names */
+}
+/* *
+ *
+ *  API Declarations
+ *
+ * */
+/**
+ * Creates a frame for the animated SVG element.
+ *
+ * @callback Highcharts.AnimationStepCallbackFunction
+ *
+ * @param {Highcharts.SVGElement} this
+ *        The SVG element to animate.
+ *
+ * @return {void}
+ */
+/**
+ * Interface description for a class.
+ *
+ * @interface Highcharts.Class<T>
+ * @extends Function
+ */ /**
+* Class constructor.
+* @function Highcharts.Class<T>#new
+* @param {...Array<*>} args
+*        Constructor arguments.
+* @return {T}
+*         Class instance.
+*/
+/**
+ * A style object with camel case property names to define visual appearance of
+ * a SVG element or HTML element. The properties can be whatever styles are
+ * supported on the given SVG or HTML element.
+ *
+ * @example
+ * {
+ *    fontFamily: 'monospace',
+ *    fontSize: '1.2em'
+ * }
+ *
+ * @interface Highcharts.CSSObject
+ */ /**
+* @name Highcharts.CSSObject#[key:string]
+* @type {boolean|number|string|undefined}
+*/ /**
+* Background style for the element.
+* @name Highcharts.CSSObject#background
+* @type {string|undefined}
+*/ /**
+* Background color of the element.
+* @name Highcharts.CSSObject#backgroundColor
+* @type {Highcharts.ColorString|undefined}
+*/ /**
+* Border style for the element.
+* @name Highcharts.CSSObject#border
+* @type {string|undefined}
+*/ /**
+* Radius of the element border.
+* @name Highcharts.CSSObject#borderRadius
+* @type {string|undefined}
+*/ /**
+* Color used in the element. The 'contrast' option is a Highcharts custom
+* property that results in black or white, depending on the background of the
+* element.
+* @name Highcharts.CSSObject#color
+* @type {'contrast'|Highcharts.ColorString|undefined}
+*/ /**
+* Style of the mouse cursor when resting over the element.
+* @name Highcharts.CSSObject#cursor
+* @type {Highcharts.CursorValue|undefined}
+*/ /**
+* Font family of the element text. Multiple values have to be in decreasing
+* preference order and separated by comma.
+* @name Highcharts.CSSObject#fontFamily
+* @type {string|undefined}
+*/ /**
+* Font size of the element text.
+* @name Highcharts.CSSObject#fontSize
+* @type {number|string|undefined}
+*/ /**
+* Font weight of the element text.
+* @name Highcharts.CSSObject#fontWeight
+* @type {string|undefined}
+*/ /**
+* Height of the element.
+* @name Highcharts.CSSObject#height
+* @type {number|undefined}
+*/ /**
+* The maximum number of lines. If lines are cropped away, an ellipsis will be
+* added.
+* @name Highcharts.CSSObject#lineClamp
+* @type {number|undefined}
+*/ /**
+* Width of the element border.
+* @name Highcharts.CSSObject#lineWidth
+* @type {number|undefined}
+*/ /**
+* Opacity of the element.
+* @name Highcharts.CSSObject#opacity
+* @type {number|undefined}
+*/ /**
+* Space around the element content.
+* @name Highcharts.CSSObject#padding
+* @type {string|undefined}
+*/ /**
+* Behavior of the element when the mouse cursor rests over it.
+* @name Highcharts.CSSObject#pointerEvents
+* @type {string|undefined}
+*/ /**
+* Positioning of the element.
+* @name Highcharts.CSSObject#position
+* @type {string|undefined}
+*/ /**
+* Alignment of the element text.
+* @name Highcharts.CSSObject#textAlign
+* @type {string|undefined}
+*/ /**
+* Additional decoration of the element text.
+* @name Highcharts.CSSObject#textDecoration
+* @type {string|undefined}
+*/ /**
+* Outline style of the element text.
+* @name Highcharts.CSSObject#textOutline
+* @type {string|undefined}
+*/ /**
+* Line break style of the element text. Highcharts SVG elements support
+* `ellipsis` when a `width` is set.
+* @name Highcharts.CSSObject#textOverflow
+* @type {string|undefined}
+*/ /**
+* Top spacing of the element relative to the parent element.
+* @name Highcharts.CSSObject#top
+* @type {string|undefined}
+*/ /**
+* Animated transition of selected element properties.
+* @name Highcharts.CSSObject#transition
+* @type {string|undefined}
+*/ /**
+* Line break style of the element text.
+* @name Highcharts.CSSObject#whiteSpace
+* @type {string|undefined}
+*/ /**
+* Width of the element.
+* @name Highcharts.CSSObject#width
+* @type {number|undefined}
+*/
+/**
+ * All possible cursor styles.
+ *
+ * @typedef {'alias'|'all-scroll'|'auto'|'cell'|'col-resize'|'context-menu'|'copy'|'crosshair'|'default'|'e-resize'|'ew-resize'|'grab'|'grabbing'|'help'|'move'|'n-resize'|'ne-resize'|'nesw-resize'|'no-drop'|'none'|'not-allowed'|'ns-resize'|'nw-resize'|'nwse-resize'|'pointer'|'progress'|'row-resize'|'s-resize'|'se-resize'|'sw-resize'|'text'|'vertical-text'|'w-resize'|'wait'|'zoom-in'|'zoom-out'} Highcharts.CursorValue
+ */
+/**
+ * All possible dash styles.
+ *
+ * @typedef {'Dash'|'DashDot'|'Dot'|'LongDash'|'LongDashDot'|'LongDashDotDot'|'ShortDash'|'ShortDashDot'|'ShortDashDotDot'|'ShortDot'|'Solid'} Highcharts.DashStyleValue
+ */
+/**
+ * Generic dictionary in TypeScript notation.
+ * Use the native `AnyRecord` instead.
+ *
+ * @deprecated
+ * @interface Highcharts.Dictionary<T>
+ */ /**
+* @name Highcharts.Dictionary<T>#[key:string]
+* @type {T}
+*/
+/**
+ * @typedef {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} Highcharts.DOMElementType
+ */
+/**
+ * The function callback to execute when the event is fired. The `this` context
+ * contains the instance, that fired the event.
+ *
+ * @callback Highcharts.EventCallbackFunction<T>
+ *
+ * @param {T} this
+ *
+ * @param {Highcharts.Dictionary<*>|Event} [eventArguments]
+ *        Event arguments.
+ *
+ * @param {T} [ctx]
+ *        Since v12.6.0, the callback context is passed as the last argument,
+ *        so arrow functions can access the same context as regular functions
+ *        using `this`.
+ *
+ * @return {boolean|void}
+ */
+/**
+ * The event options for adding function callback.
+ *
+ * @interface Highcharts.EventOptionsObject
+ */ /**
+* The order the event handler should be called. This opens for having one
+* handler be called before another, independent of in which order they were
+* added.
+* @name Highcharts.EventOptionsObject#order
+* @type {number}
+*/ /**
+* Whether an event should be passive or not.
+* When set to `true`, the function specified by listener will never call
+* `preventDefault()`.
+* @name Highcharts.EventOptionsObject#passive
+* @type boolean
+*/
+/**
+ * Formats data as a string. Usually the data is accessible through the `this`
+ * keyword.
+ *
+ * @callback Highcharts.FormatterCallbackFunction<T>
+ *
+ * @param {T} this
+ *        Context to format
+ *
+ * @param {T} [ctx]
+ *        Since v12.6.0, the callback context is passed as an extra argument,
+ *        so arrow functions can access the same context as regular functions
+ *        using `this`.
+ *
+ * @return {string}
+ *         Formatted text
+ */
+/**
+ * An object of key-value pairs for HTML attributes.
+ *
+ * @typedef {Highcharts.Dictionary<boolean|number|string|Function>} Highcharts.HTMLAttributes
+ */
+/**
+ * An HTML DOM element. The type is a reference to the regular HTMLElement in
+ * the global scope.
+ *
+ * @typedef {global.HTMLElement} Highcharts.HTMLDOMElement
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
+ */
+/**
+ * The iterator callback.
+ *
+ * @callback Highcharts.ObjectEachCallbackFunction<T>
+ *
+ * @param {T} this
+ *        The context.
+ *
+ * @param {*} value
+ *        The property value.
+ *
+ * @param {string} key
+ *        The property key.
+ *
+ * @param {*} obj
+ *        The object that objectEach is being applied to.
+ */
+/**
+ * An object containing `left` and `top` properties for the position in the
+ * page.
+ *
+ * @interface Highcharts.OffsetObject
+ */ /**
+* Left distance to the page border.
+* @name Highcharts.OffsetObject#left
+* @type {number}
+*/ /**
+* Top distance to the page border.
+* @name Highcharts.OffsetObject#top
+* @type {number}
+*/
+/**
+ * Describes a range.
+ *
+ * @interface Highcharts.RangeObject
+ */ /**
+* Maximum number of the range.
+* @name Highcharts.RangeObject#max
+* @type {number}
+*/ /**
+* Minimum number of the range.
+* @name Highcharts.RangeObject#min
+* @type {number}
+*/
+/**
+ * If a number is given, it defines the pixel length. If a percentage string is
+ * given, like for example `'50%'`, the setting defines a length relative to a
+ * base size, for example the size of a container.
+ *
+ * @typedef {number|string} Highcharts.RelativeSize
+ */
+/**
+ * Proceed function to call original (wrapped) function.
+ *
+ * @callback Highcharts.WrapProceedFunction
+ *
+ * @param {*} [arg1]
+ *        Optional argument. Without any arguments defaults to first argument of
+ *        the wrapping function.
+ *
+ * @param {*} [arg2]
+ *        Optional argument. Without any arguments defaults to second argument
+ *        of the wrapping function.
+ *
+ * @param {*} [arg3]
+ *        Optional argument. Without any arguments defaults to third argument of
+ *        the wrapping function.
+ *
+ * @return {*}
+ *         Return value of the original function.
+ */
+/**
+ * The Highcharts object is the placeholder for all other members, and various
+ * utility functions. The most important member of the namespace would be the
+ * chart constructor.
+ *
+ * @example
+ * let chart = Highcharts.chart('container', { ... });
+ *
+ * @namespace Highcharts
+ */
+''; // Detach doclets above
+
 ;// ./code/dashboards/es-modules/Data/DataTableCore.js
 /* *
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -7019,7 +3402,7 @@ const ColumnUtils = {
 
 const { setLength: DataTableCore_setLength, splice: DataTableCore_splice } = Data_ColumnUtils;
 
-const { fireEvent: DataTableCore_fireEvent, objectEach: DataTableCore_objectEach, uniqueKey: DataTableCore_uniqueKey } = Core_Utilities;
+
 /* *
  *
  *  Class
@@ -7068,11 +3451,11 @@ class DataTableCore {
          * @name Highcharts.DataTable#id
          * @type {string}
          */
-        this.id = (options.id || DataTableCore_uniqueKey());
+        this.id = (options.id || uniqueKey());
         this.rowCount = 0;
-        this.versionTag = DataTableCore_uniqueKey();
+        this.versionTag = uniqueKey();
         let rowCount = 0;
-        DataTableCore_objectEach(options.columns || {}, (column, columnId) => {
+        objectEach(options.columns || {}, (column, columnId) => {
             this.columns[columnId] = column.slice();
             rowCount = Math.max(rowCount, column.length);
         });
@@ -7092,7 +3475,7 @@ class DataTableCore {
      */
     applyRowCount(rowCount) {
         this.rowCount = rowCount;
-        DataTableCore_objectEach(this.columns, (column, columnId) => {
+        objectEach(this.columns, (column, columnId) => {
             if (column.length !== rowCount) {
                 this.columns[columnId] = DataTableCore_setLength(column, rowCount);
             }
@@ -7115,15 +3498,15 @@ class DataTableCore {
     deleteRows(rowIndex, rowCount = 1) {
         if (rowCount > 0 && rowIndex < this.rowCount) {
             let length = 0;
-            DataTableCore_objectEach(this.columns, (column, columnId) => {
+            objectEach(this.columns, (column, columnId) => {
                 this.columns[columnId] =
                     DataTableCore_splice(column, rowIndex, rowCount).array;
                 length = column.length;
             });
             this.rowCount = length;
         }
-        DataTableCore_fireEvent(this, 'afterDeleteRows', { rowIndex, rowCount });
-        this.versionTag = DataTableCore_uniqueKey();
+        fireEvent(this, 'afterDeleteRows', { rowIndex, rowCount });
+        this.versionTag = uniqueKey();
     }
     /**
      * Fetches the given column by the canonical column name. Simplified version
@@ -7215,14 +3598,14 @@ class DataTableCore {
      */
     setColumns(columns, rowIndex, eventDetail) {
         let rowCount = this.rowCount;
-        DataTableCore_objectEach(columns, (column, columnId) => {
+        objectEach(columns, (column, columnId) => {
             this.columns[columnId] = column.slice();
             rowCount = column.length;
         });
         this.applyRowCount(rowCount);
         if (!eventDetail?.silent) {
-            DataTableCore_fireEvent(this, 'afterSetColumns');
-            this.versionTag = DataTableCore_uniqueKey();
+            fireEvent(this, 'afterSetColumns');
+            this.versionTag = uniqueKey();
         }
     }
     /**
@@ -7254,7 +3637,7 @@ class DataTableCore {
                 }
             }
         }
-        DataTableCore_objectEach(columns, (column, columnId) => {
+        objectEach(columns, (column, columnId) => {
             if (!column && eventDetail?.addColumns !== false) {
                 column = new Array(indexRowCount);
             }
@@ -7272,8 +3655,8 @@ class DataTableCore {
             this.applyRowCount(indexRowCount);
         }
         if (!eventDetail?.silent) {
-            DataTableCore_fireEvent(this, 'afterSetRows');
-            this.versionTag = DataTableCore_uniqueKey();
+            fireEvent(this, 'afterSetRows');
+            this.versionTag = uniqueKey();
         }
     }
     /**
@@ -7332,15 +3715,16 @@ class DataTableCore {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
  *  - Sophie Bremer
  *  - Gøran Slettemark
  *  - Jomar Hønsi
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -7348,7 +3732,7 @@ class DataTableCore {
 
 const { splice: DataTable_splice, setLength: DataTable_setLength } = Data_ColumnUtils;
 
-const { addEvent: DataTable_addEvent, defined: DataTable_defined, extend: DataTable_extend, fireEvent: DataTable_fireEvent, isNumber: DataTable_isNumber, uniqueKey: DataTable_uniqueKey } = Core_Utilities;
+
 /* *
  *
  *  Class
@@ -7510,7 +3894,7 @@ class DataTable extends Data_DataTableCore {
         const deletedRows = [];
         let indices;
         let actualRowCount;
-        if (!DataTable_defined(rowIndex)) {
+        if (!defined(rowIndex)) {
             // No index provided - delete all rows.
             indices = [0];
             actualRowCount = this.rowCount;
@@ -7597,9 +3981,9 @@ class DataTable extends Data_DataTableCore {
             'afterSetColumns',
             'afterSetRows'
         ].includes(e.type)) {
-            this.versionTag = DataTable_uniqueKey();
+            this.versionTag = uniqueKey();
         }
-        DataTable_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     /**
      * Fetches a single cell value.
@@ -7790,7 +4174,7 @@ class DataTable extends Data_DataTableCore {
                 // Normal array
                 rowIndex = column.indexOf(cellValue, rowIndexOffset);
             }
-            else if (DataTable_isNumber(cellValue)) {
+            else if (Utilities_isNumber(cellValue)) {
                 // Typed array
                 rowIndex = column.indexOf(cellValue, rowIndexOffset);
             }
@@ -7929,7 +4313,7 @@ class DataTable extends Data_DataTableCore {
             return (column.indexOf(cellValue) !== -1);
         }
         // Typed array
-        if (DataTable_defined(cellValue) && Number.isFinite(cellValue)) {
+        if (defined(cellValue) && Number.isFinite(cellValue)) {
             return (column.indexOf(+cellValue) !== -1);
         }
         return false;
@@ -7951,7 +4335,7 @@ class DataTable extends Data_DataTableCore {
      * Function to unregister callback from the event.
      */
     on(type, callback) {
-        return DataTable_addEvent(this, type, callback);
+        return addEvent(this, type, callback);
     }
     /**
      * Changes the ID of an existing column to a new ID, effectively renaming
@@ -8067,8 +4451,8 @@ class DataTable extends Data_DataTableCore {
             detail: eventDetail,
             rowIndex
         });
-        if (!DataTable_defined(rowIndex) && !typeAsOriginal) {
-            super.setColumns(columns, rowIndex, DataTable_extend(eventDetail, { silent: true }));
+        if (!defined(rowIndex) && !typeAsOriginal) {
+            super.setColumns(columns, rowIndex, extend(eventDetail, { silent: true }));
         }
         else {
             for (let i = 0, iEnd = columnIds.length, column, tableColumn, columnId, ArrayConstructor; i < iEnd; ++i) {
@@ -8180,7 +4564,7 @@ class DataTable extends Data_DataTableCore {
         const modifiedIndexes = this.localRowIndexes = [];
         for (let i = 0, iEnd = originalRowIndexes.length, originalIndex; i < iEnd; ++i) {
             originalIndex = originalRowIndexes[i];
-            if (DataTable_defined(originalIndex)) {
+            if (defined(originalIndex)) {
                 modifiedIndexes[originalIndex] = i;
             }
         }
@@ -8299,15 +4683,16 @@ class DataTable extends Data_DataTableCore {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
  *  - Sophie Bremer
  *  - Wojciech Chmiel
  *  - Gøran Slettemark
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *  - Kamil Kubik
  *
  * */
@@ -8315,7 +4700,6 @@ class DataTable extends Data_DataTableCore {
 
 
 
-const { addEvent: DataConnector_addEvent, fireEvent: DataConnector_fireEvent, merge: DataConnector_merge, pick: DataConnector_pick } = Core_Utilities;
 /* *
  *
  *  Class
@@ -8435,7 +4819,7 @@ class DataConnector {
     describeColumn(name, columnMeta) {
         const connector = this;
         const columns = connector.metadata.columns;
-        columns[name] = DataConnector_merge(columns[name] || {}, columnMeta);
+        columns[name] = merge(columns[name] || {}, columnMeta);
     }
     /**
      * Method for applying columns meta information to the whole DataConnector.
@@ -8460,7 +4844,7 @@ class DataConnector {
     getColumnOrder() {
         const connector = this, columns = connector.metadata.columns, names = Object.keys(columns || {});
         if (names.length) {
-            return names.sort((a, b) => (DataConnector_pick(columns[a].index, 0) - DataConnector_pick(columns[b].index, 0)));
+            return names.sort((a, b) => (Utilities_pick(columns[a].index, 0) - Utilities_pick(columns[b].index, 0)));
         }
     }
     /**
@@ -8488,15 +4872,15 @@ class DataConnector {
     /**
      * Updates the connector with new options.
      *
-     * @param newOptions
+     * @param {object} newOptions
      * The new options to be applied to the connector.
      *
-     * @param reload
+     * @param {boolean} [reload=true]
      * Whether to reload the connector after applying the new options.
      */
     async update(newOptions, reload = true) {
         this.emit({ type: 'beforeUpdate' });
-        DataConnector_merge(true, this.options, newOptions);
+        merge(true, this.options, newOptions);
         const { options } = this;
         if ('enablePolling' in newOptions || 'dataRefreshRate' in newOptions) {
             if ('enablePolling' in options && options.enablePolling) {
@@ -8532,10 +4916,13 @@ class DataConnector {
     async applyTableModifiers() {
         const tableOptionsArray = this.options?.dataTables;
         for (const [key, table] of Object.entries(this.dataTables)) {
-            // Take data modifier options from the corresponsing data table
+            // Take data modifier options from the corresponding data table
             // options, otherwise take the data modifier options from the
             // connector options.
             const dataModifierOptions = tableOptionsArray?.find((dataTable) => dataTable.key === key)?.dataModifier ?? this.options?.dataModifier;
+            if (!dataModifierOptions) {
+                continue;
+            }
             const ModifierClass = (dataModifierOptions &&
                 Modifiers_DataModifier.types[dataModifierOptions.type]);
             await table.setModifier(ModifierClass ?
@@ -8591,22 +4978,22 @@ class DataConnector {
      * Event object containing additional event information.
      */
     emit(e) {
-        DataConnector_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     /**
      * Registers a callback for a specific connector event.
      *
-     * @param type
+     * @param {string} type
      * Event type.
      *
-     * @param callback
+     * @param {Function} callback
      * Function to register for the connector callback.
      *
      * @return {Function}
      * Function to unregister callback from the connector event.
      */
     on(type, callback) {
-        return DataConnector_addEvent(this, type, callback);
+        return addEvent(this, type, callback);
     }
     /**
      * Iterates over the dataTables and initiates the corresponding converters.
@@ -8659,8 +5046,9 @@ DataConnector.types = {};
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -8675,7 +5063,6 @@ DataConnector.types = {};
 
 
 
-const { merge: CSVConnector_merge, fireEvent: CSVConnector_fireEvent } = Core_Utilities;
 /* *
  *
  *  Class
@@ -8699,7 +5086,7 @@ class CSVConnector extends Connectors_DataConnector {
      * Options for the connector and converter.
      */
     constructor(options) {
-        const mergedOptions = CSVConnector_merge(CSVConnector.defaultOptions, options);
+        const mergedOptions = merge(CSVConnector.defaultOptions, options);
         super(mergedOptions);
         this.options = mergedOptions;
         if (mergedOptions.enablePolling) {
@@ -8719,7 +5106,7 @@ class CSVConnector extends Connectors_DataConnector {
      * Event object containing additional event information.
      */
     emit(e) {
-        CSVConnector_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     /**
      * Initiates the loading of the CSV source to the connector
@@ -8756,7 +5143,7 @@ class CSVConnector extends Connectors_DataConnector {
                         firstRowAsNames,
                         beforeParse
                     };
-                    return new Converters_CSVConverter(CSVConnector_merge(options, converterOptions));
+                    return new Converters_CSVConverter(merge(options, converterOptions));
                 }, (converter, data) => converter.parse({ csv: data }));
             }
             return connector.applyTableModifiers().then(() => csv);
@@ -8810,8 +5197,9 @@ Connectors_DataConnector.registerType('CSV', CSVConnector);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -8826,7 +5214,7 @@ Connectors_DataConnector.registerType('CSV', CSVConnector);
 
 
 
-const { merge: GoogleSheetsConverter_merge, uniqueKey: GoogleSheetsConverter_uniqueKey } = Core_Utilities;
+
 /* *
  *
  *  Class
@@ -8850,7 +5238,7 @@ class GoogleSheetsConverter extends Converters_DataConverter {
      * Options for the GoogleSheetsConverter.
      */
     constructor(options) {
-        const mergedOptions = GoogleSheetsConverter_merge(GoogleSheetsConverter.defaultOptions, options);
+        const mergedOptions = merge(GoogleSheetsConverter.defaultOptions, options);
         super(mergedOptions);
         this.header = [];
         this.options = mergedOptions;
@@ -8873,7 +5261,7 @@ class GoogleSheetsConverter extends Converters_DataConverter {
      * @emits GoogleSheetsParser#afterParse
      */
     parse(options, eventDetail) {
-        const converter = this, parseOptions = GoogleSheetsConverter_merge(converter.options, options);
+        const converter = this, parseOptions = merge(converter.options, options);
         let columnsArray = ((parseOptions.json?.values) || []).map((column) => column.slice());
         if (columnsArray.length === 0) {
             return {};
@@ -8895,7 +5283,7 @@ class GoogleSheetsConverter extends Converters_DataConverter {
             column = columnsArray[i];
             converter.header[i] = (parseOptions.firstRowAsNames ?
                 `${column.shift()}` :
-                GoogleSheetsConverter_uniqueKey());
+                uniqueKey());
             for (let j = 0, jEnd = column.length; j < jEnd; ++j) {
                 let cellValue = column[j];
                 if (isDateObject(cellValue)) {
@@ -8947,8 +5335,9 @@ function isDateObject(value) {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -8964,7 +5353,6 @@ function isDateObject(value) {
 
 
 
-const { merge: GoogleSheetsConnector_merge, pick: GoogleSheetsConnector_pick, fireEvent: GoogleSheetsConnector_fireEvent } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -9003,7 +5391,7 @@ class GoogleSheetsConnector extends Connectors_DataConnector {
  * Options for the connector and converter.
  */
     constructor(options) {
-        const mergedOptions = GoogleSheetsConnector_merge(GoogleSheetsConnector.defaultOptions, options);
+        const mergedOptions = merge(GoogleSheetsConnector.defaultOptions, options);
         super(mergedOptions);
         this.options = mergedOptions;
     }
@@ -9020,7 +5408,7 @@ class GoogleSheetsConnector extends Connectors_DataConnector {
  * Event object containing additional event information.
  */
     emit(e) {
-        GoogleSheetsConnector_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     /**
  * Loads data from a Google Spreadsheet.
@@ -9138,7 +5526,7 @@ function buildQueryRange(options = {}) {
     return googleSpreadsheetRange || ((alphabet[startColumn || 0] || 'A') +
         (Math.max((startRow || 0), 0) + 1) +
         ':' +
-        (alphabet[GoogleSheetsConnector_pick(endColumn, 25)] || 'Z') +
+        (alphabet[Utilities_pick(endColumn, 25)] || 'Z') +
         (endRow ?
             Math.max(endRow, 0) :
             'Z'));
@@ -9161,8 +5549,9 @@ Connectors_DataConnector.registerType('GoogleSheets', GoogleSheetsConnector);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -9177,7 +5566,6 @@ Connectors_DataConnector.registerType('GoogleSheets', GoogleSheetsConnector);
 
 
 
-const { merge: HTMLTableConverter_merge } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -9223,7 +5611,7 @@ class HTMLTableConverter extends Converters_DataConverter {
      * Options for the HTMLTableConverter.
      */
     constructor(options) {
-        const mergedOptions = HTMLTableConverter_merge(HTMLTableConverter.defaultOptions, options);
+        const mergedOptions = merge(HTMLTableConverter.defaultOptions, options);
         super(mergedOptions);
         this.headers = [];
         this.options = mergedOptions;
@@ -9416,7 +5804,7 @@ class HTMLTableConverter extends Converters_DataConverter {
      * @emits HTMLTableParser#parseError
      */
     parse(options, eventDetail) {
-        const converter = this, columnsArray = [], headers = [], parseOptions = HTMLTableConverter_merge(converter.options, options), { endRow, startColumn, endColumn, firstRowAsNames } = parseOptions, tableHTML = parseOptions.tableElement || this.tableElement;
+        const converter = this, columnsArray = [], headers = [], parseOptions = merge(converter.options, options), { endRow, startColumn, endColumn, firstRowAsNames } = parseOptions, tableHTML = parseOptions.tableElement || this.tableElement;
         if (!(tableHTML instanceof HTMLElement)) {
             converter.emit({
                 type: 'parseError',
@@ -9525,8 +5913,9 @@ Converters_DataConverter.registerType('HTMLTable', HTMLTableConverter);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -9541,9 +5930,8 @@ Converters_DataConverter.registerType('HTMLTable', HTMLTableConverter);
 
 
 
-const { win: HTMLTableConnector_win } = Core_Globals;
 
-const { merge: HTMLTableConnector_merge } = Core_Utilities;
+const { win: HTMLTableConnector_win } = Core_Globals;
 /* *
  *
  *  Class
@@ -9567,7 +5955,7 @@ class HTMLTableConnector extends Connectors_DataConnector {
      * Options for the connector and converter.
      */
     constructor(options) {
-        const mergedOptions = HTMLTableConnector_merge(HTMLTableConnector.defaultOptions, options);
+        const mergedOptions = merge(HTMLTableConnector.defaultOptions, options);
         super(mergedOptions);
         this.options = mergedOptions;
         this.converter = new Converters_HTMLTableConverter(mergedOptions);
@@ -9611,7 +5999,7 @@ class HTMLTableConnector extends Connectors_DataConnector {
             });
             return Promise.reject(new Error(error));
         }
-        const columns = converter.parse(HTMLTableConnector_merge({ tableElement: connector.tableElement }, options), eventDetail);
+        const columns = converter.parse(merge({ tableElement: connector.tableElement }, options), eventDetail);
         // If already loaded, clear the current rows
         table.deleteColumns();
         table.setColumns(columns);
@@ -9646,12 +6034,13 @@ Connectors_DataConnector.registerType('HTMLTable', HTMLTableConnector);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Pawel Lysy
+ *  - Paweł Lysy
  *  - Kamil Kubik
  *
  * */
@@ -9659,7 +6048,7 @@ Connectors_DataConnector.registerType('HTMLTable', HTMLTableConnector);
 
 
 
-const { error: JSONConverter_error, isArray: JSONConverter_isArray, merge: JSONConverter_merge, objectEach: JSONConverter_objectEach } = Core_Utilities;
+
 /* *
  *
  *  Class
@@ -9683,7 +6072,7 @@ class JSONConverter extends Converters_DataConverter {
      * Options for the JSON parser.
      */
     constructor(options) {
-        const mergedOptions = JSONConverter_merge(JSONConverter.defaultOptions, options);
+        const mergedOptions = merge(JSONConverter.defaultOptions, options);
         super(mergedOptions);
         /* *
          *
@@ -9713,7 +6102,7 @@ class JSONConverter extends Converters_DataConverter {
      */
     parse(options, eventDetail) {
         const converter = this;
-        options = JSONConverter_merge(converter.options, options);
+        options = merge(converter.options, options);
         const { beforeParse, orientation, firstRowAsNames, columnIds } = options;
         let data = options.data;
         if (!data) {
@@ -9779,7 +6168,7 @@ class JSONConverter extends Converters_DataConverter {
                 columnsArray.push(item);
             }
             else {
-                JSONConverter_error('JSONConverter: Invalid `columnIds` option.', false);
+                error('JSONConverter: Invalid `columnIds` option.', false);
             }
         }
     }
@@ -9813,7 +6202,7 @@ class JSONConverter extends Converters_DataConverter {
         }
         for (let rowIndex = 0, iEnd = data.length; rowIndex < iEnd; rowIndex++) {
             let row = data[rowIndex];
-            if (!JSONConverter_isArray(row)) {
+            if (!isArray(row)) {
                 row = this.convertItemToRow(row, columnIds);
             }
             for (let columnIndex = 0, jEnd = row.length; columnIndex < jEnd; columnIndex++) {
@@ -9828,7 +6217,7 @@ class JSONConverter extends Converters_DataConverter {
                             columnIndex.toString());
                     }
                     else {
-                        JSONConverter_error('JSONConverter: Invalid `columnIds` option.', false);
+                        error('JSONConverter: Invalid `columnIds` option.', false);
                     }
                 }
             }
@@ -9850,7 +6239,7 @@ class JSONConverter extends Converters_DataConverter {
         const converter = this;
         if (columnIds && !(Array.isArray(columnIds))) {
             const newRow = [];
-            JSONConverter_objectEach(columnIds, (arrayWithPath, name) => {
+            objectEach(columnIds, (arrayWithPath, name) => {
                 newRow.push(arrayWithPath.reduce((acc, key) => acc[key], rowObj));
                 if (converter.headers.indexOf(name) < 0) {
                     converter.headers.push(name);
@@ -9887,12 +6276,13 @@ Converters_DataConverter.registerType('JSON', JSONConverter);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Pawel Lysy
+ *  - Paweł Lysy
  *  - Kamil Kubik
  *
  * */
@@ -9900,7 +6290,6 @@ Converters_DataConverter.registerType('JSON', JSONConverter);
 
 
 
-const { merge: JSONConnector_merge, fireEvent: JSONConnector_fireEvent } = Core_Utilities;
 /* *
  *
  *  Class
@@ -9924,7 +6313,7 @@ class JSONConnector extends Connectors_DataConnector {
      * Options for the connector and converter.
      */
     constructor(options) {
-        const mergedOptions = JSONConnector_merge(JSONConnector.defaultOptions, options);
+        const mergedOptions = merge(JSONConnector.defaultOptions, options);
         super(mergedOptions);
         this.options = mergedOptions;
         if (mergedOptions.enablePolling) {
@@ -9944,7 +6333,7 @@ class JSONConnector extends Connectors_DataConnector {
      * Event object containing additional event information.
      */
     emit(e) {
-        JSONConnector_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     /**
      * Initiates the loading of the JSON source to the connector
@@ -10045,19 +6434,19 @@ Connectors_DataConnector.registerType('JSON', JSONConnector);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
  *  - Sophie Bremer
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
 
-const { addEvent: ChainModifier_addEvent, fireEvent: ChainModifier_fireEvent, merge: ChainModifier_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -10085,7 +6474,7 @@ class ChainModifier extends Modifiers_DataModifier {
     constructor(options, ...chain) {
         super();
         this.chain = chain;
-        this.options = ChainModifier_merge(ChainModifier.defaultOptions, options);
+        this.options = merge(ChainModifier.defaultOptions, options);
         const optionsChain = this.options.chain || [];
         for (let i = 0, iEnd = optionsChain.length, modifierOptions, ModifierClass; i < iEnd; ++i) {
             modifierOptions = optionsChain[i];
@@ -10248,10 +6637,10 @@ class ChainModifier extends Modifiers_DataModifier {
         });
     }
     emit(e) {
-        ChainModifier_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     on(type, callback) {
-        return ChainModifier_addEvent(this, type, callback);
+        return addEvent(this, type, callback);
     }
 }
 /* *
@@ -10278,8 +6667,9 @@ Modifiers_DataModifier.registerType('Chain', ChainModifier);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -10290,7 +6680,6 @@ Modifiers_DataModifier.registerType('Chain', ChainModifier);
 
 
 
-const { merge: InvertModifier_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -10315,7 +6704,7 @@ class InvertModifier extends Modifiers_DataModifier {
      */
     constructor(options) {
         super();
-        this.options = InvertModifier_merge(InvertModifier.defaultOptions, options);
+        this.options = merge(InvertModifier.defaultOptions, options);
     }
     /* *
      *
@@ -10396,19 +6785,19 @@ Modifiers_DataModifier.registerType('Invert', InvertModifier);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
  *  - Sophie Bremer
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
 
-const { merge: RangeModifier_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -10431,7 +6820,7 @@ class RangeModifier extends Modifiers_DataModifier {
      */
     constructor(options) {
         super();
-        this.options = RangeModifier_merge(RangeModifier.defaultOptions, options);
+        this.options = merge(RangeModifier.defaultOptions, options);
     }
     /* *
      *
@@ -10494,19 +6883,19 @@ Modifiers_DataModifier.registerType('Range', RangeModifier);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
  *  - Sophie Bremer
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
 
-const { merge: SortModifier_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -10556,7 +6945,7 @@ class SortModifier extends Modifiers_DataModifier {
      */
     constructor(options) {
         super();
-        this.options = SortModifier_merge(SortModifier.defaultOptions, options);
+        this.options = merge(SortModifier.defaultOptions, options);
     }
     /* *
      *
@@ -10666,18 +7055,18 @@ Modifiers_DataModifier.registerType('Sort', SortModifier);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
 
-const { isFunction: FilterModifier_isFunction, merge: FilterModifier_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -10699,7 +7088,7 @@ class FilterModifier extends Modifiers_DataModifier {
      * Condition to compile.
      */
     static compile(condition) {
-        if (FilterModifier_isFunction(condition)) {
+        if (isFunction(condition)) {
             return condition;
         }
         const op = condition.operator;
@@ -10765,7 +7154,7 @@ class FilterModifier extends Modifiers_DataModifier {
      */
     constructor(options) {
         super();
-        this.options = FilterModifier_merge(FilterModifier.defaultOptions, options);
+        this.options = merge(FilterModifier.defaultOptions, options);
     }
     /* *
      *
@@ -10840,8 +7229,9 @@ Modifiers_DataModifier.registerType('Filter', FilterModifier);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -10971,8 +7361,9 @@ const Serializable = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -11057,8 +7448,9 @@ Dashboards_Serializable.registerHelper(DataTableHelper);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -11070,7 +7462,6 @@ Dashboards_Serializable.registerHelper(DataTableHelper);
 
 
 
-const { merge: CSVConnectorHelper_merge } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -11111,7 +7502,7 @@ function CSVConnectorHelper_jsonSupportFor(obj) {
  * Returns the JSON of the class instance or object.
  */
 function CSVConnectorHelper_toJSON(obj) {
-    const options = CSVConnectorHelper_merge(obj.options);
+    const options = merge(obj.options);
     options.dataTable = SerializeHelper_DataTableHelper.toJSON(obj.getTable());
     return {
         $class: 'Data.CSVConnector',
@@ -11142,12 +7533,13 @@ Dashboards_Serializable.registerHelper(CSVConnectorHelper);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Pawel Lysy
+ *  - Paweł Lysy
  *  - Sophie Bremer
  *
  * */
@@ -11155,7 +7547,6 @@ Dashboards_Serializable.registerHelper(CSVConnectorHelper);
 
 
 
-const { merge: DataConverterHelper_merge } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -11185,7 +7576,7 @@ function DataConverterHelper_jsonSupportFor(obj) {
 function DataConverterHelper_toJSON(obj) {
     return {
         $class: 'Data.DataConverter',
-        options: DataConverterHelper_merge(obj.options)
+        options: merge(obj.options)
     };
 }
 /* *
@@ -11212,8 +7603,9 @@ Dashboards_Serializable.registerHelper(DataConverterHelper);
  *
  *  (c) 2020-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -11573,8 +7965,9 @@ function toRange(cursor, defaultRange) {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -11668,8 +8061,9 @@ Dashboards_Serializable.registerHelper(DataCursorHelper);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -11681,7 +8075,6 @@ Dashboards_Serializable.registerHelper(DataCursorHelper);
 
 
 
-const { merge: GoogleSheetsConnectorHelper_merge } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -11722,7 +8115,7 @@ function GoogleSheetsConnectorHelper_jsonSupportFor(obj) {
  * Returns the JSON of the class instance or object.
  */
 function GoogleSheetsConnectorHelper_toJSON(obj) {
-    const options = GoogleSheetsConnectorHelper_merge(obj.options);
+    const options = merge(obj.options);
     options.dataTable = SerializeHelper_DataTableHelper.toJSON(obj.getTable());
     return {
         $class: 'Data.GoogleSheetsConnector',
@@ -11753,8 +8146,9 @@ Dashboards_Serializable.registerHelper(GoogleSheetsConnectorHelper);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -11766,7 +8160,6 @@ Dashboards_Serializable.registerHelper(GoogleSheetsConnectorHelper);
 
 
 
-const { merge: HTMLTableConnectorHelper_merge } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -11807,7 +8200,7 @@ function HTMLTableConnectorHelper_jsonSupportFor(obj) {
  * Returns the JSON of the class instance or object.
  */
 function HTMLTableConnectorHelper_toJSON(obj) {
-    const options = HTMLTableConnectorHelper_merge(obj.options);
+    const options = merge(obj.options);
     options.dataTable = SerializeHelper_DataTableHelper.toJSON(obj.getTable());
     return {
         $class: 'Data.HTMLTableConnector',
@@ -11838,19 +8231,19 @@ Dashboards_Serializable.registerHelper(HTMLTableConnectorHelper);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Pawel Lysy
+ *  - Paweł Lysy
  *
  * */
 
 
 
 
-const { merge: JSONConnectorHelper_merge } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -11891,7 +8284,7 @@ function JSONConnectorHelper_jsonSupportFor(obj) {
  * Returns the JSON of the class instance or object.
  */
 function JSONConnectorHelper_toJSON(obj) {
-    const options = JSONConnectorHelper_merge(obj.options);
+    const options = merge(obj.options);
     options.dataTable = SerializeHelper_DataTableHelper.toJSON(obj.getTable());
     return {
         $class: 'Data.JSONConnector',
@@ -11916,13 +8309,589 @@ const JSONConnectorHelper = {
  * */
 /* harmony default export */ const SerializeHelper_JSONConnectorHelper = ((/* unused pure expression or super */ null && (JSONConnectorHelper)));
 
+;// ./code/dashboards/es-modules/Core/Renderer/HTML/AST.js
+/* *
+ *
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Hønsi
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ * */
+
+
+const { SVG_NS, win: AST_win } = Core_Globals;
+
+
+const { trustedTypes } = AST_win;
+/* *
+ *
+ *  Constants
+ *
+ * */
+// Create the trusted type policy. This should not be exposed.
+const trustedTypesPolicy = (trustedTypes &&
+    isFunction(trustedTypes.createPolicy) &&
+    trustedTypes.createPolicy('highcharts', {
+        createHTML: (s) => s
+    }));
+const emptyHTML = trustedTypesPolicy ?
+    trustedTypesPolicy.createHTML('') :
+    '';
+/* *
+ *
+ *  Class
+ *
+ * */
+/**
+ * The AST class represents an abstract syntax tree of HTML or SVG content. It
+ * can take HTML as an argument, parse it, optionally transform it to SVG, then
+ * perform sanitation before inserting it into the DOM.
+ *
+ * @class
+ * @name Highcharts.AST
+ *
+ * @param {string|Array<Highcharts.ASTNode>} source
+ * Either an HTML string or an ASTNode list to populate the tree.
+ */
+class AST {
+    /* *
+     *
+     *  Static Functions
+     *
+     * */
+    /**
+     * Filter an object of SVG or HTML attributes against the allow list.
+     *
+     * @static
+     *
+     * @function Highcharts.AST#filterUserAttributes
+     *
+     * @param {Highcharts.SVGAttributes} attributes The attributes to filter
+     *
+     * @return {Highcharts.SVGAttributes}
+     * The filtered attributes
+     */
+    static filterUserAttributes(attributes) {
+        objectEach(attributes, (val, key) => {
+            let valid = true;
+            if (AST.allowedAttributes.indexOf(key) === -1) {
+                valid = false;
+            }
+            if (['background', 'dynsrc', 'href', 'lowsrc', 'src']
+                .indexOf(key) !== -1) {
+                valid = isString(val) && AST.allowedReferences.some((ref) => val.indexOf(ref) === 0);
+            }
+            if (!valid) {
+                error(33, false, void 0, {
+                    'Invalid attribute in config': `${key}`
+                });
+                delete attributes[key];
+            }
+            // #17753, < is not allowed in SVG attributes
+            if (isString(val) && attributes[key]) {
+                attributes[key] = val.replace(/</g, '&lt;');
+            }
+        });
+        return attributes;
+    }
+    /**
+     * Utility function to parse a style string to a CSSObject.
+     *
+     * @internal
+     * @param {string} style
+     * The style string to parse.
+     * @return {Highcharts.CSSObject}
+     * The parsed CSSObject.
+     */
+    static parseStyle(style) {
+        return style
+            .split(';')
+            .reduce((styles, line) => {
+            const pair = line.split(':').map((s) => s.trim()), key = pair.shift();
+            if (key && pair.length) {
+                styles[key.replace(/-([a-z])/g, (g) => g[1].toUpperCase())] = pair.join(':'); // #17146
+            }
+            return styles;
+        }, {});
+    }
+    /**
+     * Utility function to set html content for an element by passing in a
+     * markup string. The markup is safely parsed by the AST class to avoid
+     * XSS vulnerabilities. This function should be used instead of setting
+     * `innerHTML` in all cases where the content is not fully trusted.
+     *
+     * @static
+     * @function Highcharts.AST#setElementHTML
+     *
+     * @param {SVGDOMElement|HTMLDOMElement} el
+     * Node to set content of.
+     *
+     * @param {string} html
+     * Markup string
+     */
+    static setElementHTML(el, html) {
+        el.innerHTML = AST.emptyHTML; // Clear previous
+        if (html) {
+            const ast = new AST(html);
+            ast.addToDOM(el);
+        }
+    }
+    /* *
+     *
+     *  Constructor
+     *
+     * */
+    // Construct an AST from HTML markup, or wrap an array of existing AST nodes
+    constructor(source) {
+        this.nodes = typeof source === 'string' ?
+            this.parseMarkup(source) : source;
+    }
+    /* *
+     *
+     *  Functions
+     *
+     * */
+    /**
+     * Add the tree defined as a hierarchical JS structure to the DOM
+     *
+     * @function Highcharts.AST#addToDOM
+     *
+     * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} parent
+     * The node where it should be added
+     *
+     * @return {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement}
+     * The inserted node.
+     */
+    addToDOM(parent) {
+        /**
+         * @internal
+         * @param {Highcharts.ASTNode} subtree
+         * HTML/SVG definition.
+         * @param {Element} [subParent]
+         * Parent node.
+         * @return {Highcharts.SVGDOMElement|Highcharts.HTMLDOMElement}
+         * The inserted node.
+         */
+        function recurse(subtree, subParent) {
+            let ret;
+            splat(subtree).forEach(function (item) {
+                const tagName = item.tagName;
+                const textNode = item.textContent ?
+                    Core_Globals.doc.createTextNode(item.textContent) :
+                    void 0;
+                // Whether to ignore the AST filtering totally, #15345
+                const bypassHTMLFiltering = AST.bypassHTMLFiltering;
+                let node;
+                if (tagName) {
+                    if (tagName === '#text') {
+                        node = textNode;
+                    }
+                    else if (AST.allowedTags.indexOf(tagName) !== -1 ||
+                        bypassHTMLFiltering) {
+                        const NS = tagName === 'svg' ?
+                            SVG_NS :
+                            (subParent.namespaceURI || SVG_NS);
+                        const element = Core_Globals.doc.createElementNS(NS, tagName);
+                        const attributes = item.attributes || {};
+                        // Apply attributes from root of AST node, legacy from
+                        // from before TextBuilder
+                        objectEach(item, function (val, key) {
+                            if (key !== 'tagName' &&
+                                key !== 'attributes' &&
+                                key !== 'children' &&
+                                key !== 'style' &&
+                                key !== 'textContent') {
+                                attributes[key] = val;
+                            }
+                        });
+                        attr(element, bypassHTMLFiltering ?
+                            attributes :
+                            AST.filterUserAttributes(attributes));
+                        if (item.style) {
+                            css(element, item.style);
+                        }
+                        // Add text content
+                        if (textNode) {
+                            element.appendChild(textNode);
+                        }
+                        // Recurse
+                        recurse(item.children || [], element);
+                        node = element;
+                    }
+                    else {
+                        error(33, false, void 0, {
+                            'Invalid tagName in config': tagName
+                        });
+                    }
+                }
+                // Add to the tree
+                if (node) {
+                    subParent.appendChild(node);
+                }
+                ret = node;
+            });
+            // Return last node added (on top level it's the only one)
+            return ret;
+        }
+        return recurse(this.nodes, parent);
+    }
+    /**
+     * Parse HTML/SVG markup into AST Node objects. Used internally from the
+     * constructor.
+     *
+     * @internal
+     * @param {string} markup
+     * The markup string.
+     * @return {Array<Highcharts.ASTNode>}
+     * The parsed nodes.
+     */
+    parseMarkup(markup) {
+        const nodes = [];
+        markup = markup
+            .trim()
+            // The style attribute throws a warning when parsing when CSP is
+            // enabled (#6884), so use an alias and pick it up below
+            // Make all quotation marks parse correctly to DOM (#17627)
+            .replace(/ style=(["'])/g, ' data-style=$1');
+        let doc;
+        try {
+            doc = new DOMParser().parseFromString(trustedTypesPolicy ?
+                trustedTypesPolicy.createHTML(markup) :
+                markup, 'text/html');
+        }
+        catch {
+            // There are two cases where this fails:
+            // 1. IE9 and PhantomJS, where the DOMParser only supports parsing
+            //    XML
+            // 2. Due to a Chromium issue where chart redraws are triggered by
+            //    a `beforeprint` event (#16931),
+            //    https://issues.chromium.org/issues/40222135
+        }
+        if (!doc) {
+            const body = createElement('div');
+            body.innerHTML = markup;
+            doc = { body };
+        }
+        const appendChildNodes = (node, addTo) => {
+            const tagName = node.nodeName.toLowerCase();
+            // Add allowed tags
+            const astNode = {
+                tagName
+            };
+            if (tagName === '#text') {
+                astNode.textContent = node.textContent || '';
+            }
+            const parsedAttributes = node.attributes;
+            // Add attributes
+            if (parsedAttributes) {
+                const attributes = {};
+                [].forEach.call(parsedAttributes, (attrib) => {
+                    if (attrib.name === 'data-style') {
+                        astNode.style = AST.parseStyle(attrib.value);
+                    }
+                    else {
+                        attributes[attrib.name] = attrib.value;
+                    }
+                });
+                astNode.attributes = attributes;
+            }
+            // Handle children
+            if (node.childNodes.length) {
+                const children = [];
+                [].forEach.call(node.childNodes, (childNode) => {
+                    appendChildNodes(childNode, children);
+                });
+                if (children.length) {
+                    astNode.children = children;
+                }
+            }
+            addTo.push(astNode);
+        };
+        [].forEach.call(doc.body.childNodes, (childNode) => appendChildNodes(childNode, nodes));
+        return nodes;
+    }
+}
+/* *
+ *
+ *  Static Properties
+ *
+ * */
+/**
+ * The list of allowed SVG or HTML attributes, used for sanitizing
+ * potentially harmful content from the chart configuration before adding to
+ * the DOM.
+ *
+ * @see [Source code with default values](
+ * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedAttributes)
+ *
+ * @example
+ * // Allow a custom, trusted attribute
+ * Highcharts.AST.allowedAttributes.push('data-value');
+ *
+ * @name Highcharts.AST.allowedAttributes
+ * @type {Array<string>}
+ */
+AST.allowedAttributes = [
+    'alt',
+    'aria-controls',
+    'aria-describedby',
+    'aria-expanded',
+    'aria-haspopup',
+    'aria-hidden',
+    'aria-label',
+    'aria-labelledby',
+    'aria-live',
+    'aria-pressed',
+    'aria-readonly',
+    'aria-roledescription',
+    'aria-selected',
+    'aria-sort',
+    'class',
+    'clip-path',
+    'color',
+    'colspan',
+    'cx',
+    'cy',
+    'd',
+    'disabled',
+    'dx',
+    'dy',
+    'fill',
+    'filterUnits',
+    'flood-color',
+    'flood-opacity',
+    'height',
+    'href',
+    'id',
+    'in',
+    'in2',
+    'markerHeight',
+    'markerWidth',
+    'offset',
+    'opacity',
+    'operator',
+    'orient',
+    'padding',
+    'paddingLeft',
+    'paddingRight',
+    'patternUnits',
+    'r',
+    'radius',
+    'refX',
+    'refY',
+    'result',
+    'role',
+    'rowspan',
+    'scope',
+    'slope',
+    'src',
+    'startOffset',
+    'stdDeviation',
+    'stroke-linecap',
+    'stroke-width',
+    'stroke',
+    'style',
+    'summary',
+    'tabindex',
+    'tableValues',
+    'target',
+    'text-align',
+    'text-anchor',
+    'textAnchor',
+    'textLength',
+    'title',
+    'type',
+    'valign',
+    'width',
+    'x',
+    'x1',
+    'x2',
+    'xlink:href',
+    'y',
+    'y1',
+    'y2',
+    'zIndex'
+];
+/**
+ * The list of allowed references for referring attributes like `href` and
+ * `src`. Attribute values will only be allowed if they start with one of
+ * these strings.
+ *
+ * @see [Source code with default values](
+ * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedReferences)
+ *
+ * @example
+ * // Allow tel:
+ * Highcharts.AST.allowedReferences.push('tel:');
+ *
+ * @name    Highcharts.AST.allowedReferences
+ * @type    {Array<string>}
+ */
+AST.allowedReferences = [
+    'https://',
+    'http://',
+    'mailto:',
+    '/',
+    '../',
+    './',
+    '#'
+];
+/**
+ * The list of allowed SVG or HTML tags, used for sanitizing potentially
+ * harmful content from the chart configuration before adding to the DOM.
+ *
+ * @see [Source code with default values](
+ * https://github.com/highcharts/highcharts/blob/master/ts/Core/Renderer/HTML/AST.ts#:~:text=public%20static%20allowedTags)
+ *
+ * @example
+ * // Allow a custom, trusted tag
+ * Highcharts.AST.allowedTags.push('blink'); // ;)
+ *
+ * @name    Highcharts.AST.allowedTags
+ * @type    {Array<string>}
+ */
+AST.allowedTags = [
+    '#text',
+    'a',
+    'abbr',
+    'b',
+    'br',
+    'button',
+    'caption',
+    'circle',
+    'clipPath',
+    'code',
+    'dd',
+    'defs',
+    'div',
+    'dl',
+    'dt',
+    'em',
+    'feComponentTransfer',
+    'feComposite',
+    'feDropShadow',
+    'feFlood',
+    'feFuncA',
+    'feFuncB',
+    'feFuncG',
+    'feFuncR',
+    'feGaussianBlur',
+    'feMerge',
+    'feMergeNode',
+    'feMorphology',
+    'feOffset',
+    'filter',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'hr',
+    'i',
+    'img',
+    'li',
+    'linearGradient',
+    'marker',
+    'ol',
+    'p',
+    'path',
+    'pattern',
+    'pre',
+    'rect',
+    'small',
+    'span',
+    'stop',
+    'strong',
+    'style',
+    'sub',
+    'sup',
+    'svg',
+    'table',
+    'tbody',
+    'td',
+    'text',
+    'textPath',
+    'th',
+    'thead',
+    'title',
+    'tr',
+    'tspan',
+    'u',
+    'ul'
+];
+/** @internal */
+AST.emptyHTML = emptyHTML;
+/**
+ * Allow all custom SVG and HTML attributes, references and tags (together
+ * with potentially harmful ones) to be added to the DOM from the chart
+ * configuration. In other words, disable the allow-listing which is the
+ * primary functionality of the AST.
+ *
+ * WARNING: Setting this property to `true` while allowing untrusted user
+ * data in the chart configuration will expose your application to XSS
+ * security risks!
+ *
+ * Note that in case you want to allow a known set of tags or attributes,
+ * you should allow-list them instead of disabling the filtering totally.
+ * See [allowedAttributes](Highcharts.AST#.allowedAttributes),
+ * [allowedReferences](Highcharts.AST#.allowedReferences) and
+ * [allowedTags](Highcharts.AST#.allowedTags). The `bypassHTMLFiltering`
+ * setting is intended only for those cases where allow-listing is not
+ * practical, and the chart configuration already comes from a secure
+ * source.
+ *
+ * @example
+ * // Allow all custom attributes, references and tags (disable DOM XSS
+ * // filtering)
+ * Highcharts.AST.bypassHTMLFiltering = true;
+ *
+ * @name Highcharts.AST.bypassHTMLFiltering
+ * @static
+ */
+AST.bypassHTMLFiltering = false;
+/* *
+ *
+ *  Default Export
+ *
+ * */
+/* harmony default export */ const HTML_AST = (AST);
+/* *
+ *
+ *  API Declarations
+ *
+ * */
+/**
+ * Serialized form of an SVG/HTML definition, including children.
+ *
+ * @interface Highcharts.ASTNode
+ */ /**
+* @name Highcharts.ASTNode#attributes
+* @type {Highcharts.SVGAttributes|undefined}
+*/ /**
+* @name Highcharts.ASTNode#children
+* @type {Array<Highcharts.ASTNode>|undefined}
+*/ /**
+* @name Highcharts.ASTNode#tagName
+* @type {string|undefined}
+*/ /**
+* @name Highcharts.ASTNode#textContent
+* @type {string|undefined}
+*/
+(''); // Keeps doclets above in file
+
 ;// ./code/dashboards/es-modules/Dashboards/Components/ComponentRegistry.js
 /* *
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -11950,7 +8919,7 @@ const types = {};
  * @param {string} key
  * Registry key of the component class.
  *
- * @param {ComponentType} DataConnectorClass
+ * @param {ComponentType} ComponentClass
  * Component class (aka class constructor) to register.
  */
 function registerComponent(key, ComponentClass) {
@@ -11969,13 +8938,466 @@ const ComponentRegistry = {
 };
 /* harmony default export */ const Components_ComponentRegistry = (ComponentRegistry);
 
+;// ./code/dashboards/es-modules/Dashboards/Globals.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *  - Paweł Lysy
+ *  - Karol Kołodziej
+ *
+ * */
+
+/* *
+ *
+ *  Constants
+ *
+ * */
+/**
+ * Prefix of a GUIElement HTML class name.
+ */
+const classNamePrefix = 'highcharts-dashboards-';
+const version = '4.2.0';
+/** @internal */
+const classNames = {
+    layout: classNamePrefix + 'layout',
+    cell: classNamePrefix + 'cell',
+    cellHover: classNamePrefix + 'cell-state-hover',
+    cellActive: classNamePrefix + 'cell-state-active',
+    cellLoading: classNamePrefix + 'cell-state-loading',
+    row: classNamePrefix + 'row',
+    layoutsWrapper: classNamePrefix + 'layouts-wrapper',
+    boardContainer: classNamePrefix + 'wrapper'
+};
+/** @internal */
+const guiElementType = {
+    row: 'row',
+    cell: 'cell',
+    layout: 'layout'
+};
+/**
+ * Contains all Board instances of this window.
+ */
+const boards = [];
+/**
+ * Reference to the window used by Dashboards.
+ */
+const Globals_win = window;
+const Globals_doc = document;
+const noop = function () { };
+const isMS = /(edge|msie|trident)/i
+    .test((Globals_win.navigator && Globals_win.navigator.userAgent) || '') && !Globals_win.opera;
+const supportsPassiveEvents = (function () {
+    // Checks whether the browser supports passive events, (#11353).
+    let supportsPassive = false;
+    // Object.defineProperty doesn't work on IE as well as passive
+    // events - instead of using polyfill, we can exclude IE totally.
+    if (!isMS) {
+        const opts = Object.defineProperty({}, 'passive', {
+            get: function () {
+                supportsPassive = true;
+            }
+        });
+        if (Globals_win.addEventListener && Globals_win.removeEventListener) {
+            Globals_win.addEventListener('testPassive', noop, opts);
+            Globals_win.removeEventListener('testPassive', noop, opts);
+        }
+    }
+    return supportsPassive;
+}());
+const Globals_Globals = {
+    boards,
+    classNamePrefix,
+    classNames,
+    doc: Globals_doc,
+    guiElementType,
+    isMS,
+    noop,
+    supportsPassiveEvents,
+    version,
+    win: Globals_win
+};
+/* *
+ *
+ *  Default Export
+ *
+ * */
+/* harmony default export */ const Dashboards_Globals = (Globals_Globals);
+
+;// ./code/dashboards/es-modules/Dashboards/EditMode/EditGlobals.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+
+const PREFIX = Dashboards_Globals.classNamePrefix + 'edit-';
+const EditGlobals = {
+    classNames: {
+        resizeSnap: PREFIX + 'resize-snap',
+        resizeSnapX: PREFIX + 'resize-snap-x',
+        resizeSnapY: PREFIX + 'resize-snap-y',
+        separator: PREFIX + 'separator',
+        contextMenuBtn: PREFIX + 'context-menu-btn',
+        contextMenuBtnText: PREFIX + 'context-menu-btn-text',
+        contextMenu: PREFIX + 'context-menu',
+        contextMenuItem: PREFIX + 'context-menu-item',
+        editModeEnabled: PREFIX + 'enabled',
+        editToolbar: PREFIX + 'toolbar',
+        editToolbarCellOutline: PREFIX + 'toolbar-cell-outline',
+        editToolbarRowOutline: PREFIX + 'toolbar-row-outline',
+        editToolbarItem: PREFIX + 'toolbar-item',
+        editToolbarRow: PREFIX + 'toolbar-row',
+        editToolbarCell: PREFIX + 'toolbar-cell',
+        editSidebar: PREFIX + 'sidebar',
+        editSidebarShow: PREFIX + 'sidebar-show',
+        editSidebarHide: PREFIX + 'sidebar-hide',
+        editSidebarHeader: PREFIX + 'sidebar-header',
+        editSidebarTitle: PREFIX + 'sidebar-title',
+        editSidebarMenuItem: PREFIX + 'sidebar-item',
+        rowContextHighlight: PREFIX + 'row-context-highlight',
+        cellEditHighlight: PREFIX + 'cell-highlight',
+        dashboardCellEditHighlightActive: PREFIX + 'cell-highlight-active',
+        dragMock: PREFIX + 'drag-mock',
+        dropPointer: PREFIX + 'drop-pointer',
+        contextDetectionPointer: PREFIX + 'ctx-detection-pointer',
+        resizePointer: PREFIX + 'resize-pointer',
+        currentEditedElement: PREFIX + 'unmask',
+        maskElement: PREFIX + 'mask',
+        menuItem: PREFIX + 'menu-item',
+        menu: PREFIX + 'menu',
+        menuVerticalSeparator: PREFIX + 'menu-vertical-separator',
+        menuHorizontalSeparator: PREFIX + 'menu-horizontal-separator',
+        menuDestroy: PREFIX + 'menu-destroy',
+        editSidebarWrapper: PREFIX + 'sidebar-wrapper',
+        customSelect: PREFIX + 'custom-select',
+        customSelectButton: PREFIX + 'custom-option-button',
+        toggleContainer: PREFIX + 'toggle-container',
+        toggleWrapper: PREFIX + 'toggle-wrapper',
+        toggleSlider: PREFIX + 'toggle-slider',
+        toggleWrapperColored: PREFIX + 'toggle-wrapper-colored',
+        toggleLabels: PREFIX + 'toggle-labels',
+        labeledToggleWrapper: PREFIX + 'labeled-toggle-wrapper',
+        button: PREFIX + 'button',
+        sidebarNavButton: PREFIX + 'sidebar-button-nav',
+        labelText: PREFIX + 'label-text',
+        editSidebarTabBtn: PREFIX + 'sidebar-tab-btn',
+        editToolsBtn: PREFIX + 'tools-btn',
+        editTools: PREFIX + 'tools',
+        editGridItems: PREFIX + 'grid-items',
+        editStandaloneToggle: PREFIX + 'standalone-toggle',
+        // Confirmation popup
+        confirmationPopup: PREFIX + 'confirmation-popup',
+        popupButtonContainer: PREFIX + 'confirmation-popup-button-container',
+        popupContentContainer: PREFIX + 'confirmation-popup-content',
+        popupCancelBtn: PREFIX + 'confirmation-popup-cancel-btn',
+        popupConfirmBtn: PREFIX + 'confirmation-popup-confirm-btn',
+        popupCloseButton: PREFIX + 'popup-close',
+        editOverlay: PREFIX + 'overlay',
+        editOverlayActive: PREFIX + 'overlay-active',
+        resizerMenuBtnActive: PREFIX + 'resizer-menu-btn-active',
+        sidebarCloseButton: PREFIX + 'close-btn',
+        editSidebarTabBtnWrapper: PREFIX + 'tabs-buttons-wrapper',
+        editSidebarRight: PREFIX + 'sidebar-right',
+        editSidebarRightShow: PREFIX + 'sidebar-right-show',
+        viewFullscreen: PREFIX + 'view-fullscreen',
+        // Accordion
+        accordionMenu: PREFIX + 'accordion-menu',
+        accordionContainer: PREFIX + 'accordion',
+        accordionHeader: PREFIX + 'accordion-header',
+        accordionHeaderBtn: PREFIX + 'accordion-header-btn',
+        accordionHeaderWrapper: PREFIX + 'accordion-header-wrapper',
+        accordionHeaderIcon: PREFIX + 'accordion-header-icon',
+        accordionContent: PREFIX + 'accordion-content',
+        accordionNestedWrapper: PREFIX + 'accordion-nested',
+        accordionMenuButtonsContainer: PREFIX + 'accordion-menu-buttons-container',
+        accordionMenuButton: PREFIX + 'accordion-menu-button',
+        accordionStandaloneWrapper: PREFIX + 'accordion-standalone-wrapper',
+        hiddenElement: PREFIX + 'hidden-element',
+        collapsableContentHeader: PREFIX + 'collapsable-content-header',
+        standaloneElement: PREFIX + 'standalone-element',
+        // Custom dropdown with icons
+        collapsedElement: PREFIX + 'collapsed-element',
+        dropdown: PREFIX + 'dropdown',
+        dropdownContent: PREFIX + 'dropdown-content',
+        dropdownButton: PREFIX + 'dropdown-button',
+        dropdownButtonContent: PREFIX + 'dropdown-button-content',
+        dropdownIcon: PREFIX + 'pointer',
+        icon: PREFIX + 'icon'
+    },
+    lang: {
+        accessibility: {
+            contextMenu: {
+                button: 'Context menu'
+            },
+            editMode: {
+                editMode: 'Edit mode toggle button'
+            }
+        },
+        addComponent: 'Add component',
+        cancelButton: 'Cancel',
+        caption: 'Caption',
+        chartClassName: 'Chart class name',
+        chartConfig: 'Chart configuration',
+        chartID: 'Chart ID',
+        chartOptions: 'Chart options',
+        chartType: 'Chart type',
+        connectorName: 'Connector name',
+        confirmButton: 'Confirm',
+        confirmDestroyCell: 'Do you really want to destroy the cell?',
+        confirmDestroyRow: 'Do you really want to destroy the row?',
+        confirmDiscardChanges: 'Do you really want to discard the changes?',
+        dataLabels: 'Data labels',
+        editMode: 'Edit mode',
+        errorMessage: 'Something went wrong',
+        exitFullscreen: 'Exit full screen',
+        htmlInput: 'HTML',
+        id: 'Id',
+        off: 'off',
+        on: 'on',
+        pointFormat: 'Point format',
+        settings: 'Settings',
+        style: 'Styles',
+        title: 'Title',
+        viewFullscreen: 'View in full screen',
+        sidebar: {
+            HTML: 'HTML',
+            row: 'Row',
+            Highcharts: 'Highcharts',
+            Grid: 'Grid',
+            KPI: 'KPI'
+        }
+    }
+};
+/* harmony default export */ const EditMode_EditGlobals = (EditGlobals);
+
+;// ./code/dashboards/es-modules/Dashboards/Layout/GUIElement.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+
+
+class GUIElement {
+    /* *
+    *
+    *  Static Properties
+    *
+    * */
+    /**
+     * Get offsets of the guiElement relative to the referenceElement or the
+     * Viewport.
+     *
+     * @param guiElement
+     * The element to get the offsets from.
+     *
+     * @param referenceElement
+     * The element to get the offsets relative to.
+     *
+     * @returns
+     * The offsets of the guiElement.
+     */
+    static getOffsets(guiElement, referenceElement) {
+        const offset = { left: 0, top: 0, right: 0, bottom: 0 };
+        if (!guiElement.container) {
+            return offset;
+        }
+        const guiElementClientRect = guiElement.container.getBoundingClientRect();
+        const referenceClientRect = referenceElement ?
+            referenceElement.getBoundingClientRect() : { left: 0, top: 0 };
+        offset.left = guiElementClientRect.left - referenceClientRect.left;
+        offset.top = guiElementClientRect.top - referenceClientRect.top;
+        offset.right =
+            guiElementClientRect.right - referenceClientRect.left;
+        offset.bottom =
+            guiElementClientRect.bottom - referenceClientRect.top;
+        return offset;
+    }
+    /**
+     * Get dimensions of the guiElement container from offsets.
+     *
+     * @param offsets
+     * The offsets of the guiElement container.
+     *
+     * @returns
+     * The dimensions of the guiElement container.
+     */
+    static getDimFromOffsets(offsets) {
+        return {
+            width: offsets.right - offsets.left,
+            height: offsets.bottom - offsets.top
+        };
+    }
+    /**
+     * Based on the element provided, generate an unique id.
+     *
+     * @param elementType
+     * Type of the element.
+     *
+     * @returns
+     * The unique id.
+     */
+    static getElementId(elementType) {
+        return (Dashboards_Globals.classNamePrefix + elementType + '-' +
+            uniqueKey().slice(11));
+    }
+    /**
+     * Get width in percentages (0% - 100%).
+     *
+     * @param width
+     * The width of the element. Supported formats '50%' or '1/2'.
+     *
+     * @returns
+     * The width in percentages.
+     */
+    static getPercentageWidth(width) {
+        const fractionRegEx = /^(\d{1})[\-\/\.](\d{1,2})$/;
+        let result;
+        if (fractionRegEx.test(width)) {
+            const match = width.match(fractionRegEx) || [], multiplier = +match[1], divider = +match[2];
+            result = 100 * multiplier / divider;
+            result = (result <= 100 ? result : 100) + '%';
+        }
+        else if (width.indexOf('%') !== -1) {
+            const value = parseFloat(width);
+            result = (value <= 100 ?
+                (value >= 0 ? value : 0) : 100) + '%';
+        }
+        return result;
+    }
+    /* *
+    *
+    *  Functions
+    *
+    * */
+    /**
+     * Create or get existing HTML element as a GUIElement container.
+     *
+     * @param {GetElementContainerOptions} options
+     * Options.
+     *
+     * @returns
+     * The HTML element for the element container.
+     */
+    getElementContainer(options) {
+        const guiElement = this;
+        let elem;
+        if (options.render) {
+            if (options.attribs && !options.attribs.id) {
+                delete options.attribs.id;
+            }
+        }
+        else if (typeof options.elementId === 'string') {
+            const div = document.getElementById(options.elementId);
+            if (div) {
+                guiElement.container = div;
+            }
+            else {
+                error('Element ' + options.elementId + ' does not exist');
+            }
+        }
+        if (options.element instanceof HTMLElement) {
+            elem = options.element;
+        }
+        else {
+            elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
+        }
+        // Set bindedGUIElement event on GUIElement container.
+        guiElement.removeBindedEventFn = addEvent(elem, 'bindedGUIElement', function (e) {
+            e.guiElement = guiElement;
+            e.stopImmediatePropagation();
+        });
+        return elem;
+    }
+    /**
+     * Destroy the element, its container, event hooks and all properties.
+     */
+    destroy() {
+        const guiElement = this;
+        // Remove bindedGUIElement event.
+        if (guiElement.removeBindedEventFn) {
+            guiElement.removeBindedEventFn();
+        }
+        // Remove HTML container.
+        if (guiElement.container && guiElement.container.parentNode) {
+            guiElement.container.parentNode.removeChild(guiElement.container);
+        }
+        // Delete all properties.
+        objectEach(guiElement, function (val, key) {
+            delete guiElement[key];
+        });
+    }
+    /**
+     * Return the GUIElement instance type.
+     *
+     * @returns
+     * The GUIElement instance type
+     */
+    getType() {
+        return this.type;
+    }
+    changeVisibility(setVisible = true, displayStyle) {
+        const visibilityChanged = (this.isVisible && !setVisible ||
+            !this.isVisible && setVisible);
+        if (this.container && visibilityChanged) {
+            this.container.style.display = (setVisible ?
+                (displayStyle || 'block') :
+                'none');
+            this.isVisible = setVisible;
+        }
+    }
+    hide() {
+        this.changeVisibility(false);
+    }
+    show() {
+        this.changeVisibility();
+    }
+}
+/* harmony default export */ const Layout_GUIElement = (GUIElement);
+
 ;// ./code/dashboards/es-modules/Dashboards/Layout/CellHTML.js
 /* *
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -12069,8 +9491,9 @@ function isCellHTML(cellHTML) {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -12085,7 +9508,6 @@ function isCellHTML(cellHTML) {
 
 
 
-const { addEvent: Bindings_addEvent, fireEvent: Bindings_fireEvent } = Core_Utilities;
 /* *
  *
  *  Functions
@@ -12102,7 +9524,7 @@ function getGUIElement(idOrElement, parentElement) {
         parentElement.querySelector('#' + idOrElement) :
         document.getElementById(idOrElement);
     if (container !== null) {
-        Bindings_fireEvent(container, 'bindedGUIElement', {}, function (e) {
+        fireEvent(container, 'bindedGUIElement', {}, function (e) {
             guiElement = e.guiElement;
         });
     }
@@ -12148,7 +9570,7 @@ async function addComponent(options, board, cell) {
     const promise = component.load()['catch']((e) => {
         // eslint-disable-next-line no-console
         console.error(e);
-        component.update({
+        return component.update({
             connector: {
                 id: ''
             },
@@ -12179,9 +9601,9 @@ async function addComponent(options, board, cell) {
         cell.setActiveState();
         component.isActive = true;
     }
-    Bindings_fireEvent(component, 'mount');
+    fireEvent(component, 'mount');
     // Events
-    Bindings_addEvent(componentContainer, 'click', () => {
+    addEvent(componentContainer, 'click', () => {
         // Call the component's click callback
         if (optionsEvents && optionsEvents.click) {
             optionsEvents.click.call(component);
@@ -12199,7 +9621,7 @@ async function addComponent(options, board, cell) {
     if (optionsStates?.hover?.enabled) {
         componentContainer.classList.add(Dashboards_Globals.classNames.cellHover);
     }
-    Bindings_fireEvent(component, 'afterLoad');
+    fireEvent(component, 'afterLoad');
     return promise;
 }
 function getCell(idOrElement, parentElement) {
@@ -12241,8 +9663,9 @@ const Bindings = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -12298,8 +9721,9 @@ class DashboardsAccessibility {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -12309,7 +9733,6 @@ class DashboardsAccessibility {
 
 
 
-const { addEvent: DataPool_addEvent, fireEvent: DataPool_fireEvent, merge: DataPool_merge } = Core_Utilities;
 /* *
  *
  *  Class
@@ -12331,7 +9754,7 @@ class DataPool {
      *
      * */
     constructor(options) {
-        this.options = DataPool_merge(DataPool.defaultOptions, options);
+        this.options = merge(DataPool.defaultOptions, options);
         this.connectors = {};
         this.waiting = {};
     }
@@ -12348,7 +9771,7 @@ class DataPool {
      * Event object with event information.
      */
     emit(e) {
-        DataPool_fireEvent(this, e.type, e);
+        fireEvent(this, e.type, e);
     }
     /**
      * Loads the connector.
@@ -12504,15 +9927,15 @@ class DataPool {
      * Function to unregister callback from the event.
      */
     on(type, callback) {
-        return DataPool_addEvent(this, type, callback);
+        return addEvent(this, type, callback);
     }
     /**
      * Sets connector options under the specified `options.id`.
      *
-     * @param options
+     * @param {object} options
      * Connector options to set.
      *
-     * @param update
+     * @param {boolean} [update]
      * Whether to update the existing connector with the new options and reload
      * it (`true`) or replace it with a new connector instance (`false`).
      */
@@ -12571,14 +9994,14 @@ DataPool.defaultOptions = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
 
 
-const { merge: Defaults_merge } = Core_Utilities;
 /**
  * Default options for the Board.
  */
@@ -12601,7 +10024,7 @@ const defaultOptions = {
  * The new custom board options.
  */
 function setOptions(options) {
-    Defaults_merge(true, defaultOptions, options);
+    merge(true, defaultOptions, options);
 }
 /* *
  *
@@ -12614,13 +10037,351 @@ const Defaults = {
 };
 /* harmony default export */ const Dashboards_Defaults = (Defaults);
 
+;// ./code/dashboards/es-modules/Dashboards/Layout/Cell.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+
+
+
+
+/* *
+ *
+ *  Class
+ *
+ * */
+/**
+ * @internal
+ **/
+class Cell extends Layout_GUIElement {
+    /* *
+     *
+     *  Constructor
+     *
+     * */
+    /**
+     * Constructs an instance of the Cell class.
+     *
+     * @param {Row} row
+     * Reference to the row instance.
+     *
+     * @param {Options} options
+     * Options for the cell.
+     *
+     * @param {HTMLElement} cellElement
+     * The container of the cell HTML element.
+     */
+    constructor(row, options, cellElement) {
+        super();
+        /**
+         * The type of GUI element.
+         */
+        this.type = Dashboards_Globals.guiElementType.cell;
+        this.id = options.id;
+        this.options = options;
+        this.row = row;
+        this.isVisible = true;
+        // Get parent container
+        const parentContainer = document.getElementById(options.parentContainerId || '') ||
+            row.container;
+        const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
+        const cellStyle = options.style || {};
+        const elementStyle = merge(layoutOptions.style, rowOptions.style, cellStyle);
+        this.applySizeOptions(options, cellStyle, elementStyle);
+        this.container = this.getElementContainer({
+            render: row.layout.board.guiEnabled,
+            parentContainer: parentContainer,
+            attribs: {
+                id: options.id,
+                className: Dashboards_Globals.classNames.cell + ' ' +
+                    cellClassName
+            },
+            element: cellElement,
+            elementId: options.id,
+            style: elementStyle
+        });
+        // Nested layout
+        if (this.options.layout) {
+            this.setNestedLayout();
+        }
+    }
+    /* *
+     *
+     *  Functions
+     *
+     * */
+    /**
+     * Create a nested layout in the cell and assign it to the nestedCell
+     * property.
+     * @internal
+     */
+    setNestedLayout() {
+        const board = this.row.layout.board, Layout = this.row.layout.constructor;
+        const optionsGui = board.options.gui;
+        this.nestedLayout = new Layout(board, merge({}, optionsGui && optionsGui.layoutOptions, this.options.layout, {
+            parentContainerId: this.options.id
+        }), this);
+    }
+    /**
+     * Destroy the element, its container, event hooks
+     * and mounted component.
+     */
+    destroy() {
+        fireEvent(this, 'outdate');
+        const cell = this;
+        const { row } = cell;
+        // Destroy mounted component.
+        cell.mountedComponent?.destroy();
+        // If layout exists in the cell - destroy it
+        cell.nestedLayout?.destroy();
+        row.unmountCell(cell);
+        const destroyRow = row.cells?.length === 0;
+        super.destroy();
+        if (destroyRow) {
+            row.destroy();
+        }
+    }
+    /**
+     * Get the cell's options.
+     * @returns
+     * The JSON of cell's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        const cell = this;
+        if (cell.options.layout && cell.nestedLayout) {
+            return {
+                ...cell.options,
+                layout: cell.nestedLayout.getOptions()
+            };
+        }
+        return cell.options;
+    }
+    changeVisibility(setVisible = true) {
+        super.changeVisibility(setVisible);
+        const cell = this, row = cell.row;
+        // Change row visibility if needed.
+        if (!cell.row.getVisibleCells().length) {
+            cell.row.hide();
+        }
+        else if (cell.isVisible && !row.isVisible) {
+            cell.row.show();
+        }
+        setTimeout(() => {
+            fireEvent(row, 'cellChange', { row, cell });
+        }, 0);
+    }
+    getParentCell(level) {
+        const cell = this;
+        let parentCell;
+        if (level <= cell.row.layout.level) {
+            if (cell.row.layout.level === level) {
+                return cell;
+            }
+            if (cell.row.layout.level - 1 >= 0) {
+                parentCell = cell.row.layout.parentCell;
+                if (parentCell) {
+                    return parentCell.getParentCell(level);
+                }
+            }
+        }
+    }
+    // Method to get array of overlapping levels.
+    getOverlappingLevels(align, levelMaxGap, // Max distance between levels
+    offset // Analyzed cell offset
+    ) {
+        const cell = this, parentCell = cell.row.layout.parentCell;
+        let levels = [cell.row.layout.level];
+        if (parentCell) {
+            const cellOffset = offset || Layout_GUIElement.getOffsets(cell)[align];
+            const parentCellOffset = Layout_GUIElement.getOffsets(parentCell)[align];
+            if (Math.abs(cellOffset - parentCellOffset) < levelMaxGap) {
+                levels = [
+                    ...levels,
+                    ...parentCell.getOverlappingLevels(align, levelMaxGap, parentCellOffset)
+                ];
+            }
+        }
+        return levels;
+    }
+    /**
+     * Set cell size.
+     *
+     * @param width
+     * % value or 'auto' or px
+     *
+     * @param height
+     * value in px
+     */
+    setSize(width, height) {
+        const cell = this, editMode = cell.row.layout.board.editMode;
+        if (cell.container) {
+            if (defined(width)) {
+                if (width === 'auto' &&
+                    cell.container.style.flex !== '1 1 0%') {
+                    cell.container.style.flex = '1 1 0%';
+                    cell.options.width = cell.container.style.flex;
+                }
+                else {
+                    const cellWidth = cell.convertWidthToValue(width);
+                    if (cellWidth) {
+                        cell.container.style.flex = '0 0 ' + cellWidth;
+                        cell.options.width = cell.container.style.flex;
+                    }
+                }
+            }
+            if (defined(height)) {
+                const heightValue = (typeof height === 'number' ?
+                    height + 'px' :
+                    height);
+                cell.height = cell.container.style.height = heightValue;
+                cell.options.height = heightValue;
+            }
+            if (editMode) {
+                editMode.hideContextPointer();
+                if (editMode.cellToolbar &&
+                    editMode.cellToolbar.isVisible) {
+                    if (editMode.cellToolbar.cell === cell) {
+                        editMode.cellToolbar.showToolbar(cell);
+                    }
+                    else {
+                        editMode.cellToolbar.hide();
+                    }
+                }
+            }
+            // Call cellResize board event.
+            fireEvent(cell.row.layout.board, 'cellResize', { cell: cell });
+            fireEvent(cell.row, 'cellChange', { cell: cell, row: cell.row });
+        }
+    }
+    setHighlight(remove) {
+        const cell = this, editMode = cell.row?.layout.board.editMode;
+        if (cell.container && editMode) {
+            const cnt = cell.container, isSet = cnt.classList.contains(EditMode_EditGlobals.classNames.cellEditHighlight);
+            if (!remove && !isSet) {
+                cnt.classList.add(EditMode_EditGlobals.classNames.cellEditHighlight);
+                cell.row.layout.board.container.classList.add(EditMode_EditGlobals.classNames.dashboardCellEditHighlightActive);
+                cell.isHighlighted = true;
+            }
+            else if (remove && isSet) {
+                cnt.classList.remove(EditMode_EditGlobals.classNames.cellEditHighlight);
+                cell.row.layout.board.container.classList.remove(EditMode_EditGlobals.classNames.dashboardCellEditHighlightActive);
+                cell.isHighlighted = false;
+            }
+        }
+    }
+    /**
+     * Sets the active state of the cell and resets the state of other cells.
+     */
+    setActiveState() {
+        const cell = this;
+        // Reset other boxes
+        cell.row.layout.board.mountedComponents.forEach((mountedComponent) => {
+            if (mountedComponent.cell.container) {
+                mountedComponent.cell.container.classList.remove(Dashboards_Globals.classNames.cellActive);
+            }
+            mountedComponent.component.isActive = false;
+        });
+        // Apply class
+        if (cell.container) {
+            cell.container.classList.add(Dashboards_Globals.classNames.cellActive);
+        }
+    }
+    /**
+     * Enables or disables the loading indicator in the cell.
+     *
+     * @internal
+     */
+    setLoadingState(enabled = true) {
+        this.container?.classList?.toggle(Dashboards_Globals.classNames.cellLoading, enabled);
+    }
+    convertWidthToValue(width) {
+        if (typeof width === 'number') {
+            return width + 'px';
+        }
+        if (/px/.test(width)) {
+            return width;
+        }
+        return Layout_GUIElement.getPercentageWidth(width) || '';
+    }
+    applySizeOptions(options, cellStyle, elementStyle) {
+        const heightValue = defined(options.height) ?
+            options.height :
+            cellStyle.height;
+        if (defined(heightValue)) {
+            this.height = typeof heightValue === 'number' ?
+                heightValue + 'px' :
+                String(heightValue);
+            elementStyle.height = this.height;
+            options.height = this.height;
+        }
+        else if (defined(elementStyle.height)) {
+            delete elementStyle.height;
+        }
+        const widthSource = defined(options.width) ?
+            options.width :
+            cellStyle.flex;
+        if (defined(widthSource) &&
+            (typeof widthSource === 'string' ||
+                typeof widthSource === 'number')) {
+            let flexValue;
+            if (typeof widthSource === 'string' &&
+                widthSource.indexOf(' ') !== -1) {
+                flexValue = widthSource;
+            }
+            else if (widthSource === 'auto') {
+                flexValue = '1 1 0%';
+            }
+            else {
+                const cellWidth = this.convertWidthToValue(widthSource);
+                if (cellWidth) {
+                    flexValue = '0 0 ' + cellWidth;
+                }
+            }
+            if (flexValue) {
+                elementStyle.flex = flexValue;
+                options.width = flexValue;
+            }
+        }
+    }
+}
+/**
+ * Checks if a valid cell instance.
+ */
+function isCell(cell) {
+    return (!!cell && 'row' in cell && cell.type === 'cell');
+}
+/* *
+ *
+ *  Default Export
+ *
+ * */
+/* harmony default export */ const Layout_Cell = (Cell);
+
 ;// ./code/dashboards/es-modules/Dashboards/Layout/Row.js
 /* *
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -12636,7 +10397,6 @@ const Defaults = {
 
 
 
-const { pick: Row_pick, defined: Row_defined, merge: Row_merge, objectEach: Row_objectEach, fireEvent: Row_fireEvent } = Core_Utilities;
 /**
  * @internal
  **/
@@ -12692,7 +10452,7 @@ class Row extends Layout_GUIElement {
             },
             element: rowElement,
             elementId: options.id,
-            style: Row_merge(layoutOptions.style, options.style)
+            style: merge(layoutOptions.style, options.style)
         });
         // Init rows from options.
         if (this.options.cells) {
@@ -12708,7 +10468,7 @@ class Row extends Layout_GUIElement {
      * Set the row cells using cell options or cellClassName.
      */
     setCells() {
-        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = Row_pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
+        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = Utilities_pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
         let cellElement, i, iEnd;
         for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
             cellElement = cellsElements[i];
@@ -12729,7 +10489,7 @@ class Row extends Layout_GUIElement {
      */
     addCell(options, cellElement, index) {
         const row = this, cell = new Layout_Cell(row, options, cellElement);
-        if (!Row_defined(index)) {
+        if (!defined(index)) {
             row.cells.push(cell);
         }
         else {
@@ -12768,7 +10528,7 @@ class Row extends Layout_GUIElement {
                 layout.destroy();
             }
         }
-        Row_fireEvent(editMode, 'rowDestroyed', {
+        fireEvent(editMode, 'rowDestroyed', {
             target: row,
             board: board
         });
@@ -12819,18 +10579,18 @@ class Row extends Layout_GUIElement {
             row.cells.splice(index, 0, cell);
             cell.row = row;
             setTimeout(() => {
-                Row_fireEvent(row, 'cellChange', { row, cell });
+                fireEvent(row, 'cellChange', { row, cell });
             }, 0);
         }
     }
     // Remove cell from the row.cells array.
     unmountCell(cell) {
         const cellIndex = this.getCellIndex(cell);
-        if (Row_defined(cellIndex)) {
+        if (defined(cellIndex)) {
             this.cells.splice(cellIndex, 1);
         }
         setTimeout(() => {
-            Row_fireEvent(this, 'cellChange', { row: this, cell });
+            fireEvent(this, 'cellChange', { row: this, cell });
         }, 0);
     }
     getVisibleCells() {
@@ -12888,7 +10648,7 @@ class Row extends Layout_GUIElement {
                 rowLevels[cellOffsets.top].cells.push(cell);
             }
         }
-        Row_objectEach(rowLevels, (value) => {
+        objectEach(rowLevels, (value) => {
             rowLevelsArray.push(value);
         });
         return rowLevelsArray;
@@ -12917,8 +10677,9 @@ class Row extends Layout_GUIElement {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -12929,7 +10690,6 @@ class Row extends Layout_GUIElement {
  *
  * */
 
-const { pick: Layout_pick, defined: Layout_defined } = Core_Utilities;
 
 
 
@@ -13002,7 +10762,7 @@ class Layout extends Layout_GUIElement {
      * Set the layout rows using rows options or rowClassName.
      */
     setRows() {
-        const layout = this, rowsElements = Layout_pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
+        const layout = this, rowsElements = Utilities_pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
         let rowElement, i, iEnd;
         for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
             rowElement = rowsElements[i];
@@ -13023,7 +10783,7 @@ class Layout extends Layout_GUIElement {
      */
     addRow(options, rowElement, index) {
         const layout = this, row = new Layout_Row(layout, options, rowElement);
-        if (!Layout_defined(index)) {
+        if (!defined(index)) {
             layout.rows.push(row);
         }
         else {
@@ -13083,7 +10843,7 @@ class Layout extends Layout_GUIElement {
     // Remove row from the layout.rows array.
     unmountRow(row) {
         const rowIndex = this.getRowIndex(row);
-        if (Layout_defined(rowIndex)) {
+        if (defined(rowIndex)) {
             this.rows.splice(rowIndex, 1);
         }
     }
@@ -13135,13 +10895,297 @@ class Layout extends Layout_GUIElement {
 }
 /* harmony default export */ const Layout_Layout = (Layout);
 
-;// ./code/dashboards/es-modules/Dashboards/Board.js
+;// ./code/dashboards/es-modules/Dashboards/CallbackRegistry.js
+class CallbackRegistry {
+    constructor() {
+        this.registry = {};
+    }
+    addCallback(id, callback) {
+        this.registry[id] = callback;
+    }
+    getCallback(id) {
+        return this.registry[id];
+    }
+    /** @internal */
+    toJSON() {
+        const json = {};
+        Object.keys(this.registry).forEach((key) => {
+            const entry = this.getCallback(key);
+            const { func, type } = entry;
+            json[key] = {
+                func: func.toString(),
+                type
+            };
+        });
+        return json;
+    }
+}
+/* harmony default export */ const Dashboards_CallbackRegistry = (CallbackRegistry);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/ConnectorHandler.js
 /* *
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Dawid Draguła
+ *
+ * */
+
+
+/* *
+ *
+ *  Class
+ *
+ * */
+/**
+ * A class that handles the connection between the component and the data
+ * connector.
+ */
+class ConnectorHandler {
+    /* *
+     *
+     *  Constructor
+     *
+     * */
+    /**
+     * Creates an object that manages the data layer for the component.
+     *
+     * @param component
+     * The component that the connector is tied to.
+     *
+     * @param options
+     * The options for the connector.
+     *
+     */
+    constructor(component, options) {
+        /**
+         * Event listeners tied to the current DataTable. Used for rerendering the
+         * component on data changes.
+         * @internal
+         */
+        this.tableEvents = [];
+        this.component = component;
+        this.options = options;
+    }
+    /* *
+     *
+     *  Functions
+     *
+     * */
+    /**
+     * Inits connectors for the component and rerenders it.
+     *
+     * @returns
+     * Promise resolving to the component.
+     */
+    async initConnector() {
+        const component = this.component;
+        const connectorId = this.options.id;
+        const dataPool = this.component.board.dataPool;
+        if (connectorId &&
+            (this.connectorId !== connectorId ||
+                dataPool.isNewConnector(connectorId))) {
+            if (isCell(component.cell)) {
+                component.cell.setLoadingState();
+            }
+            const connector = await dataPool.getConnector(connectorId);
+            // The connector shouldn't be set if the handler was destroyed
+            // during its creation.
+            if (!this.destroyed) {
+                this.setConnector(connector);
+            }
+        }
+        return component;
+    }
+    /**
+     * Sets the data table settings and events.
+     *
+     * @param table
+     * The data table instance for settings and events.
+     */
+    setTable(table) {
+        // Set up event listeners
+        this.clearTableListeners(table);
+        this.setupTableListeners(table);
+        // Re-setup if modifier changes
+        table.on('setModifier', () => this.clearTableListeners(table));
+        table.on('afterSetModifier', (e) => {
+            if (e.type === 'afterSetModifier' && e.modified) {
+                this.setupTableListeners(e.modified);
+                this.component.emit({
+                    type: 'tableChanged',
+                    connector: this.connector
+                });
+            }
+        });
+        this.dataTable = table;
+    }
+    /**
+     * Sets the connector for the component connector handler.
+     *
+     * @param connector
+     * The connector to set.
+     */
+    setConnector(connector) {
+        // Clean up old event listeners
+        while (this.tableEvents.length) {
+            const eventCallback = this.tableEvents.pop();
+            if (typeof eventCallback === 'function') {
+                eventCallback();
+            }
+        }
+        this.connector = connector;
+        if (connector) {
+            this.setTable(connector.getTable(this.options.dataTableKey));
+        }
+        this.addConnectorAssignment();
+        return this.component;
+    }
+    /**
+     * Adds event listeners to data table.
+     * @param table
+     * Data table that is source of data.
+     * @internal
+     */
+    setupTableListeners(table) {
+        const connector = this.connector;
+        if (connector) {
+            if (table) {
+                [
+                    'afterDeleteRows',
+                    'afterSetCell',
+                    'afterSetColumns',
+                    'afterSetRows'
+                ].forEach((event) => {
+                    this.tableEvents.push(table.on(event, (e) => {
+                        clearTimeout(this.tableEventTimeout);
+                        this.tableEventTimeout = Dashboards_Globals.win.setTimeout(() => {
+                            this.component.emit({
+                                ...e,
+                                type: 'tableChanged',
+                                targetConnector: connector
+                            });
+                            this.tableEventTimeout = void 0;
+                        });
+                    }));
+                });
+            }
+        }
+    }
+    /**
+     * Remove event listeners in data table.
+     *
+     * @param table
+     * The connector data table (data source).
+     *
+     * @internal
+     */
+    clearTableListeners(table) {
+        const connector = this.connector;
+        const tableEvents = this.tableEvents;
+        this.removeTableEvents();
+        if (connector) {
+            tableEvents.push(table.on('afterSetModifier', (e) => {
+                if (e.type === 'afterSetModifier') {
+                    clearTimeout(this.tableEventTimeout);
+                    this.tableEventTimeout = Dashboards_Globals.win.setTimeout(() => {
+                        this.component.emit({
+                            ...e,
+                            type: 'tableChanged',
+                            targetConnector: connector
+                        });
+                        this.tableEventTimeout = void 0;
+                    });
+                }
+            }));
+        }
+    }
+    /**
+     * Adds the component to the provided connector.
+     * Starts the connector polling if inactive and one component is provided.
+     */
+    addConnectorAssignment() {
+        const { connector } = this;
+        if (!connector) {
+            return;
+        }
+        if (!connector.components) {
+            connector.components = [];
+        }
+        if (!connector.components.includes(this.component)) {
+            const options = connector.options;
+            // Add the component assignment.
+            connector.components.push(this.component);
+            // Start the connector polling.
+            if ('enablePolling' in options &&
+                options.enablePolling &&
+                !connector.polling &&
+                connector.components.length === 1 &&
+                'dataRefreshRate' in options) {
+                connector.startPolling(Math.max(options.dataRefreshRate || 0, 1) * 1000);
+            }
+        }
+    }
+    /**
+     * Removes the component instance from the provided connector.
+     * Stops the connector polling if the last element is removed.
+     */
+    removeConnectorAssignment() {
+        const { connector } = this;
+        if (!connector?.components) {
+            return;
+        }
+        const index = connector.components.indexOf(this.component);
+        if (index > -1) {
+            connector.components.splice(index, 1);
+            if (!connector.components.length) {
+                connector.stopPolling();
+                delete connector.components;
+            }
+        }
+    }
+    /**
+     * Clears all event listeners in the table.
+     */
+    removeTableEvents() {
+        this.tableEvents.forEach((clearEvent) => clearEvent());
+        this.tableEvents.length = 0;
+    }
+    /**
+     * Updates the options for the connector handler.
+     *
+     * @param newOptions
+     * The new options to update.
+     */
+    updateOptions(newOptions) {
+        this.options = newOptions;
+    }
+    /**
+     * Destroys the connector handler.
+     * @internal
+     */
+    destroy() {
+        this.destroyed = true;
+        this.removeConnectorAssignment();
+        this.removeTableEvents();
+    }
+}
+/* harmony default export */ const Components_ConnectorHandler = (ConnectorHandler);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/EditableOptions.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -13149,8 +11193,1672 @@ class Layout extends Layout_GUIElement {
  *  - Wojciech Chmiel
  *  - Gøran Slettemark
  *  - Sophie Bremer
- *  - Pawel Lysy
- *  - Karol Kolodziej
+ *
+ * */
+class EditableOptions {
+    constructor(component, bindings = EditableOptions.defaultBindings) {
+        this.component = component;
+        this.bindings = bindings;
+    }
+    getOptions() {
+        const options = this.component.options.editableOptions;
+        if (!options) {
+            return [];
+        }
+        for (let i = 0, iEnd = options.length; i < iEnd; i++) {
+            const option = options[i];
+            if (option.propertyPath?.some((path) => path === 'connector')) {
+                const board = this.component.board;
+                const selectOptions = !board ?
+                    [] :
+                    board.dataPool
+                        .getConnectorIds()
+                        .map((name) => ({ name }));
+                option.selectOptions = selectOptions;
+            }
+        }
+        return options;
+    }
+}
+EditableOptions.defaultBindings = {
+    keyMap: {
+        color: 'colorPicker',
+        title: 'text',
+        caption: 'text',
+        style: 'textarea'
+    },
+    typeMap: {
+        'string': 'text',
+        'number': 'input',
+        'boolean': 'toggle'
+    },
+    skipRedraw: []
+};
+// Bindings of basic types to "editor components"
+EditableOptions.defaultTypeMap = {
+    'string': 'text',
+    'number': 'input',
+    'boolean': 'toggle'
+};
+/* harmony default export */ const Components_EditableOptions = (EditableOptions);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Emitter.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+/**
+ *  Class responsible for adding event listeners on a component
+ *  @internal
+ */
+class SyncEmitter {
+    /**
+     * Adds an emitter to the emitter registry.
+     *
+     * @param emitter the emitter to add to the registry.
+     */
+    static register(emitter) {
+        const { id } = emitter;
+        this.registry[id] = emitter;
+    }
+    /**
+     * Gets an emitter from emitter registry.
+     *
+     * @param emitterID The ID of the emitter to get.
+     */
+    static get(emitterID) {
+        return this.registry[emitterID];
+    }
+    /**
+     * Creates a new emitter instance.
+     *
+     * @param id An unique ID for the emitter.
+     *
+     * @param func
+     * The function to be called when the emitter is activated.
+     */
+    constructor(id, func) {
+        this.id = id;
+        this.func = func;
+        SyncEmitter.register(this);
+    }
+    /**
+     * Attaches the emitter to a component.
+     *
+     * @param component The component to attach to.
+     */
+    create(component) {
+        this.callback = this.func.call(component);
+    }
+    /**
+     * To be used when removing the emitter from the component.
+     * Calls the {@link callback} function.
+     */
+    remove() {
+        if (this.callback) {
+            this.callback();
+        }
+    }
+}
+/**
+ * Registry for reusable emitter.
+ * The emitter is stored by ID.
+ */
+SyncEmitter.registry = {};
+/* harmony default export */ const Emitter = (SyncEmitter);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Handler.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+/* *
+ *
+ *  Class
+ *
+ * */
+/**
+ * Class responsible for storing handler callbacks used in component sync.
+ * @internal
+ */
+class SyncHandler {
+    /**
+     * Adds a handler to the handler registry.
+     *
+     * @param handler
+     * The handler to add to the registry.
+     */
+    static register(handler) {
+        const { id } = handler;
+        this.registry[id] = handler;
+    }
+    /**
+     * Gets a handler from handler registry.
+     *
+     * @param handlerID
+     * The ID of the handler to get.
+     */
+    static get(handlerID) {
+        return this.registry[handlerID];
+    }
+    /**
+     * Creates a new handler instance.
+     *
+     * @param id
+     * An unique ID for the handler.
+     *
+     * @param func
+     * The function to be called when the handler is activated.
+     */
+    constructor(id, func) {
+        this.id = id;
+        this.func = func;
+        SyncHandler.register(this);
+    }
+    /**
+     * Calls the activation function on the component and sets the callback to
+     * the return function.
+     *
+     * @param component
+     * The component to register on.
+     */
+    register(component) {
+        const { func } = this;
+        this.callback = func.call(component);
+    }
+    /**
+     * To be used when removing the handler from the component.
+     * Calls the {@link callback} function.
+     */
+    remove() {
+        if (this.callback) {
+            this.callback();
+        }
+    }
+}
+/**
+ * Registry for reusable handlers.
+ * The handler is stored by ID.
+ */
+SyncHandler.registry = {};
+/* *
+ *
+ *  Default Export
+ *
+ * */
+/* harmony default export */ const Handler = (SyncHandler);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/Sync/Sync.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+
+
+
+/* *
+ *
+ * Class
+ *
+ * */
+/** @internal */
+class Sync {
+    /* *
+     *
+     * Constructor
+     *
+     * */
+    /**
+     * Creates an instance of the sync class.
+     *
+     * @param component
+     * The component to which the emitters and handlers are attached.
+     *
+     * @param predefinedSyncConfig
+     * The predefined sync configuration.
+     */
+    constructor(component, predefinedSyncConfig) {
+        this.component = component;
+        this.predefinedSyncConfig = predefinedSyncConfig;
+        this.syncConfig = Sync.prepareSyncConfig(predefinedSyncConfig, component.options.sync);
+        this.registeredSyncHandlers = {};
+        this.registeredSyncEmitters = {};
+        this.isSyncing = false;
+        this.listeners = [];
+    }
+    /* *
+     *
+     *  Functions
+     *
+     * */
+    /**
+     * Method that prepares the sync configuration from the predefined config
+     * and current component options.
+     *
+     * @param predefinedConfig The predefined sync configuration.
+     * @param componentSyncOptions The current component sync options.
+     * @returns The sync configuration.
+     */
+    static prepareSyncConfig(predefinedConfig, componentSyncOptions = {}) {
+        const { defaultSyncPairs: defaultPairs, defaultSyncOptions: defaultOptionsList } = predefinedConfig;
+        return Object.keys(componentSyncOptions).reduce((acc, syncName) => {
+            if (syncName) {
+                const defaultPair = defaultPairs[syncName];
+                const defaultOptions = defaultOptionsList[syncName];
+                const entry = componentSyncOptions[syncName];
+                const preparedOptions = merge(defaultOptions || {}, { enabled: isObject(entry) ? entry.enabled : entry }, isObject(entry) ? entry : {});
+                if (defaultPair && preparedOptions.enabled) {
+                    const keys = [
+                        'emitter',
+                        'handler'
+                    ];
+                    for (const key of keys) {
+                        if (preparedOptions[key] === true ||
+                            preparedOptions[key] === void 0) {
+                            preparedOptions[key] =
+                                defaultPair[key];
+                        }
+                    }
+                }
+                acc[syncName] = preparedOptions;
+            }
+            return acc;
+        }, {});
+    }
+    /**
+     * Add new emitter to the registered emitters.
+     *
+     * @param emitter
+     * The emitter to register.
+     */
+    registerSyncEmitter(emitter) {
+        const { id } = emitter;
+        this.registeredSyncEmitters[id] = emitter;
+    }
+    /**
+     * Method that checks if the emitter is registered.
+     *
+     * @param id
+     * The id of the emitter to check.
+     *
+     * @returns
+     * Whether the emitter is registered.
+     */
+    isRegisteredEmitter(id) {
+        return Boolean(this.registeredSyncEmitters[id]);
+    }
+    /**
+     * Register new handler to the registered handlers.
+     *
+     * @param handler
+     * The handler to register.
+     */
+    registerSyncHandler(handler) {
+        const { id } = handler;
+        this.registeredSyncHandlers[id] = handler;
+    }
+    /**
+     * Method that checks if the handler is registered.
+     *
+     * @param handlerID
+     * The id of the handler to check.
+     *
+     * @returns
+     * Whether the handler is registered.
+     */
+    isRegisteredHandler(handlerID) {
+        return Boolean(this.registeredSyncHandlers[handlerID]);
+    }
+    /**
+     * Registers the handlers and emitters on the component
+     */
+    start() {
+        const { component } = this;
+        this.syncConfig = Sync.prepareSyncConfig(this.predefinedSyncConfig, component.options.sync);
+        for (const id of Object.keys(this.syncConfig)) {
+            const syncOptions = this.syncConfig[id];
+            if (!syncOptions) {
+                continue;
+            }
+            let { emitter: emitterConfig, handler: handlerConfig } = syncOptions;
+            if (handlerConfig) {
+                if (handlerConfig === true) {
+                    handlerConfig =
+                        Sync.defaultHandlers[id]
+                            .handler;
+                }
+                const handler = new Handler(id, handlerConfig);
+                if (!this.isRegisteredHandler(handler.id)) {
+                    this.registerSyncHandler(handler);
+                    handler.register(component);
+                }
+            }
+            if (emitterConfig) {
+                if (emitterConfig === true) {
+                    emitterConfig =
+                        Sync.defaultHandlers[id]
+                            .emitter;
+                }
+                const emitter = new Emitter(id, emitterConfig);
+                if (!this.isRegisteredEmitter(emitter.id)) {
+                    this.registerSyncEmitter(emitter);
+                    emitter.create(component);
+                }
+            }
+        }
+        this.isSyncing = true;
+        this.listeners.push(component.on('update', () => this.stop()));
+    }
+    /**
+     * Removes the handlers and emitters from the component.
+     */
+    stop() {
+        const { component, listeners, registeredSyncHandlers, registeredSyncEmitters } = this;
+        Object.keys(registeredSyncHandlers).forEach((id) => {
+            registeredSyncHandlers[id].remove();
+            delete registeredSyncHandlers[id];
+        });
+        Object.keys(registeredSyncEmitters).forEach((id) => {
+            registeredSyncEmitters[id].remove();
+            delete registeredSyncEmitters[id];
+        });
+        this.isSyncing = false;
+        for (let i = 0, iEnd = listeners.length; i < iEnd; ++i) {
+            listeners[i]();
+        }
+        this.listeners.length = 0;
+        this.listeners.push(component.on('afterUpdate', () => {
+            this.start();
+        }));
+    }
+}
+/**
+ * Default handlers for the sync class. This property is extended by
+ * different Components, where default syncs are added. Allows overwriting
+ * the configuration before creating the dashboard.
+ */
+Sync.defaultHandlers = {};
+/* *
+ *
+ *  Default Export
+ *
+ * */
+/* harmony default export */ const Sync_Sync = (Sync);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/ComponentUtilities.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+/* *
+ *
+ *  Functions
+ *
+ * */
+function getMargins(element, includeBorders = true) {
+    const borders = {
+        x: ['borderLeft', 'borderRight'],
+        y: ['borderTop', 'borderBottom']
+    };
+    return {
+        y: getStyles(element, [
+            'marginTop',
+            'marginBottom',
+            ...(includeBorders ? borders.y : [])
+        ]).reduce(sumPixels, 0),
+        x: getStyles(element, [
+            'marginLeft',
+            'marginTop',
+            ...(includeBorders ? borders.x : [])
+        ]).reduce(sumPixels, 0)
+    };
+}
+function getPaddings(element) {
+    return {
+        x: getStyles(element, ['paddingLeft', 'paddingRight']).reduce(sumPixels, 0),
+        y: getStyles(element, ['paddingTop', 'paddingBottom']).reduce(sumPixels, 0)
+    };
+}
+function getStyles(element, styles) {
+    const elementStyles = window.getComputedStyle(element);
+    return styles.map((style) => elementStyles[style]); // Cannot use getPropertyValue?
+}
+function sumPixels(accumulator, value) {
+    if (value) {
+        accumulator += (typeof value === 'number' ? value : parseFloat(value));
+    }
+    return accumulator;
+}
+/* *
+ *
+ *  Default Export
+ *
+ * */
+const ComponentUtilities = {
+    getMargins,
+    getPaddings,
+    getStyles,
+    sumPixels
+};
+/* harmony default export */ const Components_ComponentUtilities = (ComponentUtilities);
+
+;// ./code/dashboards/es-modules/Dashboards/Utilities.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+
+/* *
+ *
+ *  Functions
+ *
+ * */
+/**
+ * Returns a deep copy of an argument. It differs from `merge` in that it copies
+ * also arrays.
+ *
+ * @param value
+ * The value to clone.
+ *
+ * @param excludedKeys
+ * An array of keys to exclude from the clone.
+ */
+function deepClone(value, excludedKeys) {
+    if (Array.isArray(value)) {
+        return value.map((v) => deepClone(v, excludedKeys));
+    }
+    if (value && typeof value === 'object') {
+        const clone = {};
+        const keys = Object.keys(value);
+        for (const key of keys) {
+            if (excludedKeys && excludedKeys.includes(key)) {
+                clone[key] = value[key];
+            }
+            else {
+                clone[key] = deepClone(value[key], excludedKeys);
+            }
+        }
+        return clone;
+    }
+    return value;
+}
+/**
+ * Provide error messages for debugging, with links to online explanation. This
+ * function can be overridden to provide custom error handling.
+ *
+ * @sample highcharts/chart/highcharts-error/
+ *         Custom error handler
+ *
+ * @function Dashboards.error
+ *
+ * @param {number|string} code
+ *        The error code. See
+ *        [errors.xml](https://github.com/highcharts/highcharts/blob/master/errors/errors.xml)
+ *        for available codes. If it is a string, the error message is printed
+ *        directly in the console.
+ *
+ * @param {boolean} [stop=false]
+ *        Whether to throw an error or just log a warning in the console.
+ *
+ * @return {void}
+ */
+function Utilities_error(code, stop) {
+    // TODO- replace with proper error handling
+    if (code === 16) {
+        console.warn(// eslint-disable-line no-console
+        'Dashboard error: Dashboards library loaded more than once.' +
+            'This may cause undefined behavior.');
+        return;
+    }
+    error(code, stop);
+}
+/* *
+ *
+ *  Default Export
+ *
+ * */
+const Utilities = {
+    deepClone,
+    error: Utilities_error
+};
+/* harmony default export */ const Dashboards_Utilities = (Utilities);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/Component.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *  - Dawid Draguła
+ *
+ * */
+
+
+
+
+
+
+
+const { classNamePrefix: Component_classNamePrefix } = Dashboards_Globals;
+
+const { getMargins: Component_getMargins, getPaddings: Component_getPaddings } = Components_ComponentUtilities;
+
+
+
+const { deepClone: Component_deepClone } = Dashboards_Utilities;
+/* *
+ *
+ *  Class
+ *
+ * */
+/**
+ * Abstract class of component.
+ */
+class Component {
+    /* *
+     *
+     *  Static Functions
+     *
+     * */
+    /**
+     * Creates HTML text element like header or title
+     *
+     * @param tagName
+     * HTML tag name used as wrapper of text like `h2` or `p`.
+     *
+     * @param elementName
+     * Name of element
+     *
+     * @param textOptions
+     * The options for the component
+     *
+     * @returns
+     * HTML object when title is created, otherwise undefined
+     *
+     * @internal
+     */
+    static createTextElement(tagName, elementName, textOptions) {
+        if (typeof textOptions === 'object') {
+            const { className, text, style } = textOptions;
+            return createElement(tagName, {
+                className: className || `${Component_classNamePrefix}component-${elementName}`,
+                textContent: text
+            }, style);
+        }
+        if (typeof textOptions === 'string') {
+            return createElement(tagName, {
+                className: `${Component_classNamePrefix}component-${elementName}`,
+                textContent: textOptions
+            }, {});
+        }
+    }
+    /* *
+     *
+     *  Constructor
+     *
+     * */
+    /**
+     * Creates a component in the cell.
+     *
+     * @param cell
+     * Instance of cell, where component is attached.
+     *
+     * @param options
+     * The options for the component.
+     */
+    constructor(cell, options, board) {
+        /**
+         * The connector handlers for the component. They are used to handle the
+         * connector options and data tables.
+         */
+        this.connectorHandlers = [];
+        /**
+         * Registry of callbacks registered on the component. Used in the Highcharts
+         * component to keep track of chart events.
+         * @internal
+         */
+        this.callbackRegistry = new Dashboards_CallbackRegistry();
+        /**
+         * Event listeners tied to the parent cell. Used for rendering/resizing the
+         * component on interactions.
+         * @internal
+         */
+        this.cellListeners = [];
+        /**
+         * Timeouts for calls to `Component.resizeTo()`.
+         * @internal
+         */
+        this.resizeTimeouts = [];
+        /**
+         * Timeouts for resizing the content. I.e. `chart.setSize()`.
+         * @internal
+         */
+        this.innerResizeTimeouts = [];
+        const renderTo = options.renderTo;
+        this.board = board || cell?.row?.layout?.board || {};
+        this.parentElement =
+            cell?.container || document.querySelector('#' + renderTo);
+        this.cell = cell;
+        this.options = merge(Component.defaultOptions, options);
+        this.id = this.options.id && this.options.id.length ?
+            this.options.id :
+            uniqueKey();
+        if (this.options.connector) {
+            const connectorOptionsArray = isArray(this.options.connector) ?
+                this.options.connector :
+                [this.options.connector];
+            for (const connectorOptions of connectorOptionsArray) {
+                this.connectorHandlers.push(new Components_ConnectorHandler(this, connectorOptions));
+            }
+        }
+        this.editableOptions =
+            new Components_EditableOptions(this, options.editableOptionsBindings);
+        this.dimensions = {
+            width: null,
+            height: null
+        };
+        this.element = createElement('div', {
+            className: this.options.className
+        }, {}, this.parentElement);
+        if (!Number(getStyle(this.element, 'padding'))) {
+            // Fix flex problem, because of wrong height in internal elements
+            this.element.style.padding = '0.1px';
+        }
+        this.contentElement = createElement('div', {
+            className: `${this.options.className}-content`
+        }, {}, this.element, true);
+        this.sync = new Sync_Sync(this, this.constructor.predefinedSyncConfig);
+        this.setupEventListeners();
+        if (cell) {
+            this.attachCellListeners();
+            this.on('update', () => {
+                if (isCell(this.cell)) {
+                    this.cell.setLoadingState();
+                }
+            });
+            this.on('afterRender', () => {
+                if (isCell(this.cell)) {
+                    this.cell.setLoadingState(false);
+                }
+            });
+        }
+        this.on('tableChanged', () => {
+            this.onTableChanged();
+        });
+    }
+    /**
+     * Returns the component's options when it is dropped from the sidebar.
+     *
+     * @param sidebar
+     * The sidebar popup.
+     */
+    getOptionsOnDrop(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sidebar) {
+        return {};
+    }
+    /**
+     * Returns the first connector of the component if it exists.
+     *
+     * @internal
+     * @deprecated
+     */
+    getFirstConnector() {
+        return this.connectorHandlers[0]?.connector;
+    }
+    /**
+     * Returns the data table connected to the component by the `connectorId`
+     * and `dataTableKey`. If both args are undefined, the first data table is
+     * returned.
+     *
+     * @param connectorId
+     * The id of the connector.
+     *
+     * @param dataTableKey
+     * The key of the data table within the connector.
+     *
+     * @returns
+     * The data table, or undefined if no matching handler is found.
+     */
+    getDataTable(connectorId, dataTableKey) {
+        for (const handler of this.connectorHandlers) {
+            if ((!connectorId ||
+                handler.options.id === connectorId) && (!dataTableKey ||
+                handler.options.dataTableKey === dataTableKey)) {
+                return handler.dataTable;
+            }
+        }
+    }
+    /**
+     * Setup listeners on cell/other things up the chain
+     * @internal
+     */
+    attachCellListeners() {
+        // Remove old listeners
+        while (this.cellListeners.length) {
+            const destroy = this.cellListeners.pop();
+            if (destroy) {
+                destroy();
+            }
+        }
+        if (this.cell &&
+            isCell(this.cell) &&
+            Object.keys(this.cell).length) {
+            const board = this.cell.row.layout.board;
+            this.cellListeners.push(
+            // Listen for resize on dashboard
+            addEvent(board, 'cellResize', () => {
+                this.resizeTo(this.parentElement);
+            }), 
+            // Listen for changed parent
+            addEvent(this.cell.row, 'cellChange', (e) => {
+                const { row } = e;
+                if (row && this.cell) {
+                    const hasLeftTheRow = row.getCellIndex(this.cell) === void 0;
+                    if (hasLeftTheRow) {
+                        if (this.cell) {
+                            this.setCell(this.cell);
+                        }
+                    }
+                }
+            }));
+        }
+    }
+    /**
+     * Set a parent cell.
+     *
+     * @param cell
+     * Instance of a cell.
+     *
+     * @param resize
+     * Flag that allow to resize the component.
+     *
+     * @internal
+     */
+    setCell(cell, resize = false) {
+        this.cell = cell;
+        if (cell.container) {
+            this.parentElement = cell.container;
+        }
+        this.attachCellListeners();
+        if (resize) {
+            this.resizeTo(this.parentElement);
+        }
+    }
+    /**
+     * Initializes connector handlers for the component.
+     */
+    async initConnectors() {
+        fireEvent(this, 'setConnectors', {
+            connectorHandlers: this.connectorHandlers
+        });
+        for (const connectorHandler of this.connectorHandlers) {
+            await connectorHandler.initConnector();
+        }
+        fireEvent(this, 'afterSetConnectors', {
+            connectorHandlers: this.connectorHandlers
+        });
+        return this;
+    }
+    /**
+     * Gets height of the component's content.
+     *
+     * @returns
+     * Current height as number.
+     *
+     * @internal
+     */
+    getContentHeight() {
+        const titleHeight = this.titleElement ?
+            this.titleElement.clientHeight + Component_getMargins(this.titleElement).y :
+            0;
+        const captionHeight = this.captionElement ?
+            this.captionElement.clientHeight +
+                Component_getMargins(this.captionElement).y :
+            0;
+        return titleHeight + captionHeight;
+    }
+    /**
+     * Resize the component
+     *
+     * @param width
+     * The width to set the component to.
+     * Can be pixels, a percentage string or null.
+     * Null will unset the style
+     *
+     * @param height
+     * The height to set the component to.
+     * Can be pixels, a percentage string or null.
+     * Null will unset the style.
+     */
+    resize(width, height) {
+        if (height) {
+            // Get offset for border, padding
+            const pad = Component_getPaddings(this.element).y + Component_getMargins(this.element).y;
+            this.element.style.height = 'calc(100% - ' + pad + 'px)';
+            this.contentElement.style.height =
+                'calc(100% - ' + this.getContentHeight() + 'px)';
+        }
+        else if (height === null) {
+            this.dimensions.height = null;
+            this.element.style.removeProperty('height');
+        }
+        fireEvent(this, 'resize', {
+            width,
+            height
+        });
+    }
+    /**
+     * It's a temporary alternative for the `resize` method. It sets the strict
+     * pixel height for the component so that the content can be distributed in
+     * the right way, without looping the resizers in the content and container.
+     *
+     * @param width
+     * The width to set the component to.
+     *
+     * @param height
+     * The height to set the component to.
+     */
+    resizeDynamicContent(width, height) {
+        const { element } = this;
+        if (height) {
+            const margins = Component_getMargins(element).y;
+            const paddings = Component_getPaddings(element).y;
+            if (typeof height === 'string') {
+                height = parseFloat(height);
+            }
+            height = Math.round(height);
+            element.style.height = `${height - margins - paddings}px`;
+            this.contentElement.style.height = `${element.clientHeight - this.getContentHeight() - paddings}px`;
+        }
+        else if (height === null) {
+            this.dimensions.height = null;
+            element.style.removeProperty('height');
+        }
+        fireEvent(this, 'resize', {
+            width,
+            height
+        });
+    }
+    /**
+     * Adjusts size of component to parent's cell size when animation is done.
+     *
+     * @param element
+     * HTML element that is resized.
+     */
+    resizeTo(element) {
+        while (this.resizeTimeouts.length) {
+            const timeout = this.resizeTimeouts.pop();
+            if (timeout) {
+                cancelAnimationFrame(timeout);
+            }
+        }
+        const timeoutID = requestAnimationFrame(() => {
+            const { width, height } = element.getBoundingClientRect();
+            const padding = Component_getPaddings(element);
+            const margins = Component_getMargins(element);
+            this.resize(width - padding.x - margins.x, height - padding.y - margins.y);
+        });
+        this.resizeTimeouts.push(timeoutID);
+    }
+    /**
+     * Handles updating via options.
+     *
+     * @param newOptions
+     * The options to apply.
+     *
+     * @param shouldRerender
+     * Set to true if the update should rerender the component.
+     */
+    async update(newOptions, shouldRerender = true) {
+        const eventObject = {
+            options: newOptions,
+            shouldForceRerender: false
+        };
+        // Update options
+        fireEvent(this, 'update', eventObject);
+        if (newOptions.connector && Array.isArray(this.options.connector)) {
+            this.options.connector = void 0;
+        }
+        this.options = merge(this.options, newOptions);
+        const connectorOptions = (this.options.connector ? (isArray(this.options.connector) ? this.options.connector :
+            [this.options.connector]) : []);
+        let connectorsHaveChanged = connectorOptions.length !== this.connectorHandlers.length;
+        if (!connectorsHaveChanged) {
+            for (let i = 0, iEnd = connectorOptions.length; i < iEnd; i++) {
+                const oldOptions = this.connectorHandlers[i]?.options;
+                const newOptions = connectorOptions[i];
+                // Check if the connector id has changed.
+                if (oldOptions.id !== newOptions.id) {
+                    connectorsHaveChanged = true;
+                    break;
+                }
+                // Check if the data table key has changed.
+                if (oldOptions.dataTableKey !== newOptions.dataTableKey) {
+                    connectorsHaveChanged = true;
+                    break;
+                }
+                this.connectorHandlers[i].updateOptions(newOptions);
+            }
+        }
+        if (connectorsHaveChanged) {
+            for (const connectorHandler of this.connectorHandlers) {
+                connectorHandler.destroy();
+            }
+            this.connectorHandlers.length = 0;
+            for (const options of connectorOptions) {
+                this.connectorHandlers.push(new Components_ConnectorHandler(this, options));
+            }
+            await this.initConnectors();
+        }
+        if (shouldRerender || eventObject.shouldForceRerender) {
+            this.render();
+        }
+    }
+    /**
+     * Private method which sets up event listeners for the component.
+     *
+     * @internal
+     */
+    setupEventListeners() {
+        const events = this.options.events;
+        if (events) {
+            Object.keys(events).forEach((key) => {
+                const eventCallback = events[key];
+                if (eventCallback) {
+                    this.callbackRegistry.addCallback(key, {
+                        type: 'component',
+                        func: eventCallback
+                    });
+                }
+            });
+            objectEach(events, (eventCallback, eventType) => {
+                if (isFunction(eventCallback)) {
+                    this.on(eventType, eventCallback);
+                }
+            });
+        }
+        const resizeObserverCallback = () => {
+            this.resizeTo(this.parentElement);
+        };
+        if (typeof ResizeObserver === 'function') {
+            this.resizeObserver = new ResizeObserver(resizeObserverCallback);
+            this.resizeObserver.observe(this.element);
+        }
+        else {
+            const unbind = addEvent(window, 'resize', resizeObserverCallback);
+            addEvent(this, 'destroy', unbind);
+        }
+    }
+    /**
+     * Adds title at the top of component's container.
+     *
+     * @param titleOptions
+     * The options for the title.
+     */
+    setTitle(titleOptions) {
+        const titleElement = this.titleElement, shouldExist = titleOptions &&
+            (typeof titleOptions === 'string' || titleOptions.text);
+        if (shouldExist) {
+            const newTitle = Component.createTextElement('h2', 'title', titleOptions);
+            if (newTitle) {
+                if (!titleElement) {
+                    this.element.insertBefore(newTitle, this.element.firstChild);
+                }
+                else {
+                    titleElement.replaceWith(newTitle);
+                }
+                this.titleElement = newTitle;
+            }
+        }
+        else {
+            if (titleElement) {
+                titleElement.remove();
+                delete this.titleElement;
+                return;
+            }
+        }
+    }
+    /**
+     * Adds caption at the bottom of component's container.
+     *
+     * @param captionOptions
+     * The options for the caption.
+     */
+    setCaption(captionOptions) {
+        const captionElement = this.captionElement, shouldExist = captionOptions &&
+            (typeof captionOptions === 'string' || captionOptions.text);
+        if (shouldExist) {
+            const newCaption = Component.createTextElement('div', 'caption', captionOptions);
+            if (newCaption) {
+                if (!captionElement) {
+                    this.element.appendChild(newCaption);
+                }
+                else {
+                    captionElement.replaceWith(newCaption);
+                }
+                this.captionElement = newCaption;
+            }
+        }
+        else {
+            if (captionElement) {
+                captionElement.remove();
+                delete this.captionElement;
+                return;
+            }
+        }
+    }
+    /**
+     * Handles setting things up on initial render.
+     *
+     * @returns
+     * The component for chaining.
+     *
+     * @internal
+     */
+    async load() {
+        await this.initConnectors();
+        this.render();
+        return this;
+    }
+    /**
+     * Renders the component.
+     *
+     * @returns
+     * The component for chaining.
+     *
+     * @internal
+     */
+    render() {
+        this.emit({ type: 'render' });
+        this.setTitle(this.options.title);
+        this.setCaption(this.options.caption);
+        this.resizeTo(this.parentElement);
+        return this;
+    }
+    /**
+     * Destroys the component.
+     */
+    destroy() {
+        /**
+         * TODO: Should perhaps set an `isActive` flag to false.
+         */
+        if (this.sync.isSyncing) {
+            this.sync.stop();
+        }
+        while (this.element.firstChild) {
+            this.element.firstChild.remove();
+        }
+        // Call unmount
+        fireEvent(this, 'unmount');
+        for (const connectorHandler of this.connectorHandlers) {
+            connectorHandler.destroy();
+        }
+        // Used to removed the onTableChanged event.
+        removeEvent(this);
+        this.element.remove();
+    }
+    /**
+     * Adds an event listener to the component.
+     *
+     * @param type
+     * The type of event to listen for.
+     *
+     * @param callback
+     * The callback to call when the event is triggered.
+     *
+     * @returns
+     * The function to remove the event listener.
+     *
+     * @internal
+     */
+    on(type, callback) {
+        return addEvent(this, type, callback);
+    }
+    /** @internal */
+    emit(e) {
+        if (!e.target) {
+            e.target = this;
+        }
+        fireEvent(this, e.type, e);
+    }
+    /**
+     * Get the component's options.
+     * @returns
+     * The JSON of component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        return diffObjects(this.options, Component.defaultOptions);
+    }
+    getEditableOptions() {
+        const component = this;
+        // When refactoring, limit the copied options to the ones that are
+        // actually editable to avoid unnecessary memory usage.
+        return Component_deepClone(component.options, [
+            'dataTable', 'points', 'series', 'data', 'editableOptions'
+        ]);
+    }
+    getEditableOptionValue(propertyPath) {
+        const component = this;
+        if (!propertyPath) {
+            return;
+        }
+        let result = component.getEditableOptions();
+        for (let i = 0, end = propertyPath.length; i < end; i++) {
+            if (isArray(result) &&
+                propertyPath[0] === 'connector' &&
+                result.length > 1) {
+                return 'multiple connectors';
+            }
+            if (!result) {
+                return;
+            }
+            result = result[propertyPath[i]];
+            if (result === false &&
+                (propertyPath.indexOf('title') >= 0 ||
+                    propertyPath.indexOf('subtitle') >= 0 ||
+                    propertyPath.indexOf('caption') >= 0)) {
+                result = '';
+            }
+        }
+        return result;
+    }
+}
+/* *
+ *
+ *  Static Properties
+ *
+ * */
+/** @internal */
+Component.Sync = Sync_Sync;
+/**
+ * Predefined sync config for component.
+ */
+Component.predefinedSyncConfig = {
+    defaultSyncOptions: {},
+    defaultSyncPairs: {}
+};
+/**
+ * Default options of the component.
+ */
+Component.defaultOptions = {
+    className: `${Component_classNamePrefix}component`,
+    id: '',
+    title: false,
+    caption: false,
+    sync: Sync_Sync.defaultHandlers,
+    editableOptions: [{
+            name: 'title',
+            propertyPath: ['title'],
+            type: 'input'
+        }, {
+            name: 'caption',
+            propertyPath: ['caption'],
+            type: 'input'
+        }]
+};
+/* harmony default export */ const Components_Component = (Component);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLComponentDefaults.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Karol Kołodziej
+ *
+ * */
+
+
+/* *
+ *
+ *  Constants
+ *
+ * */
+const HTMLComponentDefaults = {
+    type: 'HTML',
+    className: [
+        Components_Component.defaultOptions.className,
+        `${Components_Component.defaultOptions.className}-html`
+    ].join(' '),
+    elements: [],
+    editableOptions: [
+        ...Components_Component.defaultOptions.editableOptions || [],
+        {
+            name: 'htmlInput',
+            propertyPath: ['html'],
+            type: 'textarea'
+        }
+    ]
+};
+/* *
+ *
+ *  Default Export
+ *
+ * */
+/* harmony default export */ const HTMLComponent_HTMLComponentDefaults = (HTMLComponentDefaults);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLSyncs/HTMLSyncs.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Dawid Draguła
+ *
+ * */
+
+/* *
+*
+*  Constants
+*
+* */
+const predefinedSyncConfig = {
+    defaultSyncPairs: {},
+    defaultSyncOptions: {}
+};
+/* *
+ *
+ *  Default export
+ *
+ * */
+/* harmony default export */ const HTMLSyncs = (predefinedSyncConfig);
+
+;// ./code/dashboards/es-modules/Dashboards/Components/HTMLComponent/HTMLComponent.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *
+ * */
+
+
+
+
+
+
+
+const { deepClone: HTMLComponent_deepClone } = Dashboards_Utilities;
+// TODO: This may affect the AST parsing in Highcharts
+// should look into adding these as options if possible
+// Needs to go in a composition in the Highcharts plugin
+HTML_AST.allowedTags = [
+    ...HTML_AST.allowedTags,
+    'option',
+    'select',
+    'label',
+    'input',
+    'textarea'
+];
+HTML_AST.allowedAttributes = [
+    ...HTML_AST.allowedAttributes,
+    'for',
+    'value',
+    'checked',
+    'src',
+    'name',
+    'selected'
+];
+HTML_AST.allowedReferences = [
+    ...HTML_AST.allowedReferences,
+    'data:image/'
+];
+/* *
+ *
+ *  Class
+ *
+ * */
+/**
+ *
+ * Class that represents a HTML component.
+ *
+ */
+class HTMLComponent extends Components_Component {
+    /* *
+     *
+     *  Constructor
+     *
+     * */
+    /**
+     * Creates a HTML component in the cell.
+     *
+     * @param cell
+     * Instance of cell, where component is attached.
+     *
+     * @param options
+     * The options for the component.
+     */
+    constructor(cell, options) {
+        if (options.className) {
+            options.className = `${HTMLComponent.defaultOptions.className} ${options.className}`;
+        }
+        options = merge(HTMLComponent.defaultOptions, options);
+        super(cell, options);
+        this.options = options;
+        this.type = 'HTML';
+        this.elements = [];
+    }
+    /* *
+     *
+     *  Functions
+     *
+     * */
+    /** @internal */
+    async load() {
+        this.emit({
+            type: 'load'
+        });
+        await super.load();
+        const options = this.options;
+        let isError = false;
+        if (options.elements?.length) {
+            this.elements = options.elements.map(function (element) {
+                if (typeof element === 'string') {
+                    return new HTML_AST(element).nodes[0];
+                }
+                if (!element.textContent &&
+                    !element.tagName &&
+                    element.attributes) {
+                    isError = true;
+                }
+                return element;
+            });
+        }
+        else if (options.html) {
+            this.elements = this.getElementsFromString(options.html);
+            this.options.elements = this.elements;
+        }
+        this.constructTree();
+        this.emit({ type: 'afterLoad' });
+        if (isError) {
+            throw new Error(`Missing tagName param in component: ${options.renderTo}`);
+        }
+        return this;
+    }
+    render() {
+        super.render();
+        this.constructTree();
+        this.sync.start();
+        this.emit({ type: 'afterRender' });
+        return this;
+    }
+    resize(width, height) {
+        super.resize(width, height);
+        return this;
+    }
+    /**
+     * Handles updating via options.
+     *
+     * @param options
+     * The options to apply.
+     */
+    async update(options, shouldRerender = true) {
+        if (options.html) {
+            this.elements = this.getElementsFromString(options.html);
+            this.options.elements = this.elements;
+            this.constructTree();
+        }
+        else if (options.elements) {
+            this.elements = options.elements;
+        }
+        await super.update(options, shouldRerender);
+        this.emit({ type: 'afterUpdate' });
+    }
+    getOptionsOnDrop() {
+        return {
+            type: 'HTML',
+            elements: [{
+                    tagName: 'span',
+                    textContent: '[Your custom HTML here- edit the component]'
+                }]
+        };
+    }
+    /**
+     * Constructs the HTML tree.
+     * @internal
+     */
+    constructTree() {
+        // Remove old tree if rerendering.
+        while (this.contentElement.firstChild) {
+            this.contentElement.firstChild.remove();
+        }
+        const parser = new HTML_AST(this.options.elements || []);
+        parser.addToDOM(this.contentElement);
+    }
+    /**
+     * When HTML definition is a string, it needs to be parsed to AST.
+     *
+     * @internal
+     */
+    getElementsFromString(htmlString) {
+        return new HTML_AST(htmlString).nodes;
+    }
+    /**
+     * Get the HTML component's options.
+     * @returns
+     * HTML component's options.
+     *
+     * @internal
+     *
+     */
+    getOptions() {
+        return {
+            ...diffObjects(this.options, HTMLComponent.defaultOptions),
+            type: 'HTML'
+        };
+    }
+    /**
+     * Retrieves editable options for the HTML component.
+     */
+    getEditableOptions() {
+        return HTMLComponent_deepClone(this.options, ['editableOptions']);
+    }
+    /**
+     * Get the value of the editable option by property path. Parse the elements
+     * if the HTML options is not set.
+     *
+     * @param propertyPath
+     * The property path of the option.
+     */
+    getEditableOptionValue(propertyPath) {
+        if (!propertyPath) {
+            return;
+        }
+        if (propertyPath[0] === 'html') {
+            const result = this.getEditableOptions();
+            if (!result.html && result.elements) {
+                return this.getStringFromElements(result.elements);
+            }
+            return result[propertyPath[0]];
+        }
+        return super.getEditableOptionValue(propertyPath);
+    }
+    /**
+     * Returns the HTML string from the given elements.
+     *
+     * @param elements
+     * The array of elements to serialize.
+     */
+    getStringFromElements(elements) {
+        let html = '';
+        for (const element of elements) {
+            html += this.serializeNode(element);
+        }
+        return html;
+    }
+    /**
+     * Serializes the HTML node to string.
+     *
+     * @param node
+     * The HTML node to serialize.
+     */
+    serializeNode(node) {
+        if (!node.tagName || node.tagName === '#text') {
+            // Text node
+            return node.textContent || '';
+        }
+        const attributes = node.attributes;
+        let html = `<${node.tagName}`;
+        if (attributes) {
+            for (const key in attributes) {
+                if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+                    const value = attributes[key];
+                    if (value !== void 0) {
+                        html += ` ${key}="${value}"`;
+                    }
+                }
+            }
+        }
+        html += '>';
+        html += node.textContent || '';
+        (node.children || []).forEach((child) => {
+            html += this.serializeNode(child);
+        });
+        html += `</${node.tagName}>`;
+        return html;
+    }
+    /**
+     * @internal
+     */
+    onTableChanged(e) {
+        if (e.detail?.sender !== this.id) {
+            this.render();
+        }
+    }
+}
+/* *
+ *
+ *  Static properties
+ *
+ * */
+/**
+ * Default options of the HTML component.
+ */
+HTMLComponent.defaultOptions = merge(Components_Component.defaultOptions, HTMLComponent_HTMLComponentDefaults);
+/**
+ * Predefined sync config for HTML component.
+ */
+HTMLComponent.predefinedSyncConfig = HTMLSyncs;
+/* *
+ *
+ *  Default export
+ *
+ * */
+/* harmony default export */ const HTMLComponent_HTMLComponent = (HTMLComponent);
+
+;// ./code/dashboards/es-modules/Dashboards/Board.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ *
+ *
+ *  Authors:
+ *  - Sebastian Bochan
+ *  - Wojciech Chmiel
+ *  - Gøran Slettemark
+ *  - Sophie Bremer
+ *  - Paweł Lysy
+ *  - Karol Kołodziej
  *
  * */
 
@@ -13164,7 +12872,7 @@ class Layout extends Layout_GUIElement {
 
 
 
-const { merge: Board_merge, addEvent: Board_addEvent, createElement: Board_createElement, error: Board_error, objectEach: Board_objectEach, uniqueKey: Board_uniqueKey } = Core_Utilities;
+
 /* *
  *
  *  Class
@@ -13223,9 +12931,9 @@ class Board {
          * @internal
          */
         this.componentTypes = Components_ComponentRegistry.types;
-        this.options = Board_merge(Dashboards_Defaults.defaultOptions, options);
+        this.options = merge(Dashboards_Defaults.defaultOptions, options);
         this.dataPool = new Data_DataPool(options.dataPool);
-        this.id = Board_uniqueKey();
+        this.id = uniqueKey();
         this.guiEnabled = !options.gui ?
             false : this.options?.gui?.enabled;
         this.editModeEnabled = !options.editMode ?
@@ -13270,8 +12978,8 @@ class Board {
             this.resizeObserver.observe(board.container);
         }
         else {
-            const unbind = Board_addEvent(window, 'resize', runReflow);
-            Board_addEvent(this, 'destroy', unbind);
+            const unbind = addEvent(window, 'resize', runReflow);
+            addEvent(this, 'destroy', unbind);
         }
     }
     /**
@@ -13288,7 +12996,7 @@ class Board {
         }
         // Display an error if the renderTo doesn't exist.
         if (!renderTo) {
-            Board_error(13, true);
+            error(13, true);
         }
         board.container = renderTo;
     }
@@ -13348,7 +13056,7 @@ class Board {
         }
         // @ToDo Destroy bindings.
         // Delete all properties.
-        Board_objectEach(board, function (val, key) {
+        objectEach(board, function (val, key) {
             delete board[key];
         });
         Dashboards_Globals.boards[index] = void 0;
@@ -13380,7 +13088,7 @@ class Board {
     update(newOptions) {
         const board = this;
         // Merge new options with existing ones
-        board.options = Board_merge(board.options, newOptions);
+        board.options = merge(board.options, newOptions);
         // Update dataPool if dataPool options changed
         if (newOptions.dataPool) {
             board.dataPool = new Data_DataPool(board.options.dataPool);
@@ -13407,7 +13115,7 @@ class Board {
             board.layouts = [];
             // Ensure layoutsWrapper exists
             if (!board.layoutsWrapper && board.container) {
-                board.layoutsWrapper = Board_createElement('div', {
+                board.layoutsWrapper = createElement('div', {
                     className: Dashboards_Globals.classNames.layoutsWrapper
                 }, {}, board.container);
             }
@@ -13415,7 +13123,7 @@ class Board {
             if (board.options.gui?.layouts) {
                 const guiOptions = board.options.gui;
                 for (let i = 0, iEnd = guiOptions.layouts.length; i < iEnd; ++i) {
-                    board.layouts.push(new Layout_Layout(board, Board_merge({}, guiOptions.layoutOptions, guiOptions.layouts[i])));
+                    board.layouts.push(new Layout_Layout(board, merge({}, guiOptions.layoutOptions, guiOptions.layouts[i])));
                 }
                 // Re-initialize editMode events if editMode exists
                 if (board.editMode) {
@@ -13502,19 +13210,50 @@ Components_ComponentRegistry.registerComponent('HTML', HTMLComponent_HTMLCompone
  * */
 /* harmony default export */ const Dashboards_Board = (Board);
 
+;// ./code/dashboards/es-modules/Dashboards/Components/GridComponent/GridDataProvider.js
+/* *
+ *
+ *  (c) 2009-2026 Highsoft AS
+ *
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
+ * */
+
+/* *
+ *
+ *  Functions
+ *
+ * */
+/**
+ * Returns whether the provider exposes `getDataTable`.
+ *
+ * @param provider
+ * Data provider instance to test.
+ *
+ * @returns
+ * `true` when provider exposes `getDataTable`.
+ */
+function hasDataTableProvider(provider) {
+    return !!(provider &&
+        typeof provider.getDataTable === 'function');
+}
+
 ;// ./code/dashboards/es-modules/Dashboards/Components/GridComponent/GridSyncs/GridExtremesSync.js
 /* *
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
+
 
 /* *
  *
@@ -13539,8 +13278,10 @@ const syncPair = {
                 component.grid &&
                 typeof cursor?.row === 'number') {
                 const { row } = cursor;
-                const { viewport } = component.grid;
-                const rowIndex = viewport?.dataTable?.getLocalRowIndex(row);
+                const dataProvider = component.grid.dataProvider;
+                const rowIndex = hasDataTableProvider(dataProvider) ?
+                    dataProvider.getDataTable(true)?.getLocalRowIndex(row) :
+                    void 0;
                 if (rowIndex !== void 0) {
                     component.grid.viewport?.scrollToRow(rowIndex);
                 }
@@ -13583,17 +13324,18 @@ const syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
-const { addEvent: GridHighlightSync_addEvent, removeEvent: GridHighlightSync_removeEvent } = Core_Utilities;
+
 /* *
  *
  *  Constants
@@ -13617,12 +13359,21 @@ const GridHighlightSync_syncPair = {
         }
         const { dataCursor: cursor } = board;
         const table = this.getDataTable();
+        const dataProvider = grid.dataProvider;
+        const presentationTable = hasDataTableProvider(dataProvider) ?
+            dataProvider.getDataTable(true) :
+            void 0;
         const onCellHover = (e) => {
             if (table) {
                 const cell = e.target;
+                const localIndex = cell.row.index;
+                const originalIndex = presentationTable?.getOriginalRowIndex(localIndex);
+                if (typeof originalIndex !== 'number') {
+                    return;
+                }
                 cursor.emitCursor(table, {
                     type: 'position',
-                    row: cell.row.id,
+                    row: originalIndex,
                     column: cell.column.id,
                     state: 'point.mouseOver' + groupKey,
                     sourceId: this.id
@@ -13632,21 +13383,26 @@ const GridHighlightSync_syncPair = {
         const onCellMouseOut = (e) => {
             if (table) {
                 const cell = e.target;
+                const localIndex = cell.row.index;
+                const originalIndex = presentationTable?.getOriginalRowIndex(localIndex);
+                if (typeof originalIndex !== 'number') {
+                    return;
+                }
                 cursor.emitCursor(table, {
                     type: 'position',
-                    row: cell.row.id,
+                    row: originalIndex,
                     column: cell.column.id,
                     state: 'point.mouseOut' + groupKey,
                     sourceId: this.id
                 });
             }
         };
-        GridHighlightSync_addEvent(grid, 'cellMouseOver', onCellHover);
-        GridHighlightSync_addEvent(grid, 'cellMouseOut', onCellMouseOut);
+        addEvent(grid, 'cellMouseOver', onCellHover);
+        addEvent(grid, 'cellMouseOut', onCellMouseOut);
         // Return a function that calls the callbacks
         return function () {
-            GridHighlightSync_removeEvent(grid.container, 'cellMouseOver', onCellHover);
-            GridHighlightSync_removeEvent(grid.container, 'cellMouseOut', onCellMouseOut);
+            removeEvent(grid.container, 'cellMouseOver', onCellHover);
+            removeEvent(grid.container, 'cellMouseOut', onCellMouseOut);
         };
     },
     handler: function () {
@@ -13671,10 +13427,14 @@ const GridHighlightSync_syncPair = {
             const { row, column } = cursor;
             const { grid } = component;
             const viewport = grid?.viewport;
+            const dataProvider = grid?.dataProvider;
+            const presentationTable = hasDataTableProvider(dataProvider) ?
+                dataProvider.getDataTable(true) :
+                void 0;
             if (row === void 0 || !viewport) {
                 return;
             }
-            const rowIndex = viewport.dataTable.getLocalRowIndex(row);
+            const rowIndex = presentationTable?.getLocalRowIndex(row);
             if (rowIndex === void 0) {
                 return;
             }
@@ -13728,12 +13488,13 @@ const GridHighlightSync_syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -13802,12 +13563,13 @@ const GridVisibilitySync_syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -13843,18 +13605,18 @@ const GridSyncs_predefinedSyncConfig = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Karol Kolodziej
+ *  - Karol Kołodziej
  *
  * */
 
 
 
-const { uniqueKey: GridComponentDefaults_uniqueKey } = Core_Utilities;
 /* *
  *
  *  Constants
@@ -13862,7 +13624,7 @@ const { uniqueKey: GridComponentDefaults_uniqueKey } = Core_Utilities;
  * */
 const GridComponentDefaults = {
     gridClassName: 'highcharts-grid-container',
-    gridID: 'grid-' + GridComponentDefaults_uniqueKey(),
+    gridID: 'grid-' + uniqueKey(),
     gridOptions: {},
     editableOptions: [
         {
@@ -13996,13 +13758,14 @@ const GridComponentDefaults = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Karol Kolodziej
- *  - Dawid Dragula
+ *  - Karol Kołodziej
+ *  - Dawid Draguła
  *
  * */
 
@@ -14011,7 +13774,7 @@ const GridComponentDefaults = {
 
 
 
-const { merge: GridComponent_merge, diffObjects: GridComponent_diffObjects, getStyle: GridComponent_getStyle } = Core_Utilities;
+
 const { deepClone: GridComponent_deepClone } = Dashboards_Utilities;
 /* *
  *
@@ -14029,7 +13792,7 @@ class GridComponent extends Components_Component {
      *
      * */
     constructor(cell, options, board) {
-        options = GridComponent_merge(GridComponent.defaultOptions, options);
+        options = merge(GridComponent.defaultOptions, options);
         super(cell, options, board);
         this.options = options;
         this.type = 'Grid';
@@ -14040,18 +13803,42 @@ class GridComponent extends Components_Component {
      *  Functions
      *
      * */
-    async update(options) {
-        await super.update(options);
+    async update(options, shouldRerender = true) {
+        const previousGridDataTableId = this.getGridDataTable(true)?.id;
+        // Avoid triggering GridComponent.render() from Component.update().
+        // That render starts a fire-and-forget renderViewport() which can
+        // race with the awaited redraw() below when connector data changes.
+        await super.update(options, false);
         this.setOptions();
-        if (this.grid) {
-            this.grid.update(options.gridOptions, false);
-            const table = this.getDataTable();
-            if (this.grid?.viewport?.dataTable?.id !== table?.id) {
-                this.grid.update({
-                    dataTable: table?.getModified()
-                }, false);
+        const grid = this.grid;
+        const table = this.getDataTable();
+        if (grid &&
+            this.options.connector &&
+            previousGridDataTableId !== table?.id) {
+            this.recreateGrid(shouldRerender);
+            this.emit({ type: 'afterUpdate' });
+            return;
+        }
+        if (grid && shouldRerender) {
+            super.render();
+        }
+        if (grid) {
+            void grid.update(options.gridOptions, false);
+            if (
+            // #24067 - Update dataTable in options when changed.
+            options.gridOptions?.dataTable &&
+                this.options.gridOptions) {
+                this.options.gridOptions.dataTable =
+                    options.gridOptions.dataTable;
             }
-            await this.grid.redraw();
+            await grid.redraw();
+            this.options.gridOptions = this.getGridOptionsSnapshot(grid);
+            if (shouldRerender) {
+                this.finalizeGridRender();
+            }
+        }
+        else if (shouldRerender) {
+            this.render();
         }
         this.emit({ type: 'afterUpdate' });
     }
@@ -14061,12 +13848,9 @@ class GridComponent extends Components_Component {
             this.grid = this.constructGrid();
         }
         else {
-            this.grid.renderViewport();
+            void this.grid.renderViewport();
         }
-        this.grid.initialContainerHeight =
-            GridComponent_getStyle(this.parentElement, 'height', true) || 0;
-        this.sync.start();
-        this.emit({ type: 'afterRender' });
+        this.finalizeGridRender();
         return this;
     }
     resize(width, height) {
@@ -14084,9 +13868,24 @@ class GridComponent extends Components_Component {
         if (!grid) {
             return;
         }
+        // Check if the grid is of the legacy version (not using the data
+        // provider).
+        if (!('dataProvider' in grid)) {
+            // eslint-disable-next-line no-console
+            console.warn('GridComponent: Legacy Grid detected. Using legacy handler ' +
+                'for table changes. Consider upgrading the Highcharts Grid ' +
+                'Library to the latest version.');
+            this.onTableChangedLegacy();
+            return;
+        }
+        if (!grid?.dataProvider ||
+            !hasDataTableProvider(grid.dataProvider) ||
+            !this.connectorHandlers?.length) {
+            return;
+        }
         const dataTable = this.getDataTable()?.getModified();
         if (!dataTable) {
-            grid.update({ dataTable: void 0 });
+            this.recreateGrid(true);
             return;
         }
         if (!grid.options?.header) {
@@ -14094,32 +13893,81 @@ class GridComponent extends Components_Component {
             // names have changed, so we can update the whole grid. If they
             // have not changed, we can just update the rows (more efficient).
             const newColumnIds = dataTable.getColumnIds();
-            const { columnOptionsMap, enabledColumns } = grid;
+            const { enabledColumns, columnPolicy } = grid;
             let index = 0;
             for (const newColumn of newColumnIds) {
-                if (columnOptionsMap[newColumn]?.options?.enabled === false) {
+                if (columnPolicy.getIndividualColumnOptions(newColumn)
+                    ?.enabled === false) {
                     continue;
                 }
                 if (enabledColumns?.[index] !== newColumn) {
                     // If the visible columns have changed,
                     // update the whole grid.
-                    grid.update({ dataTable });
+                    this.recreateGrid(true);
                     return;
                 }
                 index++;
             }
         }
-        grid.dataTable = dataTable;
+        if (this.getGridDataTable() !== dataTable) {
+            this.recreateGrid(true);
+            return;
+        }
         // Data has changed and the whole grid is not re-rendered, so mark in
         // the querying that data table was modified.
         grid.querying.shouldBeUpdated = true;
         // If the column names have not changed, just update the rows.
-        grid.viewport?.updateRows();
+        void grid.viewport?.updateRows();
+    }
+    /**
+     * Legacy handler for table changes.
+     */
+    onTableChangedLegacy() {
+        const { grid } = this;
+        if (!grid) {
+            return;
+        }
+        const dataTable = this.getDataTable()?.getModified();
+        if (!dataTable) {
+            void grid.update({ dataTable: void 0 });
+            return;
+        }
+        if (!grid.options?.header) {
+            // If the header is not defined, we need to check if the column
+            // names have changed, so we can update the whole grid. If they
+            // have not changed, we can just update the rows (more efficient).
+            const newColumnIds = dataTable.getColumnIds();
+            const { enabledColumns, columnPolicy } = grid;
+            let index = 0;
+            for (const newColumn of newColumnIds) {
+                if (columnPolicy.getIndividualColumnOptions(newColumn)
+                    ?.enabled === false) {
+                    continue;
+                }
+                if (enabledColumns?.[index] !== newColumn) {
+                    // If the visible columns have changed,
+                    // update the whole grid.
+                    void grid.update({ dataTable });
+                    return;
+                }
+                index++;
+            }
+        }
+        // Workaround for legacy Grid component.
+        grid.dataTable =
+            dataTable;
+        // Data has changed and the whole grid is not re-rendered, so mark in
+        // the querying that data table was modified.
+        grid.querying.shouldBeUpdated = true;
+        // If the column names have not changed, just update the rows.
+        void grid.viewport?.updateRows();
     }
     getEditableOptions() {
         const componentOptions = this.options;
-        const gridOptions = this.grid?.options;
-        return GridComponent_deepClone(GridComponent_merge({
+        const gridOptions = this.grid ?
+            this.getGridOptionsSnapshot(this.grid) :
+            void 0;
+        return GridComponent_deepClone(merge({
             gridOptions: gridOptions
         }, componentOptions), ['editableOptions', 'dataTable']);
     }
@@ -14147,8 +13995,10 @@ class GridComponent extends Components_Component {
      * @internal
      */
     getOptions() {
-        const optionsCopy = GridComponent_merge(this.options);
-        optionsCopy.gridOptions = this.grid?.getOptions();
+        const optionsCopy = merge(this.options);
+        optionsCopy.gridOptions = this.grid ?
+            this.getGridOptionsSnapshot(this.grid) :
+            void 0;
         // Remove the table from the options copy if the connector is set.
         if (optionsCopy.connector?.id) {
             delete optionsCopy.gridOptions?.dataTable;
@@ -14159,7 +14009,7 @@ class GridComponent extends Components_Component {
             };
         }
         return {
-            ...GridComponent_diffObjects(optionsCopy, GridComponent.defaultOptions),
+            ...diffObjects(optionsCopy, GridComponent.defaultOptions),
             type: 'Grid'
         };
     }
@@ -14184,6 +14034,74 @@ class GridComponent extends Components_Component {
             this.contentElement.id = gridID;
         }
     }
+    finalizeGridRender() {
+        const { grid } = this;
+        if (!grid) {
+            return;
+        }
+        grid.initialContainerHeight =
+            getStyle(this.parentElement, 'height', true) || 0;
+        this.sync.start();
+        this.emit({ type: 'afterRender' });
+    }
+    getGridOptionsSnapshot(grid) {
+        const gridOptions = merge(grid.getOptions());
+        if (!this.options.connector) {
+            return gridOptions;
+        }
+        delete gridOptions.dataTable;
+        if (gridOptions.data?.providerType === 'local') {
+            delete gridOptions.data.dataTable;
+            delete gridOptions.data.columns;
+            if (Object.keys(gridOptions.data).length === 1 &&
+                gridOptions.data.providerType === 'local') {
+                delete gridOptions.data;
+            }
+        }
+        return gridOptions;
+    }
+    getGridOptionsWithConnectorData() {
+        const gridOptions = merge(this.options.gridOptions) ?? {};
+        if (!this.options.connector) {
+            return gridOptions;
+        }
+        delete gridOptions.dataTable;
+        if (gridOptions.data?.providerType === 'local') {
+            delete gridOptions.data.dataTable;
+            delete gridOptions.data.columns;
+            if (Object.keys(gridOptions.data).length === 1 &&
+                gridOptions.data.providerType === 'local') {
+                delete gridOptions.data;
+            }
+        }
+        const dataTable = this.getDataTable();
+        if (dataTable) {
+            gridOptions.data = merge(gridOptions.data?.providerType === 'local' ?
+                gridOptions.data :
+                {}, {
+                providerType: 'local',
+                dataTable: dataTable.getModified()
+            });
+        }
+        return gridOptions;
+    }
+    recreateGrid(shouldRerender) {
+        this.sync.stop();
+        this.grid?.destroy();
+        delete this.grid;
+        if (shouldRerender) {
+            this.render();
+            return;
+        }
+        this.grid = this.constructGrid();
+        this.finalizeGridRender();
+    }
+    getGridDataTable(presentation = false) {
+        const dataProvider = this.grid?.dataProvider;
+        return hasDataTableProvider(dataProvider) ?
+            dataProvider.getDataTable(presentation) :
+            void 0;
+    }
     /**
      * Function to create the Grid.
      *
@@ -14194,15 +14112,9 @@ class GridComponent extends Components_Component {
         if (!DGN) {
             throw new Error('Grid not connected.');
         }
-        const dataTable = this.getDataTable(), options = this.options, gridOptions = options.gridOptions;
-        if (!gridOptions) {
-            throw new Error('Grid options are not set.');
-        }
-        if (dataTable) {
-            gridOptions.dataTable = dataTable.getModified();
-        }
-        const gridInstance = new DGN.Grid(this.contentElement, gridOptions);
-        this.options.gridOptions = gridInstance.options;
+        const gridOptions = this.getGridOptionsWithConnectorData();
+        const gridInstance = new DGN.Grid(this.contentElement, gridOptions ?? {});
+        this.options.gridOptions = this.getGridOptionsSnapshot(gridInstance);
         return gridInstance;
     }
 }
@@ -14218,7 +14130,7 @@ GridComponent.predefinedSyncConfig = GridSyncs;
 /**
  * The default options for the Grid Component.
  */
-GridComponent.defaultOptions = GridComponent_merge(Components_Component.defaultOptions, GridComponent_GridComponentDefaults);
+GridComponent.defaultOptions = merge(Components_Component.defaultOptions, GridComponent_GridComponentDefaults);
 /* *
  *
  *  Default Export
@@ -14231,13 +14143,14 @@ GridComponent.defaultOptions = GridComponent_merge(Components_Component.defaultO
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Karol Kolodziej
- *  - Dawid Dragula
+ *  - Karol Kołodziej
+ *  - Dawid Draguła
  *
  * */
 
@@ -14295,17 +14208,17 @@ const GridPlugin = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
-const { addEvent: HighchartsExtremesSync_addEvent, isString: HighchartsExtremesSync_isString } = Core_Utilities;
 /* *
  *
  *  Constants
@@ -14360,7 +14273,7 @@ const HighchartsExtremesSync_syncPair = {
                                     series.options.id));
                                 if (assignment) {
                                     const data = assignment.data;
-                                    if (HighchartsExtremesSync_isString(data)) {
+                                    if (isString(data)) {
                                         columnId = data;
                                     }
                                     else if (Array.isArray(data)) {
@@ -14386,7 +14299,7 @@ const HighchartsExtremesSync_syncPair = {
                     }
                 }
             };
-            const addExtremesEvent = () => chart.axes.map((axis) => HighchartsExtremesSync_addEvent(axis, 'afterSetExtremes', extremesEventHandler));
+            const addExtremesEvent = () => chart.axes.map((axis) => addEvent(axis, 'afterSetExtremes', extremesEventHandler));
             let addExtremesEventCallbacks = addExtremesEvent();
             const resetExtremesEvent = () => {
                 addExtremesEventCallbacks.forEach((callback) => {
@@ -14404,7 +14317,7 @@ const HighchartsExtremesSync_syncPair = {
                     addExtremesEventCallbacks.push(...addExtremesEvent());
                 }
             };
-            cleanupCallbacks.push(HighchartsExtremesSync_addEvent(chart, 'selection', handleChartResetSelection));
+            cleanupCallbacks.push(addEvent(chart, 'selection', handleChartResetSelection));
             cleanupCallbacks.push(() => {
                 cursor.remitCursor(table.id, {
                     type: 'position',
@@ -14515,12 +14428,13 @@ const HighchartsExtremesSync_syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -14854,12 +14768,13 @@ const HighchartsHighlightSync_syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -14998,12 +14913,13 @@ const HighchartsVisibilitySync_syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -15039,18 +14955,19 @@ const HighchartsSyncs_predefinedSyncConfig = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Karol Kolodziej
+ *  - Karol Kołodziej
  *
  * */
 
 
 
-const { merge: HighchartsComponentDefaults_merge, uniqueKey: HighchartsComponentDefaults_uniqueKey } = Core_Utilities;
+
 /* *
  *
  *  Constants
@@ -15063,7 +14980,7 @@ const HighchartsComponentDefaults = {
         `${Components_Component.defaultOptions.className}-highcharts`
     ].join(' '),
     chartClassName: 'chart-container',
-    chartID: 'chart-' + HighchartsComponentDefaults_uniqueKey(),
+    chartID: 'chart-' + uniqueKey(),
     chartOptions: {
         series: []
     },
@@ -15231,7 +15148,7 @@ const HighchartsComponentDefaults = {
             type: 'input'
         }
     ],
-    editableOptionsBindings: HighchartsComponentDefaults_merge(Components_Component.defaultOptions.editableOptionsBindings, {
+    editableOptionsBindings: merge(Components_Component.defaultOptions.editableOptionsBindings, {
         skipRedraw: [
             'chartOptions',
             'chartConfig'
@@ -15250,8 +15167,9 @@ const HighchartsComponentDefaults = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -15259,7 +15177,7 @@ const HighchartsComponentDefaults = {
  *  - Wojciech Chmiel
  *  - Sebastian Bochan
  *  - Sophie Bremer
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -15271,7 +15189,6 @@ const HighchartsComponentDefaults = {
 
 
 
-const { createElement: HighchartsComponent_createElement, diffObjects: HighchartsComponent_diffObjects, isString: HighchartsComponent_isString, merge: HighchartsComponent_merge, splat: HighchartsComponent_splat } = Core_Utilities;
 
 const { deepClone: HighchartsComponent_deepClone } = Dashboards_Utilities;
 /* *
@@ -15297,7 +15214,7 @@ class HighchartsComponent extends Components_Component {
      * The options for the component.
      */
     constructor(cell, options, board) {
-        options = HighchartsComponent_merge(HighchartsComponent.defaultOptions, options);
+        options = merge(HighchartsComponent.defaultOptions, options);
         super(cell, options, board);
         /**
          * An object of series IDs and their connector handlers.
@@ -15306,9 +15223,9 @@ class HighchartsComponent extends Components_Component {
         this.options = options;
         this.chartConstructor = this.options.chartConstructor || 'chart';
         this.type = 'Highcharts';
-        this.chartContainer = HighchartsComponent_createElement('figure', void 0, void 0, this.contentElement, true);
+        this.chartContainer = createElement('figure', void 0, void 0, this.contentElement, true);
         this.setOptions();
-        this.chartOptions = HighchartsComponent_merge((this.options.chartOptions ||
+        this.chartOptions = merge((this.options.chartOptions ||
             { chart: {} }), {
             tooltip: {} // Temporary fix for #18876
         });
@@ -15399,7 +15316,7 @@ class HighchartsComponent extends Components_Component {
         let columnId;
         if (columnAssignment && seriesId) {
             const data = columnAssignment.find((s) => s.seriesId === seriesId)?.data;
-            if (HighchartsComponent_isString(data)) {
+            if (isString(data)) {
                 columnId = data;
             }
             else if (Array.isArray(data)) {
@@ -15444,7 +15361,7 @@ class HighchartsComponent extends Components_Component {
             delete this.chart;
         }
         else {
-            this.chart?.update(HighchartsComponent_merge(this.options.chartOptions) || {});
+            this.chart?.update(merge(this.options.chartOptions) || {});
         }
         this.emit({ type: 'afterUpdate' });
         shouldRerender && this.render();
@@ -15528,7 +15445,7 @@ class HighchartsComponent extends Components_Component {
             };
             // Set the series data based on the column assignment data structure
             // type.
-            if (HighchartsComponent_isString(dataStructure)) {
+            if (isString(dataStructure)) {
                 const column = table.getColumn(dataStructure);
                 if (column) {
                     seriesOptions.data = column.slice();
@@ -15613,7 +15530,7 @@ class HighchartsComponent extends Components_Component {
     getDefaultColumnAssignment(columnIds = [], presentationTable) {
         const result = [];
         const firstColumn = presentationTable.getColumn(columnIds[0]);
-        if (firstColumn && HighchartsComponent_isString(firstColumn[0])) {
+        if (firstColumn && isString(firstColumn[0])) {
             for (let i = 1, iEnd = columnIds.length; i < iEnd; ++i) {
                 result.push({
                     seriesId: columnIds[i],
@@ -15653,7 +15570,9 @@ class HighchartsComponent extends Components_Component {
                 return new Factory(this.chartContainer, this.chartOptions);
             }
             catch (e) {
-                throw new Error(`The Highcharts component in cell '${this.cell.id}' is misconfigured. \n____________\n${e}`);
+                throw new Error(`The Highcharts component in cell '${this.cell.id}' ` +
+                    'is misconfigured. \n____________\n' +
+                    String(e));
             }
         }
         if (typeof charter.chart !== 'function') {
@@ -15693,7 +15612,7 @@ class HighchartsComponent extends Components_Component {
      */
     getOptions() {
         return {
-            ...HighchartsComponent_diffObjects(this.options, HighchartsComponent.defaultOptions),
+            ...diffObjects(this.options, HighchartsComponent.defaultOptions),
             type: 'Highcharts'
         };
     }
@@ -15709,12 +15628,12 @@ class HighchartsComponent extends Components_Component {
         const chart = component.chart;
         const chartOptions = chart && chart.options;
         const chartType = chartOptions?.chart?.type || 'line';
-        return HighchartsComponent_deepClone(HighchartsComponent_merge({
+        return HighchartsComponent_deepClone(merge({
             chartOptions
         }, {
             chartOptions: {
-                yAxis: HighchartsComponent_splat(chart && chart.yAxis[0].options),
-                xAxis: HighchartsComponent_splat(chart && chart.xAxis[0].options),
+                yAxis: splat(chart && chart.yAxis[0].options),
+                xAxis: splat(chart && chart.xAxis[0].options),
                 plotOptions: {
                     series: ((chartOptions && chartOptions.plotOptions) ||
                         {})[chartType]
@@ -15740,7 +15659,7 @@ HighchartsComponent.predefinedSyncConfig = HighchartsSyncs;
 /**
  * Default options of the Highcharts component.
  */
-HighchartsComponent.defaultOptions = HighchartsComponent_merge(Components_Component.defaultOptions, HighchartsComponent_HighchartsComponentDefaults);
+HighchartsComponent.defaultOptions = merge(Components_Component.defaultOptions, HighchartsComponent_HighchartsComponentDefaults);
 /* *
  *
  *  Default Export
@@ -15753,17 +15672,17 @@ HighchartsComponent.defaultOptions = HighchartsComponent_merge(Components_Compon
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
-const { defined: KPIExtremesSync_defined } = Core_Utilities;
 /* *
  *
  *  Constants
@@ -15784,9 +15703,9 @@ const KPIExtremesSync_syncPair = {
             const cursor = e.cursor;
             if (cursor.type === 'position' &&
                 typeof cursor?.row === 'number' &&
-                KPIExtremesSync_defined(cursor.column) &&
+                defined(cursor.column) &&
                 component.connectorHandlers?.[0]?.connector &&
-                !KPIExtremesSync_defined(component.options.value)) {
+                !defined(component.options.value)) {
                 const value = String(component.connectorHandlers[0].connector
                     .getTable()
                     .getModified()
@@ -15831,12 +15750,13 @@ const KPIExtremesSync_syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -15866,8 +15786,9 @@ const KPISyncs_predefinedSyncConfig = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -15928,8 +15849,9 @@ const KPIComponentDefaults = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -16065,8 +15987,9 @@ const MathFormula = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -16075,9 +15998,8 @@ const MathFormula = {
  * */
 
 
-const { isFormula: FormulaProcessor_isFormula, isFunction: FormulaProcessor_isFunction, isOperator: FormulaProcessor_isOperator, isRange: FormulaProcessor_isRange, isReference: FormulaProcessor_isReference, isValue: FormulaProcessor_isValue } = FormulaTypes;
 
-const { defined: FormulaProcessor_defined } = Core_Utilities;
+const { isFormula: FormulaProcessor_isFormula, isFunction: FormulaProcessor_isFunction, isOperator: FormulaProcessor_isOperator, isRange: FormulaProcessor_isRange, isReference: FormulaProcessor_isReference, isValue: FormulaProcessor_isValue } = FormulaTypes;
 /* *
  *
  *  Constants
@@ -16371,7 +16293,7 @@ function applyOperator(values, operators) {
     const secondValue = values.pop();
     const firstValue = values.pop();
     const operator = operators.pop();
-    if (!FormulaProcessor_defined(secondValue) || !FormulaProcessor_defined(firstValue) || !FormulaProcessor_defined(operator)) {
+    if (!defined(secondValue) || !defined(firstValue) || !defined(operator)) {
         values.push(NaN);
     }
     else {
@@ -16596,8 +16518,9 @@ const FormulaProcessor = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -16663,8 +16586,9 @@ Formula_FormulaProcessor.registerProcessorFunction('SUM', SUM); // 🐝
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -16739,8 +16663,9 @@ Formula_FormulaProcessor.registerProcessorFunction('AVERAGE', AVERAGE);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -16819,8 +16744,9 @@ Formula_FormulaProcessor.registerProcessorFunction('MEDIAN', MEDIAN);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -16890,8 +16816,9 @@ Formula_FormulaProcessor.registerProcessorFunction('MAX', MAX);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -16961,8 +16888,9 @@ Formula_FormulaProcessor.registerProcessorFunction('MIN', MIN);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -17028,8 +16956,9 @@ Formula_FormulaProcessor.registerProcessorFunction('COUNT', COUNT);
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -17097,10 +17026,11 @@ Formula_FormulaProcessor.registerProcessorFunction('PRODUCT', PRODUCT);
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -17482,6 +17412,9 @@ const ChartDefaults = {
     /**
      * Callback function to override the default function that formats all
      * the numbers in the chart. Returns a string with the formatted number.
+     * Since v12.6.0, the callback also receives `ctx` as the last argument,
+     * so that arrow functions can access the same context as regular
+     * functions using `this`.
      *
      * @sample highcharts/members/highcharts-numberformat
      *      Arabic digits in Highcharts
@@ -17534,6 +17467,10 @@ const ChartDefaults = {
      * #tooltip.followTouchMove) option is `true` (default), panning
      * requires two fingers. To allow panning with one finger, set
      * `followTouchMove` to `false`.
+     *
+     * **Note:** If both zooming and panning are enabled without keys, zooming
+     * will take precedence by default. To prioritize panning, either set
+     * [chart.zooming.key](#chart.zooming.key) or panKey.
      *
      * @sample  {highcharts} highcharts/chart/pankey/ Zooming and panning
      * @sample  {highstock} stock/chart/panning/ Zooming and xy panning
@@ -17874,7 +17811,7 @@ const ChartDefaults = {
      * @see In styled mode, the selection marker fill is set with the
      *      `.highcharts-selection-marker` class.
      *
-     * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type      {Highcharts.ColorType}
      * @default   rgba(51,92,173,0.25)
      * @since     2.1.7
      * @apioption chart.selectionMarkerFill
@@ -18144,6 +18081,10 @@ const ChartDefaults = {
          * avoid zooming while moving points. Should be set different than
          * [chart.panKey](#chart.panKey).
          *
+         * **Note:** If both zooming and panning are enabled without keys,
+         * zooming will take precedence by default. To prioritize panning,
+         * either set zooming key or [chart.panKey](#chart.panKey).
+         *
          * @type       {string}
          * @default    {highcharts} undefined
          * @validvalue ["alt", "ctrl", "meta", "shift"]
@@ -18195,6 +18136,7 @@ const ChartDefaults = {
              * @sample {highstock} highcharts/chart/resetzoombutton-theme/
              *         Theming the button
              *
+             * @default { zIndex: 6 }
              * @type  {Highcharts.SVGAttributes}
              * @since 10.2.1
              */
@@ -18220,18 +18162,15 @@ const ChartDefaults = {
              * @since 10.2.1
              */
             position: {
-                /** @internal */
                 align: 'right',
-                /** @internal */
-                x: -10,
                 /**
                  * The vertical alignment of the button.
                  *
-                 * @type       {Highcharts.VerticalAlignValue}
-                 * @default    top
-                 * @apioption  chart.zooming.resetButton.position.verticalAlign
+                 * @type      {Highcharts.VerticalAlignValue}
+                 * @default   top
+                 * @apioption chart.zooming.resetButton.position.verticalAlign
                  */
-                /** @internal */
+                x: -10,
                 y: 10
             }
         }
@@ -18288,7 +18227,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/border/
      *         Border options
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      */
     borderColor: "#334eff" /* Palette.highlightColor80 */,
     /**
@@ -18327,7 +18266,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/backgroundcolor-gradient/
      *         Gradient
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      */
     backgroundColor: "#ffffff" /* Palette.backgroundColor */,
     /**
@@ -18349,7 +18288,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/plotbackgroundcolor-gradient/
      *         Gradient
      *
-     * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type      {Highcharts.ColorType}
      * @apioption chart.plotBackgroundColor
      */
     /**
@@ -18383,7 +18322,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/plotborder/
      *         Plot border options
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      */
     plotBorderColor: "#cccccc" /* Palette.neutralColor20 */
 };
@@ -18424,10 +18363,11 @@ const SeriesPalettes = {
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -18435,7 +18375,7 @@ const SeriesPalettes = {
 
 const { pageLang, win: TimeBase_win } = Core_Globals;
 
-const { defined: TimeBase_defined, error: TimeBase_error, extend: TimeBase_extend, isNumber: TimeBase_isNumber, isObject: TimeBase_isObject, isString: TimeBase_isString, merge: TimeBase_merge, objectEach: TimeBase_objectEach, pad: TimeBase_pad, splat: TimeBase_splat, timeUnits: TimeBase_timeUnits, ucfirst: TimeBase_ucfirst } = Core_Utilities;
+
 /* *
  *
  *  Constants
@@ -18546,13 +18486,13 @@ class TimeBase {
      */
     update(options = {}) {
         this.dTLCache = {};
-        this.options = options = TimeBase_merge(true, this.options, options);
+        this.options = options = merge(true, this.options, options);
         const { timezoneOffset, useUTC, locale } = options;
         // Allow using a different Date class
         this.Date = options.Date || TimeBase_win.Date || Date;
         // Assign the time zone. Handle the legacy, deprecated `useUTC` option.
         let timezone = options.timezone;
-        if (TimeBase_defined(useUTC)) {
+        if (defined(useUTC)) {
             timezone = useUTC ? 'UTC' : void 0;
         }
         // The Etc/GMT time zones do not support offsets with half-hour
@@ -18640,7 +18580,7 @@ class TimeBase {
      */
     dateTimeFormat(options, timestamp, locale = this.options.locale || pageLang) {
         const cacheKey = JSON.stringify(options) + locale;
-        if (TimeBase_isString(options)) {
+        if (isString(options)) {
             options = this.str2dtf(options);
         }
         let dTL = this.dTLCache[cacheKey];
@@ -18651,12 +18591,12 @@ class TimeBase {
             }
             catch (e) {
                 if (/Invalid time zone/i.test(e.message)) {
-                    TimeBase_error(34);
+                    error(34);
                     options.timeZone = 'UTC';
                     dTL = new Intl.DateTimeFormat(locale, options);
                 }
                 else {
-                    TimeBase_error(e.message, false);
+                    error(e.message, false);
                 }
             }
         }
@@ -18688,7 +18628,7 @@ class TimeBase {
         };
         Object.keys(mapping).forEach((key) => {
             if (s.indexOf(key) !== -1) {
-                TimeBase_extend(dtf, mapping[key]);
+                extend(dtf, mapping[key]);
             }
         });
         return dtf;
@@ -18762,7 +18702,7 @@ class TimeBase {
      * @return   {number|undefined}          Parsed JavaScript timestamp
      */
     parse(s) {
-        if (!TimeBase_isString(s)) {
+        if (!isString(s)) {
             return s ?? void 0;
         }
         s = s
@@ -18781,7 +18721,7 @@ class TimeBase {
             s += 'Z';
         }
         const ts = Date.parse(s);
-        if (TimeBase_isNumber(ts)) {
+        if (Utilities_isNumber(ts)) {
             // Unless the string contains time zone information, convert from
             // the local time result of `Date.parse` via UTC into the current
             // timezone of the time object.
@@ -18809,7 +18749,7 @@ class TimeBase {
                 .split(/(GMT|:)/)
                 .map(Number), offset = -(hours + minutes / 60) * 60 * 60000;
             // Possible future NaNs stop here
-            if (TimeBase_isNumber(offset)) {
+            if (Utilities_isNumber(offset)) {
                 return offset;
             }
         }
@@ -18851,8 +18791,8 @@ class TimeBase {
      * | `%o` | Month number, 1 through 12                   |       |
      * | `%y` | Two digits year, like 24 for 2024            |       |
      * | `%Y` | Four digits year, like 2024                  |       |
-     * | `%H` | Two digits hours in 24h format, 00 through 23 | Depending on the locale, 12h format may be instered. |
-     * | `%k` | Hours in 24h format, 0 through 23            | Depending on the locale, 12h format may be instered. |
+     * | `%H` | Two digits hours in 24h format, 00 through 23 | Depending on the locale, 12h format may be inserted. |
+     * | `%k` | Hours in 24h format, 0 through 23            | Depending on the locale, 12h format may be inserted. |
      * | `%I` | Two digits hours in 12h format, 00 through 11 | N/A. The locale determines the hour format. |
      * | `%l` | Hours in 12h format, 1 through 12            | N/A. The locale determines the hour format. |
      * | `%M` | Two digits minutes, 00 through 59            |       |
@@ -18927,12 +18867,12 @@ class TimeBase {
      */
     dateFormat(format, timestamp, upperCaseFirst) {
         const lang = this.lang;
-        if (!TimeBase_defined(timestamp) || isNaN(timestamp)) {
+        if (!defined(timestamp) || isNaN(timestamp)) {
             return lang?.invalidDate || '';
         }
         format = format ?? '%Y-%m-%d %H:%M:%S';
         // First, identify and replace locale-aware formats like %[Ymd]
-        if (TimeBase_isString(format)) {
+        if (isString(format)) {
             const localeAwareRegex = /%\[([a-zA-Z]+)\]/g;
             let match;
             while ((match = localeAwareRegex.exec(format))) {
@@ -18940,11 +18880,11 @@ class TimeBase {
             }
         }
         // Then, replace static formats like %Y, %m, %d etc.
-        if (TimeBase_isString(format) && format.indexOf('%') !== -1) {
+        if (isString(format) && format.indexOf('%') !== -1) {
             const time = this, [fullYear, month, dayOfMonth, hours, minutes, seconds, milliseconds, weekday] = this.toParts(timestamp), langWeekdays = lang?.weekdays || this.weekdays, shortWeekdays = lang?.shortWeekdays || this.shortWeekdays, months = lang?.months || this.months, shortMonths = lang?.shortMonths || this.shortMonths, 
             // List all format keys. Custom formats can be added from the
             // outside.
-            replacements = TimeBase_extend({
+            replacements = extend({
                 // Day
                 // Short weekday, like 'Mon'
                 a: shortWeekdays ?
@@ -18953,9 +18893,9 @@ class TimeBase {
                 // Long weekday, like 'Monday'
                 A: langWeekdays[weekday],
                 // Two digit day of the month, 01 to 31
-                d: TimeBase_pad(dayOfMonth),
+                d: pad(dayOfMonth),
                 // Day of the month, 1 through 31
-                e: TimeBase_pad(dayOfMonth, 2, ' '),
+                e: pad(dayOfMonth, 2, ' '),
                 // Day of the week, 0 through 6
                 w: weekday,
                 // Week (none implemented)
@@ -18967,7 +18907,7 @@ class TimeBase {
                 // Long month, like 'January'
                 B: months[month],
                 // Two digit month number, 01 through 12
-                m: TimeBase_pad(month + 1),
+                m: pad(month + 1),
                 // Month number, 1 through 12 (#8150)
                 o: month + 1,
                 // Year
@@ -18977,43 +18917,43 @@ class TimeBase {
                 Y: fullYear,
                 // Time
                 // Two digits hours in 24h format, 00 through 23
-                H: TimeBase_pad(hours),
+                H: pad(hours),
                 // Hours in 24h format, 0 through 23
                 k: hours,
                 // Two digits hours in 12h format, 00 through 11
-                I: TimeBase_pad((hours % 12) || 12),
+                I: pad((hours % 12) || 12),
                 // Hours in 12h format, 1 through 12
                 l: (hours % 12) || 12,
                 // Two digits minutes, 00 through 59
-                M: TimeBase_pad(minutes),
+                M: pad(minutes),
                 // Upper case AM or PM
                 p: hours < 12 ? 'AM' : 'PM',
                 // Lower case AM or PM
                 P: hours < 12 ? 'am' : 'pm',
                 // Two digits seconds, 00 through 59
-                S: TimeBase_pad(seconds),
+                S: pad(seconds),
                 // Milliseconds (naming from Ruby)
-                L: TimeBase_pad(milliseconds, 3)
+                L: pad(milliseconds, 3)
             }, Core_Globals.dateFormats);
             // Do the replaces
-            TimeBase_objectEach(replacements, function (val, key) {
-                if (TimeBase_isString(format)) {
+            objectEach(replacements, function (val, key) {
+                if (isString(format)) {
                     // Regex would do it in one line, but this is faster
                     while (format.indexOf('%' + key) !== -1) {
                         format = format.replace('%' + key, typeof val === 'function' ?
-                            val.call(time, timestamp) :
+                            val.call(time, timestamp, time) :
                             val);
                     }
                 }
             });
         }
-        else if (TimeBase_isObject(format)) {
+        else if (isObject(format)) {
             const tzHours = (this.getTimezoneOffset(timestamp) || 0) /
                 (60000 * 60), timeZone = this.timezone || ('Etc/GMT' + (tzHours >= 0 ? '+' : '') + tzHours), { prefix = '', suffix = '' } = format;
-            format = prefix + this.dateTimeFormat(TimeBase_extend({ timeZone }, format), timestamp) + suffix;
+            format = prefix + this.dateTimeFormat(extend({ timeZone }, format), timestamp) + suffix;
         }
         // Optionally sentence-case the string and return
-        return upperCaseFirst ? TimeBase_ucfirst(format) : format;
+        return upperCaseFirst ? ucfirst(format) : format;
     }
     /**
      * Resolve legacy formats of dateTimeLabelFormats (strings and arrays) into
@@ -19025,8 +18965,8 @@ class TimeBase {
      * The object definition
      */
     resolveDTLFormat(f) {
-        if (!TimeBase_isObject(f, true)) { // Check for string or array
-            f = TimeBase_splat(f);
+        if (!isObject(f, true)) { // Check for string or array
+            f = splat(f);
             return {
                 main: f[0],
                 from: f[1],
@@ -19034,7 +18974,7 @@ class TimeBase {
             };
         }
         // Type-check DateTimeFormatOptions against DateTimeLabelFormatObject
-        if (TimeBase_isObject(f, true) && isDateTimeFormatOptions(f)) {
+        if (isObject(f, true) && isDateTimeFormatOptions(f)) {
             return { main: f };
         }
         return f;
@@ -19072,18 +19012,18 @@ class TimeBase {
         let n = 'millisecond', 
         // For sub-millisecond data, #4223
         lastN = n;
-        for (n in TimeBase_timeUnits) { // eslint-disable-line guard-for-in
+        for (n in timeUnits) { // eslint-disable-line guard-for-in
             // If the range is exactly one week and we're looking at a
             // Sunday/Monday, go for the week format
             if (range &&
-                range === TimeBase_timeUnits.week &&
+                range === timeUnits.week &&
                 +this.dateFormat('%w', timestamp) === startOfWeek &&
                 dateStr.substr(6) === blank.substr(6)) {
                 n = 'week';
                 break;
             }
             // The first format that is too great for the range
-            if (range && TimeBase_timeUnits[n] > range) {
+            if (range && timeUnits[n] > range) {
                 n = lastN;
                 break;
             }
@@ -19257,17 +19197,18 @@ class TimeBase {
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
 
 
 
-const { defined: Time_defined, extend: Time_extend, timeUnits: Time_timeUnits } = Core_Utilities;
+
 /* *
  *
  *  Constants
@@ -19299,39 +19240,39 @@ class Time extends Shared_TimeBase {
         const time = this, tickPositions = [], higherRanks = {}, { count = 1, unitRange } = normalizedInterval;
         let [year, month, dayOfMonth, hours, minutes, seconds] = time.toParts(min), milliseconds = (min || 0) % 1000, variableDayLength;
         startOfWeek ?? (startOfWeek = 1);
-        if (Time_defined(min)) { // #1300
-            milliseconds = unitRange >= Time_timeUnits.second ?
+        if (defined(min)) { // #1300
+            milliseconds = unitRange >= timeUnits.second ?
                 0 : // #3935
                 count * Math.floor(milliseconds / count);
-            if (unitRange >= Time_timeUnits.second) { // Second
-                seconds = unitRange >= Time_timeUnits.minute ?
+            if (unitRange >= timeUnits.second) { // Second
+                seconds = unitRange >= timeUnits.minute ?
                     0 : // #3935
                     count * Math.floor(seconds / count);
             }
-            if (unitRange >= Time_timeUnits.minute) { // Minute
-                minutes = unitRange >= Time_timeUnits.hour ?
+            if (unitRange >= timeUnits.minute) { // Minute
+                minutes = unitRange >= timeUnits.hour ?
                     0 :
                     count * Math.floor(minutes / count);
             }
-            if (unitRange >= Time_timeUnits.hour) { // Hour
-                hours = unitRange >= Time_timeUnits.day ?
+            if (unitRange >= timeUnits.hour) { // Hour
+                hours = unitRange >= timeUnits.day ?
                     0 :
                     count * Math.floor(hours / count);
             }
-            if (unitRange >= Time_timeUnits.day) { // Day
-                dayOfMonth = unitRange >= Time_timeUnits.month ?
+            if (unitRange >= timeUnits.day) { // Day
+                dayOfMonth = unitRange >= timeUnits.month ?
                     1 :
                     Math.max(1, count * Math.floor(dayOfMonth / count));
             }
-            if (unitRange >= Time_timeUnits.month) { // Month
-                month = unitRange >= Time_timeUnits.year ? 0 :
+            if (unitRange >= timeUnits.month) { // Month
+                month = unitRange >= timeUnits.year ? 0 :
                     count * Math.floor(month / count);
             }
-            if (unitRange >= Time_timeUnits.year) { // Year
+            if (unitRange >= timeUnits.year) { // Year
                 year -= year % count;
             }
             // Week is a special case that runs outside the hierarchy
-            if (unitRange === Time_timeUnits.week) {
+            if (unitRange === timeUnits.week) {
                 if (count) {
                     min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
                 }
@@ -19349,7 +19290,7 @@ class Time extends Shared_TimeBase {
             }
             min = time.makeTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
             // Handle local timezone offset
-            if (time.variableTimezone && Time_defined(max)) {
+            if (time.variableTimezone && defined(max)) {
                 // Detect whether we need to take the DST crossover into
                 // consideration. If we're crossing over DST, the day length may
                 // be 23h or 25h and we need to compute the exact clock time for
@@ -19357,7 +19298,7 @@ class Time extends Shared_TimeBase {
                 // so first we find out if it is needed (#4951).
                 variableDayLength = (
                 // Long range, assume we're crossing over.
-                max - min > 4 * Time_timeUnits.month ||
+                max - min > 4 * timeUnits.month ||
                     // Short range, check if min and max are in different time
                     // zones.
                     time.getTimezoneOffset(min) !==
@@ -19368,22 +19309,22 @@ class Time extends Shared_TimeBase {
             while (t < max) {
                 tickPositions.push(t);
                 // Increase the years
-                if (unitRange === Time_timeUnits.year) {
+                if (unitRange === timeUnits.year) {
                     t = time.makeTime(year + i * count, 0);
                     // Increase the months
                 }
-                else if (unitRange === Time_timeUnits.month) {
+                else if (unitRange === timeUnits.month) {
                     t = time.makeTime(year, month + i * count);
                     // If we're using local time, the interval is not fixed as it
                     // jumps one hour at the DST crossover
                 }
-                else if (variableDayLength && (unitRange === Time_timeUnits.day ||
-                    unitRange === Time_timeUnits.week)) {
+                else if (variableDayLength && (unitRange === timeUnits.day ||
+                    unitRange === timeUnits.week)) {
                     t = time.makeTime(year, month, dayOfMonth +
-                        i * count * (unitRange === Time_timeUnits.day ? 1 : 7));
+                        i * count * (unitRange === timeUnits.day ? 1 : 7));
                 }
                 else if (variableDayLength &&
-                    unitRange === Time_timeUnits.hour &&
+                    unitRange === timeUnits.hour &&
                     count > 1) {
                     // Make sure higher ranks are preserved across DST (#6797,
                     // #7621)
@@ -19400,7 +19341,7 @@ class Time extends Shared_TimeBase {
             // Handle higher ranks. Mark new days if the time is on midnight
             // (#950, #1649, #1760, #3349). Use a reasonable dropout threshold
             // to prevent looping over dense data grouping (#6156).
-            if (unitRange <= Time_timeUnits.hour && tickPositions.length < 10000) {
+            if (unitRange <= timeUnits.hour && tickPositions.length < 10000) {
                 tickPositions.forEach((t) => {
                     if (
                     // Speed optimization, no need to run dateFormat unless
@@ -19414,7 +19355,7 @@ class Time extends Shared_TimeBase {
             }
         }
         // Record information on the chosen unit - for dynamic label formatter
-        tickPositions.info = Time_extend(normalizedInterval, {
+        tickPositions.info = extend(normalizedInterval, {
             higherRanks,
             totalRange: unitRange * count
         });
@@ -19432,10 +19373,11 @@ class Time extends Shared_TimeBase {
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -19446,7 +19388,6 @@ const { isTouchDevice } = Core_Globals;
 
 
 
-const { fireEvent: Defaults_fireEvent, merge: Core_Defaults_merge } = Core_Utilities;
 /* *
  *
  *  API Options
@@ -19479,7 +19420,7 @@ const Defaults_defaultOptions = {
      * @sample highcharts/members/theme-v10/
      *         Latest release styled like version 10
      *
-     * @type    {Array<(Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject)>}
+     * @type    {Array<Highcharts.ColorType>}
      * @default [
      *     "#2caffe",
      *     "#544fc5",
@@ -19757,6 +19698,9 @@ const Defaults_defaultOptions = {
              * CSS styling for the buttons' text
              */
             style: {
+                /**
+                 * @type {Highcharts.ColorType}
+                 */
                 color: "#333333" /* Palette.neutralColor80 */,
                 cursor: 'pointer',
                 fontSize: '0.8em',
@@ -19778,8 +19722,14 @@ const Defaults_defaultOptions = {
                  * addition to the normal state options
                  */
                 select: {
+                    /**
+                     * @type {Highcharts.ColorType}
+                     */
                     fill: "#e6e9ff" /* Palette.highlightColor10 */,
                     style: {
+                        /**
+                         * @type {Highcharts.ColorType}
+                         */
                         color: "#000000" /* Palette.neutralColor100 */,
                         fontWeight: 'bold'
                     }
@@ -20029,6 +19979,9 @@ const Defaults_defaultOptions = {
          * @default   {highstock} { "color": "#333333", "fontSize": "16px" }
          */
         style: {
+            /**
+             * @type {Highcharts.ColorType}
+             */
             color: "#333333" /* Palette.neutralColor80 */,
             fontWeight: 'bold'
         },
@@ -20216,6 +20169,9 @@ const Defaults_defaultOptions = {
          * @default   {"color": "#666666"}
          */
         style: {
+            /**
+             * @type {Highcharts.ColorType}
+             */
             color: "#666666" /* Palette.neutralColor60 */,
             /**
              * @type {number|string}
@@ -20291,6 +20247,9 @@ const Defaults_defaultOptions = {
          * @default   {"color": "#666666"}
          */
         style: {
+            /**
+             * @type {Highcharts.ColorType}
+             */
             color: "#666666" /* Palette.neutralColor60 */,
             /**
              * @type {number|string}
@@ -20360,7 +20319,7 @@ const Defaults_defaultOptions = {
          * @sample {highmaps} maps/legend/border-background/
          *         Border and background options
          *
-         * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+         * @type      {Highcharts.ColorType}
          * @apioption legend.backgroundColor
          */
         /**
@@ -20421,6 +20380,9 @@ const Defaults_defaultOptions = {
          * columns. Setting this to `false` makes room for more items, but will
          * look more messy.
          *
+         * @sample highcharts/legend/aligncolumns
+         *         Align columns
+         *
          * @since 6.1.0
          */
         alignColumns: true,
@@ -20434,15 +20396,13 @@ const Defaults_defaultOptions = {
          * `Highcharts.addEvent` function.
          *
          * @declare Highcharts.LegendEventsOptionsObject
-         *
-         * @internal
          */
-        events: {},
+        events: {
         /**
-         * Fires when the legend item belonging to the series is clicked. One
-         * parameter, `event`, is passed to the function. The default action
-         * is to toggle the visibility of the series, point or data class. This
-         * can be prevented by returning `false` or calling
+         * Fires when the legend item belonging to the series is clicked.
+         * One parameter, `event`, is passed to the function. The default
+         * action is to toggle the visibility of the series, point or data
+         * class. This can be prevented by returning `false` or calling
          * `event.preventDefault()`.
          *
          * @sample {highcharts} highcharts/legend/itemclick/
@@ -20454,6 +20414,7 @@ const Defaults_defaultOptions = {
          * @context   Highcharts.Legend
          * @apioption legend.events.itemClick
          */
+        },
         /**
          * When the legend is floating, the plot area ignores it and is allowed
          * to be placed below it.
@@ -20497,10 +20458,10 @@ const Defaults_defaultOptions = {
          * In a legend with horizontal layout, the itemDistance defines the
          * pixel distance between each item.
          *
-         * @sample {highcharts} highcharts/legend/layout-horizontal/
-         *         50px item distance
-         * @sample {highstock} highcharts/legend/layout-horizontal/
-         *         50px item distance
+         * @sample {highcharts} highcharts/legend/itemwidth-default/
+         *         40px item distance
+         * @sample {highstock} highcharts/legend/itemwidth-default/
+         *         40px item distance
          *
          * @type      {number}
          * @default   {highcharts} 20
@@ -20551,16 +20512,21 @@ const Defaults_defaultOptions = {
          * for each legend label. Available variables relates to properties on
          * the series, or the point in case of pies.
          *
+         * @sample {highcharts} highcharts/legend/labelformat/
+         *         Add text
+         *
          * @type      {string}
          * @default   {name}
          * @since     1.3
          * @apioption legend.labelFormat
          */
-        /* eslint-disable valid-jsdoc */
         /**
          * Callback function to format each of the series' labels. The `this`
          * keyword refers to the series object, or the point object in case of
-         * pie charts. By default the series or point name is printed.
+         * pie charts. By default the series or point name is printed. Since
+         * v12.5.0, the callback also receives `ctx` as the first argument, so
+         * that arrow functions can access the same context as regular
+         * functions using `this`.
          *
          * @productdesc {highmaps}
          * In Highmaps the context can also be a data class in case of a
@@ -20571,7 +20537,7 @@ const Defaults_defaultOptions = {
          * @sample {highmaps} maps/legend/labelformatter/
          *         Data classes with label formatter
          *
-         * @type {Highcharts.FormatterCallbackFunction<Point|Series>}
+         * @type {Highcharts.FormatterCallbackFunction<Highcharts.Point|Highcharts.Series>}
          */
         labelFormatter: function () {
             // eslint-enable valid-jsdoc
@@ -20640,7 +20606,7 @@ const Defaults_defaultOptions = {
          * @sample {highmaps} maps/legend/border-background/
          *         Border and background options
          *
-         * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+         * @type {Highcharts.ColorType}
          */
         borderColor: "#999999" /* Palette.neutralColor40 */,
         /**
@@ -20745,7 +20711,7 @@ const Defaults_defaultOptions = {
              * @sample  {highstock} highcharts/legend/navigation/
              *          Legend page navigation demonstrated
              *
-             * @type  {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+             * @type  {Highcharts.ColorType}
              * @since 2.2.4
              */
             activeColor: "#0022ff" /* Palette.highlightColor100 */,
@@ -20761,7 +20727,7 @@ const Defaults_defaultOptions = {
              * @sample {highstock} highcharts/legend/navigation/
              *         Legend page navigation demonstrated
              *
-             * @type  {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+             * @type  {Highcharts.ColorType}
              * @since 2.2.4
              */
             inactiveColor: "#cccccc" /* Palette.neutralColor20 */
@@ -21283,7 +21249,7 @@ const Defaults_defaultOptions = {
          * @sample {highmaps} maps/tooltip/background-border/ Background and
          *         border demo
          *
-         * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+         * @type {Highcharts.ColorType}
          * @apioption tooltip.borderColor
          */
         /**
@@ -21456,13 +21422,18 @@ const Defaults_defaultOptions = {
          * @sample {highmaps} maps/tooltip/formatter/
          *         String formatting
          *
+         * Since v12.6.0, the callback also receives `ctx` as the second
+         * argument, so that arrow functions can access the same context as
+         * regular functions using `this`.
+         *
          * @type      {Highcharts.TooltipFormatterCallbackFunction}
          * @apioption tooltip.formatter
          */
         /**
          * Callback function to format the text of the tooltip for
          * visible null points.
-         * Works analogously to [formatter](#tooltip.formatter).
+         * Works analogously to [formatter](#tooltip.formatter), including the
+         * `ctx` callback argument added in v12.5.0.
          *
          * @sample highcharts/plotoptions/series-nullformat
          *         Format data label and tooltip for null point.
@@ -21496,7 +21467,9 @@ const Defaults_defaultOptions = {
         /**
          * A callback function for formatting the HTML output for a single point
          * in the tooltip. Like the `pointFormat` string, but with more
-         * flexibility.
+         * flexibility. Since v12.6.0, the callback also receives `ctx` as the
+         * first argument, so that arrow functions can access the same context
+         * as regular functions using `this`.
          *
          * @type      {Highcharts.FormatterCallbackFunction<Highcharts.Point>}
          * @since     4.1.0
@@ -21505,10 +21478,13 @@ const Defaults_defaultOptions = {
          */
         /**
          * A callback function to place the tooltip in a custom position. The
-         * callback receives three parameters: `labelWidth`, `labelHeight` and
-         * `point`, where point contains values for `plotX` and `plotY` telling
-         * where the reference point is in the plot area. Add `chart.plotLeft`
-         * and `chart.plotTop` to get the full coordinates.
+         * callback receives four parameters: `labelWidth`, `labelHeight`,
+         * `point`, and `ctx`, where point contains values for `plotX` and
+         * `plotY` telling where the reference point is in the plot area, and
+         * `ctx` is the tooltip context (so that arrow-functions can access the
+         * same context as a normal function using `this`). Add
+         * `chart.plotLeft` and `chart.plotTop` to get the full coordinates.
+         * Since v12.6.0, the callback receives `ctx`.
          *
          * To find the actual hovered `Point` instance, use
          * `this.chart.hoverPoint`. For shared or split tooltips, all the hover
@@ -21678,21 +21654,13 @@ const Defaults_defaultOptions = {
          * @product highcharts highstock gantt
          */
         dateTimeLabelFormats: {
-            /** @internal */
             millisecond: '%[AebHMSL]',
-            /** @internal */
             second: '%[AebHMS]',
-            /** @internal */
             minute: '%[AebHM]',
-            /** @internal */
             hour: '%[AebHM]',
-            /** @internal */
             day: '%[AebY]',
-            /** @internal */
             week: '%v %[AebY]',
-            /** @internal */
             month: '%[BY]',
-            /** @internal */
             year: '%Y'
         },
         /**
@@ -21732,6 +21700,16 @@ const Defaults_defaultOptions = {
          * @since 3.0
          */
         hideDelay: 500,
+        /**
+         * The number of milliseconds to wait until the tooltip is shown when
+         * mouse over a point. Works on initial hover.
+         *
+         * @sample {highcharts|highstock} highcharts/tooltip/showdelay/
+         *         Show tooltip after 2 seconds
+         *
+         * @since 12.6.0
+         */
+        showDelay: 0,
         /**
          * Padding inside the tooltip, in pixels.
          *
@@ -21965,7 +21943,7 @@ const Defaults_defaultOptions = {
          * @sample {highmaps} highcharts/css/tooltip-border-background/
          *         Tooltip in styled mode
          *
-         * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+         * @type {Highcharts.ColorType}
          */
         backgroundColor: "#ffffff" /* Palette.backgroundColor */,
         /**
@@ -22014,6 +21992,8 @@ const Defaults_defaultOptions = {
          *
          * @sample highcharts/tooltip/stickoncontact/
          *         Tooltip sticks on pointer contact
+         * @sample highcharts/tooltip/stickoncontact-anchor-link/
+         *         Tooltip with clickable links
          *
          * @type      {boolean}
          * @since     8.0.1
@@ -22033,13 +22013,10 @@ const Defaults_defaultOptions = {
          * @type {Highcharts.CSSObject}
          */
         style: {
-            /** @internal */
+            /** @type {Highcharts.ColorType} */
             color: "#333333" /* Palette.neutralColor80 */,
-            /** @internal */
             cursor: 'default',
-            /**
-             * @type {number|string}
-             */
+            /** @type {number|string} */
             fontSize: '0.8em'
         },
         /**
@@ -22060,7 +22037,7 @@ const Defaults_defaultOptions = {
         useHTML: false
     },
     /**
-     * Highchart by default puts a credits label in the lower right corner
+     * Highcharts by default puts a credits label in the lower right corner
      * of the chart. This can be changed using these options.
      */
     credits: {
@@ -22093,6 +22070,30 @@ const Defaults_defaultOptions = {
          * @apioption credits.mapTextFull
          */
         /**
+         * Events for the credits label.
+         *
+         * @type     {object}
+         * @since    12.6.0
+         * @apioption credits.events
+         */
+        /**
+         * Callback function to handle click events on the credits label.
+         * The callback can call `event.preventDefault()` to prevent the
+         * default navigation behavior. Alternatively, you can add a general
+         * event handler using `Highcharts.addEvent(Chart, 'creditsClick',
+         * callback)` instead of providing it in the options tree.
+         *
+         * @sample {highcharts} highcharts/credits/events-click/
+         *         Custom click handler
+         *
+         * @param {Event} event
+         *        The click event object.
+         *
+         * @type  {Function}
+         * @since 12.6.0
+         * @apioption credits.events.click
+         */
+        /**
          * Whether to show the credits text.
          *
          * @sample {highcharts} highcharts/credits/enabled-false/
@@ -22117,24 +22118,16 @@ const Defaults_defaultOptions = {
          *
          * @sample {highcharts} highcharts/credits/position-left/
          *         Left aligned
-         * @sample {highcharts} highcharts/credits/position-left/
-         *         Left aligned
-         * @sample {highmaps} maps/credits/customized/
-         *         Left aligned
          * @sample {highmaps} maps/credits/customized/
          *         Left aligned
          *
-         * @type    {Highcharts.AlignObject}
-         * @since   2.1
+         * @type  {Highcharts.AlignObject}
+         * @since 2.1
          */
         position: {
-            /** @internal */
             align: 'right',
-            /** @internal */
-            x: -10,
-            /** @internal */
             verticalAlign: 'bottom',
-            /** @internal */
+            x: -10,
             y: -5
         },
         /**
@@ -22146,9 +22139,10 @@ const Defaults_defaultOptions = {
          * @type {Highcharts.CSSObject}
          */
         style: {
-            /** @internal */
             cursor: 'pointer',
-            /** @internal */
+            /**
+             * @type {Highcharts.ColorType}
+             */
             color: "#999999" /* Palette.neutralColor40 */,
             /**
              * @type {number|string}
@@ -22200,9 +22194,9 @@ function getOptions() {
  * Updated options.
  */
 function Defaults_setOptions(options) {
-    Defaults_fireEvent(Core_Globals, 'setOptions', { options });
+    fireEvent(Core_Globals, 'setOptions', { options });
     // Copy in the default options
-    Core_Defaults_merge(true, Defaults_defaultOptions, options);
+    merge(true, Defaults_defaultOptions, options);
     // Update the time object
     if (options.time) {
         defaultTime.update(Defaults_defaultOptions.time);
@@ -22262,7 +22256,7 @@ const DefaultOptions = {
 * @name Highcharts.ChartAddSeriesEventObject#options
 * @type {Highcharts.SeriesOptionsType}
 */ /**
-* Prevents the default behaviour of the event.
+* Prevents the default behavior of the event.
 * @name Highcharts.ChartAddSeriesEventObject#preventDefault
 * @type {Function}
 */ /**
@@ -22364,7 +22358,7 @@ const DefaultOptions = {
  *        The chart on which the event occurred.
  *
  * @param {Highcharts.SelectEventObject} event
- *        Event informations
+ *        Event information
  *
  * @return {boolean|undefined}
  *         Return false to prevent the default action, usually zoom.
@@ -22375,10 +22369,11 @@ const DefaultOptions = {
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -22388,7 +22383,6 @@ const { defaultOptions: Templating_defaultOptions, defaultTime: Templating_defau
 
 const { pageLang: Templating_pageLang } = Core_Globals;
 
-const { extend: Templating_extend, getNestedProperty: Templating_getNestedProperty, isArray: Templating_isArray, isNumber: Templating_isNumber, isObject: Templating_isObject, isString: Templating_isString, pick: Templating_pick, ucfirst: Templating_ucfirst } = Core_Utilities;
 /** @internal */
 const helpers = {
     // Built-in helpers
@@ -22398,8 +22392,8 @@ const helpers = {
     eq: (a, b) => a == b,
     each: function (arr) {
         const match = arguments[arguments.length - 1];
-        return Templating_isArray(arr) ?
-            arr.map((item, i) => format(match.body, Templating_extend(Templating_isObject(item) ? item : { '@this': item }, {
+        return isArray(arr) ?
+            arr.map((item, i) => format(match.body, extend(isObject(item) ? item : { '@this': item }, {
                 '@index': i,
                 '@first': i === 0,
                 '@last': i === arr.length - 1
@@ -22415,7 +22409,7 @@ const helpers = {
     // eslint-disable-next-line eqeqeq
     ne: (a, b) => a != b,
     subtract: (a, b) => a - b,
-    ucfirst: Templating_ucfirst,
+    ucfirst: ucfirst,
     unless: (condition) => !condition
 };
 const numberFormatCache = {};
@@ -22507,12 +22501,12 @@ function dateFormat(format, timestamp, upperCaseFirst) {
  */
 function format(str = '', ctx, owner) {
     // eslint-disable-next-line prefer-regex-literals
-    const regex = new RegExp('\\{([\\p{L}\\d:\\.,;\\-\\/<>\\[\\]%_@+"\'’= #\\(\\)]+)\\}', 'gu'), 
+    const regex = new RegExp('\\{([\\p{L}\\p{M}\\d:\\.,;\\-\\/<>\\[\\]%_@+"\'’= #\\(\\)]+)\\}', 'gu'), 
     // The sub expression regex is the same as the top expression regex,
     // but except parens and block helpers (#), and surrounded by parens
     // instead of curly brackets.
     // eslint-disable-next-line prefer-regex-literals
-    subRegex = new RegExp('\\(([\\p{L}\\d:\\.,;\\-\\/<>\\[\\]%_@+"\'= ]+)\\)', 'gu'), matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || Templating_defaultOptions.lang, time = owner?.time || Templating_defaultTime, numberFormatter = owner?.numberFormatter || numberFormat.bind(owner);
+    subRegex = new RegExp('\\(([\\p{L}\\p{M}\\d:\\.,;\\-\\/<>\\[\\]%_@+"\'= ]+)\\)', 'gu'), matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || Templating_defaultOptions.lang, time = owner?.time || Templating_defaultTime, numberFormatter = owner?.numberFormatter || numberFormat.bind(owner);
     /*
      * Get a literal or variable value inside a template expression. May be
      * extended with other types like string or null if needed, but keep it
@@ -22534,7 +22528,7 @@ function format(str = '', ctx, owner) {
             return key.slice(1, -1);
         }
         // Variables and constants
-        return Templating_getNestedProperty(key, ctx);
+        return getNestedProperty(key, ctx);
     };
     let match, currentMatch, depth = 0, hasSub;
     // Parse and create tree
@@ -22662,11 +22656,11 @@ function format(str = '', ctx, owner) {
             // Use string literal in order to be preserved in the outer
             // expression
             subRegex.lastIndex = 0;
-            if (subRegex.test(match.find) && Templating_isString(replacement)) {
+            if (subRegex.test(match.find) && isString(replacement)) {
                 replacement = `"${replacement}"`;
             }
         }
-        str = str.replace(match.find, Templating_pick(replacement, ''));
+        str = str.replace(match.find, Utilities_pick(replacement, ''));
     });
     return hasSub ? format(str, ctx, owner) : str;
 }
@@ -22707,7 +22701,7 @@ function numberFormat(number, decimals, decimalPoint, thousandsSep) {
         // Preserve decimals. Not huge numbers (#3793).
         decimals = Math.min(origDec, 20);
     }
-    else if (!Templating_isNumber(decimals)) {
+    else if (!Utilities_isNumber(decimals)) {
         decimals = 2;
     }
     else if (decimals && exp < 0) {
@@ -22736,7 +22730,7 @@ function numberFormat(number, decimals, decimalPoint, thousandsSep) {
         decimals ?? (decimals = 2);
         number = mantissa;
     }
-    if (Templating_isNumber(decimals) && decimals >= 0) {
+    if (Utilities_isNumber(decimals) && decimals >= 0) {
         options.minimumFractionDigits = decimals;
         options.maximumFractionDigits = decimals;
     }
@@ -22810,8 +22804,9 @@ const Templating = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -22834,9 +22829,8 @@ const Templating = {
 
 
 
-const { format: KPIComponent_format } = Core_Templating;
 
-const { createElement: KPIComponent_createElement, css: KPIComponent_css, defined: KPIComponent_defined, diffObjects: KPIComponent_diffObjects, isArray: KPIComponent_isArray, isNumber: KPIComponent_isNumber, merge: KPIComponent_merge, isFunction: KPIComponent_isFunction } = Core_Utilities;
+const { format: KPIComponent_format } = Core_Templating;
 /* *
  *
  *  Class
@@ -22863,14 +22857,14 @@ class KPIComponent extends Components_Component {
      * The options for the component.
      */
     constructor(cell, options, board) {
-        options = KPIComponent_merge(KPIComponent.defaultOptions, options);
+        options = merge(KPIComponent.defaultOptions, options);
         super(cell, options, board);
         this.options = options;
         this.type = 'KPI';
-        this.value = KPIComponent_createElement('span', {
+        this.value = createElement('span', {
             className: `${options.className}-value`
         }, {}, this.contentElement);
-        this.subtitle = KPIComponent_createElement('span', {
+        this.subtitle = createElement('span', {
             className: this.getSubtitleClassName()
         }, {}, this.contentElement);
     }
@@ -22901,14 +22895,14 @@ class KPIComponent extends Components_Component {
             this.options.chartOptions &&
             !this.chart) {
             if (!this.chartContainer) {
-                this.chartContainer = KPIComponent_createElement('div', {
+                this.chartContainer = createElement('div', {
                     className: `${this.options.className}-chart-container`
                 }, {
                     // Fix inner height, when using flex box
                     padding: '0.1px'
                 }, this.contentElement);
             }
-            this.chart = charter.chart(this.chartContainer, KPIComponent_merge(KPIComponent.defaultChartOptions, this.options.chartOptions));
+            this.chart = charter.chart(this.chartContainer, merge(KPIComponent.defaultChartOptions, this.options.chartOptions));
         }
         else if (this.chart &&
             !this.options.chartOptions &&
@@ -22963,11 +22957,11 @@ class KPIComponent extends Components_Component {
         if (!column || !formula) {
             return;
         }
-        if (KPIComponent_isFunction(formula)) {
+        if (isFunction(formula)) {
             return formula.call(this, column);
         }
         let filteredColumn = Array.isArray(column) ?
-            column.slice().filter(KPIComponent_defined) : Array.from(column);
+            column.slice().filter(defined) : Array.from(column);
         // Filter NaN values and empty strings since the formula functions don't
         // handle it internally.
         if (formula === 'MIN' || formula === 'MAX' || formula === 'MEDIAN') {
@@ -22991,12 +22985,12 @@ class KPIComponent extends Components_Component {
      * The value that should be displayed in the KPI.
      */
     getValue() {
-        if (KPIComponent_defined(this.options.value)) {
+        if (defined(this.options.value)) {
             return this.options.value;
         }
         const dataTable = this.getDataTable()?.getModified();
         if (dataTable && this.options.columnId) {
-            if (KPIComponent_defined(this.options.formula)) {
+            if (defined(this.options.formula)) {
                 return this.getFormulaValue();
             }
             const column = dataTable.getColumn(this.options.columnId), length = column?.length || 0;
@@ -23011,9 +23005,9 @@ class KPIComponent extends Components_Component {
      */
     setValue(value = this.getValue()) {
         const { valueFormat, valueFormatter } = this.options;
-        if (KPIComponent_defined(value)) {
+        if (defined(value)) {
             let prevValue;
-            if (KPIComponent_isNumber(+value)) {
+            if (Utilities_isNumber(+value)) {
                 prevValue = +value;
             }
             if (valueFormatter) {
@@ -23022,7 +23016,7 @@ class KPIComponent extends Components_Component {
             else if (valueFormat) {
                 value = KPIComponent_format(valueFormat, { value });
             }
-            else if (KPIComponent_isNumber(value)) {
+            else if (Utilities_isNumber(value)) {
                 value = value.toLocaleString();
             }
             HTML_AST.setElementHTML(this.value, '' + value);
@@ -23039,7 +23033,7 @@ class KPIComponent extends Components_Component {
         const chart = this.chart;
         const linkedValueTo = this.options.linkedValueTo;
         if (!chart || !linkedValueTo.enabled ||
-            !KPIComponent_defined(value) || !KPIComponent_isNumber(+value)) {
+            !defined(value) || !Utilities_isNumber(+value)) {
             return;
         }
         value = +value;
@@ -23072,11 +23066,11 @@ class KPIComponent extends Components_Component {
         this.setValue();
         HTML_AST.setElementHTML(this.subtitle, this.getSubtitle());
         if (style) {
-            KPIComponent_css(this.element, style);
+            css(this.element, style);
         }
         if (typeof subtitle === 'object') {
             if (subtitle.style) {
-                KPIComponent_css(this.subtitle, subtitle.style);
+                css(this.subtitle, subtitle.style);
             }
             this.subtitle.className = this.getSubtitleClassName();
         }
@@ -23103,7 +23097,7 @@ class KPIComponent extends Components_Component {
             return subtitle;
         }
         if (subtitle) {
-            if (KPIComponent_isNumber(this.prevValue) && KPIComponent_isNumber(value)) {
+            if (Utilities_isNumber(this.prevValue) && Utilities_isNumber(value)) {
                 const diff = value - this.prevValue;
                 let prefix = '';
                 if (diff > 0) {
@@ -23151,8 +23145,8 @@ class KPIComponent extends Components_Component {
      */
     getValueColor() {
         const { threshold, thresholdColors, value } = this.options;
-        if (thresholdColors && threshold && KPIComponent_isNumber(value)) {
-            if (KPIComponent_isArray(threshold)) {
+        if (thresholdColors && threshold && Utilities_isNumber(value)) {
+            if (isArray(threshold)) {
                 for (let i = threshold.length - 1; i >= 0; i--) {
                     if (value >= threshold[i]) {
                         if (i + 1 < thresholdColors.length) {
@@ -23194,7 +23188,7 @@ class KPIComponent extends Components_Component {
      */
     getOptions() {
         return {
-            ...KPIComponent_diffObjects(this.options, KPIComponent.defaultOptions),
+            ...diffObjects(this.options, KPIComponent.defaultOptions),
             type: 'KPI'
         };
     }
@@ -23202,7 +23196,7 @@ class KPIComponent extends Components_Component {
 /**
  * Default options of the KPI component.
  */
-KPIComponent.defaultOptions = KPIComponent_merge(Components_Component.defaultOptions, KPIComponent_KPIComponentDefaults);
+KPIComponent.defaultOptions = merge(Components_Component.defaultOptions, KPIComponent_KPIComponentDefaults);
 /**
  * Predefined sync config for the KPI component.
  */
@@ -23311,8 +23305,9 @@ KPIComponent.formulaFunctions = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -23418,17 +23413,17 @@ const NavigatorComponentDefaults = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
 
-const { defined: NavigatorSyncUtils_defined } = Core_Utilities;
 /* *
 *
 *  Utility Functions
@@ -23530,7 +23525,7 @@ function NavigatorSyncUtils_toRange(filterOptions) {
             typeof condition !== 'object' ||
             !(condition.operator === '<=' || condition.operator === '>=') ||
             typeof condition.columnId !== 'string' ||
-            !NavigatorSyncUtils_defined(condition.value)) {
+            !defined(condition.value)) {
             continue;
         }
         const colName = condition.columnId;
@@ -23567,12 +23562,13 @@ const NavigatorSyncUtils = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -23580,7 +23576,6 @@ const NavigatorSyncUtils = {
 
 
 const { Filter: NavigatorCrossfilterSync_FilterModifier } = Modifiers_DataModifier.types;
-const { addEvent: NavigatorCrossfilterSync_addEvent } = Core_Utilities;
 /* *
  *
  *  Constants
@@ -23636,7 +23631,7 @@ const NavigatorCrossfilterSync_syncPair = {
             }
         };
         let delay;
-        return NavigatorCrossfilterSync_addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
+        return addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
             clearTimeout(delay);
             delay = setTimeout(afterSetExtremes, 50, this, extremes);
         });
@@ -23655,12 +23650,13 @@ const NavigatorCrossfilterSync_syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -23668,7 +23664,6 @@ const NavigatorCrossfilterSync_syncPair = {
 
 
 const { Filter: NavigatorExtremesSync_FilterModifier } = Modifiers_DataModifier.types;
-const { addEvent: NavigatorExtremesSync_addEvent, pick: NavigatorExtremesSync_pick, defined: NavigatorExtremesSync_defined } = Core_Utilities;
 /* *
  *
  *  Constants
@@ -23701,7 +23696,7 @@ const NavigatorExtremesSync_syncPair = {
             }
         };
         let delay;
-        return NavigatorExtremesSync_addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
+        return addEvent(component.chart.xAxis[0], 'afterSetExtremes', function (extremes) {
             clearTimeout(delay);
             delay = setTimeout(afterSetExtremes, 50, this, extremes);
         });
@@ -23726,23 +23721,23 @@ const NavigatorExtremesSync_syncPair = {
                 maxIndex = cursor.lastRow;
                 minIndex = cursor.firstRow;
                 if (cursor.columns) {
-                    extremesColumn = NavigatorExtremesSync_pick(cursor.columns[0], extremesColumn);
+                    extremesColumn = Utilities_pick(cursor.columns[0], extremesColumn);
                 }
             }
             else if (cursor.state === 'xAxis.extremes.max' + groupKey) {
-                extremesColumn = NavigatorExtremesSync_pick(cursor.column, extremesColumn);
-                maxIndex = NavigatorExtremesSync_pick(cursor.row, maxIndex);
+                extremesColumn = Utilities_pick(cursor.column, extremesColumn);
+                maxIndex = Utilities_pick(cursor.row, maxIndex);
             }
             else {
-                extremesColumn = NavigatorExtremesSync_pick(cursor.column, extremesColumn);
-                minIndex = NavigatorExtremesSync_pick(cursor.row, minIndex);
+                extremesColumn = Utilities_pick(cursor.column, extremesColumn);
+                minIndex = Utilities_pick(cursor.row, minIndex);
             }
             const modifier = table.getModifier();
             if (typeof extremesColumn === 'string' &&
                 modifier instanceof NavigatorExtremesSync_FilterModifier) {
                 const min = table.getCell(extremesColumn, minIndex);
                 const max = table.getCell(extremesColumn, maxIndex);
-                if (NavigatorExtremesSync_defined(max) && NavigatorExtremesSync_defined(min)) {
+                if (defined(max) && defined(min)) {
                     NavigatorSyncs_NavigatorSyncUtils.setRangeOptions(modifier.options, extremesColumn, min, max);
                     void table.setModifier(modifier);
                 }
@@ -23780,12 +23775,13 @@ const NavigatorExtremesSync_syncPair = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 
@@ -23818,8 +23814,9 @@ const NavigatorSyncs_predefinedSyncConfig = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -23833,7 +23830,6 @@ const NavigatorSyncs_predefinedSyncConfig = {
 
 
 
-const { diffObjects: NavigatorComponent_diffObjects, isNumber: NavigatorComponent_isNumber, isString: NavigatorComponent_isString, merge: NavigatorComponent_merge, pick: NavigatorComponent_pick } = Core_Utilities;
 /* *
  *
  *  Class
@@ -23851,7 +23847,7 @@ class NavigatorComponent extends Components_Component {
     constructor(cell, options) {
         super(cell, options);
         this.type = 'Navigator';
-        this.options = NavigatorComponent_merge(NavigatorComponent.defaultOptions, options);
+        this.options = merge(NavigatorComponent.defaultOptions, options);
         const charter = (NavigatorComponent.charter.Chart ||
             Dashboards_Globals.win.Highcharts);
         this.chartContainer = Dashboards_Globals.win.document.createElement('div');
@@ -23860,7 +23856,7 @@ class NavigatorComponent extends Components_Component {
         this.chartContainer.classList
             .add(Dashboards_Globals.classNamePrefix + 'navigator');
         if (this.sync.syncConfig.crossfilter?.enabled) {
-            this.chart.update(NavigatorComponent_merge({ navigator: { xAxis: { labels: { format: '{value}' } } } }, this.options.chartOptions || {}), false);
+            this.chart.update(merge({ navigator: { xAxis: { labels: { format: '{value}' } } } }, this.options.chartOptions || {}), false);
         }
     }
     /* *
@@ -23870,7 +23866,7 @@ class NavigatorComponent extends Components_Component {
      * */
     /** @private */
     adjustNavigator() {
-        const chart = this.chart, height = NavigatorComponent_pick(chart.chartHeight, this.contentElement.clientHeight), width = this.contentElement.clientWidth, chartUpdates = {};
+        const chart = this.chart, height = Utilities_pick(chart.chartHeight, this.contentElement.clientHeight), width = this.contentElement.clientWidth, chartUpdates = {};
         if (chart.chartHeight !== height ||
             chart.chartWidth !== width) {
             chartUpdates.chart = {
@@ -23932,7 +23928,7 @@ class NavigatorComponent extends Components_Component {
      */
     getOptions() {
         return {
-            ...NavigatorComponent_diffObjects(this.options, NavigatorComponent_NavigatorComponentDefaults),
+            ...diffObjects(this.options, NavigatorComponent_NavigatorComponentDefaults),
             type: 'Navigator'
         };
     }
@@ -23940,7 +23936,7 @@ class NavigatorComponent extends Components_Component {
      * Gets the extremes of the navigator's x-axis.
      */
     getAxisExtremes() {
-        const axis = this.chart.xAxis[0], extremes = axis.getExtremes(), min = NavigatorComponent_isNumber(extremes.min) ? extremes.min : extremes.dataMin, max = NavigatorComponent_isNumber(extremes.max) ? extremes.max : extremes.dataMax;
+        const axis = this.chart.xAxis[0], extremes = axis.getExtremes(), min = Utilities_isNumber(extremes.min) ? extremes.min : extremes.dataMin, max = Utilities_isNumber(extremes.max) ? extremes.max : extremes.dataMax;
         if (this.categories) {
             return [
                 this.categories[Math.max(0, Math.ceil(min))],
@@ -24027,14 +24023,14 @@ class NavigatorComponent extends Components_Component {
             if (value === null) {
                 continue;
             }
-            else if (!NavigatorComponent_isNumber(value)) {
+            else if (!Utilities_isNumber(value)) {
                 value = `${value}`;
             }
             // Check if the x-axis data is not of mixed type.
             if (this.stringData === void 0) {
-                this.stringData = NavigatorComponent_isString(value);
+                this.stringData = isString(value);
             }
-            else if (this.stringData !== NavigatorComponent_isString(value)) {
+            else if (this.stringData !== isString(value)) {
                 throw new Error('Mixed data types in crossfilter navigator are ' +
                     'not supported.');
             }
@@ -24043,7 +24039,7 @@ class NavigatorComponent extends Components_Component {
                 uniqueXValues.push(value);
             }
         }
-        uniqueXValues.sort((a, b) => (NavigatorComponent_pick(a, NaN) < NavigatorComponent_pick(b, NaN) ? -1 : a === b ? 0 : 1));
+        uniqueXValues.sort((a, b) => (Utilities_pick(a, NaN) < Utilities_pick(b, NaN) ? -1 : a === b ? 0 : 1));
         let filteredValues;
         const modifierOptions = table.getModifier()?.options;
         if (crossfilterOptions.affectNavigator &&
@@ -24114,7 +24110,7 @@ class NavigatorComponent extends Components_Component {
         const chart = this.chart;
         await super.update(options, false);
         if (options.chartOptions) {
-            chart.update(NavigatorComponent_merge(this.sync.syncConfig.crossfilter?.enabled ? ({ navigator: { xAxis: { labels: { format: '{value}' } } } }) : {}, options.chartOptions), false);
+            chart.update(merge(this.sync.syncConfig.crossfilter?.enabled ? ({ navigator: { xAxis: { labels: { format: '{value}' } } } }) : {}, options.chartOptions), false);
         }
         this.emit({ type: 'afterUpdate' });
         if (shouldRerender) {
@@ -24128,7 +24124,7 @@ class NavigatorComponent extends Components_Component {
 /**
  * Default options of the Navigator component.
  */
-NavigatorComponent.defaultOptions = NavigatorComponent_merge(Components_Component.defaultOptions, NavigatorComponent_NavigatorComponentDefaults);
+NavigatorComponent.defaultOptions = merge(Components_Component.defaultOptions, NavigatorComponent_NavigatorComponentDefaults);
 /**
  * Predefined sync configuration for the Navigator component.
  */
@@ -24145,8 +24141,9 @@ NavigatorComponent.predefinedSyncConfig = NavigatorSyncs;
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -24215,8 +24212,9 @@ const HighchartsPlugin = {
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -24318,7 +24316,6 @@ const PluginHandler = {
 
 
 
-
 // Import SerializeHelper modules to register them
 
 
@@ -24345,6 +24342,13 @@ const PluginHandler = {
 
 
 
+
+// Import components
+
+
+
+
+
 /* *
  *
  *  Namespace
@@ -24352,16 +24356,21 @@ const PluginHandler = {
  * */
 const G = Dashboards_Globals;
 G.board = Dashboards_Board.board;
-G.addEvent = Dashboards_Utilities.addEvent;
+G.addEvent = addEvent;
 G.error = Dashboards_Utilities.error;
-G.merge = Dashboards_Utilities.merge;
-G.removeEvent = Dashboards_Utilities.removeEvent;
+G.merge = merge;
+G.removeEvent = removeEvent;
 G.setOptions = Dashboards_Defaults.setOptions;
-G.uniqueKey = Dashboards_Utilities.uniqueKey;
+G.uniqueKey = uniqueKey;
 G.AST = HTML_AST;
 G.Board = Dashboards_Board;
 G.Component = Components_Component;
 G.ComponentRegistry = Components_ComponentRegistry;
+G.GridComponent = GridComponent_GridComponent;
+G.HighchartsComponent = HighchartsComponent_HighchartsComponent;
+G.HTMLComponent = HTMLComponent_HTMLComponent;
+G.KPIComponent = KPIComponent_KPIComponent;
+G.NavigatorComponent = NavigatorComponent_NavigatorComponent;
 G.DataConnector = Connectors_DataConnector;
 G.DataConverter = Converters_DataConverter;
 G.DataCursor = Data_DataCursor;
@@ -24373,8 +24382,6 @@ G.GridPlugin = Plugins_GridPlugin;
 G.HighchartsPlugin = Plugins_HighchartsPlugin;
 G.PluginHandler = Dashboards_PluginHandler;
 G.Sync = Sync_Sync;
-// Extend with Core utilities
-Core_Utilities.extend(G, Core_Utilities);
 /* *
  *
  *  Classic Export

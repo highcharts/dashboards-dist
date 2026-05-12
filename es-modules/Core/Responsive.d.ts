@@ -22,7 +22,7 @@ declare module './Options' {
 }
 declare namespace Responsive {
     interface CallbackFunction {
-        (this: Chart): boolean;
+        (this: Chart, ctx?: Chart): boolean;
     }
     interface Options {
         /**
@@ -45,7 +45,9 @@ declare namespace Responsive {
          * A callback function to gain complete control on when the responsive
          * rule applies. Return `true` if it applies. This opens for checking
          * against other metrics than the chart size, for example the document
-         * size or other elements.
+         * size or other elements. Since v12.6.0, the callback also receives
+         * `ctx` as the first argument, so that arrow functions can access the
+         * same context as regular functions using `this`.
          *
          * @since     5.0.0
          * @context   Highcharts.Chart

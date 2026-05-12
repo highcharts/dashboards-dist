@@ -53,7 +53,7 @@ declare abstract class DataModifier implements DataEventEmitter<DataModifierEven
      * Emits an event on the modifier to all registered callbacks of this event.
      *
      * @param {DataModifierEvent} [e]
-     * Event object containing additonal event information.
+     * Event object containing additional event information.
      */
     emit<E extends DataModifierEvent>(e: E): void;
     /**

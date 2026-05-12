@@ -5,8 +5,9 @@
  *
  *  Main keyboard navigation handling.
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -14,10 +15,9 @@
 import H from '../Core/Globals.js';
 const { doc, win } = H;
 import MenuComponent from './Components/MenuComponent.js';
-import U from '../Core/Utilities.js';
-const { addEvent, defined, fireEvent } = U;
 import EventProvider from './Utils/EventProvider.js';
 import HTMLUtilities from './Utils/HTMLUtilities.js';
+import { addEvent, defined, fireEvent } from '../Shared/Utilities.js';
 const { getElement, simulatedEventTarget } = HTMLUtilities;
 /* *
  *

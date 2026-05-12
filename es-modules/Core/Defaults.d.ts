@@ -23,7 +23,7 @@ declare module './GlobalsBase' {
  * @return {Highcharts.Options}
  * Default options.
  */
-declare function getOptions(): DefaultOptions;
+export declare function getOptions(): DefaultOptions;
 /**
  * Merge the default options with custom options and return the new options
  * structure. Commonly used for defining reusable templates.

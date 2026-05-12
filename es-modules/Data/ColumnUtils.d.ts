@@ -1,5 +1,5 @@
 import type { CellType as DataTableCellType, Column as DataTableColumn } from './DataTable';
-import type Types from '../Shared/Types';
+import type { TypedArray } from '../Shared/Types';
 /**
  * Utility functions for columns that can be either arrays or typed arrays.
  * @private
@@ -65,7 +65,7 @@ export declare function setLength(column: DataTableColumn, length: number, asSub
  *
  * @private
  */
-export declare function splice(column: DataTableColumn, start: number, deleteCount: number, removedAsSubarray?: boolean, items?: DataTableCellType[] | Types.TypedArray): SpliceResult<DataTableColumn>;
+export declare function splice(column: DataTableColumn, start: number, deleteCount: number, removedAsSubarray?: boolean, items?: DataTableCellType[] | TypedArray): SpliceResult<DataTableColumn>;
 /**
  * Converts a cell value to a number.
  *

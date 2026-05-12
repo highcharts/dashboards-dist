@@ -5,8 +5,9 @@
  *  Accessibility component for the navigator.
  *
  *  Author: Øystein Moseng
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -24,12 +25,11 @@ import A from '../../Core/Animation/AnimationUtilities.js';
 const { animObject } = A;
 import T from '../../Core/Templating.js';
 const { format } = T;
-import U from '../../Core/Utilities.js';
-const { clamp, pick, syncTimeout } = U;
 import HU from '../Utils/HTMLUtilities.js';
 const { getFakeMouseEvent } = HU;
 import CU from '../Utils/ChartUtilities.js';
 const { getAxisRangeDescription, fireEventOnWrappedOrUnwrappedElement } = CU;
+import { clamp, internalClearTimeout, pick, syncTimeout } from '../../Shared/Utilities.js';
 /**
  * The NavigatorComponent class
  *
@@ -145,7 +145,7 @@ class NavigatorComponent extends AccessibilityComponent {
      */
     destroy() {
         if (this.updateNavigatorThrottleTimer) {
-            clearTimeout(this.updateNavigatorThrottleTimer);
+            internalClearTimeout(this.updateNavigatorThrottleTimer);
         }
         this.proxyProvider.removeGroup('navigator');
         if (this.announcer) {
@@ -222,7 +222,7 @@ class NavigatorComponent extends AccessibilityComponent {
         // Throttle updates so as not to reduce performance with
         // continuous keypress.
         if (this.updateNavigatorThrottleTimer) {
-            clearTimeout(this.updateNavigatorThrottleTimer);
+            internalClearTimeout(this.updateNavigatorThrottleTimer);
         }
         this.updateNavigatorThrottleTimer = setTimeout(performUpdate.bind(this, beforeAnnounce), 20);
     }

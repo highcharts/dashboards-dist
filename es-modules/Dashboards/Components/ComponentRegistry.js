@@ -2,8 +2,9 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -31,7 +32,7 @@ export const types = {};
  * @param {string} key
  * Registry key of the component class.
  *
- * @param {ComponentType} DataConnectorClass
+ * @param {ComponentType} ComponentClass
  * Component class (aka class constructor) to register.
  */
 export function registerComponent(key, ComponentClass) {

@@ -12,7 +12,7 @@ export declare const types: ComponentTypeRegistry;
  * @param {string} key
  * Registry key of the component class.
  *
- * @param {ComponentType} DataConnectorClass
+ * @param {ComponentType} ComponentClass
  * Component class (aka class constructor) to register.
  */
 export declare function registerComponent<T extends keyof ComponentTypeRegistry>(key: T, ComponentClass: ComponentTypeRegistry[T]): boolean;

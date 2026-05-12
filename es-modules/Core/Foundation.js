@@ -1,16 +1,16 @@
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
 'use strict';
-import U from './Utilities.js';
-const { addEvent, isFunction, objectEach, removeEvent } = U;
+import { addEvent, isFunction, objectEach, removeEvent } from '../Shared/Utilities.js';
 /* *
  *
  *  Class Namespace
@@ -24,7 +24,6 @@ var Foundation;
      *  Functions
      *
      * */
-    /* eslint-disable valid-jsdoc */
     /**
      * Register event options. If an event handler is set on the options, it
      * should be subject to Chart.update, Axis.update and Series.update. This is

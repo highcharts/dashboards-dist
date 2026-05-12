@@ -2,8 +2,9 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -19,8 +20,7 @@ import EditToolbar from './EditToolbar.js';
 import GUIElement from '../../Layout/GUIElement.js';
 import H from '../../../Core/Globals.js';
 const { isFirefox } = H;
-import U from '../../../Core/Utilities.js';
-const { merge, fireEvent, objectEach } = U;
+import { fireEvent, merge, objectEach } from '../../../Shared/Utilities.js';
 /**
  * @internal
  */
@@ -214,7 +214,8 @@ class CellEditToolbar extends EditToolbar {
                 });
                 fireEvent(row, 'cellChange', { cell: row.cells[0], row });
             }
-            fireEvent(editMode, 'cellDestroyed', {
+            fireEvent(editMode, 'layoutChanged', {
+                type: 'cellDestroyed',
                 target: cellId,
                 board: board
             });

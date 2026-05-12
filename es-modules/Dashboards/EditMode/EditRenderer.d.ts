@@ -33,11 +33,8 @@ declare function renderToggle(parentElement: HTMLElement, options: ToggleFormFie
  * @param parentElement
  * The element to which the new element should be appended
  *
- * @param text
- * Text to be displayed
- *
- * @param callback
- * Callback function to be fired on the click
+ * @param options
+ * Text options.
  *
  * @returns text Element
  */
@@ -48,11 +45,8 @@ declare function renderText(parentElement: HTMLElement, options: TextOptions): H
  * @param parentElement
  * The element to which the new element should be appended.
  *
- * @param icon
- * Icon URL
- *
- * @param callback
- * Callback function
+ * @param options
+ * Icon options.
  *
  * @returns
  * Icon Element

@@ -1,24 +1,8 @@
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
- *
- *
- *  Authors:
- *  - Sebastian Bochan
- *  - Wojciech Chmiel
- *  - Gøran Slettemark
- *  - Sophie Bremer
- *
- * */
-import U from '../../Core/Utilities.js';
 import Globals from '../Globals.js';
 import EditGlobals from '../EditMode/EditGlobals.js';
 import GUIElement from '../Layout/GUIElement.js';
 import ContextDetection from './ContextDetection.js';
-const { addEvent, merge, css, fireEvent, createElement } = U;
+import { addEvent, createElement, css, fireEvent, merge } from '../../Shared/Utilities.js';
 /**
  * Class providing a drag and drop functionality.
  * @internal

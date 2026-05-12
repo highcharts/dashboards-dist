@@ -2,8 +2,9 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -25,10 +26,9 @@ import MAX from '../../../Data/Formula/Functions/MAX.js';
 import MIN from '../../../Data/Formula/Functions/MIN.js';
 import COUNT from '../../../Data/Formula/Functions/COUNT.js';
 import PRODUCT from '../../../Data/Formula/Functions/PRODUCT.js';
+import { createElement, css, defined, diffObjects, isArray, isFunction, isNumber, merge } from '../../../Shared/Utilities.js';
 import Templating from '../../../Core/Templating.js';
 const { format } = Templating;
-import U from '../../../Core/Utilities.js';
-const { createElement, css, defined, diffObjects, isArray, isNumber, merge, isFunction } = U;
 /* *
  *
  *  Class

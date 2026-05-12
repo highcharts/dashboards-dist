@@ -1,6 +1,6 @@
+import { type EventOptions } from '../../Shared/Utilities.js';
 import type { EventCallback } from '../../Core/Callback';
 import DOMElementType from '../../Core/Renderer/DOMElementType';
-import U from '../../Core/Utilities.js';
 interface ElementsFocusEventRemovers {
     element: DOMElementType;
     remover: Function;
@@ -11,7 +11,7 @@ interface ElementsFocusEventRemovers {
 declare class EventProvider {
     constructor();
     eventRemovers: Array<ElementsFocusEventRemovers>;
-    addEvent<T>(el: (Class<T> | T), type: string, fn: (EventCallback<T> | Function), options?: U.EventOptions): Function;
+    addEvent<T>(el: (Class<T> | T), type: string, fn: (EventCallback<T> | Function), options?: EventOptions): Function;
     /**
      * Remove added event.
      * @private

@@ -598,6 +598,10 @@ export interface ChartOptions {
      * requires two fingers. To allow panning with one finger, set
      * `followTouchMove` to `false`.
      *
+     * **Note:** If both zooming and panning are enabled without keys, zooming
+     * will take precedence by default. To prioritize panning, either set
+     * [chart.zooming.key](#chart.zooming.key) or panKey.
+     *
      * @sample  {highcharts} highcharts/chart/pankey/
      *          Zooming and panning
      * @sample  {highstock} stock/chart/panning/
@@ -1104,7 +1108,16 @@ export interface ChartResetZoomButtonOptions {
      *
      * @since 10.2.1
      */
-    position?: AlignObject;
+    position?: AlignObject & {
+        /** @default 'right' */
+        align?: AlignObject['align'];
+        /** @default 'top' */
+        verticalAlign?: AlignObject['verticalAlign'];
+        /** @default -10 */
+        x?: AlignObject['x'];
+        /** @default 10 */
+        y?: AlignObject['y'];
+    };
     /**
      * What frame the button placement should be related to. Can be
      * either `plotBox` or `spacingBox`.
@@ -1131,7 +1144,10 @@ export interface ChartResetZoomButtonOptions {
      *
      * @since 10.2.1
      */
-    theme?: SVGAttributes;
+    theme?: SVGAttributes & {
+        /** @default 6 */
+        zIndex?: SVGAttributes['zIndex'];
+    };
 }
 export interface ChartSelectionAxisContextObject {
     axis: Axis;
@@ -1159,6 +1175,10 @@ export interface ChartZoomingOptions {
      * Set a key to hold when dragging to zoom the chart. This is useful to
      * avoid zooming while moving points. Should be set different than
      * [chart.panKey](#chart.panKey).
+     *
+     * **Note:** If both zooming and panning are enabled without keys, zooming
+     * will take precedence by default. To prioritize panning, either set
+     * zooming key or [chart.panKey](#chart.panKey).
      *
      * @default    {highcharts} undefined
      * @validvalue ["alt", "ctrl", "meta", "shift"]

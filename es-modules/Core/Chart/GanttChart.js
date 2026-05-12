@@ -4,8 +4,9 @@
  *
  *  Author: Lars A. V. Cabrera
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -13,8 +14,7 @@
 import Chart from './Chart.js';
 import D from '../Defaults.js';
 const { defaultOptions } = D;
-import U from '../Utilities.js';
-const { isArray, merge, splat } = U;
+import { isArray, merge, splat } from '../../Shared/Utilities.js';
 /* *
  *
  *  Class

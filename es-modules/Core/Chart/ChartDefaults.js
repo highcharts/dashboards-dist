@@ -1,10 +1,11 @@
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
- *  Author: Torstein Honsi
+ *  Author: Torstein Hønsi
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -386,6 +387,9 @@ const ChartDefaults = {
     /**
      * Callback function to override the default function that formats all
      * the numbers in the chart. Returns a string with the formatted number.
+     * Since v12.6.0, the callback also receives `ctx` as the last argument,
+     * so that arrow functions can access the same context as regular
+     * functions using `this`.
      *
      * @sample highcharts/members/highcharts-numberformat
      *      Arabic digits in Highcharts
@@ -438,6 +442,10 @@ const ChartDefaults = {
      * #tooltip.followTouchMove) option is `true` (default), panning
      * requires two fingers. To allow panning with one finger, set
      * `followTouchMove` to `false`.
+     *
+     * **Note:** If both zooming and panning are enabled without keys, zooming
+     * will take precedence by default. To prioritize panning, either set
+     * [chart.zooming.key](#chart.zooming.key) or panKey.
      *
      * @sample  {highcharts} highcharts/chart/pankey/ Zooming and panning
      * @sample  {highstock} stock/chart/panning/ Zooming and xy panning
@@ -778,7 +786,7 @@ const ChartDefaults = {
      * @see In styled mode, the selection marker fill is set with the
      *      `.highcharts-selection-marker` class.
      *
-     * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type      {Highcharts.ColorType}
      * @default   rgba(51,92,173,0.25)
      * @since     2.1.7
      * @apioption chart.selectionMarkerFill
@@ -1048,6 +1056,10 @@ const ChartDefaults = {
          * avoid zooming while moving points. Should be set different than
          * [chart.panKey](#chart.panKey).
          *
+         * **Note:** If both zooming and panning are enabled without keys,
+         * zooming will take precedence by default. To prioritize panning,
+         * either set zooming key or [chart.panKey](#chart.panKey).
+         *
          * @type       {string}
          * @default    {highcharts} undefined
          * @validvalue ["alt", "ctrl", "meta", "shift"]
@@ -1099,6 +1111,7 @@ const ChartDefaults = {
              * @sample {highstock} highcharts/chart/resetzoombutton-theme/
              *         Theming the button
              *
+             * @default { zIndex: 6 }
              * @type  {Highcharts.SVGAttributes}
              * @since 10.2.1
              */
@@ -1124,18 +1137,15 @@ const ChartDefaults = {
              * @since 10.2.1
              */
             position: {
-                /** @internal */
                 align: 'right',
-                /** @internal */
-                x: -10,
                 /**
                  * The vertical alignment of the button.
                  *
-                 * @type       {Highcharts.VerticalAlignValue}
-                 * @default    top
-                 * @apioption  chart.zooming.resetButton.position.verticalAlign
+                 * @type      {Highcharts.VerticalAlignValue}
+                 * @default   top
+                 * @apioption chart.zooming.resetButton.position.verticalAlign
                  */
-                /** @internal */
+                x: -10,
                 y: 10
             }
         }
@@ -1192,7 +1202,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/border/
      *         Border options
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      */
     borderColor: "#334eff" /* Palette.highlightColor80 */,
     /**
@@ -1231,7 +1241,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/backgroundcolor-gradient/
      *         Gradient
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      */
     backgroundColor: "#ffffff" /* Palette.backgroundColor */,
     /**
@@ -1253,7 +1263,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/plotbackgroundcolor-gradient/
      *         Gradient
      *
-     * @type      {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type      {Highcharts.ColorType}
      * @apioption chart.plotBackgroundColor
      */
     /**
@@ -1287,7 +1297,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/plotborder/
      *         Plot border options
      *
-     * @type {Highcharts.ColorString|Highcharts.GradientColorObject|Highcharts.PatternObject}
+     * @type {Highcharts.ColorType}
      */
     plotBorderColor: "#cccccc" /* Palette.neutralColor20 */
 };

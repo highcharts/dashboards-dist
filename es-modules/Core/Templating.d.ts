@@ -110,7 +110,7 @@ declare const Templating: {
 };
 declare namespace Templating {
     interface FormatterCallback<T> {
-        (this: T): string;
+        (this: T, ...args: Array<any>): string;
     }
     interface OwnerOptions {
         /**

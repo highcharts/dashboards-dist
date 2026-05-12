@@ -5,16 +5,16 @@
  *
  *  Utility functions for accessibility module.
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
 'use strict';
 import H from '../../Core/Globals.js';
+import { css } from '../../Shared/Utilities.js';
 const { doc, win } = H;
-import U from '../../Core/Utilities.js';
-const { css } = U;
 /* *
  *
  *  Constants
@@ -26,7 +26,6 @@ const simulatedEventTarget = win.EventTarget && new win.EventTarget() || 'none';
  *  Functions
  *
  * */
-/* eslint-disable valid-jsdoc */
 /**
  * @private
  * @param {Highcharts.HTMLDOMElement} el

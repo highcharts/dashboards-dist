@@ -31,10 +31,14 @@ declare class GridComponent extends Component {
      */
     options: Options;
     constructor(cell: Cell, options: Partial<Options>, board?: Board);
-    update(options: Partial<Options>): Promise<void>;
+    update(options: Partial<Options>, shouldRerender?: boolean): Promise<void>;
     render(): this;
     resize(width?: number | string | null, height?: number | string | null): void;
     onTableChanged(): void;
+    /**
+     * Legacy handler for table changes.
+     */
+    private onTableChangedLegacy;
     getEditableOptions(): Options;
     getOptionsOnDrop(sidebar: SidebarPopup): Partial<Options>;
     /**
@@ -45,6 +49,11 @@ declare class GridComponent extends Component {
      * Sets the options for the data grid component content container.
      */
     private setOptions;
+    private finalizeGridRender;
+    private getGridOptionsSnapshot;
+    private getGridOptionsWithConnectorData;
+    private recreateGrid;
+    private getGridDataTable;
     /**
      * Function to create the Grid.
      *

@@ -2,19 +2,19 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
  *  - Sophie Bremer
  *  - Gøran Slettemark
- *  - Dawid Dragula
+ *  - Dawid Draguła
  *
  * */
 'use strict';
-import U from '../../Core/Utilities.js';
-const { addEvent, fireEvent, merge } = U;
+import { addEvent, fireEvent, merge } from '../../Shared/Utilities.js';
 /* *
  *
  *  Class
@@ -109,7 +109,7 @@ class DataModifier {
      * Emits an event on the modifier to all registered callbacks of this event.
      *
      * @param {DataModifierEvent} [e]
-     * Event object containing additonal event information.
+     * Event object containing additional event information.
      */
     emit(e) {
         fireEvent(this, e.type, e);

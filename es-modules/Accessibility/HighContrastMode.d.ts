@@ -1,8 +1,12 @@
 import type Accessibility from './Accessibility';
 import type ColorType from '../Core/Color/ColorType';
+interface HighContrastState {
+    active?: boolean;
+    applying?: boolean;
+}
 declare module '../Core/Chart/ChartBase' {
     interface ChartBase {
-        highContrastModeActive?: boolean;
+        highContrastState?: HighContrastState;
     }
 }
 declare module '../Core/Series/PointBase' {

@@ -5,19 +5,19 @@
  *
  *  Accessibility component for exporting menu.
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
 'use strict';
-import U from '../../Core/Utilities.js';
-const { attr } = U;
 import AccessibilityComponent from '../AccessibilityComponent.js';
 import KeyboardNavigationHandler from '../KeyboardNavigationHandler.js';
 import ChartUtilities from '../Utils/ChartUtilities.js';
 const { getChartTitle, unhideChartElementFromAT } = ChartUtilities;
 import HTMLUtilities from '../Utils/HTMLUtilities.js';
+import { attr } from '../../Shared/Utilities.js';
 const { getFakeMouseEvent } = HTMLUtilities;
 /* *
  *
@@ -61,7 +61,6 @@ class MenuComponent extends AccessibilityComponent {
      *  Functions
      *
      * */
-    /* eslint-disable valid-jsdoc */
     /**
      * Init the component
      */

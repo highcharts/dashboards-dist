@@ -1,7 +1,6 @@
 import EditGlobals from '../EditMode/EditGlobals.js';
 import GUIElement from '../Layout/GUIElement.js';
-import U from '../../Core/Utilities.js';
-const { merge, addEvent, createElement, fireEvent, removeEvent } = U;
+import { addEvent, createElement, fireEvent, merge, removeEvent } from '../../Shared/Utilities.js';
 /**
  * Class providing a resizing functionality.
  */

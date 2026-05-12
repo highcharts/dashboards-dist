@@ -2,8 +2,9 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -15,8 +16,7 @@
  * */
 'use strict';
 import EditGlobals from './EditGlobals.js';
-import U from '../../Core/Utilities.js';
-const { merge, createElement, defined } = U;
+import { createElement, defined, find, merge } from '../../Shared/Utilities.js';
 /* *
  *
  *  Functions
@@ -26,7 +26,7 @@ const { merge, createElement, defined } = U;
  * Function to create a context button.
  * @internal
  *
- * @param parentElement
+ * @param parentNode
  * The element to which the new element should be appended.
  *
  * @param editMode
@@ -156,7 +156,7 @@ function renderSelect(parentElement, options) {
     const btnContent = createElement('div', {
         className: EditGlobals.classNames.dropdownButtonContent
     }, {}, btn);
-    const iconURL = (U.find(options.selectOptions, (item) => item.name === options.value) || {}).iconURL;
+    const iconURL = (find(options.selectOptions, (item) => item.name === options.value) || {}).iconURL;
     let headerIcon;
     if (iconURL) {
         headerIcon = createElement('img', {
@@ -283,11 +283,8 @@ function renderToggle(parentElement, options) {
  * @param parentElement
  * The element to which the new element should be appended
  *
- * @param text
- * Text to be displayed
- *
- * @param callback
- * Callback function to be fired on the click
+ * @param options
+ * Text options.
  *
  * @returns text Element
  */
@@ -310,11 +307,8 @@ function renderText(parentElement, options) {
  * @param parentElement
  * The element to which the new element should be appended.
  *
- * @param icon
- * Icon URL
- *
- * @param callback
- * Callback function
+ * @param options
+ * Icon options.
  *
  * @returns
  * Icon Element

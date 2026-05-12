@@ -36,7 +36,7 @@ declare function setAnimation(animation: (boolean | Partial<AnimationOptions> | 
  * @return {Highcharts.AnimationOptionsObject}
  *         An object with at least a duration property.
  */
-declare function animObject(animation?: (boolean | DeepPartial<AnimationOptions>)): AnimationOptions;
+export declare function animObject(animation?: (boolean | DeepPartial<AnimationOptions>)): AnimationOptions;
 /**
  * Get the defer as a number value from series animation options.
  *

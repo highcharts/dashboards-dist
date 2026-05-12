@@ -2,20 +2,21 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
- *  - Pawel Lysy
+ *  - Paweł Lysy
  *  - Kamil Kubik
  *
  * */
 'use strict';
 import DataConverter from './DataConverter.js';
 import DataConverterUtils from './DataConverterUtils.js';
-import U from '../../Core/Utilities.js';
-const { error, isArray, merge, objectEach } = U;
+import { isArray, merge, objectEach } from '../../Shared/Utilities.js';
+import { error } from '../../Core/Utilities.js';
 /* *
  *
  *  Class

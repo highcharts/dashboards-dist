@@ -5,8 +5,9 @@
  *
  *  Default lang/i18n options for accessibility.
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  * */
@@ -207,6 +208,15 @@ const langOptions = {
              * defined in [lang.accessibility.axis](#lang.accessibility.axis)
              */
             changeAnnouncement: '{axisRangeDescription}'
+        },
+        /**
+         * Stock tools language options for accessibility.
+         *
+         * @since next
+         */
+        stockTools: {
+            groupLabel: 'Stock chart tools',
+            arrowLabel: 'Toggle submenu'
         },
         /**
          * Accessibility language options for the data table.

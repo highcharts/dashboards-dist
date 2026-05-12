@@ -1,5 +1,5 @@
 import DataConverter, { type Type as DataConverterType } from './DataConverter';
-import type { Column as DataTableColumn, ColumnCollection as DataTableColumnCollection } from '../DataTable.js';
+import type { Column as DataTableColumn, ColumnCollection as DataTableColumnCollection } from '../DataTable';
 /**
  * Converts a value to a Date.
  *
@@ -60,7 +60,7 @@ export declare function guessType(value: unknown, converter: DataConverter): 'nu
  * Remove all spaces between numbers.
  *
  * @return {string}
- * Trimed string
+ * Trimmed string
  */
 export declare function trim(str: string, inside?: boolean): string;
 /**

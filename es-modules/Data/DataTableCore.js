@@ -2,8 +2,9 @@
  *
  *  (c) 2009-2026 Highsoft AS
  *
- *  A commercial license may be required depending on use.
- *  See www.highcharts.com/license
+ *  Integration of this software requires a license.
+ *  - For commercial use, see www.highcharts.com/license
+ *  - For non-commercial, see www.highcharts.com/license-eula
  *
  *
  *  Authors:
@@ -15,8 +16,8 @@
 'use strict';
 import ColumnUtils from './ColumnUtils.js';
 const { setLength, splice } = ColumnUtils;
-import U from '../Core/Utilities.js';
-const { fireEvent, objectEach, uniqueKey } = U;
+import { fireEvent, objectEach } from '../Shared/Utilities.js';
+import { uniqueKey } from '../Core/Utilities.js';
 /* *
  *
  *  Class

@@ -23,11 +23,6 @@ declare module './Series/SeriesBase' {
         tt?: SVGElement;
     }
 }
-declare module './Series/SeriesOptions' {
-    interface SeriesOptions {
-        tooltip?: Partial<TooltipOptions>;
-    }
-}
 /**
  * Tooltip of a chart.
  *
@@ -65,6 +60,7 @@ declare class Tooltip {
     distance: number;
     followPointer?: boolean;
     hideTimer?: number;
+    showTimer?: number;
     isSticky: boolean;
     label?: SVGElement;
     len?: number;
@@ -133,7 +129,7 @@ declare class Tooltip {
      *
      * @function Highcharts.Tooltip#defaultFormatter
      *
-     * @param {Highcharts.Tooltip} tooltip
+     * @param {Highcharts.Tooltip} tooltip The tooltip instance.
      *
      * @return {string|Array<string>}
      * Returns a string (single tooltip and shared)
@@ -221,7 +217,7 @@ declare class Tooltip {
 }
 declare namespace Tooltip {
     interface FormatterCallbackFunction {
-        (this: Point, tooltip: Tooltip): (false | string | Array<string>);
+        (this: Point, tooltip: Tooltip, ctx?: Point): (false | string | Array<string>);
     }
     interface HeaderFormatterEventObject {
         isFooter?: boolean;
@@ -229,7 +225,7 @@ declare namespace Tooltip {
         text?: string;
     }
     interface PositionerCallbackFunction {
-        (this: Tooltip, labelWidth: number, labelHeight: number, point: (Point | PositionerPointObject), anchor?: [number, number], alignLeft?: boolean): PositionObject;
+        (this: Tooltip, labelWidth: number, labelHeight: number, point: (Point | PositionerPointObject), ctx?: Tooltip, anchor?: [number, number], alignLeft?: boolean): PositionObject;
     }
     interface PositionerPointObject {
         isHeader?: boolean;

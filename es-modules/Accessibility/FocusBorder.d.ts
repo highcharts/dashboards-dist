@@ -27,7 +27,7 @@ declare namespace FocusBorderComposition {
         renderFocusBorder(): void;
         setFocusToElement(svgElement: SVGElement, focusElement?: DOMElementType): void;
     }
-    interface SVGElementCompositon extends SVGElement {
+    interface SVGElementComposition extends SVGElement {
         focusBorder?: SVGElement;
         addFocusBorder(margin: number, attribs: SVGAttributes): void;
         removeFocusBorder(): void;

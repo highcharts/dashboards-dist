@@ -3,6 +3,8 @@ export interface HTMLAttributes {
     'aria-label'?: string;
     'aria-live'?: string;
     'aria-atomic'?: boolean;
+    'aria-sort'?: string;
+    'aria-pressed'?: boolean;
     'aria-rowindex'?: number;
     checked?: boolean;
     class?: string;
@@ -13,6 +15,8 @@ export interface HTMLAttributes {
     href?: string;
     htmlFor?: string;
     id?: string;
+    min?: string;
+    max?: string;
     name?: string;
     onclick?: any;
     onload?: any;
@@ -24,6 +28,7 @@ export interface HTMLAttributes {
     rel?: string;
     role?: string;
     src?: string;
+    step?: string;
     rowspan?: number;
     summary?: string;
     tabindex?: number;
