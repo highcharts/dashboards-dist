@@ -19,7 +19,7 @@
     "visualization"
   ],
   "peerDependencies": {
-    "highcharts": ">=10.0.0 <13",
+    "highcharts": ">=10.0.0 <14",
     "@highcharts/grid-lite": "^3.0.0",
     "@highcharts/grid-pro": "^3.0.0"
   },
