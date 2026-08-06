@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards v4.2.0 (2026-05-12)
+ * @license Highcharts Dashboards v4.2.1 (2026-08-06)
  * @module dashboards/dashboards
  *
  * (c) 2009-2026 Highsoft AS
@@ -21,16 +21,31 @@
 return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	// The require scope
-/******/ 	var __webpack_require__ = {};
+/******/ 	const __webpack_require__ = {};
 /******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
+/******/ 		// define getter/value functions for harmony exports
 /******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			if(Array.isArray(definition)) {
+/******/ 				var i = 0;
+/******/ 				while(i < definition.length) {
+/******/ 					var key = definition[i++];
+/******/ 					var binding = definition[i++];
+/******/ 					if(!__webpack_require__.o(exports, key)) {
+/******/ 						if(binding === 0) {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
+/******/ 						} else {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
+/******/ 						}
+/******/ 					} else if(binding === 0) { i++; }
+/******/ 				}
+/******/ 			} else {
+/******/ 				for(var key in definition) {
+/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 					}
 /******/ 				}
 /******/ 			}
 /******/ 		};
@@ -42,7 +57,7 @@ return /******/ (() => { // webpackBootstrap
 /******/ 	})();
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
+let __webpack_exports__ = {};
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
@@ -78,7 +93,7 @@ var Globals;
      *  Constants
      *
      * */
-    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '4.2.0', Globals.win = (typeof window !== 'undefined' ?
+    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '4.2.1', Globals.win = (typeof window !== 'undefined' ?
         window :
         {}), // eslint-disable-line node/no-unsupported-features/es-builtins
     Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -172,7 +187,7 @@ var Globals;
  * might not be possible to change this property because of read-only
  * restrictions, instead use {@link Highcharts.setOptions}.
  *
- * @deprecated
+ * @deprecated 9.1.2
  * @name Highcharts.theme
  * @type {Highcharts.Options}
  */
@@ -627,7 +642,7 @@ function extend(a, b) {
 /**
  * Extend a prototyped class by new members.
  *
- * @deprecated
+ * @deprecated 11.0.0
  * @function Highcharts.extendClass<T>
  *
  * @param {Highcharts.Class<T>} parent
@@ -889,7 +904,7 @@ function getStyle(el, prop, toInt) {
     const css = win.getComputedStyle(el, void 0); // eslint-disable-line no-undefined
     if (css) {
         style = css.getPropertyValue(prop);
-        if (Utilities_pick(toInt, prop !== 'opacity')) {
+        if (pick(toInt, prop !== 'opacity')) {
             style = pInt(style);
         }
     }
@@ -985,7 +1000,7 @@ function isClass(obj) {
  * @return {boolean}
  *         True if the item is a finite number
  */
-function Utilities_isNumber(n) {
+function isNumber(n) {
     return typeof n === 'number' && !isNaN(n) && n < Infinity && n > -Infinity;
 }
 /**
@@ -1110,7 +1125,7 @@ function merge(extendOrSource, ...sources) {
 /**
  * Take an interval and normalize it to multiples of round numbers.
  *
- * @deprecated
+ * @deprecated 5.0.3
  * @function Highcharts.normalizeTickInterval
  *
  * @param {number} interval
@@ -1139,7 +1154,7 @@ function merge(extendOrSource, ...sources) {
 function normalizeTickInterval(interval, multiples, magnitude, allowDecimals, hasTickAmount) {
     let i, retInterval = interval;
     // Round to a tenfold of 1, 2, 2.5 or 5
-    magnitude = Utilities_pick(magnitude, getMagnitude(interval));
+    magnitude = pick(magnitude, getMagnitude(interval));
     const normalized = interval / magnitude;
     // Multiples for a linear scale
     if (!multiples) {
@@ -1264,7 +1279,7 @@ function pad(number, length, padder) {
  * @return {T}
  *         The value of the first argument that is not null or undefined.
  */
-function Utilities_pick() {
+function pick() {
     const args = arguments;
     const length = args.length;
     for (let i = 0; i < length; i++) {
@@ -1680,7 +1695,7 @@ function guessType(value, converter) {
         else {
             // Determine if a date string
             const dateValue = converter.parseDate(value);
-            result = Utilities_isNumber(dateValue) ? 'Date' : 'string';
+            result = isNumber(dateValue) ? 'Date' : 'string';
         }
     }
     if (typeof value === 'number') {
@@ -2804,6 +2819,8 @@ const ColumnUtils = {
 /* harmony default export */ const Data_ColumnUtils = (ColumnUtils);
 
 ;// ./code/dashboards/es-modules/Core/Utilities.js
+/* unused harmony import specifier */ var Utilities_isNumber;
+/* unused harmony import specifier */ var Utilities_pick;
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
@@ -2859,7 +2876,7 @@ function error(code, stop, chart, params) {
     if (code === 32) {
         code = `${severity}: Deprecated member`;
     }
-    const isCode = Utilities_isNumber(code);
+    const isCode = isNumber(code);
     let message = isCode ?
         `${severity} #${code}: www.highcharts.com/errors/${code}/` :
         code.toString();
@@ -2918,8 +2935,8 @@ function insertItem(item, collection) {
         // equivalent to pushing
         !collection[i] ||
             // Handle index option, the element to insert has lower index
-            (isNumber(indexOption) &&
-                indexOption < pick(collection[i].options.index, collection[i]._i)) ||
+            (Utilities_isNumber(indexOption) &&
+                indexOption < Utilities_pick(collection[i].options.index, collection[i]._i)) ||
             // Insert the new item before other internal items
             // (navigator)
             collection[i].options.isInternal) {
@@ -3005,7 +3022,7 @@ const uniqueKey = (function () {
  * State of the serial mode.
  */
 function useSerialIds(mode) {
-    return (serialMode = pick(mode, serialMode));
+    return (serialMode = Utilities_pick(mode, serialMode));
 }
 /* *
  *
@@ -3040,11 +3057,12 @@ if (Utilities_win.jQuery) {
     * @param {Highcharts.Options} [options]
     *        The chart options structure.
     *
-    * @param {Highcharts.ChartCallbackFunction} [callback]
+    * @param {Highcharts.ChartCallbackFunction|true} [callback]
     *        Function to run when the chart has loaded and all external
     *        images are loaded. Defining a
     *        [chart.events.load](https://api.highcharts.com/highcharts/chart.events.load)
-    *        handler is equivalent.
+    *        handler is equivalent. Set to `true` to return a promise that
+    *        resolves when the chart is ready.
     *
     * @return {JQuery}
     *         The current JQuery selector.
@@ -3225,7 +3243,7 @@ if (Utilities_win.jQuery) {
  * Generic dictionary in TypeScript notation.
  * Use the native `AnyRecord` instead.
  *
- * @deprecated
+ * @deprecated 8.1.2
  * @interface Highcharts.Dictionary<T>
  */ /**
 * @name Highcharts.Dictionary<T>#[key:string]
@@ -3413,44 +3431,37 @@ const { setLength: DataTableCore_setLength, splice: DataTableCore_splice } = Dat
  * to add, remove, and manipulate columns and rows, as well as to retrieve data
  * from specific cells.
  *
+ * Highcharts allows passing a `DataTable` or a configuration object for a data
+ * table in the `dataTable` property, either chart-level
+ * [dataTable](https://api.highcharts.com/highcharts/dataTable) or as
+ * [series.dataTable](https://api.highcharts.com/highcharts/series.dataTable).
+ * The `DataTable` is then used as a source for the series data points, mapped
+ * by the `series.dataMapping` option.
+ *
+ * After chart instantiation, the data table can be accessed from the series as
+ * `series.dataTable`. CRUD operations on the data table will be reflected in
+ * the chart.
+ *
+ * @example
+ * const dataTable = new Highcharts.DataTable({
+ *   columns: {
+ *     year: [2020, 2021, 2022, 2023],
+ *     cost: [11, 13, 12, 14],
+ *     revenue: [12, 15, 14, 18]
+ *   }
+ * });
+ *
  * @class
  * @name Highcharts.DataTable
  *
- * @param {Highcharts.DataTableOptions} [options]
+ * @param {Highcharts.DataTableOptionsObject} [options]
  * Options to initialize the new DataTable instance.
  */
 class DataTableCore {
-    /**
-     * Constructs an instance of the DataTable class.
-     *
-     * @example
-     * const dataTable = new Highcharts.DataTableCore({
-     *   columns: {
-     *     year: [2020, 2021, 2022, 2023],
-     *     cost: [11, 13, 12, 14],
-     *     revenue: [12, 15, 14, 18]
-     *   }
-     * });
-
-     *
-     * @param {Highcharts.DataTableOptions} [options]
-     * Options to initialize the new DataTable instance.
-     */
     constructor(options = {}) {
-        /**
-         * Whether the ID was automatic generated or given in the constructor.
-         *
-         * @name Highcharts.DataTable#autoId
-         * @type {boolean}
-         */
+        this.isDataTable = true;
         this.autoId = !options.id;
         this.columns = {};
-        /**
-         * ID of the table for identification purposes.
-         *
-         * @name Highcharts.DataTable#id
-         * @type {string}
-         */
         this.id = (options.id || uniqueKey());
         this.rowCount = 0;
         this.versionTag = uniqueKey();
@@ -3485,6 +3496,13 @@ class DataTableCore {
      * Delete rows. Simplified version of the full
      * `DataTable.deleteRows` method.
      *
+     * @sample highcharts/datatable/live-chart/
+     *       Add and delete rows in a live chart
+     * @sample highcharts/datatable/shared-with-grid/
+     *       Chart with data table CRUD operations
+     *
+     * @function Highcharts.DataTable#deleteRows
+     *
      * @param {number} rowIndex
      * The start row index
      *
@@ -3509,11 +3527,13 @@ class DataTableCore {
         this.versionTag = uniqueKey();
     }
     /**
-     * Fetches the given column by the canonical column name. Simplified version
+     * Fetches the given column by the canonical column ID. Simplified version
      * of the full `DataTable.getRow` method, always returning by reference.
      *
+     * @function Highcharts.DataTable#getColumn
+     *
      * @param {string} columnId
-     * Name of the column to get.
+     * ID of the column to get.
      *
      * @return {Highcharts.DataTableColumn|undefined}
      * A copy of the column, or `undefined` if not found.
@@ -3526,6 +3546,8 @@ class DataTableCore {
     /**
      * Retrieves all or the given columns. Simplified version of the full
      * `DataTable.getColumns` method, always returning by reference.
+     *
+     * @function Highcharts.DataTable#getColumns
      *
      * @param {Array<string>} [columnIds]
      * Column ids to retrieve.
@@ -3545,20 +3567,29 @@ class DataTableCore {
     /**
      * Retrieves the row at a given index.
      *
+     * @function Highcharts.DataTable#getRowObject
+     *
      * @param {number} rowIndex
      * Row index to retrieve. First row has index 0.
      *
-     * @param {Array<string>} [columnIds]
+     * @param {Array<string>} [columnNames]
      * Column names to retrieve.
      *
      * @return {Record<string, number|string|undefined>|undefined}
      * Returns the row values, or `undefined` if not found.
      */
-    getRow(rowIndex, columnIds) {
-        return (columnIds || Object.keys(this.columns)).map((key) => this.columns[key]?.[rowIndex]);
+    getRowObject(rowIndex, columnNames) {
+        const row = {}, columns = this.columns;
+        columnNames ?? (columnNames = Object.keys(this.columns));
+        for (const columnName of columnNames) {
+            row[columnName] = columns[columnName]?.[rowIndex];
+        }
+        return row;
     }
     /**
      * Sets cell values for a column. Will insert a new column, if not found.
+     *
+     * @function Highcharts.DataTable#setColumn
      *
      * @param {string} columnId
      * Column name to set.
@@ -3580,15 +3611,20 @@ class DataTableCore {
     }
     /**
      * Sets cell values for multiple columns. Will insert new columns, if not
-     * found. Simplified version of the full `DataTableCore.setColumns`, limited
+     * found. Simplified version of the full `DataTable.setColumns`, limited
      * to full replacement of the columns (undefined `rowIndex`).
+     *
+     * @sample highcharts/datatable/shared-with-grid/
+     *       Chart with data table CRUD operations
+     *
+     * @function Highcharts.DataTable#setColumns
      *
      * @param {Highcharts.DataTableColumnCollection} columns
      * Columns as a collection, where the keys are the column names.
      *
      * @param {number} [rowIndex]
-     * Index of the first row to change. Ignored in the `DataTableCore`, as it
-     * always replaces the full column.
+     * Index of the first row to change. Ignored in the simplified `DataTable`,
+     * as it always replaces the full column.
      *
      * @param {Record<string, (boolean|number|string|null|undefined)>} [eventDetail]
      * Custom information for pending events.
@@ -3613,6 +3649,15 @@ class DataTableCore {
      * provided, or if the index is higher than the total number of table rows.
      * A simplified version of the full `DateTable.setRow`, limited to objects.
      *
+     * @sample highcharts/datatable/live-chart/
+     *       Add and delete rows in a live chart
+     * @sample stock/datatable/live-candlestick/
+     *       Live candlestick
+     * @sample highcharts/datatable/shared-with-grid/
+     *       Chart with data table CRUD operations
+     *
+     * @function Highcharts.DataTable#setRow
+     *
      * @param {Record<string, number|string|undefined>} row
      * Cell values to set.
      *
@@ -3628,34 +3673,33 @@ class DataTableCore {
      * @emits #afterSetRows
      */
     setRow(row, rowIndex = this.rowCount, insert, eventDetail) {
+        var _a;
         const { columns } = this, indexRowCount = insert ? this.rowCount + 1 : rowIndex + 1, rowKeys = Object.keys(row);
         if (eventDetail?.addColumns !== false) {
             for (let i = 0, iEnd = rowKeys.length; i < iEnd; i++) {
-                const key = rowKeys[i];
-                if (!columns[key]) {
-                    columns[key] = [];
-                }
+                columns[_a = rowKeys[i]] || (columns[_a] = new Array(this.rowCount));
             }
         }
         objectEach(columns, (column, columnId) => {
-            if (!column && eventDetail?.addColumns !== false) {
-                column = new Array(indexRowCount);
-            }
             if (column) {
                 if (insert) {
-                    column = DataTableCore_splice(column, rowIndex, 0, true, [row[columnId] ?? null]).array;
+                    column = DataTableCore_splice(column, rowIndex, 0, true, [row[columnId]]).array;
                 }
                 else {
-                    column[rowIndex] = row[columnId] ?? null;
+                    column[rowIndex] =
+                        // Preserve explicit null and undefined but fall back
+                        // to existing value if the new row does not have the
+                        // key
+                        columnId in row ?
+                            row[columnId] :
+                            column[rowIndex];
                 }
                 columns[columnId] = column;
             }
         });
-        if (indexRowCount > this.rowCount) {
-            this.applyRowCount(indexRowCount);
-        }
+        this.applyRowCount(Math.max(indexRowCount, this.rowCount));
         if (!eventDetail?.silent) {
-            fireEvent(this, 'afterSetRows');
+            fireEvent(this, 'afterSetRows', { rowIndex });
             this.versionTag = uniqueKey();
         }
     }
@@ -3663,7 +3707,7 @@ class DataTableCore {
      * Returns the modified (clone) or the original data table if the modified
      * one does not exist.
      *
-     * @return {Highcharts.DataTableCore}
+     * @return {Highcharts.DataTable}
      * The modified (clone) or the original data table.
      */
     getModified() {
@@ -3682,30 +3726,45 @@ class DataTableCore {
  *
  * */
 /**
+ * A collection of data table columns defined by a object where the key is the
+ * column ID and the value is an array of the column values. Typed arrays are
+ * supported.
+ *
+ * @type {Highcharts.DataTableColumnCollection|undefined}
+ * @apioption dataTable.columns
+ */
+/**
+ * Custom ID to identify the new DataTable instance.
+ *
+ * @type {string|undefined}
+ * @apioption dataTable.id
+ */
+/**
  * A typed array.
  * @typedef {Int8Array|Uint8Array|Uint8ClampedArray|Int16Array|Uint16Array|Int32Array|Uint32Array|Float32Array|Float64Array} Highcharts.TypedArray
- * //**
- * A column of values in a data table.
- * @typedef {Array<boolean|null|number|string|undefined>|Highcharts.TypedArray} Highcharts.DataTableColumn
  */ /**
+* A column of values in a data table.
+* @typedef {Array<boolean|null|number|string|undefined>|Highcharts.TypedArray} Highcharts.DataTableColumn
+*/ /**
 * A collection of data table columns defined by a object where the key is the
-* column name and the value is an array of the column values.
+* column ID and the value is an array of the column values. Typed arrays are
+* supported.
 * @typedef {Record<string, Highcharts.DataTableColumn>} Highcharts.DataTableColumnCollection
 */
 /**
  * Options for the `DataTable` or `DataTableCore` classes.
- * @interface Highcharts.DataTableOptions
+ * @interface Highcharts.DataTableOptionsObject
  */ /**
 * The column options for the data table. The columns are defined by an object
 * where the key is the column ID and the value is an array of the column
 * values.
 *
-* @name Highcharts.DataTableOptions.columns
+* @name Highcharts.DataTableOptionsObject.columns
 * @type {Highcharts.DataTableColumnCollection|undefined}
 */ /**
 * Custom ID to identify the new DataTable instance.
 *
-* @name Highcharts.DataTableOptions.id
+* @name Highcharts.DataTableOptionsObject.id
 * @type {string|undefined}
 */
 (''); // Keeps doclets above in JS file
@@ -3746,7 +3805,7 @@ const { splice: DataTable_splice, setLength: DataTable_setLength } = Data_Column
  * @class
  * @name Highcharts.DataTable
  *
- * @param {Highcharts.DataTableOptions} [options]
+ * @param {Highcharts.DataTableOptionsObject} [options]
  * Options to initialize the new DataTable instance.
  */
 class DataTable extends Data_DataTableCore {
@@ -4174,7 +4233,7 @@ class DataTable extends Data_DataTableCore {
                 // Normal array
                 rowIndex = column.indexOf(cellValue, rowIndexOffset);
             }
-            else if (Utilities_isNumber(cellValue)) {
+            else if (isNumber(cellValue)) {
                 // Typed array
                 rowIndex = column.indexOf(cellValue, rowIndexOffset);
             }
@@ -4844,7 +4903,7 @@ class DataConnector {
     getColumnOrder() {
         const connector = this, columns = connector.metadata.columns, names = Object.keys(columns || {});
         if (names.length) {
-            return names.sort((a, b) => (Utilities_pick(columns[a].index, 0) - Utilities_pick(columns[b].index, 0)));
+            return names.sort((a, b) => (pick(columns[a].index, 0) - pick(columns[b].index, 0)));
         }
     }
     /**
@@ -5526,7 +5585,7 @@ function buildQueryRange(options = {}) {
     return googleSpreadsheetRange || ((alphabet[startColumn || 0] || 'A') +
         (Math.max((startRow || 0), 0) + 1) +
         ':' +
-        (alphabet[Utilities_pick(endColumn, 25)] || 'Z') +
+        (alphabet[pick(endColumn, 25)] || 'Z') +
         (endRow ?
             Math.max(endRow, 0) :
             'Z'));
@@ -6427,7 +6486,7 @@ Connectors_DataConnector.registerType('JSON', JSONConnector);
  *  Default Export
  *
  * */
-/* harmony default export */ const Connectors_JSONConnector = (JSONConnector);
+/* harmony default export */ const Connectors_JSONConnector = ((/* unused pure expression or super */ null && (JSONConnector)));
 
 ;// ./code/dashboards/es-modules/Data/Modifiers/ChainModifier.js
 /* *
@@ -8227,6 +8286,9 @@ Dashboards_Serializable.registerHelper(HTMLTableConnectorHelper);
 /* harmony default export */ const SerializeHelper_HTMLTableConnectorHelper = ((/* unused pure expression or super */ null && (HTMLTableConnectorHelper)));
 
 ;// ./code/dashboards/es-modules/Dashboards/SerializeHelper/JSONConnectorHelper.js
+/* unused harmony import specifier */ var JSONConnectorHelper_JSONConnector;
+/* unused harmony import specifier */ var JSONConnectorHelper_DataTableHelper;
+/* unused harmony import specifier */ var JSONConnectorHelper_merge;
 /* *
  *
  *  (c) 2009-2026 Highsoft AS
@@ -8259,7 +8321,7 @@ Dashboards_Serializable.registerHelper(HTMLTableConnectorHelper);
  * Returns the class instance or object, or throws an exception.
  */
 function JSONConnectorHelper_fromJSON(json) {
-    return new Connectors_JSONConnector(json.options);
+    return new JSONConnectorHelper_JSONConnector(json.options);
 }
 /**
  * Validates the given class instance for JSON support.
@@ -8272,7 +8334,7 @@ function JSONConnectorHelper_fromJSON(json) {
  * false.
  */
 function JSONConnectorHelper_jsonSupportFor(obj) {
-    return obj instanceof Connectors_JSONConnector;
+    return obj instanceof JSONConnectorHelper_JSONConnector;
 }
 /**
  * Converts the given class instance to JSON.
@@ -8284,8 +8346,8 @@ function JSONConnectorHelper_jsonSupportFor(obj) {
  * Returns the JSON of the class instance or object.
  */
 function JSONConnectorHelper_toJSON(obj) {
-    const options = merge(obj.options);
-    options.dataTable = SerializeHelper_DataTableHelper.toJSON(obj.getTable());
+    const options = JSONConnectorHelper_merge(obj.options);
+    options.dataTable = JSONConnectorHelper_DataTableHelper.toJSON(obj.getTable());
     return {
         $class: 'Data.JSONConnector',
         options
@@ -8296,12 +8358,12 @@ function JSONConnectorHelper_toJSON(obj) {
  *  Registry
  *
  * */
-const JSONConnectorHelper = {
+const JSONConnectorHelper = (/* unused pure expression or super */ null && ({
     $class: 'Data.JSONConnector',
     fromJSON: JSONConnectorHelper_fromJSON,
     jsonSupportFor: JSONConnectorHelper_jsonSupportFor,
     toJSON: JSONConnectorHelper_toJSON
-};
+}));
 /* *
  *
  *  Default Export
@@ -8577,7 +8639,9 @@ class AST {
             doc = { body };
         }
         const appendChildNodes = (node, addTo) => {
-            const tagName = node.nodeName.toLowerCase();
+            // Preserve the camelCase of SVG tags via localName (#24702).
+            const tagName = node.localName ||
+                node.nodeName.toLowerCase();
             // Add allowed tags
             const astNode = {
                 tagName
@@ -8691,6 +8755,8 @@ AST.allowedAttributes = [
     'src',
     'startOffset',
     'stdDeviation',
+    'stop-color',
+    'stop-opacity',
     'stroke-linecap',
     'stroke-width',
     'stroke',
@@ -8967,7 +9033,7 @@ const ComponentRegistry = {
  * Prefix of a GUIElement HTML class name.
  */
 const classNamePrefix = 'highcharts-dashboards-';
-const version = '4.2.0';
+const version = '4.2.1';
 /** @internal */
 const classNames = {
     layout: classNamePrefix + 'layout',
@@ -10468,7 +10534,7 @@ class Row extends Layout_GUIElement {
      * Set the row cells using cell options or cellClassName.
      */
     setCells() {
-        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = Utilities_pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
+        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
         let cellElement, i, iEnd;
         for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
             cellElement = cellsElements[i];
@@ -10762,7 +10828,7 @@ class Layout extends Layout_GUIElement {
      * Set the layout rows using rows options or rowClassName.
      */
     setRows() {
-        const layout = this, rowsElements = Utilities_pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
+        const layout = this, rowsElements = pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
         let rowElement, i, iEnd;
         for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
             rowElement = rowsElements[i];
@@ -13037,10 +13103,11 @@ class Board {
         const index = this.index;
         // Cancel all data connectors pending requests.
         this.dataPool.cancelPendingRequests();
-        // Destroy layouts.
+        // Destroy layouts. Iterate over a copy, since each layout removes
+        // itself from `board.layouts` on destroy (#24857).
         if (this.guiEnabled) {
-            for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
-                board.layouts[i].destroy();
+            for (const layout of (board.layouts || []).slice()) {
+                layout.destroy();
             }
         }
         else {
@@ -13109,8 +13176,10 @@ class Board {
         board.mountedComponents = [];
         // Destroy existing layouts if GUI is enabled
         if (board.guiEnabled && board.layouts) {
-            for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-                board.layouts[i].destroy();
+            // Iterate over a copy, since each layout removes itself from
+            // `board.layouts` on destroy (#24857).
+            for (const layout of board.layouts.slice()) {
+                layout.destroy();
             }
             board.layouts = [];
             // Ensure layoutsWrapper exists
@@ -13359,14 +13428,13 @@ const GridHighlightSync_syncPair = {
         }
         const { dataCursor: cursor } = board;
         const table = this.getDataTable();
-        const dataProvider = grid.dataProvider;
-        const presentationTable = hasDataTableProvider(dataProvider) ?
-            dataProvider.getDataTable(true) :
-            void 0;
-        const onCellHover = (e) => {
+        const emitCellCursor = (cell, state) => {
             if (table) {
-                const cell = e.target;
                 const localIndex = cell.row.index;
+                const dataProvider = grid.dataProvider;
+                const presentationTable = hasDataTableProvider(dataProvider) ?
+                    dataProvider.getDataTable(true) :
+                    void 0;
                 const originalIndex = presentationTable?.getOriginalRowIndex(localIndex);
                 if (typeof originalIndex !== 'number') {
                     return;
@@ -13375,34 +13443,23 @@ const GridHighlightSync_syncPair = {
                     type: 'position',
                     row: originalIndex,
                     column: cell.column.id,
-                    state: 'point.mouseOver' + groupKey,
+                    state: state + groupKey,
                     sourceId: this.id
                 });
             }
         };
+        const onCellHover = (e) => {
+            emitCellCursor(e.target, 'point.mouseOver');
+        };
         const onCellMouseOut = (e) => {
-            if (table) {
-                const cell = e.target;
-                const localIndex = cell.row.index;
-                const originalIndex = presentationTable?.getOriginalRowIndex(localIndex);
-                if (typeof originalIndex !== 'number') {
-                    return;
-                }
-                cursor.emitCursor(table, {
-                    type: 'position',
-                    row: originalIndex,
-                    column: cell.column.id,
-                    state: 'point.mouseOut' + groupKey,
-                    sourceId: this.id
-                });
-            }
+            emitCellCursor(e.target, 'point.mouseOut');
         };
         addEvent(grid, 'cellMouseOver', onCellHover);
         addEvent(grid, 'cellMouseOut', onCellMouseOut);
         // Return a function that calls the callbacks
         return function () {
-            removeEvent(grid.container, 'cellMouseOver', onCellHover);
-            removeEvent(grid.container, 'cellMouseOut', onCellMouseOut);
+            removeEvent(grid, 'cellMouseOver', onCellHover);
+            removeEvent(grid, 'cellMouseOut', onCellMouseOut);
         };
     },
     handler: function () {
@@ -15189,7 +15246,6 @@ const HighchartsComponentDefaults = {
 
 
 
-
 const { deepClone: HighchartsComponent_deepClone } = Dashboards_Utilities;
 /* *
  *
@@ -15453,10 +15509,7 @@ class HighchartsComponent extends Components_Component {
                 adjustDraggableOptions((columnId) => (columnId === dataStructure));
             }
             else if (Array.isArray(dataStructure)) {
-                const seriesTable = new Data_DataTable({
-                    columns: table.getColumns(dataStructure)
-                });
-                seriesOptions.data = seriesTable.getRows();
+                seriesOptions.data = table.getRows(0, table.rowCount, dataStructure);
                 adjustDraggableOptions((columnId) => (dataStructure.some((name) => name === columnId)));
             }
             else {
@@ -15465,11 +15518,8 @@ class HighchartsComponent extends Components_Component {
                 for (let j = 0, jEnd = keys.length; j < jEnd; ++j) {
                     columnIds.push(dataStructure[keys[j]]);
                 }
-                const seriesTable = new Data_DataTable({
-                    columns: table.getColumns(columnIds)
-                });
                 seriesOptions.keys = keys;
-                seriesOptions.data = seriesTable.getRows();
+                seriesOptions.data = table.getRows(0, table.rowCount, columnIds);
                 adjustDraggableOptions((columnId) => (columnIds.some((name) => name === columnId)));
             }
             if (!series) {
@@ -17453,10 +17503,9 @@ const ChartDefaults = {
      * properties of the click event argument (`event.altKey`,
      * `event.ctrlKey`, `event.metaKey` and `event.shiftKey`).
      *
-     * @type       {string}
+     * @type       {"alt" | "ctrl" | "meta" | "shift"}
      * @since      4.0.3
      * @product    highcharts gantt
-     * @validvalue ["alt", "ctrl", "meta", "shift"]
      * @apioption  chart.panKey
      */
     /**
@@ -17479,9 +17528,9 @@ const ChartDefaults = {
         /**
          * Enable or disable chart panning.
          *
-         * @type      {boolean}
-         * @default   {highcharts} false
-         * @default   {highstock|highmaps} true
+         * @type    {boolean}
+         * @default {highcharts} false
+         * @default {highstock|highmaps} true
          */
         enabled: false,
         /**
@@ -17509,6 +17558,10 @@ const ChartDefaults = {
         type: 'x'
     },
     /**
+     * Deprecated. Use
+     * [chart.zooming.pinchType](#chart.zooming.pinchType)
+     * instead.
+     *
      * Equivalent to [zoomType](#chart.zoomType), but for multitouch
      * gestures only. By default, the `pinchType` is the same as the
      * `zoomType` setting. However, pinching can be enabled separately in
@@ -17522,7 +17575,7 @@ const ChartDefaults = {
      * @default    {highstock} undefined
      * @since      3.0
      * @product    highcharts highstock gantt
-     * @deprecated
+     * @deprecated 10.2.1
      * @validvalue ["x", "y", "xy"]
      * @apioption  chart.pinchType
      */
@@ -17539,6 +17592,7 @@ const ChartDefaults = {
      *         Color theming with CSS
      * @sample highcharts/css/prefers-color-scheme
      *         Dynamic theme based on system settings
+     *
      * @type       {boolean}
      * @default    false
      * @since      7.0
@@ -17564,7 +17618,7 @@ const ChartDefaults = {
      * [...] `highcharts-color-9`. The equivalent in non-styled mode
      * is to set colors using the [colors](#colors) setting.
      *
-     * @since      5.0.0
+     * @since 5.0.0
      */
     colorCount: 10,
     /**
@@ -17627,13 +17681,17 @@ const ChartDefaults = {
      * respectively. Use the options spacingTop, spacingRight, spacingBottom
      * and spacingLeft options for shorthand setting of one option.
      *
-     * @type    {Array<number>}
      * @see     [chart.margin](#chart.margin)
+     * @type    {Array<number>}
      * @default [10, 10, 15, 10]
      * @since   3.0.6
      */
     spacing: [10, 10, 15, 10],
     /**
+     * Deprecated. Use
+     * [chart.zooming.resetButton](#chart.zooming.resetButton)
+     * instead.
+     *
      * The button that appears after a selection zoom, allowing the user
      * to reset zoom. This option is deprecated in favor of
      * [zooming](#chart.zooming).
@@ -17716,6 +17774,21 @@ const ChartDefaults = {
         }
     },
     /**
+     * The corner radius of the plot area border in pixels. Also applies clip
+     * to the plot area background and data inside, like columns in a column
+     * series or fill in an area series.
+     *
+     * @sample highcharts/chart/plotborderradius/
+     *         Plot border radius
+     * @sample {highmaps} maps/chart/plotborder/
+     *         Map with plot border options
+     *
+     * @type      {number}
+     * @default   0
+     * @since     13.0.0
+     * @apioption chart.plotBorderRadius
+     */
+    /**
      * The pixel width of the plot area border.
      *
      * @sample {highcharts} highcharts/chart/plotborderwidth/
@@ -17783,7 +17856,7 @@ const ChartDefaults = {
      * @sample {highmaps} maps/chart/reflow-false/
      *         False
      *
-     * @since     2.1
+     * @since 2.1
      */
     reflow: true,
     /**
@@ -17812,10 +17885,9 @@ const ChartDefaults = {
      *      `.highcharts-selection-marker` class.
      *
      * @type      {Highcharts.ColorType}
-     * @default   rgba(51,92,173,0.25)
      * @since     2.1.7
-     * @apioption chart.selectionMarkerFill
      */
+    selectionMarkerFill: 'color-mix(in srgb, var(--highcharts-highlight-color-80) 25%, transparent)', // eslint-disable-line max-len
     /**
      * Whether to apply a drop shadow to the global series group. This causes
      * all the series to have the same shadow. Contrary to the `series.shadow`
@@ -17991,6 +18063,10 @@ const ChartDefaults = {
      */
     type: 'line',
     /**
+     * Deprecated. Use
+     * [chart.zooming.type](#chart.zooming.type)
+     * instead.
+     *
      * Decides in what dimensions the user can zoom by dragging the mouse.
      * Can be one of `x`, `y` or `xy`.
      *
@@ -18019,30 +18095,40 @@ const ChartDefaults = {
      *
      * @type       {string}
      * @validvalue ["x", "y", "xy"]
-     * @deprecated
+     * @deprecated 10.2.1
      * @apioption  chart.zoomType
      */
     /**
+     * Deprecated. Use
+     * [chart.zooming.singleTouch](#chart.zooming.singleTouch)
+     * instead.
+     *
      * Enables zooming by a single touch, in combination with
      * [chart.zoomType](#chart.zoomType). When enabled, two-finger pinch
      * will still work as set up by [chart.pinchType](#chart.pinchType).
      * However, `zoomBySingleTouch` will interfere with touch-dragging the
      * chart to read the tooltip. And especially when vertical zooming is
      * enabled, it will make it hard to scroll vertically on the page.
-     * @since      9.0.0
+     *
      * @sample     highcharts/chart/zoombysingletouch
      *             Zoom by single touch enabled, with buttons to toggle
+     *
      * @product    highcharts highstock gantt
-     * @deprecated
+     * @since      9.0.0
+     * @type       {boolean}
+     * @default    false
+     * @deprecated 10.2.1
+     * @apioption  chart.zoomBySingleTouch
      */
     /**
      * Chart zooming options.
-     * @since 10.2.1
      *
      * @sample     highcharts/plotoptions/sankey-node-color
      *             Zooming in sankey series
      * @sample     highcharts/series-treegraph/link-types
      *             Zooming in treegraph series
+     *
+     * @since 10.2.1
      */
     zooming: {
         /**
@@ -18077,21 +18163,6 @@ const ChartDefaults = {
          * @apioption  chart.zooming.type
          */
         /**
-         * Set a key to hold when dragging to zoom the chart. This is useful to
-         * avoid zooming while moving points. Should be set different than
-         * [chart.panKey](#chart.panKey).
-         *
-         * **Note:** If both zooming and panning are enabled without keys,
-         * zooming will take precedence by default. To prioritize panning,
-         * either set zooming key or [chart.panKey](#chart.panKey).
-         *
-         * @type       {string}
-         * @default    {highcharts} undefined
-         * @validvalue ["alt", "ctrl", "meta", "shift"]
-         * @requires   modules/draggable-points
-         * @apioption  chart.zooming.key
-         */
-        /**
          * Enables zooming by a single touch, in combination with
          * [chart.zooming.type](#chart.zooming.type). When enabled, two-finger
          * pinch will still work as set up by [chart.zooming.pinchType]
@@ -18121,7 +18192,7 @@ const ChartDefaults = {
              *         Relative to the chart
              *
              * @type      {Highcharts.ButtonRelativeToValue}
-             * @default   plot
+             * @default   plotBox
              * @apioption chart.zooming.resetButton.relativeTo
              */
             /**
@@ -18229,7 +18300,7 @@ const ChartDefaults = {
      *
      * @type {Highcharts.ColorType}
      */
-    borderColor: "#334eff" /* Palette.highlightColor80 */,
+    borderColor: 'var(--highcharts-highlight-color-80)',
     /**
      * The pixel width of the outer chart border.
      *
@@ -18248,7 +18319,7 @@ const ChartDefaults = {
      * @apioption chart.borderWidth
      */
     /**
-     * The background color or gradient for the outer chart area.
+     * The background color of the outer chart area.
      *
      * @see In styled mode, the background is set with the
      *      `.highcharts-background` class.
@@ -18268,9 +18339,10 @@ const ChartDefaults = {
      *
      * @type {Highcharts.ColorType}
      */
-    backgroundColor: "#ffffff" /* Palette.backgroundColor */,
+    backgroundColor: 'var(--highcharts-background-color)',
     /**
-     * The background color or gradient for the plot area.
+     * The background color or gradient for the plot area. If not set, the
+     * plot area will have the background color set to `'none'`.
      *
      * @see In styled mode, the plot background is set with the
      *      `.highcharts-plot-background` class.
@@ -18324,7 +18396,7 @@ const ChartDefaults = {
      *
      * @type {Highcharts.ColorType}
      */
-    plotBorderColor: "#cccccc" /* Palette.neutralColor20 */
+    plotBorderColor: 'var(--highcharts-neutral-color-20)'
 };
 /* *
  *
@@ -18333,31 +18405,202 @@ const ChartDefaults = {
  * */
 /* harmony default export */ const Chart_ChartDefaults = (ChartDefaults);
 
-;// ./code/dashboards/es-modules/Core/Color/Palettes.js
+;// ./code/dashboards/es-modules/Core/Color/PaletteDefaults.js
+/* *
+ *
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Torstein Honsi
+ *
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
+ *
+ *
+ * */
+
 /**
- * Series palettes for Highcharts. Series colors are defined in highcharts.css.
- * **Do not edit this file!** This file is generated using the 'gulp palette' task.
- * @internal
+ * The palette object specifies colors for the charts and how to apply them.
+ *
+ * Each color scheme (`light` and `dark`) has three primary colors:
+ * `backgroundColor`, `neutralColor`, and `highlightColor`. For the neutral and
+ * highlight colors, a series of interpolated color variants are generated, and
+ * accessed as CSS variables in the chart settings in their prefixed and
+ * hyphenated form. For example,
+ *
+ * * `var(--highcharts-neutral-color-80)` is a blend of the `neutralColor` and
+ *   the `backgroundColor`, with a weight of 80% `neutralColor` and 20%
+ *   `backgroundColor`. It is the default for the main title
+ *   (`title.style.color`), axis labels and more.
+ * * `var(--highcharts-highlight-color-80)` is a blend of the `highlightColor`
+ *   and the `backgroundColor`, with a weight of 80% `highlightColor` and 20%
+ *   `backgroundColor`. It is used for the zoom selection marker (with opacity),
+ *   Stock Range Selector date input boxes and more.
+ *
+ * The `colors` array is used for data series and points, and is not blended
+ * with the `backgroundColor`. It is also accessible as CSS variables, and this
+ * is the recommended way to hard-code colors to match series and data.
+ * For example, `var(--highcharts-color-0)` is the first color in the `colors`
+ * array, `var(--highcharts-color-1)` is the second color, and so on.
+ *
+ * The palette only accepts plain color strings in the options. Gradients and
+ * patterns are only supported in other color settings, such as `series.color`
+ * or `point.color`, but they can use CSS variables from the palette.
+ *
+ * @sample       highcharts/palette/general
+ *               General palette options
+ * @sample       highcharts/palette/branding
+ *               Branded chart
+ * @sample       highcharts/demo/pie-gradient
+ *               Using palette colors in gradients
+ * @type         {*}
+ * @since        13.0.0
+ * @optionparent palette
  */
-const SeriesPalettes = {
+const palette = {
     /**
-     * Colors for data series and points
+     * Colors for data series and points. This setting is generic for both
+     * light and dark mode, and can be overridden for each mode in
+     * `light.colors` and `dark.colors`.
+     *
+     * @sample highcharts/palette/data-colors-points
+     *         Colors for points
+     * @sample highcharts/palette/data-colors-series
+     *         Colors for series
+     * @type   {Array<Highcharts.ColorString>}
+     * @default [
+     *       '#2caffe',
+     *       '#544fc5',
+     *       '#00e272',
+     *       '#fe6a35',
+     *       '#6b8abc',
+     *       '#d568fb',
+     *       '#2ee0ca',
+     *       '#fa4b42',
+     *       '#feb56a',
+     *       '#91e8e1'
+     *      ]
+     * @since 13.0.0
+     * @apioption palette.colors
      */
-    colors: [
-        '#2caffe',
-        '#544fc5',
-        '#00e272',
-        '#fe6a35',
-        '#6b8abc',
-        '#d568fb',
-        '#2ee0ca',
-        '#fa4b42',
-        '#feb56a',
-        '#91e8e1'
-    ],
+    /**
+     * Color scheme to use. When `light dark` is set, the chart will
+     * automatically switch between light and dark mode based on the user's
+     * system preferences, or whether the `.highcharts-light` or
+     * `.highcharts-dark` class is applied to a parent of the container.
+     *
+     * When `inherit` is set, the chart will inherit the color scheme from the
+     * closest parent element with a defined color scheme, or default to `light`
+     * if none is found.
+     *
+     * @sample     highcharts/palette/colorscheme
+     *             Dark color scheme
+     * @sample     highcharts/palette/exporting-light
+     *             Dark chart with light export
+     *
+     * @type       {'light dark'|'light'|'dark'|'inherit'}
+     * @default    light dark
+     * @since      13.0.0
+     * @apioption  palette.colorScheme
+     */
+    /**
+     * Whether to inject the CSS for the dark and light mode. If not injected,
+     * you need to include the CSS manually in your page or application, with
+     * the appropriate CSS variables. A file with the default CSS variables is
+     * available at
+     * [css/highcharts-palette.css](https://code.highcharts.com/css/highcharts-palette.css).
+     *
+     * @sample     highcharts/palette/injectcss-false
+     *             Not injecting CSS variables, import file instead
+     *
+     * @type       {boolean}
+     * @default    true
+     * @since      13.0.0
+     * @apioption  palette.injectCSS
+     */
+    /**
+     * Palette options for dark mode.
+     *
+     * @extends palette.light
+     */
+    dark: {
+        /**
+         * Colors for data series and points. This array extends the colors
+         * defined for the general `palette.colors` array, item by item. If an
+         * item is `null` or `undefined`, the general color will be used.
+         *
+         * @type   {Array<Highcharts.ColorString|null|undefined>}
+         * @apioption palette.dark.colors
+         */
+        /**
+         * @type {Highcharts.ColorString}
+         */
+        backgroundColor: '#141414',
+        /**
+         * @type {Highcharts.ColorString}
+         */
+        neutralColor: '#ffffff',
+        /**
+         * @type {Highcharts.ColorString}
+         */
+        highlightColor: '#2caffe'
+    },
+    /**
+     * Palette options for light mode.
+     */
+    light: {
+        /**
+         * Colors for data series and points. This array extends the colors
+         * defined for the general `palette.colors` array, item by item. If an
+         * item is `null` or `undefined`, the general color will be used.
+         *
+         * @type   {Array<Highcharts.ColorString|null|undefined>}
+         * @apioption palette.light.colors
+         */
+        /**
+         * Chart background, point stroke for markers and columns etc. The
+         * background is also used as base for interpolated neutral and
+         * highlight colors.
+         * @type {Highcharts.ColorString}
+         */
+        backgroundColor: '#ffffff',
+        /**
+         * Neutral color to be used as base for interpolated colors. For
+         * example, `var(--highcharts-neutral-color-60)` is a blend of the
+         * `neutralColor` and the `backgroundColor`, with a weight of 60%
+         * `neutralColor` and 40% `backgroundColor`.
+         *
+         * Neutral colors are by default used for basic text, lines, borders,
+         * basically most elements except the data itself, and highlighted
+         * elements.
+         * @type {Highcharts.ColorString}
+         */
+        neutralColor: '#000000',
+        /**
+         * Highlight color to be used as base for interpolated colors. For
+         * example, `var(--highcharts-highlight-color-60)` is a blend of the
+         * `highlightColor` and the `backgroundColor`, with a weight of 60%
+         * `highlightColor` and 40% `backgroundColor`.
+         *
+         * Highlight colors are by default used for highlighted or active
+         * elements, like the zoom selection marker, clickable Stock Range
+         * Selector date input boxes, clickable drilldown labels and more.
+         * @type {Highcharts.ColorString}
+         */
+        highlightColor: '#0022ff',
+        /**
+         * Positive color used in stock charts, such as for technical
+         * indicators, annotations or hollow candlestick series.
+         * @type {Highcharts.ColorString}
+         */
+        positiveColor: '#06b535',
+        /**
+         * Negative color used in stock charts, such as for technical
+         * indicators, annotations or hollow candlestick series.
+         * @type {Highcharts.ColorString}
+         */
+        negativeColor: '#f21313'
+    }
 };
-/** @internal */
-/* harmony default export */ const Palettes = (SeriesPalettes);
+/* harmony default export */ const PaletteDefaults = (palette);
 
 ;// ./code/dashboards/es-modules/Shared/TimeBase.js
 /* *
@@ -18563,17 +18806,17 @@ class TimeBase {
             //      L, 6/3/2023 14:30:00
             .split(/(?:, | |\/|:)/g);
         return [
-            year,
+            +year,
             +month - 1,
-            dayOfMonth,
-            hours,
-            minutes,
-            seconds,
+            +dayOfMonth,
+            +hours,
+            +minutes,
+            +seconds,
             // Milliseconds
             Math.floor(Number(timestamp) || 0) % 1000,
             // Spanish weekday index
             'DLMXJVS'.indexOf(weekday)
-        ].map(Number);
+        ];
     }
     /**
      * Shorthand to get a cached `Intl.DateTimeFormat` instance.
@@ -18664,17 +18907,16 @@ class TimeBase {
         // eslint-disable-next-line new-cap
         let d = this.Date.UTC(year, month, date, hours, minutes || 0, seconds || 0, milliseconds || 0);
         if (this.timezone !== 'UTC') {
-            const offset = this.getTimezoneOffset(d);
+            const offset = this.getTimezoneOffset(d), localHours = (hours - offset / timeUnits.hour + 24) % 24;
             d += offset;
-            // Adjustments close to DST transitions
             if (
-            // Optimize for speed by limiting the number of calls to
-            // `getTimezoneOffset`. According to
+            // Limit the number of calls to `getTimezoneOffset` to months
+            // where DST changes may occur. According to
             // https://en.wikipedia.org/wiki/Daylight_saving_time_by_country,
             // DST change may only occur in these months.
             [2, 3, 8, 9, 10, 11].indexOf(month) !== -1 &&
-                // DST transitions occur only in the night-time
-                (hours < 5 || hours > 20)) {
+                // DST changes only occur at night (#24420)
+                (localHours < 5 || localHours > 20)) {
                 const newOffset = this.getTimezoneOffset(d);
                 if (offset !== newOffset) {
                     d += newOffset - offset;
@@ -18721,7 +18963,7 @@ class TimeBase {
             s += 'Z';
         }
         const ts = Date.parse(s);
-        if (Utilities_isNumber(ts)) {
+        if (isNumber(ts)) {
             // Unless the string contains time zone information, convert from
             // the local time result of `Date.parse` via UTC into the current
             // timezone of the time object.
@@ -18749,7 +18991,7 @@ class TimeBase {
                 .split(/(GMT|:)/)
                 .map(Number), offset = -(hours + minutes / 60) * 60 * 60000;
             // Possible future NaNs stop here
-            if (Utilities_isNumber(offset)) {
+            if (isNumber(offset)) {
                 return offset;
             }
         }
@@ -19215,6 +19457,70 @@ class TimeBase {
  *
  * */
 class Time extends Shared_TimeBase {
+    getBoundaryTicks(tickPositions, unitRange, visibleMin, visibleMax) {
+        const boundaryTicks = {};
+        // No boundary ticks for year range.
+        if (unitRange === timeUnits.year) {
+            return boundaryTicks;
+        }
+        const hasVisibleRange = defined(visibleMin) && defined(visibleMax), needsHourBoundary = unitRange < timeUnits.hour, needsDayBoundary = unitRange < timeUnits.day, needsMonthBoundary = unitRange < timeUnits.month, tickAlignment = (unitRange >= timeUnits.hour ?
+            900000 : unitRange >= timeUnits.minute ?
+            60000 : unitRange >= timeUnits.second ?
+            1000 : false);
+        // Handle boundary ticks. Use a reasonable dropout threshold
+        // to prevent looping over dense data grouping (#6156).
+        if (tickPositions.length < 10000) {
+            let isFirstVisibleTick = true;
+            for (let i = 0; i < tickPositions.length; i++) {
+                const t = tickPositions[i];
+                // Loop only over visible ticks.
+                if (hasVisibleRange) {
+                    if (t < visibleMin) {
+                        continue;
+                    }
+                    if (t > visibleMax) {
+                        break;
+                    }
+                }
+                // Mark first visible tick as boundary, if timeUnit is month or
+                // hour.
+                if (isFirstVisibleTick) {
+                    if (unitRange === timeUnits.month) {
+                        boundaryTicks[t] = 'year';
+                        isFirstVisibleTick = false;
+                        continue;
+                    }
+                    if (unitRange === timeUnits.hour) {
+                        boundaryTicks[t] = 'day';
+                        isFirstVisibleTick = false;
+                        continue;
+                    }
+                }
+                // Skip misaligned ticks to save performance.
+                if (tickAlignment && t % tickAlignment !== 0) {
+                    isFirstVisibleTick = false;
+                    continue;
+                }
+                const [, // Unused 'year' var
+                month, day, hours, minutes, seconds, milliseconds] = this.toParts(t);
+                const isMidnight = !hours && !minutes && !seconds && !milliseconds;
+                if (needsHourBoundary && minutes === 0) {
+                    boundaryTicks[t] = 'hour';
+                }
+                if (needsDayBoundary && isMidnight) {
+                    boundaryTicks[t] = 'day';
+                }
+                if (needsMonthBoundary && day === 1 && isMidnight) {
+                    boundaryTicks[t] = 'month';
+                }
+                if (month === 0 && day === 1 && isMidnight) {
+                    boundaryTicks[t] = 'year';
+                }
+                isFirstVisibleTick = false;
+            }
+        }
+        return boundaryTicks;
+    }
     /**
      * Return an array with time positions distributed on round time values
      * right and right after min and max. Used in datetime axes as well as for
@@ -19237,7 +19543,7 @@ class Time extends Shared_TimeBase {
      * Time positions
      */
     getTimeTicks(normalizedInterval, min, max, startOfWeek) {
-        const time = this, tickPositions = [], higherRanks = {}, { count = 1, unitRange } = normalizedInterval;
+        const time = this, tickPositions = [], { count = 1, unitRange } = normalizedInterval, visibleMin = min, visibleMax = max;
         let [year, month, dayOfMonth, hours, minutes, seconds] = time.toParts(min), milliseconds = (min || 0) % 1000, variableDayLength;
         startOfWeek ?? (startOfWeek = 1);
         if (defined(min)) { // #1300
@@ -19326,7 +19632,7 @@ class Time extends Shared_TimeBase {
                 else if (variableDayLength &&
                     unitRange === timeUnits.hour &&
                     count > 1) {
-                    // Make sure higher ranks are preserved across DST (#6797,
+                    // Make sure boundary ticks are preserved across DST (#6797,
                     // #7621)
                     t = time.makeTime(year, month, dayOfMonth, hours + i * count);
                     // Else, the interval is fixed and we use simple addition
@@ -19338,25 +19644,9 @@ class Time extends Shared_TimeBase {
             }
             // Push the last time
             tickPositions.push(t);
-            // Handle higher ranks. Mark new days if the time is on midnight
-            // (#950, #1649, #1760, #3349). Use a reasonable dropout threshold
-            // to prevent looping over dense data grouping (#6156).
-            if (unitRange <= timeUnits.hour && tickPositions.length < 10000) {
-                tickPositions.forEach((t) => {
-                    if (
-                    // Speed optimization, no need to run dateFormat unless
-                    // we're on a full or half hour
-                    t % 1800000 === 0 &&
-                        // Check for local or global midnight
-                        time.dateFormat('%H%M%S%L', t) === '000000000') {
-                        higherRanks[t] = 'day';
-                    }
-                });
-            }
         }
-        // Record information on the chosen unit - for dynamic label formatter
         tickPositions.info = extend(normalizedInterval, {
-            higherRanks,
+            boundaryTicks: this.getBoundaryTicks(tickPositions, unitRange, visibleMin, visibleMax),
             totalRange: unitRange * count
         });
         return tickPositions;
@@ -19403,6 +19693,7 @@ const { isTouchDevice } = Core_Globals;
 * @internal
 */
 const Defaults_defaultOptions = {
+    palette: PaletteDefaults,
     /**
      * An array containing the default colors for the chart's series. When
      * all colors are used, new colors are pulled from the start again.
@@ -19415,6 +19706,9 @@ const Defaults_defaultOptions = {
      * are defined in CSS and applied either through series or point class
      * names, or through the [chart.colorCount](#chart.colorCount) option.
      *
+     * The defaults from v13 invoke CSS variables that are set by the
+     * `palette` option's light and dark themes.
+     *
      * @sample {highcharts} highcharts/chart/colors/
      *         Assign a global color theme
      * @sample highcharts/members/theme-v10/
@@ -19422,19 +19716,56 @@ const Defaults_defaultOptions = {
      *
      * @type    {Array<Highcharts.ColorType>}
      * @default [
-     *     "#2caffe",
-     *     "#544fc5",
-     *     "#00e272",
-     *     "#fe6a35",
-     *     "#6b8abc",
-     *     "#d568fb",
-     *     "#2ee0ca",
-     *     "#fa4b42",
-     *     "#feb56a",
-     *     "#91e8e1"
+     *     'var(--highcharts-color-0)',
+     *     'var(--highcharts-color-1)',
+     *     'var(--highcharts-color-2)',
+     *     'var(--highcharts-color-3)',
+     *     'var(--highcharts-color-4)',
+     *     'var(--highcharts-color-5)',
+     *     'var(--highcharts-color-6)',
+     *     'var(--highcharts-color-7)',
+     *     'var(--highcharts-color-8)',
+     *     'var(--highcharts-color-9)'
      * ]
      */
-    colors: Palettes.colors,
+    colors: new Array(10).fill(1).map((_, i) => `var(--highcharts-color-${i})`),
+    /**
+     * Options for one or many chart-level data tables. The `dataTable` option,
+     * or its array members, can be either configuration objects or instances of
+     * the `DataTable` class. If a `DataTable` instance is passed, it
+     * will be used directly. If a configuration object is passed, a new
+     * `DataTable` instance will be created based on the provided
+     * configuration.
+     *
+     * The data table is mapped to the series data points based on the
+     * [series.dataMapping](#plotOptions.series.dataMapping) option, unless the
+     * column keys match the point property names (`x`, `y` etc.), in which case
+     * the mapping is automatic.
+     *
+     * @sample {highstock} stock/datatable/candlestick
+     *         Candlestick chart with data table
+     * @sample {highstock} stock/datatable/live-candlestick
+     *         Live candlestick
+     * @sample {highmaps} maps/datatable/chart-datatable
+     *         Map with data table and data mapping
+     * @sample {highmaps} maps/demo/basic-map
+     *         World map
+     * @sample {gantt} gantt/datatable/chart-datatable
+     *         Gantt chart with data table
+     *
+     * @sample highcharts/datatable/chart-datatable-single/
+     *         Chart with one data table as option
+     * @sample highcharts/datatable/chart-datatable-single/
+     *         Chart with one data table as instance
+     * @sample highcharts/datatable/chart-datatable-multiple/
+     *         Chart with two data tables
+     * @sample highcharts/data/getdatatable
+     *         Data table from CSV
+     *
+     * @type {Highcharts.DataTable|Highcharts.DataTableOptionsObject|Array<Highcharts.DataTable|Highcharts.DataTableOptionsObject>}
+     * @since     13.0.0
+     * @apioption dataTable
+     */
     /**
      * Styled mode only. Configuration object for adding SVG definitions for
      * reusable elements. See [gradients, shadows and
@@ -19677,7 +20008,7 @@ const Defaults_defaultOptions = {
             /**
              * The fill color for buttons
              */
-            fill: "#f7f7f7" /* Palette.neutralColor3 */,
+            fill: 'var(--highcharts-neutral-color-3)',
             /**
              * The padding of buttons
              */
@@ -19689,7 +20020,7 @@ const Defaults_defaultOptions = {
             /**
              * The stroke color for buttons
              */
-            stroke: "#cccccc" /* Palette.neutralColor20 */,
+            stroke: 'var(--highcharts-neutral-color-20)',
             /**
              * The stroke width for buttons
              */
@@ -19701,7 +20032,7 @@ const Defaults_defaultOptions = {
                 /**
                  * @type {Highcharts.ColorType}
                  */
-                color: "#333333" /* Palette.neutralColor80 */,
+                color: 'var(--highcharts-neutral-color-80)',
                 cursor: 'pointer',
                 fontSize: '0.8em',
                 fontWeight: 'normal'
@@ -19715,7 +20046,7 @@ const Defaults_defaultOptions = {
                  * to the normal state options
                  */
                 hover: {
-                    fill: "#e6e6e6" /* Palette.neutralColor10 */
+                    fill: 'var(--highcharts-neutral-color-10)'
                 },
                 /**
                  * Select state overrides for the buttons are applied in
@@ -19725,12 +20056,12 @@ const Defaults_defaultOptions = {
                     /**
                      * @type {Highcharts.ColorType}
                      */
-                    fill: "#e6e9ff" /* Palette.highlightColor10 */,
+                    fill: 'var(--highcharts-highlight-color-10)',
                     style: {
                         /**
                          * @type {Highcharts.ColorType}
                          */
-                        color: "#000000" /* Palette.neutralColor100 */,
+                        color: 'var(--highcharts-neutral-color-100)',
                         fontWeight: 'bold'
                     }
                 },
@@ -19743,7 +20074,7 @@ const Defaults_defaultOptions = {
                      * Disabled state CSS style overrides for the buttons' text
                      */
                     style: {
-                        color: "#cccccc" /* Palette.neutralColor20 */
+                        color: 'var(--highcharts-neutral-color-20)'
                     }
                 }
             }
@@ -19873,7 +20204,7 @@ const Defaults_defaultOptions = {
          * @sample {highcharts} highcharts/time/useutc-false/
          *         False
          *
-         * @deprecated
+         * @deprecated 12.0.0
          */
         useUTC: void 0
     },
@@ -19982,7 +20313,7 @@ const Defaults_defaultOptions = {
             /**
              * @type {Highcharts.ColorType}
              */
-            color: "#333333" /* Palette.neutralColor80 */,
+            color: 'var(--highcharts-neutral-color-80)',
             fontWeight: 'bold'
         },
         /**
@@ -20172,7 +20503,7 @@ const Defaults_defaultOptions = {
             /**
              * @type {Highcharts.ColorType}
              */
-            color: "#666666" /* Palette.neutralColor60 */,
+            color: 'var(--highcharts-neutral-color-60)',
             /**
              * @type {number|string}
              */
@@ -20250,7 +20581,7 @@ const Defaults_defaultOptions = {
             /**
              * @type {Highcharts.ColorType}
              */
-            color: "#666666" /* Palette.neutralColor60 */,
+            color: 'var(--highcharts-neutral-color-60)',
             /**
              * @type {number|string}
              */
@@ -20552,7 +20883,7 @@ const Defaults_defaultOptions = {
          * @sample {highcharts} highcharts/legend/lineheight/
          *         Setting padding
          *
-         * @deprecated
+         * @deprecated 2.1.0
          *
          * @type      {number}
          * @default   16
@@ -20608,7 +20939,7 @@ const Defaults_defaultOptions = {
          *
          * @type {Highcharts.ColorType}
          */
-        borderColor: "#999999" /* Palette.neutralColor40 */,
+        borderColor: 'var(--highcharts-neutral-color-40)',
         /**
          * The border corner radius of the legend.
          *
@@ -20714,7 +21045,7 @@ const Defaults_defaultOptions = {
              * @type  {Highcharts.ColorType}
              * @since 2.2.4
              */
-            activeColor: "#0022ff" /* Palette.highlightColor100 */,
+            activeColor: 'var(--highcharts-highlight-color-100)',
             /**
              * The color of the inactive up or down arrow in the legend page
              * navigation. .
@@ -20730,7 +21061,7 @@ const Defaults_defaultOptions = {
              * @type  {Highcharts.ColorType}
              * @since 2.2.4
              */
-            inactiveColor: "#cccccc" /* Palette.neutralColor20 */
+            inactiveColor: 'var(--highcharts-neutral-color-20)'
         },
         /**
          * The inner padding of the legend box.
@@ -20778,7 +21109,7 @@ const Defaults_defaultOptions = {
          * determined by properties like `align`, `verticalAlign`, `x` and `y`,
          * but the styles are still parsed for backwards compatibility.
          *
-         * @deprecated
+         * @deprecated 2.0.0
          *
          * @type      {Highcharts.CSSObject}
          * @product   highcharts highstock
@@ -20806,7 +21137,7 @@ const Defaults_defaultOptions = {
             /**
              * @ignore
              */
-            color: "#333333" /* Palette.neutralColor80 */,
+            color: 'var(--highcharts-neutral-color-80)',
             /**
              * @ignore
              */
@@ -20844,7 +21175,7 @@ const Defaults_defaultOptions = {
             /**
              * @ignore
              */
-            color: "#000000" /* Palette.neutralColor100 */
+            color: 'var(--highcharts-neutral-color-100)'
         },
         /**
          * CSS styles for each legend item when the corresponding series or
@@ -20865,7 +21196,7 @@ const Defaults_defaultOptions = {
             /**
              * @ignore
              */
-            color: "#666666" /* Palette.neutralColor60 */,
+            color: 'var(--highcharts-neutral-color-60)',
             /**
              * @ignore
              */
@@ -21119,7 +21450,7 @@ const Defaults_defaultOptions = {
                 /**
                  * @ignore
                  */
-                color: "#333333" /* Palette.neutralColor80 */,
+                color: 'var(--highcharts-neutral-color-80)',
                 /**
                  * @ignore
                  */
@@ -21215,7 +21546,7 @@ const Defaults_defaultOptions = {
             /**
              * @ignore
              */
-            backgroundColor: "#ffffff" /* Palette.backgroundColor */,
+            backgroundColor: 'var(--highcharts-background-color)',
             /**
              * @ignore
              */
@@ -21233,25 +21564,6 @@ const Defaults_defaultOptions = {
      * @declare Highcharts.TooltipOptions
      */
     tooltip: {
-        /**
-         * The color of the tooltip border. When `undefined`, the border takes
-         * the color of the corresponding series or point.
-         *
-         * Note that the [borderWidth](#tooltip.borderWidth) is usually 0 by
-         * default, so the border color may not be visible until a border width
-         * is set.
-         *
-         * @sample {highcharts} highcharts/tooltip/bordercolor-default/ Follow
-         *         series by default
-         * @sample {highcharts} highcharts/tooltip/bordercolor-black/ Black
-         *         border
-         * @sample {highstock} stock/tooltip/general/ Styled tooltip
-         * @sample {highmaps} maps/tooltip/background-border/ Background and
-         *         border demo
-         *
-         * @type {Highcharts.ColorType}
-         * @apioption tooltip.borderColor
-         */
         /**
          * A CSS class name to apply to the tooltip, allowing unique CSS
          * styling for each chart.
@@ -21276,7 +21588,7 @@ const Defaults_defaultOptions = {
          * @sample {highcharts} highcharts/tooltip/crosshairs-x/
          *         Enable a crosshair for the x value
          *
-         * @deprecated
+         * @deprecated 4.1.0
          *
          * @type      {*}
          * @default   true
@@ -21631,6 +21943,27 @@ const Defaults_defaultOptions = {
             easing: (x) => Math.sqrt(1 - Math.pow(x - 1, 2))
         },
         /**
+         * The color of the tooltip border. When `undefined` or `null`, the
+         * border takes the color of the corresponding series or point.
+         *
+         * By default, in light mode the border color matches the background
+         * color because the shadow makes the tooltip stand out. In dark mode, a
+         * visible line is used because the default shadow is too dark to be
+         * visible on a dark background.
+         *
+         * @sample {highcharts} highcharts/tooltip/bordercolor-default/
+         *         Default border color
+         * @sample {highcharts} highcharts/tooltip/bordercolor-black/
+         *         Black border
+         * @sample {highstock} stock/tooltip/general/
+         *         Styled tooltip
+         * @sample {highmaps} maps/tooltip/background-border/
+         *         Background and border demo
+         *
+         * @type {Highcharts.ColorType}
+         */
+        borderColor: 'light-dark(var(--highcharts-neutral-color-5), var(--highcharts-neutral-color-20))', // eslint-disable-line max-len
+        /**
          * The radius of the rounded border corners.
          *
          * @sample {highcharts} highcharts/tooltip/bordercolor-default/
@@ -21640,7 +21973,7 @@ const Defaults_defaultOptions = {
          * @sample {highmaps} maps/tooltip/background-border/
          *         Background and border demo
          */
-        borderRadius: 3,
+        borderRadius: 5,
         /**
          * For series on datetime axes, the date format in the tooltip's
          * header will by default be guessed based on the closest data points.
@@ -21661,7 +21994,7 @@ const Defaults_defaultOptions = {
             day: '%[AebY]',
             week: '%v %[AebY]',
             month: '%[BY]',
-            year: '%Y'
+            year: '%[Y]'
         },
         /**
          * A string to append to the tooltip format.
@@ -21691,8 +22024,96 @@ const Defaults_defaultOptions = {
          * @type       {Highcharts.TooltipShapeValue}
          * @validvalue ["callout", "rect"]
          * @since      7.0
+         * @deprecated 13.0
+         * @apioption tooltip.headerShape
          */
-        headerShape: 'callout',
+        /**
+         * Options for the tooltip header when [tooltip.split](#tooltip.split)
+         * is enabled. The header is the box containing the X value in a split
+         * tooltip.
+         *
+         * @sample {highcharts} highcharts/tooltip/header
+         *         Header options for split tooltip
+         * @sample {highstock} stock/tooltip/header
+         *         Header options for split tooltip
+         * @since  13.0.0
+         */
+        header: {
+            /**
+             * Background color for the tooltip header when
+             * [tooltip.split](#tooltip.split) is enabled.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             *
+             * @type {Highcharts.ColorType}
+             * @apioption tooltip.header.backgroundColor
+             */
+            /**
+             * Border color for the tooltip header when
+             * [tooltip.split](#tooltip.split) is enabled.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             * @type {Highcharts.ColorType}
+             * @apioption tooltip.header.borderColor
+             */
+            /**
+             * The width of the border for the tooltip header when
+             * [tooltip.split](#tooltip.split) is enabled.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             * @type {number}
+             * @apioption tooltip.header.borderWidth
+             */
+            /**
+             * Distance between the plot area and the header (except the
+             * chevron) in a split tooltip, in pixels. The default value makes
+             * the header text align with the axis labels.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             */
+            distance: 5,
+            /**
+             * The name of a symbol to use for the border around the tooltip
+             * header. Applies only when [tooltip.split](#tooltip.split) is
+             * enabled.
+             *
+             * Custom callbacks for symbol path generation can also be added to
+             * `Highcharts.SVGRenderer.prototype.symbols` the same way as for
+             * [series.marker.symbol](plotOptions.line.marker.symbol).
+             *
+             * @see [tooltip.shape](#tooltip.shape)
+             *
+             * @sample {highstock} stock/tooltip/split-positioner/
+             *         Different shapes for header and split boxes
+             */
+            shape: 'callout',
+            /**
+             * CSS styles for the tooltip header. The default is `{ fontSize:
+             * '1em' }`, ensuring that the header text is the same size as the
+             * axis labels.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             */
+            style: {
+                /** @internal */
+                fontSize: '1em'
+            }
+        },
         /**
          * The number of milliseconds to wait until the tooltip is hidden when
          * mouse out from a point or chart.
@@ -21945,10 +22366,11 @@ const Defaults_defaultOptions = {
          *
          * @type {Highcharts.ColorType}
          */
-        backgroundColor: "#ffffff" /* Palette.backgroundColor */,
+        backgroundColor: 'var(--highcharts-background-color)',
         /**
-         * The pixel width of the tooltip border. Defaults to 0 for single
-         * tooltips and fixed tooltips, otherwise 1 for split tooltips.
+         * The pixel width of the tooltip border. Defaults to 1, but with a
+         * `borderColor` to match the background in light mode, and a visible
+         * lighter border in dark mode.
          *
          * In styled mode, the stroke width is set in the
          * `.highcharts-tooltip-box` class.
@@ -22013,10 +22435,14 @@ const Defaults_defaultOptions = {
          * @type {Highcharts.CSSObject}
          */
         style: {
-            /** @type {Highcharts.ColorType} */
-            color: "#333333" /* Palette.neutralColor80 */,
+            /**
+             * @type {Highcharts.ColorType}
+             */
+            color: 'var(--highcharts-neutral-color-80)',
             cursor: 'default',
-            /** @type {number|string} */
+            /**
+             * @type {number|string}
+             */
             fontSize: '0.8em'
         },
         /**
@@ -22094,6 +22520,16 @@ const Defaults_defaultOptions = {
          * @apioption credits.events.click
          */
         /**
+         * Whether to render the credits as HTML
+         *
+         * @since     13.0.0
+         * @sample    highcharts/palette/branding
+         *            Branding with HTML credits
+         * @type      {boolean}
+         * @default   false
+         * @apioption credits.useHTML
+         */
+        /**
          * Whether to show the credits text.
          *
          * @sample {highcharts} highcharts/credits/enabled-false/
@@ -22143,7 +22579,7 @@ const Defaults_defaultOptions = {
             /**
              * @type {Highcharts.ColorType}
              */
-            color: "#999999" /* Palette.neutralColor40 */,
+            color: 'var(--highcharts-neutral-color-40)',
             /**
              * @type {number|string}
              */
@@ -22387,7 +22823,7 @@ const { pageLang: Templating_pageLang } = Core_Globals;
 const helpers = {
     // Built-in helpers
     add: (a, b) => a + b,
-    divide: (a, b) => (b !== 0 ? a / b : ''),
+    divide: (a, b) => (b !== 0 ? correctFloat(a / b) : ''),
     // eslint-disable-next-line eqeqeq
     eq: (a, b) => a == b,
     each: function (arr) {
@@ -22405,7 +22841,7 @@ const helpers = {
     'if': (condition) => !!condition,
     le: (a, b) => a <= b,
     lt: (a, b) => a < b,
-    multiply: (a, b) => a * b,
+    multiply: (a, b) => correctFloat(a * b, 15),
     // eslint-disable-next-line eqeqeq
     ne: (a, b) => a != b,
     subtract: (a, b) => a - b,
@@ -22500,13 +22936,11 @@ function dateFormat(format, timestamp, upperCaseFirst) {
  *         The formatted string.
  */
 function format(str = '', ctx, owner) {
-    // eslint-disable-next-line prefer-regex-literals
-    const regex = new RegExp('\\{([\\p{L}\\p{M}\\d:\\.,;\\-\\/<>\\[\\]%_@+"\'’= #\\(\\)]+)\\}', 'gu'), 
+    const regex = /\{([^{}]+)\}/g, 
     // The sub expression regex is the same as the top expression regex,
     // but except parens and block helpers (#), and surrounded by parens
     // instead of curly brackets.
-    // eslint-disable-next-line prefer-regex-literals
-    subRegex = new RegExp('\\(([\\p{L}\\p{M}\\d:\\.,;\\-\\/<>\\[\\]%_@+"\'= ]+)\\)', 'gu'), matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || Templating_defaultOptions.lang, time = owner?.time || Templating_defaultTime, numberFormatter = owner?.numberFormatter || numberFormat.bind(owner);
+    subRegex = /\(([^()]+)\)/g, matches = [], floatRegex = /f$/, decRegex = /\.(\d)/, lang = owner?.options?.lang || Templating_defaultOptions.lang, time = owner?.time || Templating_defaultTime, numberFormatter = owner?.numberFormatter || numberFormat.bind(owner);
     /*
      * Get a literal or variable value inside a template expression. May be
      * extended with other types like string or null if needed, but keep it
@@ -22660,7 +23094,7 @@ function format(str = '', ctx, owner) {
                 replacement = `"${replacement}"`;
             }
         }
-        str = str.replace(match.find, Utilities_pick(replacement, ''));
+        str = str.replace(match.find, pick(replacement, ''));
     });
     return hasSub ? format(str, ctx, owner) : str;
 }
@@ -22701,7 +23135,7 @@ function numberFormat(number, decimals, decimalPoint, thousandsSep) {
         // Preserve decimals. Not huge numbers (#3793).
         decimals = Math.min(origDec, 20);
     }
-    else if (!Utilities_isNumber(decimals)) {
+    else if (!isNumber(decimals)) {
         decimals = 2;
     }
     else if (decimals && exp < 0) {
@@ -22730,7 +23164,7 @@ function numberFormat(number, decimals, decimalPoint, thousandsSep) {
         decimals ?? (decimals = 2);
         number = mantissa;
     }
-    if (Utilities_isNumber(decimals) && decimals >= 0) {
+    if (isNumber(decimals) && decimals >= 0) {
         options.minimumFractionDigits = decimals;
         options.maximumFractionDigits = decimals;
     }
@@ -22777,9 +23211,7 @@ const Templating = {
  * API Declarations
  * */
 /**
- * @interface Highcharts.Templating
- *
- * The Highcharts.Templating interface provides a structure for defining
+ * The Highcharts.TemplatingObject interface provides a structure for defining
  * helpers. Helpers can be used as conditional blocks or functions within
  * expressions. Highcharts includes several built-in helpers and supports
  * the addition of custom helpers.
@@ -22787,16 +23219,21 @@ const Templating = {
  * @see [More information](
  * https://www.highcharts.com/docs/chart-concepts/templating#helpers)
  *
- * @example
- * // Define a custom helper to return the absolute value of a number
- * Highcharts.Templating.helpers.abs = value => Math.abs(value);
- *
- * // Usage in a format string
- * format: 'Absolute value: {abs point.y}'
- *
- * @name Highcharts.Templating#helpers
- * @type {Record<string, Function>}
- */
+ * @interface Highcharts.TemplatingObject
+ */ /**
+* @example
+* // Define a custom helper to return the absolute value of a number
+* Highcharts.Templating.helpers.abs = value => Math.abs(value);
+*
+* // Usage in a format string
+* format: 'Absolute value: {abs point.y}'
+*
+* @name Highcharts.TemplatingObject#helpers
+* @type {Record<string, Function>}
+*/ /**
+* @name Highcharts.Templating
+* @type {Highcharts.TemplatingObject}
+*/
 (''); // Keeps doclets above in file
 
 ;// ./code/dashboards/es-modules/Dashboards/Components/KPIComponent/KPIComponent.js
@@ -23007,7 +23444,7 @@ class KPIComponent extends Components_Component {
         const { valueFormat, valueFormatter } = this.options;
         if (defined(value)) {
             let prevValue;
-            if (Utilities_isNumber(+value)) {
+            if (isNumber(+value)) {
                 prevValue = +value;
             }
             if (valueFormatter) {
@@ -23016,7 +23453,7 @@ class KPIComponent extends Components_Component {
             else if (valueFormat) {
                 value = KPIComponent_format(valueFormat, { value });
             }
-            else if (Utilities_isNumber(value)) {
+            else if (isNumber(value)) {
                 value = value.toLocaleString();
             }
             HTML_AST.setElementHTML(this.value, '' + value);
@@ -23033,7 +23470,7 @@ class KPIComponent extends Components_Component {
         const chart = this.chart;
         const linkedValueTo = this.options.linkedValueTo;
         if (!chart || !linkedValueTo.enabled ||
-            !defined(value) || !Utilities_isNumber(+value)) {
+            !defined(value) || !isNumber(+value)) {
             return;
         }
         value = +value;
@@ -23097,7 +23534,7 @@ class KPIComponent extends Components_Component {
             return subtitle;
         }
         if (subtitle) {
-            if (Utilities_isNumber(this.prevValue) && Utilities_isNumber(value)) {
+            if (isNumber(this.prevValue) && isNumber(value)) {
                 const diff = value - this.prevValue;
                 let prefix = '';
                 if (diff > 0) {
@@ -23145,7 +23582,7 @@ class KPIComponent extends Components_Component {
      */
     getValueColor() {
         const { threshold, thresholdColors, value } = this.options;
-        if (thresholdColors && threshold && Utilities_isNumber(value)) {
+        if (thresholdColors && threshold && isNumber(value)) {
             if (isArray(threshold)) {
                 for (let i = threshold.length - 1; i >= 0; i--) {
                     if (value >= threshold[i]) {
@@ -23721,16 +24158,16 @@ const NavigatorExtremesSync_syncPair = {
                 maxIndex = cursor.lastRow;
                 minIndex = cursor.firstRow;
                 if (cursor.columns) {
-                    extremesColumn = Utilities_pick(cursor.columns[0], extremesColumn);
+                    extremesColumn = pick(cursor.columns[0], extremesColumn);
                 }
             }
             else if (cursor.state === 'xAxis.extremes.max' + groupKey) {
-                extremesColumn = Utilities_pick(cursor.column, extremesColumn);
-                maxIndex = Utilities_pick(cursor.row, maxIndex);
+                extremesColumn = pick(cursor.column, extremesColumn);
+                maxIndex = pick(cursor.row, maxIndex);
             }
             else {
-                extremesColumn = Utilities_pick(cursor.column, extremesColumn);
-                minIndex = Utilities_pick(cursor.row, minIndex);
+                extremesColumn = pick(cursor.column, extremesColumn);
+                minIndex = pick(cursor.row, minIndex);
             }
             const modifier = table.getModifier();
             if (typeof extremesColumn === 'string' &&
@@ -23866,7 +24303,7 @@ class NavigatorComponent extends Components_Component {
      * */
     /** @private */
     adjustNavigator() {
-        const chart = this.chart, height = Utilities_pick(chart.chartHeight, this.contentElement.clientHeight), width = this.contentElement.clientWidth, chartUpdates = {};
+        const chart = this.chart, height = pick(chart.chartHeight, this.contentElement.clientHeight), width = this.contentElement.clientWidth, chartUpdates = {};
         if (chart.chartHeight !== height ||
             chart.chartWidth !== width) {
             chartUpdates.chart = {
@@ -23936,7 +24373,7 @@ class NavigatorComponent extends Components_Component {
      * Gets the extremes of the navigator's x-axis.
      */
     getAxisExtremes() {
-        const axis = this.chart.xAxis[0], extremes = axis.getExtremes(), min = Utilities_isNumber(extremes.min) ? extremes.min : extremes.dataMin, max = Utilities_isNumber(extremes.max) ? extremes.max : extremes.dataMax;
+        const axis = this.chart.xAxis[0], extremes = axis.getExtremes(), min = isNumber(extremes.min) ? extremes.min : extremes.dataMin, max = isNumber(extremes.max) ? extremes.max : extremes.dataMax;
         if (this.categories) {
             return [
                 this.categories[Math.max(0, Math.ceil(min))],
@@ -24023,7 +24460,7 @@ class NavigatorComponent extends Components_Component {
             if (value === null) {
                 continue;
             }
-            else if (!Utilities_isNumber(value)) {
+            else if (!isNumber(value)) {
                 value = `${value}`;
             }
             // Check if the x-axis data is not of mixed type.
@@ -24039,7 +24476,7 @@ class NavigatorComponent extends Components_Component {
                 uniqueXValues.push(value);
             }
         }
-        uniqueXValues.sort((a, b) => (Utilities_pick(a, NaN) < Utilities_pick(b, NaN) ? -1 : a === b ? 0 : 1));
+        uniqueXValues.sort((a, b) => (pick(a, NaN) < pick(b, NaN) ? -1 : a === b ? 0 : 1));
         let filteredValues;
         const modifierOptions = table.getModifier()?.options;
         if (crossfilterOptions.affectNavigator &&
@@ -24357,10 +24794,25 @@ const PluginHandler = {
 const G = Dashboards_Globals;
 G.board = Dashboards_Board.board;
 G.addEvent = addEvent;
+G.createElement = createElement;
+G.css = css;
+G.defined = defined;
+G.diffObjects = diffObjects;
 G.error = Dashboards_Utilities.error;
+G.find = find;
+G.fireEvent = fireEvent;
+G.getStyle = getStyle;
+G.isArray = isArray;
+G.isFunction = isFunction;
+G.isNumber = isNumber;
+G.isObject = isObject;
+G.isString = isString;
 G.merge = merge;
+G.objectEach = objectEach;
+G.pick = pick;
 G.removeEvent = removeEvent;
 G.setOptions = Dashboards_Defaults.setOptions;
+G.splat = splat;
 G.uniqueKey = uniqueKey;
 G.AST = HTML_AST;
 G.Board = Dashboards_Board;

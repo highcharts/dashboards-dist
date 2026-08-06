@@ -33,7 +33,7 @@ import { uniqueKey } from '../Core/Utilities.js';
  * @class
  * @name Highcharts.DataTable
  *
- * @param {Highcharts.DataTableOptions} [options]
+ * @param {Highcharts.DataTableOptionsObject} [options]
  * Options to initialize the new DataTable instance.
  */
 class DataTable extends DataTableCore {

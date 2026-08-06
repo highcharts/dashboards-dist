@@ -1,5 +1,5 @@
 /**
- * @license Highcharts Dashboards v4.2.0 (2026-05-12)
+ * @license Highcharts Dashboards v4.2.1 (2026-08-06)
  * @module dashboards/dashboards
  *
  * (c) 2009-2026 Highsoft AS
@@ -42,7 +42,7 @@ import HighchartsPlugin from '../Dashboards/Plugins/HighchartsPlugin.js';
 import PluginHandler from '../Dashboards/PluginHandler.js';
 import Sync from '../Dashboards/Components/Sync/Sync.js';
 import Utilities from '../Dashboards/Utilities.js';
-import { addEvent, merge, removeEvent } from '../Shared/Utilities.js';
+import { addEvent, createElement, css, defined, diffObjects, find, fireEvent, getStyle, isArray, isFunction, isNumber, isObject, isString, merge, objectEach, pick, removeEvent, splat } from '../Shared/Utilities.js';
 import { uniqueKey } from '../Core/Utilities.js';
 import GridComponent from '../Dashboards/Components/GridComponent/GridComponent.js';
 import HighchartsComponent from '../Dashboards/Components/HighchartsComponent/HighchartsComponent.js';
@@ -54,10 +54,25 @@ declare global {
         addEvent: typeof addEvent;
         board: typeof Board.board;
         boards: typeof Globals.boards;
+        createElement: typeof createElement;
+        css: typeof css;
+        defined: typeof defined;
+        diffObjects: typeof diffObjects;
         error: typeof Utilities.error;
+        find: typeof find;
+        fireEvent: typeof fireEvent;
+        getStyle: typeof getStyle;
+        isArray: typeof isArray;
+        isFunction: typeof isFunction;
+        isNumber: typeof isNumber;
+        isObject: typeof isObject;
+        isString: typeof isString;
         merge: typeof merge;
+        objectEach: typeof objectEach;
+        pick: typeof pick;
         removeEvent: typeof removeEvent;
         setOptions: typeof Defaults.setOptions;
+        splat: typeof splat;
         uniqueKey: typeof uniqueKey;
         version: typeof Globals.version;
         win: typeof Globals.win;

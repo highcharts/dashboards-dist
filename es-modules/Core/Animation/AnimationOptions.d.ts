@@ -1,3 +1,4 @@
+import type { HTMLDOMElement } from '../Renderer/DOMElementType';
 import type SVGElement from '../Renderer/SVG/SVGElement';
 /**
  * An animation configuration. Animation configurations can also be defined as
@@ -37,6 +38,6 @@ export interface AnimationOptions {
     step?: AnimationStepCallbackFunction;
 }
 export interface AnimationStepCallbackFunction {
-    (this: SVGElement, ...args: Array<any>): void;
+    (this: HTMLDOMElement | SVGElement | undefined, ...args: Array<any>): void;
 }
 export default AnimationOptions;

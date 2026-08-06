@@ -10,15 +10,14 @@
  *
  * */
 'use strict';
-import A from './Animation/AnimationUtilities.js';
-const { animObject } = A;
+import { animObject } from './Animation/AnimationUtilities.js';
 import F from './Templating.js';
 const { format } = F;
 import H from './Globals.js';
 const { composed, dateFormats, doc, isSafari } = H;
 import R from './Renderer/RendererUtilities.js';
 const { distribute } = R;
-import RendererRegistry from './Renderer/RendererRegistry.js';
+import SVGRenderer from './Renderer/SVG/SVGRenderer.js';
 import { addEvent, clamp, css, discardElement, extend, fireEvent, getAlignFactor, internalClearTimeout, isArray, isNumber, isObject, isString, merge, pick, pushUnique, splat, syncTimeout } from '../Shared/Utilities.js';
 /**
  * Clear all timeouts for showing and hiding the tooltip.
@@ -300,7 +299,7 @@ class Tooltip {
         }
         if (!this.label) {
             if (this.outside) {
-                const chart = this.chart, chartStyle = chart.options.chart.style, Renderer = RendererRegistry.getRendererType();
+                const chart = this.chart, chartStyle = chart.options.chart.style;
                 /**
                  * Reference to the tooltip's container, when
                  * [Highcharts.Tooltip#outside] is set to true, otherwise
@@ -310,8 +309,11 @@ class Tooltip {
                  * @type {Highcharts.HTMLDOMElement|undefined}
                  */
                 this.container = container = H.doc.createElement('div');
-                container.className = ('highcharts-tooltip-container ' +
+                container.className = ('highcharts-container ' +
+                    'highcharts-tooltip-container ' +
                     (chart.renderTo.className.match(/(highcharts[a-zA-Z0-9-]+)\s?/gm) || [].join(' ')));
+                // For picking up the specific palette
+                container.dataset['highchartsChart'] = chart.index.toString();
                 // We need to set pointerEvents = 'none' as otherwise it makes
                 // the area under the tooltip non-hoverable even after the
                 // tooltip disappears, #19035.
@@ -319,7 +321,7 @@ class Tooltip {
                     position: 'absolute',
                     top: '1px',
                     pointerEvents: 'none',
-                    zIndex: Math.max(this.options.style.zIndex || 0, (chartStyle?.zIndex || 0) + 3)
+                    zIndex: Math.max(options.style.zIndex || 0, (chartStyle?.zIndex || 0) + 3)
                 });
                 /**
                  * Reference to the tooltip's renderer, when
@@ -329,7 +331,7 @@ class Tooltip {
                  * @name Highcharts.Tooltip#renderer
                  * @type {Highcharts.SVGRenderer|undefined}
                  */
-                this.renderer = renderer = new Renderer(container, 0, 0, chartStyle, void 0, void 0, renderer.styledMode);
+                this.renderer = renderer = new SVGRenderer(container, 0, 0, chartStyle, void 0, void 0, renderer.styledMode);
             }
             // Create the label
             if (doSplit) {
@@ -346,7 +348,8 @@ class Tooltip {
                     this.label
                         .attr({
                         fill: options.backgroundColor,
-                        'stroke-width': options.borderWidth || 0
+                        'stroke-width': options.borderWidth ??
+                            +!options.fixed
                     })
                         // #2301, #2657
                         .css(options.style)
@@ -826,7 +829,7 @@ class Tooltip {
                                 stroke: (options.borderColor ||
                                     point.color ||
                                     currentSeries.color ||
-                                    "#666666" /* Palette.neutralColor60 */)
+                                    'var(--highcharts-neutral-color-60)')
                             });
                         }
                         tooltip.updatePosition({
@@ -960,34 +963,40 @@ class Tooltip {
          */
         function updatePartialTooltip(partialTooltip, point, str) {
             let tt = partialTooltip;
-            const { isHeader, series } = point, ttOptions = series.tooltipOptions || options;
+            const { isHeader, series } = point, ttOptions = series.tooltipOptions || options, specificOptions = isHeader ?
+                merge(ttOptions, ttOptions.header) :
+                ttOptions;
             if (!tt) {
                 const attribs = {
                     padding: ttOptions.padding,
                     r: ttOptions.borderRadius
                 };
                 if (!styledMode) {
-                    attribs.fill = ttOptions.backgroundColor;
-                    attribs['stroke-width'] = ttOptions.borderWidth ?? (fixed && !isHeader ? 0 : 1);
+                    attribs.fill = specificOptions.backgroundColor;
+                    attribs['stroke-width'] = specificOptions.borderWidth ??
+                        +!ttOptions.fixed;
                 }
                 tt = ren
-                    .label('', 0, 0, (ttOptions[isHeader ? 'headerShape' : 'shape']) ||
-                    (fixed && !isHeader ? 'rect' : 'callout'), void 0, void 0, ttOptions.useHTML)
+                    .label('', 0, 0, specificOptions.shape || (fixed && !isHeader ? 'rect' : 'callout'), void 0, void 0, ttOptions.useHTML)
                     .addClass(tooltip.getClassName(point, true, isHeader))
                     .attr(attribs)
                     .add(tooltipLabel);
             }
             tt.isActive = true;
+            // Apply styles before text to ensure correct font metrics on
+            // first render. (#24293)
+            if (!styledMode) {
+                tt.css(specificOptions.style);
+            }
             tt.attr({
                 text: str
             });
             if (!styledMode) {
-                tt.css(ttOptions.style)
-                    .attr({
-                    stroke: (ttOptions.borderColor ||
+                tt.attr({
+                    stroke: (specificOptions.borderColor ||
                         point.color ||
                         series.color ||
-                        "#333333" /* Palette.neutralColor80 */)
+                        'var(--highcharts-neutral-color-80)')
                 });
             }
             return tt;
@@ -1017,7 +1026,7 @@ class Tooltip {
                 const bBox = tt.getBBox();
                 const boxWidth = bBox.width + tt.strokeWidth();
                 if (isHeader) {
-                    headerHeight = bBox.height;
+                    headerHeight = bBox.height + options.header.distance;
                     adjustedPlotHeight += headerHeight;
                     if (headerTop) {
                         distributionBoxTop -= headerHeight;
@@ -1085,8 +1094,7 @@ class Tooltip {
                 if (tooltip.outside && chartLeft + x < boxExtremes.left) {
                     boxExtremes.left = chartLeft + x;
                 }
-                if (!isHeader &&
-                    tooltip.outside &&
+                if (tooltip.outside &&
                     boxExtremes.left + boxWidth > boxExtremes.right) {
                     boxExtremes.right = chartLeft + x;
                 }
@@ -1111,14 +1119,10 @@ class Tooltip {
                 const offset = chartLeft - boxExtremes.left;
                 // Skip this if there is no overflow
                 if (offset > 0) {
-                    if (!isHeader) {
-                        attributes.x = x + offset;
-                        attributes.anchorX = anchorX + offset;
-                    }
-                    if (isHeader) {
-                        attributes.x = (boxExtremes.right - boxExtremes.left) / 2;
-                        attributes.anchorX = anchorX + offset;
-                    }
+                    attributes.x = isHeader ?
+                        (boxExtremes.right - boxExtremes.left) / 2 :
+                        x + offset;
+                    attributes.anchorX = anchorX + offset;
                 }
             }
             // Put the label in place
@@ -1297,7 +1301,7 @@ class Tooltip {
             }
             // Pad it by the border width and distance. Add 2 to make room for
             // the default shadow (#19314).
-            pad = (options.borderWidth || 0) + 2 * distance + 2;
+            pad = (options.borderWidth ?? +!fixed) + 2 * distance + 2;
             renderer.setSize(
             // Clamp width to keep tooltip in viewport (#21698)
             // and subtract one since tooltip container has 'left: 1px;'

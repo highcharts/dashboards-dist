@@ -192,10 +192,11 @@ class Board {
         const index = this.index;
         // Cancel all data connectors pending requests.
         this.dataPool.cancelPendingRequests();
-        // Destroy layouts.
+        // Destroy layouts. Iterate over a copy, since each layout removes
+        // itself from `board.layouts` on destroy (#24857).
         if (this.guiEnabled) {
-            for (let i = 0, iEnd = board.layouts?.length; i < iEnd; ++i) {
-                board.layouts[i].destroy();
+            for (const layout of (board.layouts || []).slice()) {
+                layout.destroy();
             }
         }
         else {
@@ -264,8 +265,10 @@ class Board {
         board.mountedComponents = [];
         // Destroy existing layouts if GUI is enabled
         if (board.guiEnabled && board.layouts) {
-            for (let i = 0, iEnd = board.layouts.length; i < iEnd; ++i) {
-                board.layouts[i].destroy();
+            // Iterate over a copy, since each layout removes itself from
+            // `board.layouts` on destroy (#24857).
+            for (const layout of board.layouts.slice()) {
+                layout.destroy();
             }
             board.layouts = [];
             // Ensure layoutsWrapper exists

@@ -19,14 +19,14 @@ declare class StockChart extends Chart {
      * @param {Highcharts.Options} userOptions
      *        Custom options.
      *
-     * @param {Function} [callback]
+     * @param {Function|true} [callback]
      *        Function to run when the chart has loaded and all external
-     *        images are loaded.
-     *
+     *        images are loaded. Set to `true` to return a promise that
+     *        resolves when the chart is ready.
      *
      * @emits Highcharts.StockChart#event:init
      * @emits Highcharts.StockChart#event:afterInit
      */
-    init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction): void;
+    init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction | true): void;
 }
 export default StockChart;

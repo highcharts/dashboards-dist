@@ -10,8 +10,6 @@
  *
  * */
 'use strict';
-import Color from './Color/Color.js';
-const { parse: color } = Color;
 import H from './Globals.js';
 const { charts, composed, isTouchDevice } = H;
 import { addEvent, attr, css, defined, extend, find, fireEvent, isNumber, isObject, objectEach, offset, pick, pushUnique, splat } from '../Shared/Utilities.js';
@@ -172,7 +170,7 @@ class Pointer {
      * @function Highcharts.Pointer#drag
      */
     drag(e) {
-        const { chart } = this, { mouseDownX = 0, mouseDownY = 0 } = chart, { panning, panKey, selectionMarkerFill } = chart.options.chart, plotLeft = chart.plotLeft, plotTop = chart.plotTop, plotWidth = chart.plotWidth, plotHeight = chart.plotHeight, panningEnabled = isObject(panning) ?
+        const { chart } = this, { mouseDownX = 0, mouseDownY = 0 } = chart, chartOptions = chart.options, { panning, panKey, selectionMarkerFill } = chartOptions.chart, plotLeft = chart.plotLeft, plotTop = chart.plotTop, plotWidth = chart.plotWidth, plotHeight = chart.plotHeight, panningEnabled = isObject(panning) ?
             panning.enabled :
             panning, panKeyPressed = panKey && e[`${panKey}Key`];
         let chartX = e.chartX, chartY = e.chartY, clickedInside, selectionMarker = this.selectionMarker;
@@ -219,9 +217,7 @@ class Pointer {
                         .add();
                     if (!chart.styledMode) {
                         selectionMarker.attr({
-                            fill: selectionMarkerFill ||
-                                color("#334eff" /* Palette.highlightColor80 */)
-                                    .setOpacity(0.25).get()
+                            fill: selectionMarkerFill
                         });
                     }
                 }
@@ -286,6 +282,11 @@ class Pointer {
                     redraw = true;
                 }
             }
+        }
+        // Run a final transform with a drop trigger to display the reset zoom
+        // button after a pinch gesture (#22128)
+        if (e?.type === 'touchend') {
+            chart.transform({ trigger: 'drop' });
         }
         if (redraw) {
             chart.redraw();
@@ -874,8 +875,8 @@ class Pointer {
         // Normalize each touch
         (touch) => pointer.normalize(touch)), touchesLength = touches.length, fireClickEvent = touchesLength === 1 && ((pointer.inClass(e.target, 'highcharts-tracker') &&
             chart.runTrackerClick) ||
-            pointer.runChartClick), tooltip = chart.tooltip, followTouchMove = touchesLength === 1 &&
-            pick(tooltip?.options.followTouchMove, true);
+            pointer.runChartClick), followTouchMove = touchesLength === 1 &&
+            (chart.tooltip?.options.followTouchMove ?? true);
         // Don't initiate panning until the user has pinched. This prevents us
         // from blocking page scrolling as users scroll down a long page
         // (#4210).
@@ -1334,7 +1335,7 @@ class Pointer {
         if (!isTouchDevice) {
             return;
         }
-        const pointer = this, events = pointer.pointerCaptureEventsToUnbind, chart = pointer.chart, container = chart.container, followTouchMove = pick(chart.options.tooltip?.followTouchMove, true), shouldHave = followTouchMove && chart.series.some((series) => series.options.findNearestPointBy
+        const pointer = this, events = pointer.pointerCaptureEventsToUnbind, chart = pointer.chart, container = chart.container, followTouchMove = chart.options.tooltip?.followTouchMove ?? true, shouldHave = followTouchMove && chart.series.some((series) => series.options.findNearestPointBy
             .indexOf('y') > -1);
         if (!pointer.hasPointerCapture && shouldHave) {
             // Add
@@ -1346,11 +1347,6 @@ class Pointer {
             }), addEvent(container, 'pointermove', (e) => {
                 chart.pointer?.getPointFromEvent(e)?.onMouseOver(e);
             }));
-            if (!chart.styledMode) {
-                css(container, { 'touch-action': 'none' });
-            }
-            // Mostly for styled mode
-            container.className += ' highcharts-no-touch-action';
             pointer.hasPointerCapture = true;
         }
         else if (pointer.hasPointerCapture && !shouldHave) {
@@ -1358,13 +1354,6 @@ class Pointer {
             // Unbind
             events.forEach((e) => e());
             events.length = 0;
-            if (!chart.styledMode) {
-                css(container, {
-                    'touch-action': pick(chart.options.chart.style?.['touch-action'], 'manipulation')
-                });
-            }
-            // Mostly for styled mode
-            container.className = container.className.replace(' highcharts-no-touch-action', '');
             pointer.hasPointerCapture = false;
         }
     }
@@ -1429,6 +1418,12 @@ class Pointer {
             else if (start) {
                 // Hide the tooltip on touching outside the plot area (#1203)
                 this.reset();
+            }
+            // If inside, capture touch-drag and display tooltip. If not inside,
+            // allow dragging the finger to scroll the page
+            if ((chart.tooltip?.options.followTouchMove ?? true) &&
+                isInside) {
+                e.preventDefault();
             }
         }
         else if (e.touches.length === 2) {

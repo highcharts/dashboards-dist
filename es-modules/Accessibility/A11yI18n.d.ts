@@ -85,7 +85,7 @@ declare namespace A11yI18nComposition {
      * A `Chart` instance with a time object and numberFormatter, passed on to
      * format().
      *
-     * @deprecated
+     * @deprecated 11.1.0
      *
      * @return {string}
      * The formatted string.

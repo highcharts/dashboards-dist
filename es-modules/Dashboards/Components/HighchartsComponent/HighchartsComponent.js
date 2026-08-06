@@ -18,7 +18,6 @@
 'use strict';
 import Component from '../Component.js';
 import DataConverter from '../../../Data/Converters/DataConverter.js';
-import DataTable from '../../../Data/DataTable.js';
 import Globals from '../../Globals.js';
 import HighchartsSyncs from './HighchartsSyncs/HighchartsSyncs.js';
 import HighchartsComponentDefaults from './HighchartsComponentDefaults.js';
@@ -288,10 +287,7 @@ class HighchartsComponent extends Component {
                 adjustDraggableOptions((columnId) => (columnId === dataStructure));
             }
             else if (Array.isArray(dataStructure)) {
-                const seriesTable = new DataTable({
-                    columns: table.getColumns(dataStructure)
-                });
-                seriesOptions.data = seriesTable.getRows();
+                seriesOptions.data = table.getRows(0, table.rowCount, dataStructure);
                 adjustDraggableOptions((columnId) => (dataStructure.some((name) => name === columnId)));
             }
             else {
@@ -300,11 +296,8 @@ class HighchartsComponent extends Component {
                 for (let j = 0, jEnd = keys.length; j < jEnd; ++j) {
                     columnIds.push(dataStructure[keys[j]]);
                 }
-                const seriesTable = new DataTable({
-                    columns: table.getColumns(columnIds)
-                });
                 seriesOptions.keys = keys;
-                seriesOptions.data = seriesTable.getRows();
+                seriesOptions.data = table.getRows(0, table.rowCount, columnIds);
                 adjustDraggableOptions((columnId) => (columnIds.some((name) => name === columnId)));
             }
             if (!series) {

@@ -5,8 +5,8 @@ import type PointerEvent from './PointerEvent';
 import type PositionObject from './Renderer/PositionObject';
 import type Series from './Series/Series';
 import type SVGElement from './Renderer/SVG/SVGElement';
-import type SVGRenderer from './Renderer/SVG/SVGRenderer';
 import type TooltipOptions from './TooltipOptions';
+import SVGRenderer from './Renderer/SVG/SVGRenderer.js';
 declare module './Chart/ChartBase' {
     interface ChartBase {
         tooltip?: Tooltip;

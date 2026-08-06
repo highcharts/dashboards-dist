@@ -58,7 +58,7 @@ declare module '../../Core/Series/SeriesOptions' {
          *
          * @requires   modules/accessibility
          * @since      11.1.0
-         * @deprecated next
+         * @deprecated 12.6.0
          */
         pointDescriptionFormat?: SeriesAccessibilityOptions['point']['descriptionFormat'];
         /**
