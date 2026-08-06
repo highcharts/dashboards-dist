@@ -1,7 +1,6 @@
 import type { DataEvent, DataEventCallback, DataEventDetail, DataEventEmitter } from './DataEvent';
 import type DataModifier from './Modifiers/DataModifier';
-import type DataTableOptions from './DataTableOptions';
-import type { DataTableValue } from './DataTableOptions';
+import type { DataTableOptionsObject, DataTableValue } from './DataTableOptions';
 import type { TypedArray } from '../Shared/Types';
 import DataTableCore from './DataTableCore.js';
 /**
@@ -12,11 +11,11 @@ import DataTableCore from './DataTableCore.js';
  * @class
  * @name Highcharts.DataTable
  *
- * @param {Highcharts.DataTableOptions} [options]
+ * @param {Highcharts.DataTableOptionsObject} [options]
  * Options to initialize the new DataTable instance.
  */
 declare class DataTable extends DataTableCore implements DataEventEmitter<Event> {
-    constructor(options?: DataTableOptions);
+    constructor(options?: DataTableOptionsObject);
     private modifier?;
     private localRowIndexes?;
     private originalRowIndexes?;
@@ -515,6 +514,7 @@ export interface ColumnEvent extends DataEvent {
     readonly columns?: ColumnCollection;
     readonly columnIds: Array<string>;
     readonly rowIndex?: number;
+    readonly target?: DataTableCore;
 }
 /**
  * All information objects of DataTable events.

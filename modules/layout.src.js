@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards Layout 4.2.0 (2026-05-12)
+ * @license Highcharts Dashboards Layout 4.2.1 (2026-08-06)
  * @module dashboards/modules/layout
  * @requires dashboards
  *
@@ -23,41 +23,41 @@ return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 160:
-/***/ ((module) => {
+/***/ 160
+(module) {
 
 module.exports = __WEBPACK_EXTERNAL_MODULE__160__;
 
-/***/ }),
+/***/ },
 
-/***/ 376:
-/***/ ((module) => {
+/***/ 376
+(module) {
 
 module.exports = __WEBPACK_EXTERNAL_MODULE__376__;
 
-/***/ }),
+/***/ },
 
-/***/ 668:
-/***/ ((module) => {
+/***/ 668
+(module) {
 
 module.exports = __WEBPACK_EXTERNAL_MODULE__668__;
 
-/***/ })
+/***/ }
 
 /******/ 	});
 /************************************************************************/
 /******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
+/******/ 	const __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		const cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
 /******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 		const module = __webpack_module_cache__[moduleId] = {
 /******/ 			// no module.id needed
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
@@ -75,7 +75,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__668__;
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
 /******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
+/******/ 			const getter = module && module.__esModule ?
 /******/ 				() => (module['default']) :
 /******/ 				() => (module);
 /******/ 			__webpack_require__.d(getter, { a: getter });
@@ -85,11 +85,26 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__668__;
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
+/******/ 		// define getter/value functions for harmony exports
 /******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			if(Array.isArray(definition)) {
+/******/ 				var i = 0;
+/******/ 				while(i < definition.length) {
+/******/ 					var key = definition[i++];
+/******/ 					var binding = definition[i++];
+/******/ 					if(!__webpack_require__.o(exports, key)) {
+/******/ 						if(binding === 0) {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
+/******/ 						} else {
+/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
+/******/ 						}
+/******/ 					} else if(binding === 0) { i++; }
+/******/ 				}
+/******/ 			} else {
+/******/ 				for(var key in definition) {
+/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 					}
 /******/ 				}
 /******/ 			}
 /******/ 		};
@@ -101,7 +116,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__668__;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
+let __webpack_exports__ = {};
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
@@ -270,1369 +285,6 @@ const EditGlobals = {
 };
 /* harmony default export */ const EditMode_EditGlobals = (EditGlobals);
 
-;// ./code/dashboards/es-modules/Shared/Utilities.js
-/* *
- *
- *  (c) 2009-2026 Highsoft AS
- *
- *  Integration of this software requires a license.
- *  - For commercial use, see www.highcharts.com/license
- *  - For non-commercial, see www.highcharts.com/license-eula
- *
- *
- * */
-
-const { doc, win } = (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default());
-/**
- * Add an event listener.
- *
- * @function Highcharts.addEvent<T>
- *
- * @param  {Highcharts.Class<T>|T} el
- *         The element or object to add a listener to. It can be a
- *         {@link HTMLDOMElement}, an {@link SVGElement} or any other object.
- *
- * @param  {string} type
- *         The event type.
- *
- * @param  {Highcharts.EventCallbackFunction<T>|Function} fn
- *         The function callback to execute when the event is fired.
- *
- * @param  {Highcharts.EventOptionsObject} [options]
- *         Options for adding the event.
- *
- * @sample highcharts/members/addevent
- *         Use a general `render` event to draw shapes on a chart
- *
- * @return {Function}
- *         A callback function to remove the added event.
- */
-function addEvent(el, type, fn, options = {}) {
-    // Add hcEvents to either the prototype (in case we're running addEvent on a
-    // class) or the instance. If hasOwnProperty('hcEvents') is false, it is
-    // inherited down the prototype chain, in which case we need to set the
-    // property on this instance (which may itself be a prototype).
-    const owner = typeof el === 'function' && el.prototype || el;
-    if (!Object.hasOwnProperty.call(owner, 'hcEvents')) {
-        owner.hcEvents = {};
-    }
-    const events = owner.hcEvents;
-    // Allow click events added to points, otherwise they will be prevented by
-    // the TouchPointer.pinch function after a pinch zoom operation (#7091).
-    if ((dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).Point && // Without H a dependency loop occurs
-        el instanceof (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).Point &&
-        el.series &&
-        el.series.chart) {
-        el.series.chart.runTrackerClick = true;
-    }
-    // Handle DOM events
-    // If the browser supports passive events, add it to improve performance
-    // on touch events (#11353).
-    const addEventListener = el.addEventListener;
-    if (addEventListener) {
-        addEventListener.call(el, type, fn, (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).supportsPassiveEvents ? {
-            passive: options.passive === void 0 ?
-                type.indexOf('touch') !== -1 : options.passive,
-            capture: false
-        } : false);
-    }
-    if (!events[type]) {
-        events[type] = [];
-    }
-    const eventObject = {
-        fn,
-        order: typeof options.order === 'number' ? options.order : Infinity
-    };
-    events[type].push(eventObject);
-    // Order the calls
-    events[type].sort((a, b) => a.order - b.order);
-    // Return a function that can be called to remove this event.
-    return function () {
-        removeEvent(el, type, fn);
-    };
-}
-/**
- * Non-recursive method to find the lowest member of an array. `Math.min` raises
- * a maximum call stack size exceeded error in Chrome when trying to apply more
- * than 150.000 points. This method is slightly slower, but safe.
- *
- * @function Highcharts.arrayMin
- *
- * @param {Array<*>} data
- *        An array of numbers.
- *
- * @return {number}
- *         The lowest number.
- */
-function arrayMin(data) {
-    let i = data.length, min = data[0];
-    while (i--) {
-        if (data[i] < min) {
-            min = data[i];
-        }
-    }
-    return min;
-}
-/**
- * Non-recursive method to find the lowest member of an array. `Math.max` raises
- * a maximum call stack size exceeded error in Chrome when trying to apply more
- * than 150.000 points. This method is slightly slower, but safe.
- *
- * @function Highcharts.arrayMax
- *
- * @param {Array<*>} data
- *        An array of numbers.
- *
- * @return {number}
- *         The highest number.
- */
-function arrayMax(data) {
-    let i = data.length, max = data[0];
-    while (i--) {
-        if (data[i] > max) {
-            max = data[i];
-        }
-    }
-    return max;
-}
-/**
- * Set or get an attribute or an object of attributes.
- *
- * To use as a setter, pass a key and a value, or let the second argument be a
- * collection of keys and values. When using a collection, passing a value of
- * `null` or `undefined` will remove the attribute.
- *
- * To use as a getter, pass only a string as the second argument.
- *
- * @function Highcharts.attr
- *
- * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} elem
- *        The DOM element to receive the attribute(s).
- *
- * @param {string|Highcharts.HTMLAttributes|Highcharts.SVGAttributes} [keyOrAttribs]
- *        The property or an object of key-value pairs.
- *
- * @param {number|string} [value]
- *        The value if a single property is set.
- *
- * @return {string|null|undefined}
- *         When used as a getter, return the value.
- */
-function attr(elem, keyOrAttribs, value) {
-    const isGetter = isString(keyOrAttribs) && !defined(value);
-    let ret;
-    const attrSingle = (value, key) => {
-        // Set the value
-        if (defined(value)) {
-            elem.setAttribute(key, value);
-            // Get the value
-        }
-        else if (isGetter) {
-            ret = elem.getAttribute(key);
-            // IE7 and below cannot get class through getAttribute (#7850)
-            if (!ret && key === 'class') {
-                ret = elem.getAttribute(key + 'Name');
-            }
-            // Remove the value
-        }
-        else {
-            elem.removeAttribute(key);
-        }
-    };
-    // If keyOrAttribs is a string
-    if (isString(keyOrAttribs)) {
-        attrSingle(value, keyOrAttribs);
-        // Else if keyOrAttribs is defined, it is a hash of key/value pairs
-    }
-    else {
-        objectEach(keyOrAttribs, attrSingle);
-    }
-    return ret;
-}
-/**
- * Constrain a value to within a lower and upper threshold.
- *
- * @internal
- * @param {number} value The initial value
- * @param {number} min The lower threshold
- * @param {number} max The upper threshold
- * @return {number} Returns a number value within min and max.
- */
-function clamp(value, min, max) {
-    return value > min ? value < max ? value : max : min;
-}
-/**
- * Fix JS round off float errors.
- *
- * @function Highcharts.correctFloat
- *
- * @param {number} num
- *        A float number to fix.
- *
- * @param {number} [prec=14]
- *        The precision.
- *
- * @return {number}
- *         The corrected float number.
- */
-function correctFloat(num, prec) {
-    // When the number is higher than 1e14 use the number (#16275)
-    return num > 1e14 ? num : parseFloat(num.toPrecision(prec || 14));
-}
-/**
- * Utility function to create an HTML element with attributes and styles.
- *
- * @function Highcharts.createElement
- *
- * @param {string} tag
- *        The HTML tag.
- *
- * @param {Highcharts.HTMLAttributes} [attribs]
- *        Attributes as an object of key-value pairs.
- *
- * @param {Highcharts.CSSObject} [styles]
- *        Styles as an object of key-value pairs.
- *
- * @param {Highcharts.HTMLDOMElement} [parent]
- *        The parent HTML object.
- *
- * @param {boolean} [nopad=false]
- *        If true, remove all padding, border and margin.
- *
- * @return {Highcharts.HTMLDOMElement}
- *         The created DOM element.
- */
-function createElement(tag, attribs, styles, parent, nopad) {
-    const el = doc.createElement(tag);
-    if (attribs) {
-        extend(el, attribs);
-    }
-    if (nopad) {
-        css(el, { padding: '0', border: 'none', margin: '0' });
-    }
-    if (styles) {
-        css(el, styles);
-    }
-    if (parent) {
-        parent.appendChild(el);
-    }
-    return el;
-}
-/**
- * Utility for crisping a line position to the nearest full pixel depending on
- * the line width.
- *
- * @internal
- * @param {number} value       The raw pixel position
- * @param {number} lineWidth   The line width
- * @param {boolean} [inverted] Whether the containing group is inverted.
- *                             Crisping round numbers on the y-scale need to go
- *                             to the other side because the coordinate system
- *                             is flipped (scaleY is -1)
- * @return {number}            The pixel position to use for a crisp display
- */
-function crisp(value, lineWidth = 0, inverted) {
-    const mod = lineWidth % 2 / 2, inverter = inverted ? -1 : 1;
-    return (Math.round(value * inverter - mod) + mod) * inverter;
-}
-/**
- * Set CSS on a given element.
- *
- * @function Highcharts.css
- *
- * @param {Highcharts.HTMLDOMElement|Highcharts.SVGDOMElement} el
- *        An HTML DOM element.
- *
- * @param {Highcharts.CSSObject} styles
- *        Style object with camel case property names.
- *
- * @return {void}
- */
-function css(el, styles) {
-    extend(el.style, styles);
-}
-/**
- * Check if an object is null or undefined.
- *
- * @function Highcharts.defined
- *
- * @param {*} obj
- *        The object to check.
- *
- * @return {boolean}
- *         False if the object is null or undefined, otherwise true.
- */
-function defined(obj) {
-    return typeof obj !== 'undefined' && obj !== null;
-}
-/**
- * Utility method that destroys any SVGElement instances that are properties on
- * the given object. It loops all properties and invokes destroy if there is a
- * destroy method. The property is then delete.
- *
- * @function Highcharts.destroyObjectProperties
- *
- * @param {*} obj
- *        The object to destroy properties on.
- *
- * @param {*} [except]
- *        Exception, do not destroy this property, only delete it.
- */
-function destroyObjectProperties(obj, except, destructablesOnly) {
-    objectEach(obj, function (val, n) {
-        // If the object is non-null and destroy is defined
-        if (val !== except && val?.destroy) {
-            // Invoke the destroy
-            val.destroy();
-        }
-        // Delete the property from the object
-        if (val?.destroy || !destructablesOnly) {
-            delete obj[n];
-        }
-    });
-}
-/**
- * Discard a HTML element
- *
- * @function Highcharts.discardElement
- *
- * @param {Highcharts.HTMLDOMElement} element
- *        The HTML node to discard.
- */
-function discardElement(element) {
-    element?.parentElement?.removeChild(element);
-}
-// eslint-disable-next-line valid-jsdoc
-/**
- * Return the deep difference between two objects. It can either return the new
- * properties, or optionally return the old values of new properties.
- * @internal
- */
-function diffObjects(newer, older, keepOlder, collectionsWithUpdate) {
-    const ret = {};
-    /**
-     * Recurse over a set of options and its current values, and store the
-     * current values in the ret object.
-     */
-    function diff(newer, older, ret, depth) {
-        const keeper = keepOlder ? older : newer;
-        objectEach(newer, function (newerVal, key) {
-            if (!depth &&
-                collectionsWithUpdate &&
-                collectionsWithUpdate.indexOf(key) > -1 &&
-                older[key]) {
-                newerVal = splat(newerVal);
-                ret[key] = [];
-                // Iterate over collections like series, xAxis or yAxis and map
-                // the items by index.
-                for (let i = 0; i < Math.max(newerVal.length, older[key].length); i++) {
-                    // Item exists in current data (#6347)
-                    if (older[key][i]) {
-                        // If the item is missing from the new data, we need to
-                        // save the whole config structure. Like when
-                        // responsively updating from a dual axis layout to a
-                        // single axis and back (#13544).
-                        if (newerVal[i] === void 0) {
-                            ret[key][i] = older[key][i];
-                            // Otherwise, proceed
-                        }
-                        else {
-                            ret[key][i] = {};
-                            diff(newerVal[i], older[key][i], ret[key][i], depth + 1);
-                        }
-                    }
-                }
-            }
-            else if (isObject(newerVal, true) &&
-                !newerVal.nodeType // #10044
-            ) {
-                ret[key] = isArray(newerVal) ? [] : {};
-                diff(newerVal, older[key] || {}, ret[key], depth + 1);
-                // Delete empty nested objects
-                if (Object.keys(ret[key]).length === 0 &&
-                    // Except colorAxis which is a special case where the empty
-                    // object means it is enabled. Which is unfortunate and we
-                    // should try to find a better way.
-                    !(key === 'colorAxis' && depth === 0)) {
-                    delete ret[key];
-                }
-            }
-            else if (newer[key] !== older[key] ||
-                // If the newer key is explicitly undefined, keep it (#10525)
-                (key in newer && !(key in older))) {
-                if (key !== '__proto__' && key !== 'constructor') {
-                    ret[key] = keeper[key];
-                }
-            }
-        });
-    }
-    diff(newer, older, ret, 0);
-    return ret;
-}
-/**
- * Remove the last occurrence of an item from an array.
- *
- * @function Highcharts.erase
- *
- * @param {Array<*>} arr
- *        The array.
- *
- * @param {*} item
- *        The item to remove.
- *
- * @return {void}
- */
-function erase(arr, item) {
-    let i = arr.length;
-    while (i--) {
-        if (arr[i] === item) {
-            arr.splice(i, 1);
-            break;
-        }
-    }
-}
-/**
- * Utility function to extend an object with the members of another.
- *
- * @function Highcharts.extend<T>
- *
- * @param {T|undefined} a
- *        The object to be extended.
- *
- * @param {Partial<T>} b
- *        The object to add to the first one.
- *
- * @return {T}
- *         Object a, the original object.
- */
-function extend(a, b) {
-    let n;
-    if (!a) {
-        a = {};
-    }
-    for (n in b) { // eslint-disable-line guard-for-in
-        a[n] = b[n];
-    }
-    return a;
-}
-// eslint-disable-next-line valid-jsdoc
-/**
- * Extend a prototyped class by new members.
- *
- * @deprecated
- * @function Highcharts.extendClass<T>
- *
- * @param {Highcharts.Class<T>} parent
- *        The parent prototype to inherit.
- *
- * @param {Highcharts.Dictionary<*>} members
- *        A collection of prototype members to add or override compared to the
- *        parent prototype.
- *
- * @return {Highcharts.Class<T>}
- *         A new prototype.
- */
-function extendClass(parent, members) {
-    const obj = (function () { });
-    obj.prototype = new parent(); // eslint-disable-line new-cap
-    extend(obj.prototype, members);
-    return obj;
-}
-/**
- * Fire an event that was registered with {@link Highcharts#addEvent}.
- *
- * @function Highcharts.fireEvent<T>
- *
- * @param {T} el
- *        The object to fire the event on. It can be a {@link HTMLDOMElement},
- *        an {@link SVGElement} or any other object.
- *
- * @param {string} type
- *        The type of event.
- *
- * @param {Highcharts.Dictionary<*>|Event} [eventArguments]
- *        Custom event arguments that are passed on as an argument to the event
- *        handler.
- *
- * @param {Highcharts.EventCallbackFunction<T>|Function} [defaultFunction]
- *        The default function to execute if the other listeners haven't
- *        returned false.
- *
- * @return {void}
- */
-function fireEvent(el, type, eventArguments, defaultFunction) {
-    eventArguments = eventArguments || {};
-    if (doc?.createEvent &&
-        (el.dispatchEvent ||
-            (el.fireEvent &&
-                // Enable firing events on Highcharts instance.
-                el !== (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default())))) {
-        const e = doc.createEvent('Events');
-        e.initEvent(type, true, true);
-        eventArguments = extend(e, eventArguments);
-        if (el.dispatchEvent) {
-            el.dispatchEvent(eventArguments);
-        }
-        else {
-            el.fireEvent(type, eventArguments);
-        }
-    }
-    else if (el.hcEvents) {
-        if (!eventArguments.target) {
-            // We're running a custom event
-            extend(eventArguments, {
-                // Attach a simple preventDefault function to skip
-                // default handler if called. The built-in
-                // defaultPrevented property is not overwritable (#5112)
-                preventDefault: function () {
-                    eventArguments.defaultPrevented = true;
-                },
-                // Setting target to native events fails with clicking
-                // the zoom-out button in Chrome.
-                target: el,
-                // If the type is not set, we're running a custom event
-                // (#2297). If it is set, we're running a browser event.
-                type: type
-            });
-        }
-        const events = [];
-        let object = el;
-        let multilevel = false;
-        // Recurse up the inheritance chain and collect hcEvents set as own
-        // objects on the prototypes.
-        while (object.hcEvents) {
-            if (Object.hasOwnProperty.call(object, 'hcEvents') &&
-                object.hcEvents[type]) {
-                if (events.length) {
-                    multilevel = true;
-                }
-                events.unshift.apply(events, object.hcEvents[type]);
-            }
-            object = Object.getPrototypeOf(object);
-        }
-        // For performance reasons, only sort the event handlers in case we are
-        // dealing with multiple levels in the prototype chain. Otherwise, the
-        // events are already sorted in the addEvent function.
-        if (multilevel) {
-            // Order the calls
-            events.sort((a, b) => a.order - b.order);
-        }
-        // Call the collected event handlers
-        events.forEach((obj) => {
-            // If the event handler returns false, prevent the default handler
-            // from executing
-            if (obj.fn.call(el, eventArguments, el) === false) {
-                eventArguments.preventDefault();
-            }
-        });
-    }
-    // Run the default if not prevented
-    if (defaultFunction && !eventArguments.defaultPrevented) {
-        defaultFunction.call(el, eventArguments);
-    }
-}
-/**
- * Convenience function to get the align factor, used several places for
- * computing positions
- * @internal
- */
-const getAlignFactor = (align = '') => ({
-    center: 0.5,
-    right: 1,
-    middle: 0.5,
-    bottom: 1
-}[align] || 0);
-/**
- * Find the closest distance between two values of a two-dimensional array
- * @internal
- * @function Highcharts.getClosestDistance
- *
- * @param {Array<Array<number>>} arrays
- *          An array of arrays of numbers
- *
- * @return {number | undefined}
- *          The closest distance between values
- */
-function getClosestDistance(arrays, onError) {
-    const allowNegative = !onError;
-    let closest, loopLength, distance, i;
-    arrays.forEach((xData) => {
-        if (xData.length > 1) {
-            loopLength = xData.length - 1;
-            for (i = loopLength; i > 0; i--) {
-                distance = xData[i] - xData[i - 1];
-                if (distance < 0 && !allowNegative) {
-                    onError?.();
-                    // Only one call
-                    onError = void 0;
-                }
-                else if (distance && (typeof closest === 'undefined' || distance < closest)) {
-                    closest = distance;
-                }
-            }
-        }
-    });
-    return closest;
-}
-/**
- * Get the magnitude of a number.
- *
- * @function Highcharts.getMagnitude
- *
- * @param {number} num
- *        The number.
- *
- * @return {number}
- *         The magnitude, where 1-9 are magnitude 1, 10-99 magnitude 2 etc.
- */
-function getMagnitude(num) {
-    return Math.pow(10, Math.floor(Math.log(num) / Math.LN10));
-}
-/**
- * Returns the value of a property path on a given object.
- *
- * @internal
- * @function getNestedProperty
- *
- * @param {string} path
- * Path to the property, for example `custom.myValue`.
- *
- * @param {unknown} parent
- * Instance containing the property on the specific path.
- *
- * @return {unknown}
- * The unknown property value.
- */
-function getNestedProperty(path, parent) {
-    const pathElements = path.split('.');
-    while (pathElements.length && defined(parent)) {
-        const pathElement = pathElements.shift();
-        // Filter on the key
-        if (typeof pathElement === 'undefined' ||
-            pathElement === '__proto__') {
-            return; // Undefined
-        }
-        if (pathElement === 'this') {
-            let thisProp;
-            if (isObject(parent)) {
-                thisProp = parent['@this'];
-            }
-            return thisProp ?? parent;
-        }
-        const child = parent[pathElement.replace(/[\\'"]/g, '')];
-        // Filter on the child
-        if (!defined(child) ||
-            typeof child === 'function' ||
-            typeof child.nodeType === 'number' ||
-            child === win) {
-            return; // Undefined
-        }
-        // Else, proceed
-        parent = child;
-    }
-    return parent;
-}
-/**
- * Get the computed CSS value for given element and property, only for numerical
- * properties. For width and height, the dimension of the inner box (excluding
- * padding) is returned. Used for fitting the chart within the container.
- *
- * @function Highcharts.getStyle
- *
- * @param {Highcharts.HTMLDOMElement} el
- * An HTML element.
- *
- * @param {string} prop
- * The property name.
- *
- * @param {boolean} [toInt=true]
- * Parse to integer.
- *
- * @return {number|string|undefined}
- * The style value.
- */
-function getStyle(el, prop, toInt) {
-    let style;
-    // For width and height, return the actual inner pixel size (#4913)
-    if (prop === 'width') {
-        let offsetWidth = Math.min(el.offsetWidth, el.scrollWidth);
-        // In flex boxes, we need to use getBoundingClientRect and floor it,
-        // because scrollWidth doesn't support subpixel precision (#6427) ...
-        const boundingClientRectWidth = el.getBoundingClientRect?.().width;
-        // ...unless if the containing div or its parents are transform-scaled
-        // down, in which case the boundingClientRect can't be used as it is
-        // also scaled down (#9871, #10498).
-        if (boundingClientRectWidth < offsetWidth &&
-            boundingClientRectWidth >= offsetWidth - 1) {
-            offsetWidth = Math.floor(boundingClientRectWidth);
-        }
-        return Math.max(0, // #8377
-        (offsetWidth -
-            (getStyle(el, 'padding-left', true) || 0) -
-            (getStyle(el, 'padding-right', true) || 0)));
-    }
-    if (prop === 'height') {
-        return Math.max(0, // #8377
-        (Math.min(el.offsetHeight, el.scrollHeight) -
-            (getStyle(el, 'padding-top', true) || 0) -
-            (getStyle(el, 'padding-bottom', true) || 0)));
-    }
-    // Otherwise, get the computed style
-    const css = win.getComputedStyle(el, void 0); // eslint-disable-line no-undefined
-    if (css) {
-        style = css.getPropertyValue(prop);
-        if (pick(toInt, prop !== 'opacity')) {
-            style = pInt(style);
-        }
-    }
-    return style;
-}
-/**
- * Return the value of the first element in the array that satisfies the
- * provided testing function.
- *
- * @function Highcharts.find<T>
- *
- * @param {Array<T>} arr
- *        The array to test.
- *
- * @param {Function} callback
- *        The callback function. The function receives the item as the first
- *        argument. Return `true` if this item satisfies the condition.
- *
- * @return {T|undefined}
- *         The value of the element.
- */
-const find = Array.prototype.find ?
-    function (arr, callback) {
-        return arr.find(callback);
-    } :
-    // Legacy implementation. PhantomJS, IE <= 11 etc. #7223.
-    function (arr, callback) {
-        let i;
-        const length = arr.length;
-        for (i = 0; i < length; i++) {
-            if (callback(arr[i], i)) { // eslint-disable-line node/callback-return
-                return arr[i];
-            }
-        }
-    };
-/**
- * Internal clear timeout. The function checks that the `id` was not removed
- * (e.g. by `chart.destroy()`). For the details see
- * [issue #7901](https://github.com/highcharts/highcharts/issues/7901).
- *
- * @internal
- *
- * @function Highcharts.clearTimeout
- *
- * @param {number|undefined} id
- * Id of a timeout.
- */
-function internalClearTimeout(id) {
-    if (defined(id)) {
-        clearTimeout(id);
-    }
-}
-/**
- * Utility function to check if an Object is a HTML Element.
- *
- * @function Highcharts.isDOMElement
- *
- * @param {*} obj
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is a HTML Element.
- */
-function isDOMElement(obj) {
-    return isObject(obj) && typeof obj.nodeType === 'number';
-}
-/**
- * Utility function to check if an Object is a class.
- *
- * @function Highcharts.isClass
- *
- * @param {object|undefined} obj
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is a class.
- */
-function isClass(obj) {
-    const c = obj?.constructor;
-    return !!(isObject(obj, true) &&
-        !isDOMElement(obj) &&
-        (c?.name && c.name !== 'Object'));
-}
-/**
- * Utility function to check if an item is a number and it is finite (not NaN,
- * Infinity or -Infinity).
- *
- * @function Highcharts.isNumber
- *
- * @param {*} n
- *        The item to check.
- *
- * @return {boolean}
- *         True if the item is a finite number
- */
-function isNumber(n) {
-    return typeof n === 'number' && !isNaN(n) && n < Infinity && n > -Infinity;
-}
-/**
- * Utility function to check for string type.
- *
- * @function Highcharts.isString
- *
- * @param {*} s
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is a string.
- */
-function isString(s) {
-    return typeof s === 'string';
-}
-/**
- * Utility function to check if an item is an array.
- *
- * @function Highcharts.isArray
- *
- * @param {*} obj
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is an array.
- */
-function isArray(obj) {
-    const str = Object.prototype.toString.call(obj);
-    return str === '[object Array]' || str === '[object Array Iterator]';
-}
-/**
- * Utility function to check if object is a function.
- *
- * @function Highcharts.isFunction
- *
- * @param {*} obj
- *        The item to check.
- *
- * @return {boolean}
- *         True if the argument is a function.
- */
-function isFunction(obj) {
-    return typeof obj === 'function';
-}
-/**
- * Utility function to check if an item is of type object.
- *
- * @function Highcharts.isObject
- *
- * @param {*} obj
- *        The item to check.
- *
- * @param {boolean} [strict=false]
- *        Also checks that the object is not an array.
- *
- * @return {boolean}
- *         True if the argument is an object.
- */
-function isObject(obj, strict) {
-    return (!!obj &&
-        typeof obj === 'object' &&
-        (!strict || !isArray(obj))); // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-/**
- * Utility function to deep merge two or more objects and return a third object.
- * If the first argument is true, the contents of the second object is copied
- * into the first object. The merge function can also be used with a single
- * object argument to create a deep copy of an object.
- *
- * @function Highcharts.merge<T>
- *
- * @param {true | T} extendOrSource
- *        Whether to extend the left-side object,
- *        or the first object to merge as a deep copy.
- *
- * @param {...Array<object|undefined>} [sources]
- *        Object(s) to merge into the previous one.
- *
- * @return {T}
- *         The merged object. If the first argument is true, the return is the
- *         same as the second argument.
- */
-function merge(extendOrSource, ...sources) {
-    let i, args = [extendOrSource, ...sources], ret = {};
-    const doCopy = function (copy, original) {
-        // An object is replacing a primitive
-        if (typeof copy !== 'object') {
-            copy = {};
-        }
-        objectEach(original, function (value, key) {
-            // Prototype pollution (#14883)
-            if (key === '__proto__' || key === 'constructor') {
-                return;
-            }
-            // Copy the contents of objects, but not arrays or DOM nodes
-            if (isObject(value, true) &&
-                !isClass(value) &&
-                !isDOMElement(value)) {
-                copy[key] = doCopy(copy[key] || {}, value);
-                // Primitives and arrays are copied over directly
-            }
-            else {
-                copy[key] = original[key];
-            }
-        });
-        return copy;
-    };
-    // If first argument is true, copy into the existing object. Used in
-    // setOptions.
-    if (extendOrSource === true) {
-        ret = args[1];
-        args = Array.prototype.slice.call(args, 2);
-    }
-    // For each argument, extend the return
-    const len = args.length;
-    for (i = 0; i < len; i++) {
-        ret = doCopy(ret, args[i]);
-    }
-    return ret;
-}
-/**
- * Take an interval and normalize it to multiples of round numbers.
- *
- * @deprecated
- * @function Highcharts.normalizeTickInterval
- *
- * @param {number} interval
- *        The raw, un-rounded interval.
- *
- * @param {Array<*>} [multiples]
- *        Allowed multiples.
- *
- * @param {number} [magnitude]
- *        The magnitude of the number.
- *
- * @param {boolean} [allowDecimals]
- *        Whether to allow decimals.
- *
- * @param {boolean} [hasTickAmount]
- *        If it has tickAmount, avoid landing on tick intervals lower than
- *        original.
- *
- * @return {number}
- *         The normalized interval.
- *
- * @todo
- * Move this function to the Axis prototype. It is here only for historical
- * reasons.
- */
-function normalizeTickInterval(interval, multiples, magnitude, allowDecimals, hasTickAmount) {
-    let i, retInterval = interval;
-    // Round to a tenfold of 1, 2, 2.5 or 5
-    magnitude = pick(magnitude, getMagnitude(interval));
-    const normalized = interval / magnitude;
-    // Multiples for a linear scale
-    if (!multiples) {
-        multiples = hasTickAmount ?
-            // Finer grained ticks when the tick amount is hard set, including
-            // when alignTicks is true on multiple axes (#4580).
-            [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10] :
-            // Else, let ticks fall on rounder numbers
-            [1, 2, 2.5, 5, 10];
-        // The allowDecimals option
-        if (allowDecimals === false) {
-            if (magnitude === 1) {
-                multiples = multiples.filter(function (num) {
-                    return num % 1 === 0;
-                });
-            }
-            else if (magnitude <= 0.1) {
-                multiples = [1 / magnitude];
-            }
-        }
-    }
-    // Normalize the interval to the nearest multiple
-    for (i = 0; i < multiples.length; i++) {
-        retInterval = multiples[i];
-        // Only allow tick amounts smaller than natural
-        if ((hasTickAmount &&
-            retInterval * magnitude >= interval) ||
-            (!hasTickAmount &&
-                (normalized <=
-                    (multiples[i] +
-                        (multiples[i + 1] || multiples[i])) / 2))) {
-            break;
-        }
-    }
-    // Multiply back to the correct magnitude. Correct floats to appropriate
-    // precision (#6085).
-    retInterval = correctFloat(retInterval * magnitude, -Math.round(Math.log(0.001) / Math.LN10));
-    return retInterval;
-}
-/**
- * Iterate over object key pairs in an object.
- *
- * @function Highcharts.objectEach<T>
- *
- * @param {*} obj
- *        The object to iterate over.
- *
- * @param {Highcharts.ObjectEachCallbackFunction<T>} fn
- *        The iterator callback. It passes three arguments:
- *        * value - The property value.
- *        * key - The property key.
- *        * obj - The object that objectEach is being applied to.
- *
- * @param {T} [ctx]
- *        The context.
- */
-function objectEach(obj, fn, ctx) {
-    for (const key in obj) {
-        if (Object.hasOwnProperty.call(obj, key)) {
-            fn.call(ctx || obj[key], obj[key], key, obj);
-        }
-    }
-}
-/**
- * Get the element's offset position, corrected for `overflow: auto`.
- *
- * @function Highcharts.offset
- *
- * @param {global.Element} el
- *        The DOM element.
- *
- * @return {Highcharts.OffsetObject}
- *         An object containing `left` and `top` properties for the position in
- *         the page.
- */
-function offset(el) {
-    const docElem = doc.documentElement, box = (el.parentElement || el.parentNode) ?
-        el.getBoundingClientRect() :
-        { top: 0, left: 0, width: 0, height: 0 };
-    return {
-        top: box.top + (win.pageYOffset || docElem.scrollTop) -
-            (docElem.clientTop || 0),
-        left: box.left + (win.pageXOffset || docElem.scrollLeft) -
-            (docElem.clientLeft || 0),
-        width: box.width,
-        height: box.height
-    };
-}
-/**
- * Left-pad a string to a given length by adding a character repetitively.
- *
- * @function Highcharts.pad
- *
- * @param {number} number
- *        The input string or number.
- *
- * @param {number} [length]
- *        The desired string length.
- *
- * @param {string} [padder=0]
- *        The character to pad with.
- *
- * @return {string}
- *         The padded string.
- */
-function pad(number, length, padder) {
-    return new Array((length || 2) +
-        1 -
-        String(number)
-            .replace('-', '')
-            .length).join(padder || '0') + number;
-}
-/* eslint-disable jsdoc/check-param-names */
-/**
- * Return the first value that is not null or undefined.
- *
- * @function Highcharts.pick<T>
- *
- * @param {...Array<T|null|undefined>} items
- *        Variable number of arguments to inspect.
- *
- * @return {T}
- *         The value of the first argument that is not null or undefined.
- */
-function pick() {
-    const args = arguments;
-    const length = args.length;
-    for (let i = 0; i < length; i++) {
-        const arg = args[i];
-        if (typeof arg !== 'undefined' && arg !== null) {
-            return arg;
-        }
-    }
-}
-/* eslint-enable jsdoc/check-param-names */
-/**
- * Shortcut for parseInt
- *
- * @internal
- * @function Highcharts.pInt
- *
- * @param {*} s
- *        any
- *
- * @param {number} [mag]
- *        Magnitude
- *
- * @return {number}
- *         number
- */
-function pInt(s, mag) {
-    return parseInt(s, mag || 10);
-}
-/**
- * Adds an item to an array, if it is not present in the array.
- *
- * @internal
- *
- * @function Highcharts.pushUnique
- *
- * @param {Array<unknown>} array
- * The array to add the item to.
- *
- * @param {unknown} item
- * The item to add.
- *
- * @return {boolean}
- * Returns true, if the item was not present and has been added.
- */
-function pushUnique(array, item) {
-    return array.indexOf(item) < 0 && !!array.push(item);
-}
-/**
- * Return a length based on either the integer value, or a percentage of a base.
- *
- * @function Highcharts.relativeLength
- *
- * @param {Highcharts.RelativeSize} value
- *        A percentage string or a number.
- *
- * @param {number} base
- *        The full length that represents 100%.
- *
- * @param {number} [offset=0]
- *        A pixel offset to apply for percentage values. Used internally in
- *        axis positioning.
- *
- * @return {number}
- *         The computed length.
- */
-function relativeLength(value, base, offset) {
-    return (/%$/).test(value) ?
-        (base * parseFloat(value) / 100) + (offset || 0) :
-        parseFloat(value);
-}
-/**
- * Replaces text in a string with a given replacement in a loop to catch nested
- * matches after previous replacements.
- *
- * @internal
- *
- * @function Highcharts.replaceNested
- *
- * @param {string} text
- * Text to search and modify.
- *
- * @param {...Array<(RegExp|string)>} replacements
- * One or multiple tuples with search pattern (`[0]: (string|RegExp)`) and
- * replacement (`[1]: string`) for matching text.
- *
- * @return {string}
- * Text with replacements.
- */
-function replaceNested(text, ...replacements) {
-    let previous, replacement;
-    do {
-        previous = text;
-        for (replacement of replacements) {
-            text = text.replace(replacement[0], replacement[1]);
-        }
-    } while (text !== previous);
-    return text;
-}
-/**
- * Remove an event that was added with {@link Highcharts#addEvent}.
- *
- * @function Highcharts.removeEvent<T>
- *
- * @param {Highcharts.Class<T>|T} el
- *        The element to remove events on.
- *
- * @param {string} [type]
- *        The type of events to remove. If undefined, all events are removed
- *        from the element.
- *
- * @param {Highcharts.EventCallbackFunction<T>} [fn]
- *        The specific callback to remove. If undefined, all events that match
- *        the element and optionally the type are removed.
- *
- * @return {void}
- */
-function removeEvent(el, type, fn) {
-    /** @internal */
-    function removeOneEvent(type, fn) {
-        const removeEventListener = el.removeEventListener;
-        if (removeEventListener) {
-            removeEventListener.call(el, type, fn, false);
-        }
-    }
-    /** @internal */
-    function removeAllEvents(eventCollection) {
-        let types, len;
-        if (!el.nodeName) {
-            return; // Break on non-DOM events
-        }
-        if (type) {
-            types = {};
-            types[type] = true;
-        }
-        else {
-            types = eventCollection;
-        }
-        objectEach(types, function (_val, n) {
-            if (eventCollection[n]) {
-                len = eventCollection[n].length;
-                while (len--) {
-                    removeOneEvent(n, eventCollection[n][len].fn);
-                }
-            }
-        });
-    }
-    const owner = typeof el === 'function' && el.prototype || el;
-    if (Object.hasOwnProperty.call(owner, 'hcEvents')) {
-        const events = owner.hcEvents;
-        if (type) {
-            const typeEvents = (events[type] || []);
-            if (fn) {
-                events[type] = typeEvents.filter(function (obj) {
-                    return fn !== obj.fn;
-                });
-                removeOneEvent(type, fn);
-            }
-            else {
-                removeAllEvents(events);
-                events[type] = [];
-            }
-        }
-        else {
-            removeAllEvents(events);
-            delete owner.hcEvents;
-        }
-    }
-}
-/**
- * Check if an element is an array, and if not, make it into an array.
- *
- * @function Highcharts.splat
- *
- * @param {*} obj
- *        The object to splat.
- *
- * @return {Array}
- *         The produced or original array.
- */
-function splat(obj) {
-    return isArray(obj) ? obj : [obj];
-}
-/**
- * Sort an object array and keep the order of equal items. The ECMAScript
- * standard does not specify the behavior when items are equal.
- *
- * @function Highcharts.stableSort
- *
- * @param {Array<*>} arr
- *        The array to sort.
- *
- * @param {Function} sortFunction
- *        The function to sort it with, like with regular Array.prototype.sort.
- */
-function stableSort(arr, sortFunction) {
-    // @todo It seems like Chrome since v70 sorts in a stable way internally,
-    // plus all other browsers do it, so over time we may be able to remove this
-    // function
-    const length = arr.length;
-    let sortValue, i;
-    // Add index to each item
-    for (i = 0; i < length; i++) {
-        arr[i].safeI = i; // Stable sort index
-    }
-    arr.sort(function (a, b) {
-        sortValue = sortFunction(a, b);
-        return sortValue === 0 ? a.safeI - b.safeI : sortValue;
-    });
-    // Remove index from items
-    for (i = 0; i < length; i++) {
-        delete arr[i].safeI; // Stable sort index
-    }
-}
-/**
- * Set a timeout if the delay is given, otherwise perform the function
- * synchronously.
- *
- * @function Highcharts.syncTimeout
- *
- * @param {Function} fn
- *        The function callback.
- *
- * @param {number} delay
- *        Delay in milliseconds.
- *
- * @param {*} [context]
- *        An optional context to send to the function callback.
- *
- * @return {number}
- *         An identifier for the timeout that can later be cleared with
- *         Highcharts.clearTimeout. Returns -1 if there is no timeout.
- */
-function syncTimeout(fn, delay, context) {
-    if (delay > 0) {
-        return setTimeout(fn, delay, context);
-    }
-    fn.call(0, context);
-    return -1;
-}
-/**
- * @internal
- */
-function ucfirst(s) {
-    return ((isString(s) ?
-        s.substring(0, 1).toUpperCase() + s.substring(1) :
-        String(s)));
-}
-/**
- * Wrap a method with extended functionality, preserving the original function.
- *
- * @function Highcharts.wrap
- *
- * @param {*} obj
- *        The context object that the method belongs to. In real cases, this is
- *        often a prototype.
- *
- * @param {string} method
- *        The name of the method to extend.
- *
- * @param {Highcharts.WrapProceedFunction} func
- *        A wrapper function callback. This function is called with the same
- *        arguments as the original function, except that the original function
- *        is unshifted and passed as the first argument.
- */
-function wrap(obj, method, func) {
-    const proceed = obj[method];
-    obj[method] = function () {
-        const outerArgs = arguments, scope = this;
-        return func.apply(this, [
-            function () {
-                return proceed.apply(scope, arguments.length ? arguments : outerArgs);
-            }
-        ].concat([].slice.call(arguments)));
-    };
-}
-
 ;// ./code/dashboards/es-modules/Dashboards/Layout/GUIElement.js
 /* *
  *
@@ -1775,10 +427,10 @@ class GUIElement {
             elem = options.element;
         }
         else {
-            elem = createElement('div', options.attribs || {}, options.style || {}, options.parentContainer);
+            elem = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', options.attribs || {}, options.style || {}, options.parentContainer);
         }
         // Set bindedGUIElement event on GUIElement container.
-        guiElement.removeBindedEventFn = addEvent(elem, 'bindedGUIElement', function (e) {
+        guiElement.removeBindedEventFn = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(elem, 'bindedGUIElement', function (e) {
             e.guiElement = guiElement;
             e.stopImmediatePropagation();
         });
@@ -1798,7 +450,7 @@ class GUIElement {
             guiElement.container.parentNode.removeChild(guiElement.container);
         }
         // Delete all properties.
-        objectEach(guiElement, function (val, key) {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.objectEach)(guiElement, function (val, key) {
             delete guiElement[key];
         });
     }
@@ -1893,7 +545,7 @@ class Cell extends Layout_GUIElement {
             row.container;
         const layoutOptions = row.layout.options || {}, rowOptions = row.options || {}, cellClassName = layoutOptions.cellClassName || '';
         const cellStyle = options.style || {};
-        const elementStyle = merge(layoutOptions.style, rowOptions.style, cellStyle);
+        const elementStyle = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(layoutOptions.style, rowOptions.style, cellStyle);
         this.applySizeOptions(options, cellStyle, elementStyle);
         this.container = this.getElementContainer({
             render: row.layout.board.guiEnabled,
@@ -1925,7 +577,7 @@ class Cell extends Layout_GUIElement {
     setNestedLayout() {
         const board = this.row.layout.board, Layout = this.row.layout.constructor;
         const optionsGui = board.options.gui;
-        this.nestedLayout = new Layout(board, merge({}, optionsGui && optionsGui.layoutOptions, this.options.layout, {
+        this.nestedLayout = new Layout(board, (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, optionsGui && optionsGui.layoutOptions, this.options.layout, {
             parentContainerId: this.options.id
         }), this);
     }
@@ -1934,7 +586,7 @@ class Cell extends Layout_GUIElement {
      * and mounted component.
      */
     destroy() {
-        fireEvent(this, 'outdate');
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this, 'outdate');
         const cell = this;
         const { row } = cell;
         // Destroy mounted component.
@@ -1977,7 +629,7 @@ class Cell extends Layout_GUIElement {
             cell.row.show();
         }
         setTimeout(() => {
-            fireEvent(row, 'cellChange', { row, cell });
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(row, 'cellChange', { row, cell });
         }, 0);
     }
     getParentCell(level) {
@@ -2025,7 +677,7 @@ class Cell extends Layout_GUIElement {
     setSize(width, height) {
         const cell = this, editMode = cell.row.layout.board.editMode;
         if (cell.container) {
-            if (defined(width)) {
+            if ((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(width)) {
                 if (width === 'auto' &&
                     cell.container.style.flex !== '1 1 0%') {
                     cell.container.style.flex = '1 1 0%';
@@ -2039,7 +691,7 @@ class Cell extends Layout_GUIElement {
                     }
                 }
             }
-            if (defined(height)) {
+            if ((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(height)) {
                 const heightValue = (typeof height === 'number' ?
                     height + 'px' :
                     height);
@@ -2059,8 +711,8 @@ class Cell extends Layout_GUIElement {
                 }
             }
             // Call cellResize board event.
-            fireEvent(cell.row.layout.board, 'cellResize', { cell: cell });
-            fireEvent(cell.row, 'cellChange', { cell: cell, row: cell.row });
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(cell.row.layout.board, 'cellResize', { cell: cell });
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(cell.row, 'cellChange', { cell: cell, row: cell.row });
         }
     }
     setHighlight(remove) {
@@ -2114,23 +766,23 @@ class Cell extends Layout_GUIElement {
         return Layout_GUIElement.getPercentageWidth(width) || '';
     }
     applySizeOptions(options, cellStyle, elementStyle) {
-        const heightValue = defined(options.height) ?
+        const heightValue = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(options.height) ?
             options.height :
             cellStyle.height;
-        if (defined(heightValue)) {
+        if ((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(heightValue)) {
             this.height = typeof heightValue === 'number' ?
                 heightValue + 'px' :
                 String(heightValue);
             elementStyle.height = this.height;
             options.height = this.height;
         }
-        else if (defined(elementStyle.height)) {
+        else if ((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(elementStyle.height)) {
             delete elementStyle.height;
         }
-        const widthSource = defined(options.width) ?
+        const widthSource = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(options.width) ?
             options.width :
             cellStyle.flex;
-        if (defined(widthSource) &&
+        if ((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(widthSource) &&
             (typeof widthSource === 'string' ||
                 typeof widthSource === 'number')) {
             let flexValue;
@@ -2305,7 +957,7 @@ function renderContextButton(parentNode, editMode) {
     const contextMenuOptions = editMode.options.contextMenu;
     let contextButton;
     if (contextMenuOptions) {
-        contextButton = createElement('button', {
+        contextButton = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('button', {
             className: EditMode_EditGlobals.classNames.contextMenuBtn,
             onclick: function (event) {
                 event.stopPropagation();
@@ -2314,14 +966,14 @@ function renderContextButton(parentNode, editMode) {
         }, {}, parentNode);
         // Add the icon if defined.
         if (contextMenuOptions.icon) {
-            createElement('img', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('img', {
                 src: contextMenuOptions.icon,
                 className: EditMode_EditGlobals.classNames.icon
             }, {}, contextButton);
         }
         // Add text next to the icon if defined.
         if (contextMenuOptions.text) {
-            createElement('span', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', {
                 className: EditMode_EditGlobals.classNames.contextMenuBtnText,
                 textContent: contextMenuOptions.text
             }, {}, contextButton);
@@ -2345,22 +997,22 @@ function renderContextButton(parentNode, editMode) {
  */
 function renderCollapseHeader(parentElement, options) {
     const { name, showToggle, onchange, isEnabled, isNested, isStandalone, lang } = options;
-    const accordion = createElement('div', {
+    const accordion = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
         className: EditMode_EditGlobals.classNames[(isNested ? 'accordionNestedWrapper' : 'accordionContainer')] + ' ' +
             (isStandalone ?
                 EditMode_EditGlobals.classNames.accordionStandaloneWrapper : '') + ' ' + EditMode_EditGlobals.classNames.collapsableContentHeader
     }, {}, parentElement);
-    const header = createElement('div', {
+    const header = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
         className: EditMode_EditGlobals.classNames.accordionHeader
     }, {}, accordion);
     let headerBtn;
     if (!isStandalone || showToggle) {
-        headerBtn = createElement(isStandalone && showToggle ? 'span' : 'button', {
+        headerBtn = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)(isStandalone && showToggle ? 'span' : 'button', {
             className: EditMode_EditGlobals.classNames[isStandalone ?
                 'accordionHeaderWrapper' : 'accordionHeaderBtn']
         }, {}, header);
     }
-    createElement('span', {
+    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', {
         textContent: lang[name] || name
     }, {}, headerBtn);
     if (showToggle && header) {
@@ -2374,7 +1026,7 @@ function renderCollapseHeader(parentElement, options) {
         });
     }
     if (!isStandalone) {
-        const headerIcon = createElement('span', {
+        const headerIcon = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', {
             className: EditMode_EditGlobals.classNames.accordionHeaderIcon + ' ' +
                 EditMode_EditGlobals.classNames.collapsedElement
         }, {}, headerBtn);
@@ -2383,7 +1035,7 @@ function renderCollapseHeader(parentElement, options) {
             headerIcon?.classList.toggle(EditMode_EditGlobals.classNames.collapsedElement);
         });
     }
-    const content = createElement('div', {
+    const content = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
         className: EditMode_EditGlobals.classNames.accordionContent + ' ' +
             (isStandalone ?
                 EditMode_EditGlobals.classNames.standaloneElement :
@@ -2411,36 +1063,36 @@ function renderSelect(parentElement, options) {
         renderText(parentElement, { title: options.name, isLabel: true });
     }
     const iconsURLPrefix = options.iconsURLPrefix || '';
-    const customSelect = createElement('div', {
+    const customSelect = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
         className: EditMode_EditGlobals.classNames.dropdown +
             ' ' +
             EditMode_EditGlobals.classNames.collapsableContentHeader
     }, {}, parentElement);
-    const btn = createElement('button', {
+    const btn = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('button', {
         className: EditMode_EditGlobals.classNames.dropdownButton
     }, {}, customSelect);
-    const btnContent = createElement('div', {
+    const btnContent = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
         className: EditMode_EditGlobals.classNames.dropdownButtonContent
     }, {}, btn);
-    const iconURL = (find(options.selectOptions, (item) => item.name === options.value) || {}).iconURL;
+    const iconURL = ((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.find)(options.selectOptions, (item) => item.name === options.value) || {}).iconURL;
     let headerIcon;
     if (iconURL) {
-        headerIcon = createElement('img', {
+        headerIcon = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('img', {
             src: iconsURLPrefix + iconURL,
             className: EditMode_EditGlobals.classNames.icon
         }, {}, btnContent);
     }
-    const placeholder = createElement('span', {
+    const placeholder = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', {
         textContent: options.value,
         id: options.id || ''
     }, {}, btnContent);
-    const dropdownPointer = createElement('img', {
+    const dropdownPointer = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('img', {
         className: EditMode_EditGlobals.classNames.dropdownIcon +
             ' ' +
             EditMode_EditGlobals.classNames.collapsedElement,
         src: iconsURLPrefix + 'dropdown-pointer.svg'
     }, {}, btn);
-    const dropdown = createElement('ul', {
+    const dropdown = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('ul', {
         className: EditMode_EditGlobals.classNames.dropdownContent +
             ' ' +
             EditMode_EditGlobals.classNames.hiddenElement
@@ -2450,7 +1102,7 @@ function renderSelect(parentElement, options) {
         dropdownPointer.classList.toggle(EditMode_EditGlobals.classNames.collapsedElement);
     });
     for (let i = 0, iEnd = options.selectOptions.length; i < iEnd; ++i) {
-        renderSelectElement(merge(options.selectOptions[i] || {}, { iconsURLPrefix }), dropdown, placeholder, options.id, dropdownPointer, headerIcon, options.onchange);
+        renderSelectElement((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(options.selectOptions[i] || {}, { iconsURLPrefix }), dropdown, placeholder, options.id, dropdownPointer, headerIcon, options.onchange);
     }
     return customSelect;
 }
@@ -2459,14 +1111,14 @@ function renderSelect(parentElement, options) {
  */
 function renderSelectElement(option, dropdown, placeholder, id, dropdownPointer, headerIcon, callback) {
     const iconURL = option.iconsURLPrefix + option.iconURL;
-    const selectOption = createElement('li', {}, {}, dropdown);
-    const selectOptionBtn = createElement('button', { className: EditMode_EditGlobals.classNames.customSelectButton }, {}, selectOption);
+    const selectOption = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('li', {}, {}, dropdown);
+    const selectOptionBtn = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('button', { className: EditMode_EditGlobals.classNames.customSelectButton }, {}, selectOption);
     if (option.iconURL) {
-        createElement('img', {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('img', {
             src: iconURL
         }, {}, selectOptionBtn);
     }
-    createElement('span', { textContent: option.name || '' }, {}, selectOptionBtn);
+    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', { textContent: option.name || '' }, {}, selectOptionBtn);
     selectOptionBtn.addEventListener('click', function () {
         dropdown.classList.add(EditMode_EditGlobals.classNames.hiddenElement);
         dropdownPointer.classList.toggle(EditMode_EditGlobals.classNames.collapsedElement);
@@ -2497,12 +1149,12 @@ function renderToggle(parentElement, options) {
     }
     const lang = options.lang, value = options.value, title = options.title || options.name, langKey = options.langKey;
     if (options.isNested) {
-        const labeledToggleWrapper = createElement('div', {
+        const labeledToggleWrapper = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.labeledToggleWrapper
         }, {}, parentElement);
         parentElement = labeledToggleWrapper;
     }
-    const toggleContainer = createElement('button', {
+    const toggleContainer = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('button', {
         className: EditMode_EditGlobals.classNames.toggleContainer,
         type: 'button',
         role: 'switch',
@@ -2518,7 +1170,7 @@ function renderToggle(parentElement, options) {
             className: EditMode_EditGlobals.classNames.toggleLabels
         });
     }
-    const toggle = createElement('label', {
+    const toggle = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('label', {
         className: EditMode_EditGlobals.classNames.toggleWrapper +
             ' ' + (options.className || '')
     }, {}, toggleContainer);
@@ -2529,7 +1181,7 @@ function renderToggle(parentElement, options) {
         toggleContainer.setAttribute('aria-checked', input.checked);
         e.stopPropagation();
     });
-    const slider = createElement('span', {
+    const slider = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', {
         className: EditMode_EditGlobals.classNames.toggleSlider
     }, {}, toggle);
     callbackFn && slider.addEventListener('click', (e) => {
@@ -2559,7 +1211,7 @@ function renderText(parentElement, options) {
     const { title: text, className, isLabel } = options;
     if (parentElement) {
         const labelFor = isLabel ? { htmlFor: text } : {};
-        textElem = createElement(isLabel ? 'label' : 'div', {
+        textElem = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)(isLabel ? 'label' : 'div', {
             className: EditMode_EditGlobals.classNames.labelText + ' ' + (className || ''),
             textContent: text,
             ...labelFor
@@ -2584,7 +1236,7 @@ function renderIcon(parentElement, options) {
     if (!parentElement) {
         return;
     }
-    const iconElem = createElement('div', {
+    const iconElem = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
         onclick: callback,
         className: options.className || ''
     }, {}, parentElement);
@@ -2622,12 +1274,12 @@ function renderInput(parentElement, options) {
     if (options.name) {
         renderText(parentElement, { title: options.name, isLabel: true });
     }
-    const input = createElement('input', {
+    const input = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('input', {
         type: 'text',
         onclick: options.callback,
         id: options.id || '',
         name: options.name || '',
-        value: ((defined(options.value) &&
+        value: (((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(options.value) &&
             options.value.toString().replace(/\"/g, '')) || '')
     }, {}, parentElement);
     const onchange = options.onchange;
@@ -2657,7 +1309,7 @@ function renderTextarea(parentElement, options) {
     if (options.name) {
         renderText(parentElement, { title: options.name, isLabel: true });
     }
-    const textarea = createElement('textarea', {
+    const textarea = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('textarea', {
         id: options.id,
         name: options.name,
         value: options.value || ''
@@ -2685,7 +1337,7 @@ function renderTextarea(parentElement, options) {
 function renderCheckbox(parentElement, checked) {
     let input;
     if (parentElement) {
-        input = createElement('input', {
+        input = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('input', {
             type: 'checkbox',
             checked: !!checked
         }, {}, parentElement);
@@ -2708,7 +1360,7 @@ function renderButton(parentElement, options) {
     if (!parentElement) {
         return;
     }
-    const button = createElement('button', {
+    const button = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('button', {
         className: (EditMode_EditGlobals.classNames.button + ' ' +
             (options.className || '')),
         onclick: options.callback,
@@ -2787,7 +1439,7 @@ class MenuItem {
     constructor(menu, options) {
         this.menu = menu;
         this.isActive = false;
-        this.options = merge(MenuItem.defaultOptions, options);
+        this.options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(MenuItem.defaultOptions, options);
         this.container = this.setContainer();
         this.innerElement = this.setInnerElement();
     }
@@ -2805,7 +1457,7 @@ class MenuItem {
         if (options.className) {
             className += ' ' + options.className;
         }
-        return createElement('div', { className: className || '' }, merge(this.options.style || {}, 
+        return (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', { className: className || '' }, (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(this.options.style || {}, 
         // To remove
         this.isActive ? { display: 'block' } : {}), this.menu.container);
     }
@@ -2968,7 +1620,7 @@ class Menu {
     *
     * */
     setContainer() {
-        return createElement('div', {
+        return (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.menu +
                 ' ' + (this.options.className || '')
         }, {}, this.parentElement);
@@ -2984,8 +1636,8 @@ class Menu {
                     itemConfig.id ? itemsSchemas[itemConfig.id] :
                         {};
             options = typeof itemConfig === 'string' ?
-                merge(itemSchema, { id: itemConfig }) :
-                merge(itemSchema, itemConfig);
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(itemSchema, { id: itemConfig }) :
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(itemSchema, itemConfig);
             if (options.id) {
                 item = new Menu_MenuItem(menu, options);
                 // Save initialized item.
@@ -3082,7 +1734,7 @@ class EditToolbar {
      *
      * */
     constructor(editMode, options) {
-        this.container = createElement('div', {
+        this.container = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: options.className
         }, void 0, editMode.board.container);
         this.editMode = editMode;
@@ -3091,7 +1743,7 @@ class EditToolbar {
         this.options = options;
         this.isVisible = false;
         if (this.options.outline) {
-            this.outline = createElement('div', {
+            this.outline = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
                 className: options.outlineClassName
             }, void 0, this.container);
         }
@@ -3107,7 +1759,7 @@ class EditToolbar {
     refreshOutline(x, y, guiElement, offset = 0) {
         const toolbar = this, guiElemCnt = (guiElement || {}).container;
         if (toolbar.outline && guiElemCnt) {
-            css(toolbar.outline, {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(toolbar.outline, {
                 display: 'block',
                 left: x - offset + 'px',
                 top: y - offset + 'px',
@@ -3124,12 +1776,12 @@ class EditToolbar {
     setPosition(x, y) {
         const toolbar = this;
         if (toolbar.container) {
-            css(toolbar.container, {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(toolbar.container, {
                 left: (x || '-9999') + 'px',
                 top: (y || '-9999') + 'px'
             });
         }
-        toolbar.isVisible = defined(x) && defined(y);
+        toolbar.isVisible = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(x) && (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(y);
     }
 }
 /* harmony default export */ const Toolbar_EditToolbar = (EditToolbar);
@@ -3252,7 +1904,7 @@ class CellEditToolbar extends Toolbar_EditToolbar {
      *
      * */
     constructor(editMode) {
-        super(editMode, merge(CellEditToolbar.defaultOptions, (editMode.options.toolbars || {}).cell, {
+        super(editMode, (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(CellEditToolbar.defaultOptions, (editMode.options.toolbars || {}).cell, {
             menu: {
                 items: CellEditToolbar.getItemsConfig(editMode.options, editMode.iconsURLPrefix)
             }
@@ -3287,7 +1939,7 @@ class CellEditToolbar extends Toolbar_EditToolbar {
             const cellOffsets = Layout_GUIElement.getOffsets(cell, toolbar.editMode.board.container);
             const x = cellOffsets.right - toolbarWidth - toolbarMargin;
             const y = cellOffsets.top + toolbarMargin;
-            objectEach(toolbar.menu.items, (item) => {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.objectEach)(toolbar.menu.items, (item) => {
                 if (!cell.options?.editMode?.toolbarItems) {
                     item.activate();
                     return;
@@ -3346,12 +1998,12 @@ class CellEditToolbar extends Toolbar_EditToolbar {
             editMode.resizer?.disableResizer();
             // Call cellResize dashboard event.
             if (row && row.cells && row.cells.length) {
-                fireEvent(board, 'cellResize', {
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(board, 'cellResize', {
                     cell: row.cells[0]
                 });
-                fireEvent(row, 'cellChange', { cell: row.cells[0], row });
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(row, 'cellChange', { cell: row.cells[0], row });
             }
-            fireEvent(editMode, 'layoutChanged', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(editMode, 'layoutChanged', {
                 type: 'cellDestroyed',
                 target: cellId,
                 board: board
@@ -3484,7 +2136,7 @@ class RowEditToolbar extends Toolbar_EditToolbar {
      *
      * */
     constructor(editMode) {
-        super(editMode, merge(RowEditToolbar.defaultOptions, (editMode.options.toolbars || {}).row, {
+        super(editMode, (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(RowEditToolbar.defaultOptions, (editMode.options.toolbars || {}).row, {
             menu: {
                 items: RowEditToolbar.getMenuItemsConfig(editMode.options, editMode.iconsURLPrefix)
             }
@@ -3517,7 +2169,7 @@ class RowEditToolbar extends Toolbar_EditToolbar {
             !(toolbar.editMode.dragDrop || {}).isActive) {
             const rowOffsets = Layout_GUIElement.getOffsets(row, toolbar.editMode.board.container);
             const rowWidth = rowOffsets.right - rowOffsets.left;
-            objectEach(toolbar.menu.items, (item) => {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.objectEach)(toolbar.menu.items, (item) => {
                 if (!row.options?.editMode?.toolbarItems) {
                     item.activate();
                     return;
@@ -3559,7 +2211,7 @@ class RowEditToolbar extends Toolbar_EditToolbar {
             // Hide row and cell toolbars.
             toolbar.editMode.hideToolbars(['cell', 'row']);
             toolbar.editMode.resizer?.disableResizer();
-            fireEvent(toolbar.editMode, 'layoutChanged', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(toolbar.editMode, 'layoutChanged', {
                 type: 'rowDestroyed',
                 target: rowId,
                 board: toolbar.editMode.board
@@ -3592,6 +2244,105 @@ RowEditToolbar.defaultOptions = {
 // EXTERNAL MODULE: external {"amd":["dashboards/dashboards","AST"],"commonjs":["dashboards","AST"],"commonjs2":["dashboards","AST"],"root":["Dashboards","AST"]}
 var dashboards_AST_commonjs_dashboards_AST_commonjs2_dashboards_AST_root_Dashboards_AST_ = __webpack_require__(160);
 var dashboards_AST_commonjs_dashboards_AST_commonjs2_dashboards_AST_root_Dashboards_AST_default = /*#__PURE__*/__webpack_require__.n(dashboards_AST_commonjs_dashboards_AST_commonjs2_dashboards_AST_root_Dashboards_AST_);
+;// ./code/dashboards/es-modules/Shared/BaseFormIcons.js
+/* *
+ *
+ *  (c) 2026 Highsoft AS
+ *  Authors:
+ *  - Paweł Fus
+ *  - Jedrzej Ruta
+ *
+ *  License: www.highcharts.com/license
+ *
+ *  DO NOT EDIT THIS FILE! This file is created by 'gulp scripts-icons' task.
+ *
+ * */
+
+// Auto-generated SVG JSON
+/* eslint-disable max-len */
+/**
+ * Helper function to generate SVG icon prefix with given viewBox size.
+ * @internal
+ */
+const baseFormIconPrefix = (viewBox) => `<?xml version="1.0" encoding="utf-8"?>
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 ${viewBox} ${viewBox}">`;
+/**
+ * Constants
+ */
+const baseIconFillColor = '#4B4B4D';
+/* harmony default export */ const BaseFormIcons = ({
+    'close.svg': `${baseFormIconPrefix(32)}
+<polygon fill="${baseIconFillColor}" points="24.308,8.756 23.248,7.695 16.002,14.941 8.757,7.695 7.695,8.754 14.941,16.001 7.696,23.246
+    8.755,24.308 16.002,17.061 23.247,24.307 24.308,23.248 17.062,16.001"/>
+</svg>
+`,
+    'destroy.svg': `${baseFormIconPrefix(32)}
+<g>
+    <rect x="12.75" y="14" fill="${baseIconFillColor}" width="1.5" height="10"/>
+    <rect x="17.75" y="14" fill="${baseIconFillColor}" width="1.5" height="10"/>
+    <path fill="${baseIconFillColor}" d="M25.25,10.5c0-1.517-1.233-2.75-2.75-2.75h-3.25V7c0-1.24-1.01-2.25-2.25-2.25h-2
+        c-1.24,0-2.25,1.01-2.25,2.25v0.75H9.5c-1.517,0-2.75,1.233-2.75,2.75v1.751h2V27.25h14.5V12.251h2V10.5z M14.25,7
+        c0-0.413,0.337-0.75,0.75-0.75h2c0.413,0,0.75,0.337,0.75,0.75v0.75h-3.5V7z M21.75,25.75h-11.5V12.251h11.5V25.75z M23.75,10.751
+        H8.25V10.5c0-0.689,0.561-1.25,1.25-1.25h13c0.689,0,1.25,0.561,1.25,1.25V10.751z"/>
+</g>
+</svg>
+`,
+    'edit.svg': `${baseFormIconPrefix(32)}
+<path fill="${baseIconFillColor}" d="M22.125,3.814L5.817,20.122l-1.818,7.879l7.879-1.818L28.186,9.875L22.125,3.814z M26.064,9.875
+    l-1.439,1.439l-3.939-3.939l1.439-1.439L26.064,9.875z M10.186,22.875l9.939-9.939l1.439,1.439l-9.939,9.939L10.186,22.875z
+     M7.686,20.375l9.939-9.939l1.439,1.439l-9.939,9.939L7.686,20.375z M18.686,9.375l0.939-0.939l3.939,3.939l-0.939,0.939
+    L18.686,9.375z M6.974,21.784l3.242,3.242l-4.215,0.973L6.974,21.784z"/>
+</svg>
+`
+});
+
+;// ./code/dashboards/es-modules/Shared/BaseFormUtils.js
+/* *
+ *
+ *  (c) 2010-2026 Highsoft AS
+ *  Author: Jedrzej Ruta
+ *
+ *  A commercial license may be required depending on use.
+ *  See www.highcharts.com/license
+ *
+ *
+ * */
+
+/**
+ * Generate and/or retrieve the icon. For pre v12, icons were fetched from
+ * our servers. Since v12.x, icons are generated by JS in SVG.
+ *
+ * @internal
+ * @param {string} iconName
+ *                 Name of the icon, e.g. 'edit.svg'.
+ *
+ * @param {string} iconsURL
+ *                 Icons URL
+ *
+ * @param {Record<string, string>} icons
+ *                 Icons object
+ *
+ * @return {string} Icon string
+ */
+const getIcon = (iconName, iconsURL, icons) => {
+    let icon = icons[iconName];
+    let iconString;
+    if (iconsURL === 'renderer' && icon) {
+        icon = encodeURIComponent(icon);
+        iconString = `url("data:image/svg+xml;charset=utf-8,${icon}")`;
+    }
+    else if (iconsURL.startsWith('http') &&
+        iconsURL.match(/\.(png|svg|jpe?g|gif)$/ig)) {
+        // Absolute icon URL support
+        iconString = 'url("' + iconsURL + '")';
+    }
+    else {
+        iconString = `url("${iconsURL}${iconName}")`;
+    }
+    return iconString;
+};
+/* harmony default export */ const BaseFormUtils = (getIcon);
+
 ;// ./code/dashboards/es-modules/Shared/BaseForm.js
 /* *
  *
@@ -3609,6 +2360,8 @@ var dashboards_AST_commonjs_dashboards_AST_commonjs2_dashboards_AST_root_Dashboa
  *  Imports
  *
  * */
+
+
 
 
 /* *
@@ -3645,7 +2398,7 @@ class BaseForm {
      * Popup div.
      */
     createPopupContainer(parentDiv, className = 'highcharts-popup highcharts-no-tooltip') {
-        return createElement('div', { className }, void 0, parentDiv);
+        return (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', { className }, void 0, parentDiv);
     }
     /**
      * Create HTML element and attach click event to close popup.
@@ -3657,22 +2410,20 @@ class BaseForm {
      * Close button.
      */
     addCloseButton(className = 'highcharts-popup-close') {
-        const popup = this, iconsURL = this.iconsURL;
         // Create close popup button.
-        const closeButton = createElement('button', { className }, void 0, this.container);
-        createElement('span', {
+        const closeButton = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('button', { className }, void 0, this.container);
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', {
             className: 'highcharts-icon'
         }, {
-            backgroundImage: 'url(' + (iconsURL.match(/png|svg|jpeg|jpg|gif/ig) ?
-                iconsURL : iconsURL + 'close.svg') + ')'
+            backgroundImage: BaseFormUtils('close.svg', this.iconsURL, BaseFormIcons)
         }, closeButton);
         ['click', 'touchstart'].forEach((eventName) => {
-            addEvent(closeButton, eventName, popup.closeButtonEvents.bind(popup));
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(closeButton, eventName, this.closeButtonEvents.bind(this));
         });
         // Close popup when press ESC
-        addEvent(document, 'keydown', function (event) {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'keydown', (event) => {
             if (event.code === 'Escape') {
-                popup.closeButtonEvents();
+                this.closeButtonEvents();
             }
         });
         return closeButton;
@@ -3826,7 +2577,7 @@ class ConfirmationPopup extends Shared_BaseForm {
             return;
         }
         // Render content wrapper
-        this.contentContainer = createElement('div', {
+        this.contentContainer = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.popupContentContainer
         }, {}, this.container);
         const popupContainer = this.contentContainer.parentNode;
@@ -3838,7 +2589,7 @@ class ConfirmationPopup extends Shared_BaseForm {
             title: options.text || ''
         });
         // Render button wrapper
-        this.buttonContainer = createElement('div', {
+        this.buttonContainer = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.popupButtonContainer
         }, {}, this.container);
         // Render cancel buttons
@@ -3950,18 +2701,18 @@ class AccordionMenu {
         if (editMode) {
             this.confirmationPopup = new EditMode_ConfirmationPopup(component.board.container, editMode.iconsURLPrefix, editMode, { close: { icon: '' } });
         }
-        const accordionContainer = createElement('div', {
+        const accordionContainer = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.accordionMenu
         }, {}, container);
         for (let i = 0, end = editableOptions.length; i < end; i++) {
             options = editableOptions[i];
-            content = EditMode_EditRenderer.renderCollapseHeader(accordionContainer, merge({
+            content = EditMode_EditRenderer.renderCollapseHeader(accordionContainer, (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({
                 iconsURLPrefix: menu.iconsURLPrefix,
                 lang: (component.board?.editMode || EditMode_EditGlobals).lang
             }, options)).content;
             this.renderAccordion(options, content, component);
         }
-        const buttonContainer = createElement('div', {
+        const buttonContainer = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.accordionMenuButtonsContainer
         }, {}, sidebarMainContainer);
         EditMode_EditRenderer.renderButton(buttonContainer, {
@@ -3970,7 +2721,7 @@ class AccordionMenu {
             className: EditMode_EditGlobals.classNames.popupConfirmBtn,
             callback: async () => {
                 await this.confirmChanges();
-                fireEvent(editMode, 'confirmEditing');
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(editMode, 'confirmEditing');
             }
         });
         EditMode_EditRenderer.renderButton(buttonContainer, {
@@ -3979,7 +2730,7 @@ class AccordionMenu {
             className: EditMode_EditGlobals.classNames.popupCancelBtn,
             callback: () => {
                 this.cancelChanges();
-                fireEvent(editMode, 'cancelEditing');
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(editMode, 'cancelEditing');
             }
         });
         sidebarMainContainer.appendChild(buttonContainer);
@@ -4138,7 +2889,7 @@ class AccordionMenu {
                 lang
             });
             for (let j = 0, jEnd = accordionOptions?.length; j < jEnd; ++j) {
-                this.renderAccordion(merge(accordionOptions[j], { lang, isNested: true }), collapsedHeader.content, component);
+                this.renderAccordion((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(accordionOptions[j], { lang, isNested: true }), collapsedHeader.content, component);
             }
         }
         return;
@@ -4175,10 +2926,10 @@ class AccordionMenu {
             const options = this.changedOptions;
             await component.update(options, true);
         }
-        fireEvent(component.board.editMode, 'componentChanged', {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component.board.editMode, 'componentChanged', {
             target: component,
-            changedOptions: merge({}, this.changedOptions),
-            oldOptions: merge({}, this.oldOptionsBuffer)
+            changedOptions: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, this.changedOptions),
+            oldOptions: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, this.oldOptionsBuffer)
         });
         this.changedOptions = {};
         this.chartOptionsJSON = {};
@@ -4195,10 +2946,10 @@ class AccordionMenu {
             return;
         }
         await component.update(this.oldOptionsBuffer);
-        fireEvent(component.board.editMode, 'componentChangesDiscarded', {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component.board.editMode, 'componentChangesDiscarded', {
             target: component,
-            changedOptions: merge({}, this.changedOptions),
-            oldOptions: merge({}, this.oldOptionsBuffer)
+            changedOptions: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, this.changedOptions),
+            oldOptions: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, this.oldOptionsBuffer)
         });
         this.changedOptions = {};
         this.chartOptionsJSON = {};
@@ -4285,7 +3036,7 @@ function getGUIElement(idOrElement, parentElement) {
         parentElement.querySelector('#' + idOrElement) :
         document.getElementById(idOrElement);
     if (container !== null) {
-        fireEvent(container, 'bindedGUIElement', {}, function (e) {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(container, 'bindedGUIElement', {}, function (e) {
             guiElement = e.guiElement;
         });
     }
@@ -4362,9 +3113,9 @@ async function addComponent(options, board, cell) {
         cell.setActiveState();
         component.isActive = true;
     }
-    fireEvent(component, 'mount');
+    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component, 'mount');
     // Events
-    addEvent(componentContainer, 'click', () => {
+    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(componentContainer, 'click', () => {
         // Call the component's click callback
         if (optionsEvents && optionsEvents.click) {
             optionsEvents.click.call(component);
@@ -4382,7 +3133,7 @@ async function addComponent(options, board, cell) {
     if (optionsStates?.hover?.enabled) {
         componentContainer.classList.add((dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNames.cellHover);
     }
-    fireEvent(component, 'afterLoad');
+    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component, 'afterLoad');
     return promise;
 }
 function getCell(idOrElement, parentElement) {
@@ -4497,7 +3248,7 @@ class Row extends Layout_GUIElement {
             },
             element: rowElement,
             elementId: options.id,
-            style: merge(layoutOptions.style, options.style)
+            style: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(layoutOptions.style, options.style)
         });
         // Init rows from options.
         if (this.options.cells) {
@@ -4513,7 +3264,7 @@ class Row extends Layout_GUIElement {
      * Set the row cells using cell options or cellClassName.
      */
     setCells() {
-        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
+        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.pick)(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
         let cellElement, i, iEnd;
         for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
             cellElement = cellsElements[i];
@@ -4534,7 +3285,7 @@ class Row extends Layout_GUIElement {
      */
     addCell(options, cellElement, index) {
         const row = this, cell = new Layout_Cell(row, options, cellElement);
-        if (!defined(index)) {
+        if (!(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(index)) {
             row.cells.push(cell);
         }
         else {
@@ -4573,7 +3324,7 @@ class Row extends Layout_GUIElement {
                 layout.destroy();
             }
         }
-        fireEvent(editMode, 'rowDestroyed', {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(editMode, 'rowDestroyed', {
             target: row,
             board: board
         });
@@ -4624,18 +3375,18 @@ class Row extends Layout_GUIElement {
             row.cells.splice(index, 0, cell);
             cell.row = row;
             setTimeout(() => {
-                fireEvent(row, 'cellChange', { row, cell });
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(row, 'cellChange', { row, cell });
             }, 0);
         }
     }
     // Remove cell from the row.cells array.
     unmountCell(cell) {
         const cellIndex = this.getCellIndex(cell);
-        if (defined(cellIndex)) {
+        if ((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(cellIndex)) {
             this.cells.splice(cellIndex, 1);
         }
         setTimeout(() => {
-            fireEvent(this, 'cellChange', { row: this, cell });
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this, 'cellChange', { row: this, cell });
         }, 0);
     }
     getVisibleCells() {
@@ -4693,7 +3444,7 @@ class Row extends Layout_GUIElement {
                 rowLevels[cellOffsets.top].cells.push(cell);
             }
         }
-        objectEach(rowLevels, (value) => {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.objectEach)(rowLevels, (value) => {
             rowLevelsArray.push(value);
         });
         return rowLevelsArray;
@@ -4807,7 +3558,7 @@ class Layout extends Layout_GUIElement {
      * Set the layout rows using rows options or rowClassName.
      */
     setRows() {
-        const layout = this, rowsElements = pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
+        const layout = this, rowsElements = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.pick)(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
         let rowElement, i, iEnd;
         for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
             rowElement = rowsElements[i];
@@ -4828,7 +3579,7 @@ class Layout extends Layout_GUIElement {
      */
     addRow(options, rowElement, index) {
         const layout = this, row = new Layout_Row(layout, options, rowElement);
-        if (!defined(index)) {
+        if (!(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(index)) {
             layout.rows.push(row);
         }
         else {
@@ -4888,7 +3639,7 @@ class Layout extends Layout_GUIElement {
     // Remove row from the layout.rows array.
     unmountRow(row) {
         const rowIndex = this.getRowIndex(row);
-        if (defined(rowIndex)) {
+        if ((0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(rowIndex)) {
             this.rows.splice(rowIndex, 1);
         }
     }
@@ -5011,7 +3762,7 @@ class SidebarPopup extends Shared_BaseForm {
          */
         this.componentsList = [];
         this.editMode = editMode;
-        this.options = merge(this.options, editMode.options.toolbars?.sidebar || {});
+        this.options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(this.options, editMode.options.toolbars?.sidebar || {});
         this.componentsList = this.getComponentsList(this.options.components || []);
         this.accordionMenu = new EditMode_AccordionMenu(this.iconsURL, this.hide.bind(this));
     }
@@ -5096,7 +3847,7 @@ class SidebarPopup extends Shared_BaseForm {
             this.editMode.lang.settings :
             this.editMode.lang.addComponent, '');
         // Render content wrapper
-        this.sidebarWrapper = createElement('div', {
+        this.sidebarWrapper = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.editSidebarWrapper
         }, void 0, this.container);
         if (!context) {
@@ -5116,11 +3867,11 @@ class SidebarPopup extends Shared_BaseForm {
         const sidebar = this;
         const components = this.componentsList;
         let gridElement;
-        const gridWrapper = createElement('div', {
+        const gridWrapper = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.editGridItems
         }, {}, sidebar.sidebarWrapper);
         for (let i = 0, iEnd = components.length; i < iEnd; ++i) {
-            gridElement = createElement('div', {}, {}, gridWrapper);
+            gridElement = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {}, {}, gridWrapper);
             // Drag drop new component.
             gridElement.addEventListener('mousedown', (e) => {
                 e.preventDefault();
@@ -5168,12 +3919,12 @@ class SidebarPopup extends Shared_BaseForm {
                         }
                         const newCell = components[i].onDrop(sidebar, dropContext);
                         /* eslint-disable max-len */
-                        const unbindLayoutChanged = addEvent(this.editMode, 'layoutChanged', (e) => {
+                        const unbindLayoutChanged = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(this.editMode, 'layoutChanged', (e) => {
                             if (newCell && e.type === 'newComponent') {
                                 const chart = newCell.mountedComponent?.chart;
                                 const settingsEnabled = this.editMode.options.settings?.enabled;
                                 if (chart?.isDirtyBox) {
-                                    const unbind = addEvent(chart, 'render', () => {
+                                    const unbind = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(chart, 'render', () => {
                                         sidebar.editMode.setEditCellContext(newCell);
                                         if (settingsEnabled) {
                                             sidebar.show(newCell);
@@ -5214,7 +3965,7 @@ class SidebarPopup extends Shared_BaseForm {
             id: Layout_GUIElement.getElementId('col')
         });
         dragDrop.onCellDragEnd(newCell);
-        const options = merge(componentOptions, {
+        const options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(componentOptions, {
             renderTo: newCell.id
         });
         const componentPromise = Actions_Bindings.addComponent(options, sidebar.editMode.board, newCell);
@@ -5224,7 +3975,7 @@ class SidebarPopup extends Shared_BaseForm {
             if (!component) {
                 return;
             }
-            fireEvent(this.editMode, 'layoutChanged', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this.editMode, 'layoutChanged', {
                 type: 'newComponent',
                 target: component
             });
@@ -5275,7 +4026,7 @@ class SidebarPopup extends Shared_BaseForm {
         if (!this.container) {
             return;
         }
-        const headerWrapper = createElement('div', {
+        const headerWrapper = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: EditMode_EditGlobals.classNames.editSidebarHeader
         }, {}, this.container);
         this.container.appendChild(headerWrapper);
@@ -5332,7 +4083,7 @@ class SidebarPopup extends Shared_BaseForm {
      */
     addCloseButton(className = EditMode_EditGlobals.classNames.popupCloseButton) {
         // Close popup when click outside the popup
-        addEvent(document, 'click', (event) => {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'click', (event) => {
             event.stopPropagation();
             if (this.container.style.display === 'block' &&
                 !this.container.contains(event.target) &&
@@ -5382,7 +4133,7 @@ SidebarPopup.addRow = {
                 style: {}
             });
             board.layouts.push(layout);
-            fireEvent(board.editMode, 'layoutChanged', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(board.editMode, 'layoutChanged', {
                 type: 'newLayout',
                 target: layout,
                 board
@@ -5444,9 +4195,9 @@ class EditContextMenu extends Menu_Menu {
      *
      * */
     constructor(parentElement, options, editMode) {
-        super(editMode.board.container, merge(EditContextMenu.defaultOptions, options || {}), editMode);
+        super(editMode.board.container, (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(EditContextMenu.defaultOptions, options || {}), editMode);
         this.editMode = editMode;
-        this.options = merge(EditContextMenu.defaultOptions, options || {});
+        this.options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(EditContextMenu.defaultOptions, options || {});
         // Move it in the DOM after the edit tools so it is better accessible.
         this.editMode.board.layoutsWrapper?.parentNode.insertBefore(this.container, this.editMode.board.layoutsWrapper);
         // Set the context menu container width.
@@ -5475,7 +4226,7 @@ class EditContextMenu extends Menu_Menu {
         const contextMenu = this;
         // Click on document close the context menu
         // TODO refactor
-        addEvent(document, 'click', (event) => {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'click', (event) => {
             if (event.target !== this.container &&
                 event.target !==
                     contextMenu.editMode.tools.contextButtonElement &&
@@ -5532,7 +4283,7 @@ EditContextMenu.defaultOptions = {
 /**
  * Default Context menu items.
  */
-EditContextMenu.items = merge(Menu_Menu.items, {
+EditContextMenu.items = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(Menu_Menu.items, {
     editMode: {
         id: 'editMode',
         type: 'toggle',
@@ -5650,7 +4401,7 @@ class ContextDetection {
         if (mouseCellContext.row?.layout.level &&
             side &&
             ContextDetection.isGUIElementOnParentEdge(mouseCellContext, side) &&
-            defined(sideOffset)) {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.defined)(sideOffset)) {
             const level = ContextDetection.getContextLevel(mouseCellContext, offset, sideOffset, side);
             const cell = mouseCellContext.getParentCell(level);
             if (cell) {
@@ -5690,12 +4441,12 @@ class DragDrop {
      */
     constructor(editMode, options) {
         this.editMode = editMode;
-        this.options = merge(DragDrop.defaultOptions, options);
-        this.mockElement = createElement('div', { className: EditMode_EditGlobals.classNames.dragMock }, {}, editMode.board.container);
+        this.options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(DragDrop.defaultOptions, options);
+        this.mockElement = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', { className: EditMode_EditGlobals.classNames.dragMock }, {}, editMode.board.container);
         this.dropPointer = {
             isVisible: false,
             align: '',
-            element: createElement('div', { className: EditMode_EditGlobals.classNames.dropPointer }, {}, editMode.board.container)
+            element: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', { className: EditMode_EditGlobals.classNames.dropPointer }, {}, editMode.board.container)
         };
         this.isActive = false;
         this.initEvents();
@@ -5722,7 +4473,7 @@ class DragDrop {
      */
     showDropPointer(left, top, width, height) {
         this.dropPointer.isVisible = true;
-        css(this.dropPointer.element, {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(this.dropPointer.element, {
             display: 'block',
             left: left + 'px',
             top: top + 'px',
@@ -5748,7 +4499,7 @@ class DragDrop {
      */
     setMockElementPosition(mouseEvent) {
         const dragDrop = this, dashBoundingRect = dragDrop.editMode.board.container.getBoundingClientRect(), offset = dragDrop.mockElement.clientWidth / 2, x = mouseEvent.clientX - dashBoundingRect.left - offset, y = mouseEvent.clientY - dashBoundingRect.top - offset;
-        css(this.mockElement, { left: x + 'px', top: y + 'px' });
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(this.mockElement, { left: x + 'px', top: y + 'px' });
     }
     /**
      * Method for initializing drag drop events.
@@ -5756,8 +4507,8 @@ class DragDrop {
     initEvents() {
         const dragDrop = this;
         // DragDrop events.
-        addEvent(document, 'mousemove', dragDrop.onDrag.bind(dragDrop));
-        addEvent(document, 'mouseup', dragDrop.onDragEnd.bind(dragDrop));
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'mousemove', dragDrop.onDrag.bind(dragDrop));
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'mouseup', dragDrop.onDragEnd.bind(dragDrop));
     }
     /**
      * General method used on drag start.
@@ -5784,14 +4535,14 @@ class DragDrop {
             if (context.getType() === (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).guiElementType.cell) {
                 const draggedCell = context;
                 // Call cellResize board event.
-                fireEvent(this.editMode.board, 'cellResize', { cell: context });
-                fireEvent(draggedCell.row, 'cellChange', { cell: context, row: draggedCell.row });
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this.editMode.board, 'cellResize', { cell: context });
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(draggedCell.row, 'cellChange', { cell: context, row: draggedCell.row });
             }
         }
         else if (dragEndCallback) {
             this.dragEndCallback = dragEndCallback;
         }
-        css(this.mockElement, {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(this.mockElement, {
             cursor: 'grabbing',
             display: 'block'
         });
@@ -5829,7 +4580,7 @@ class DragDrop {
         const dragDrop = this;
         if (dragDrop.isActive) {
             dragDrop.isActive = false;
-            css(dragDrop.mockElement, {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(dragDrop.mockElement, {
                 cursor: 'grab',
                 display: 'none'
             });
@@ -5915,13 +4666,13 @@ class DragDrop {
                 (dragDrop.dropPointer.align === 'bottom' ? 1 : 0));
             // Call cellResize board event.
             if (draggedRow.cells[0]) {
-                fireEvent(dragDrop.editMode.board, 'cellResize', { cell: draggedRow.cells[0] });
-                fireEvent(draggedRow, 'cellChange', { cell: draggedRow.cells[0], row: draggedRow });
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(dragDrop.editMode.board, 'cellResize', { cell: draggedRow.cells[0] });
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(draggedRow, 'cellChange', { cell: draggedRow.cells[0], row: draggedRow });
             }
         }
         dragDrop.hideDropPointer();
         draggedRow.show();
-        fireEvent(dragDrop.editMode, 'layoutChanged', {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(dragDrop.editMode, 'layoutChanged', {
             type: 'rowDragEnd',
             target: draggedRow,
             board: dragDrop.editMode.board
@@ -6112,11 +4863,11 @@ class DragDrop {
             }
         }
         // Call cellResize board event.
-        fireEvent(dragDrop.editMode.board, 'cellResize', { cell: draggedCell });
-        fireEvent(draggedCell.row, 'cellChange', { cell: draggedCell, row: draggedCell.row });
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(dragDrop.editMode.board, 'cellResize', { cell: draggedCell });
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(draggedCell.row, 'cellChange', { cell: draggedCell, row: draggedCell.row });
         dragDrop.hideDropPointer();
         draggedCell.show();
-        fireEvent(dragDrop.editMode, 'layoutChanged', {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(dragDrop.editMode, 'layoutChanged', {
             type: 'cellDragEnd',
             target: draggedCell,
             board: dragDrop.editMode.board
@@ -6177,7 +4928,7 @@ class Resizer {
      */
     constructor(editMode, options) {
         this.editMode = editMode;
-        this.options = merge({}, Resizer.defaultOptions, editMode.options.resize, options);
+        this.options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, Resizer.defaultOptions, editMode.options.resize, options);
         this.currentCell = void 0;
         this.isX = this.options.type.indexOf('x') > -1;
         this.isY = this.options.type.indexOf('y') > -1;
@@ -6201,7 +4952,7 @@ class Resizer {
         const snapHeight = this.options.snap.height || 0;
         const dashboardContainer = this.editMode.board.container;
         // Right snap
-        this.snapRight = createElement('img', {
+        this.snapRight = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('img', {
             className: EditMode_EditGlobals.classNames.resizeSnap + ' ' +
                 EditMode_EditGlobals.classNames.resizeSnapX,
             src: iconsURLPrefix + 'resize-handle.svg'
@@ -6211,7 +4962,7 @@ class Resizer {
             left: -9999 + 'px'
         }, dashboardContainer);
         // Bottom snap
-        this.snapBottom = createElement('img', {
+        this.snapBottom = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('img', {
             className: EditMode_EditGlobals.classNames.resizeSnap + ' ' +
                 EditMode_EditGlobals.classNames.resizeSnapY,
             src: iconsURLPrefix + 'resize-handle.svg'
@@ -6304,10 +5055,10 @@ class Resizer {
         this.tempSiblingsWidth = [];
         // Call cellResize dashboard event.
         if (cellResize) {
-            fireEvent(this.editMode.board, 'cellResize', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this.editMode.board, 'cellResize', {
                 cell: cellResize
             });
-            fireEvent(cellResize.row, 'cellChange', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(cellResize.row, 'cellChange', {
                 cell: cellResize,
                 row: cellResize.row
             });
@@ -6349,10 +5100,10 @@ class Resizer {
             }
         };
         // Add mouse events
-        addEvent(this.snapRight, 'mousedown', mouseDownSnapX);
-        addEvent(this.snapBottom, 'mousedown', mouseDownSnapY);
-        addEvent(document, 'mousemove', mouseMoveSnap);
-        addEvent(document, 'mouseup', mouseUpSnap);
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(this.snapRight, 'mousedown', mouseDownSnapX);
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(this.snapBottom, 'mousedown', mouseDownSnapY);
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'mousemove', mouseMoveSnap);
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'mouseup', mouseUpSnap);
         // Touch events
         // addEvent(snapX, 'touchstart', mouseDownSnapX);
         // addEvent(snapY, 'touchstart', mouseDownSnapY);
@@ -6370,8 +5121,8 @@ class Resizer {
             this.resizeObserver.observe(resizer.editMode.board.container);
         }
         else {
-            const unbind = addEvent(window, 'resize', runReflow);
-            addEvent(this, 'destroy', unbind);
+            const unbind = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(window, 'resize', runReflow);
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(this, 'destroy', unbind);
         }
     }
     /**
@@ -6405,10 +5156,10 @@ class Resizer {
                 currentCell.setSize(void 0, e.clientY - cellOffsets.top);
             }
             // Call cellResize dashboard event.
-            fireEvent(this.editMode.board, 'cellResize', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this.editMode.board, 'cellResize', {
                 cell: currentCell
             });
-            fireEvent(currentCell.row, 'cellChange', {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(currentCell.row, 'cellChange', {
                 cell: currentCell,
                 row: currentCell.row
             });
@@ -6422,13 +5173,13 @@ class Resizer {
         const snaps = ['snapRight', 'snapBottom'];
         let snap;
         // Unbind events
-        removeEvent(document, 'mousemove');
-        removeEvent(document, 'mouseup');
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.removeEvent)(document, 'mousemove');
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.removeEvent)(document, 'mouseup');
         this.resizeObserver?.unobserve(this.editMode.board.container);
         for (let i = 0, iEnd = snaps.length; i < iEnd; ++i) {
             snap = this[snaps[i]];
             // Unbind event
-            removeEvent(snap, 'mousedown');
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.removeEvent)(snap, 'mousedown');
             // Destroy snap
             snap.remove();
         }
@@ -6543,10 +5294,10 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.2.0/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.2.1/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
-        this.options = merge(
+        this.options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(
         // Default options.
         {
             confirmationPopup: {
@@ -6586,7 +5337,7 @@ class EditMode {
             }
         }, options || {});
         this.board = board;
-        this.lang = merge({}, EditMode_EditGlobals.lang, this.options.lang);
+        this.lang = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, EditMode_EditGlobals.lang, this.options.lang);
         board.boardWrapper = board.container;
         if (board.guiEnabled) {
             this.initLayout();
@@ -6598,14 +5349,14 @@ class EditMode {
             this.customHTMLMode = !this.board.layoutsWrapper;
             this.contextPointer = {
                 isVisible: false,
-                element: createElement('div', {
+                element: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
                     className: EditMode_EditGlobals.classNames.contextDetectionPointer
                 }, {}, board.container)
             };
             this.createTools();
             this.confirmationPopup = new EditMode_ConfirmationPopup(board.container, this.iconsURLPrefix, this, this.options.confirmationPopup);
             // Create edit overlay.
-            this.editOverlay = createElement('div', {
+            this.editOverlay = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
                 className: EditMode_EditGlobals.classNames.editOverlay
             }, {}, board.container);
             this.isEditOverlayActive = false;
@@ -6690,7 +5441,7 @@ class EditMode {
                 editMode.setLayoutEvents(board.layouts[i]);
             }
         }
-        addEvent(document, 'keydown', (e) => {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'keydown', (e) => {
             if (e.key === 'Escape' && editMode.isActive()) {
                 editMode.hideToolbars(['cell', 'row']);
                 editMode.editCellContext = void 0;
@@ -6699,27 +5450,27 @@ class EditMode {
         });
         if (editMode.cellToolbar) {
             // Stop context detection when mouse on cell toolbar.
-            addEvent(editMode.cellToolbar.container, 'mouseenter', function () {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(editMode.cellToolbar.container, 'mouseenter', function () {
                 editMode.stopContextDetection();
             });
-            addEvent(editMode.cellToolbar.container, 'mouseleave', function () {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(editMode.cellToolbar.container, 'mouseleave', function () {
                 editMode.isContextDetectionActive = true;
             });
         }
         if (editMode.rowToolbar) {
             // Stop context detection when mouse on row toolbar.
-            addEvent(editMode.rowToolbar.container, 'mouseenter', function () {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(editMode.rowToolbar.container, 'mouseenter', function () {
                 editMode.stopContextDetection();
             });
-            addEvent(editMode.rowToolbar.container, 'mouseleave', function () {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(editMode.rowToolbar.container, 'mouseleave', function () {
                 editMode.isContextDetectionActive = true;
             });
         }
         const elementForEvents = this.customHTMLMode ?
             board.container : board.layoutsWrapper;
-        addEvent(elementForEvents, 'mousemove', editMode.onDetectContext.bind(editMode));
-        addEvent(elementForEvents, 'click', editMode.onContextConfirm.bind(editMode));
-        addEvent(elementForEvents, 'mouseleave', () => {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(elementForEvents, 'mousemove', editMode.onDetectContext.bind(editMode));
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(elementForEvents, 'click', editMode.onContextConfirm.bind(editMode));
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(elementForEvents, 'mouseleave', () => {
             editMode.hideContextPointer();
         });
     }
@@ -6733,11 +5484,11 @@ class EditMode {
         // Clear the container from any content.
         board.container.innerHTML = '';
         // Add container for the board.
-        board.container = createElement('div', {
+        board.container = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNames.boardContainer
         }, {}, board.boardWrapper);
         // Create layouts wrapper.
-        board.layoutsWrapper = createElement('div', {
+        board.layoutsWrapper = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('div', {
             className: (dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNames.layoutsWrapper
         }, {}, board.container);
         if (board.options.gui) {
@@ -6755,7 +5506,7 @@ class EditMode {
     setLayouts(guiOptions) {
         const board = this.board, layoutsOptions = guiOptions.layouts;
         for (let i = 0, iEnd = layoutsOptions.length; i < iEnd; ++i) {
-            board.layouts.push(new Layout_Layout(board, merge({}, guiOptions.layoutOptions, layoutsOptions[i])));
+            board.layouts.push(new Layout_Layout(board, (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, guiOptions.layoutOptions, layoutsOptions[i])));
         }
     }
     /**
@@ -6781,17 +5532,17 @@ class EditMode {
         // Init dragDrop row events.
         if (editMode.dragDrop) {
             const dragDrop = editMode.dragDrop;
-            addEvent(row.container, 'mouseenter', function () {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(row.container, 'mouseenter', function () {
                 if (editMode.isContextDetectionActive) {
                     editMode.mouseRowContext = row;
                 }
             });
-            addEvent(row.container, 'mousemove', function (e) {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(row.container, 'mousemove', function (e) {
                 if (dragDrop.isActive && e.target === row.container) {
                     dragDrop.mouseRowContext = row;
                 }
             });
-            addEvent(row.container, 'mouseleave', function () {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(row.container, 'mouseleave', function () {
                 if (dragDrop.isActive && dragDrop.mouseRowContext === row) {
                     dragDrop.mouseRowContext = void 0;
                 }
@@ -6808,7 +5559,7 @@ class EditMode {
     setCellEvents(cell) {
         const editMode = this;
         if (isCellHTML(cell)) {
-            addEvent(cell.container, 'mouseenter', function () {
+            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(cell.container, 'mouseenter', function () {
                 if (editMode.isContextDetectionActive) {
                     editMode.mouseCellContext = cell;
                 }
@@ -6819,7 +5570,7 @@ class EditMode {
                 editMode.setLayoutEvents(cell.nestedLayout);
             }
             else if (editMode.cellToolbar && cell.container) {
-                addEvent(cell.container, 'mouseenter', function () {
+                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(cell.container, 'mouseenter', function () {
                     if (editMode.isContextDetectionActive) {
                         editMode.mouseCellContext = cell;
                     }
@@ -6827,7 +5578,7 @@ class EditMode {
                 // Init dragDrop cell events only when using layouts.
                 if ((editMode.dragDrop || editMode.resizer)) {
                     const dragDrop = editMode.dragDrop;
-                    addEvent(cell.container, 'mousemove', function (e) {
+                    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(cell.container, 'mousemove', function (e) {
                         if (dragDrop &&
                             dragDrop.isActive &&
                             e.target === cell.container) {
@@ -6835,7 +5586,7 @@ class EditMode {
                             dragDrop.mouseRowContext = void 0;
                         }
                     });
-                    addEvent(cell.container, 'mouseleave', function () {
+                    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(cell.container, 'mouseleave', function () {
                         if (dragDrop &&
                             dragDrop.isActive &&
                             dragDrop.mouseCellContext === cell) {
@@ -7141,7 +5892,7 @@ class EditMode {
             return;
         }
         this.contextPointer.isVisible = true;
-        css(this.contextPointer.element, {
+        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(this.contextPointer.element, {
             display: 'block',
             left: left + 'px',
             top: top + 'px',
@@ -7242,7 +5993,7 @@ class Fullscreen {
         const board = fullscreen.board;
         const elementToFullscreen = container || board.boardWrapper;
         // Handle exitFullscreen() method when user clicks 'Escape' button.
-        const unbindChange = addEvent(board.boardWrapper.ownerDocument, // Dashboard's document
+        const unbindChange = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(board.boardWrapper.ownerDocument, // Dashboard's document
         'fullscreenchange', function () {
             if (fullscreen.isOpen) {
                 fullscreen.isOpen = false;

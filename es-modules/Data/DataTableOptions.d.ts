@@ -2,7 +2,7 @@ import type { TypedArray } from '../Shared/Types';
 /**
  * Options to initialize a new DataTable instance.
  */
-export interface DataTableOptions {
+export interface DataTableOptionsObject {
     /**
      * Initial columns with their values.
      */
@@ -22,4 +22,4 @@ export interface DataTableOptions {
     metadata?: Record<string, DataTableValue>;
 }
 export type DataTableValue = (boolean | null | number | string | undefined);
-export default DataTableOptions;
+export default DataTableOptionsObject;

@@ -8,13 +8,11 @@ declare module '../SVG/SVGRendererBase' {
     }
 }
 declare class HTMLElement extends SVGElement {
-    static useForeignObject: boolean | undefined;
-    div?: HTMLDOMElement;
-    foreignObject?: SVGElement;
+    foreignObject: SVGElement;
     parentGroup?: SVGElement;
     xCorr?: number;
     yCorr?: number;
-    constructor(renderer: SVGRenderer, nodeName: 'span');
+    constructor(renderer: SVGRenderer, nodeName: 'div');
 }
 interface HTMLElement {
     element: HTMLDOMElement;

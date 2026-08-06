@@ -37,14 +37,13 @@ const syncPair = {
         }
         const { dataCursor: cursor } = board;
         const table = this.getDataTable();
-        const dataProvider = grid.dataProvider;
-        const presentationTable = hasDataTableProvider(dataProvider) ?
-            dataProvider.getDataTable(true) :
-            void 0;
-        const onCellHover = (e) => {
+        const emitCellCursor = (cell, state) => {
             if (table) {
-                const cell = e.target;
                 const localIndex = cell.row.index;
+                const dataProvider = grid.dataProvider;
+                const presentationTable = hasDataTableProvider(dataProvider) ?
+                    dataProvider.getDataTable(true) :
+                    void 0;
                 const originalIndex = presentationTable?.getOriginalRowIndex(localIndex);
                 if (typeof originalIndex !== 'number') {
                     return;
@@ -53,34 +52,23 @@ const syncPair = {
                     type: 'position',
                     row: originalIndex,
                     column: cell.column.id,
-                    state: 'point.mouseOver' + groupKey,
+                    state: state + groupKey,
                     sourceId: this.id
                 });
             }
         };
+        const onCellHover = (e) => {
+            emitCellCursor(e.target, 'point.mouseOver');
+        };
         const onCellMouseOut = (e) => {
-            if (table) {
-                const cell = e.target;
-                const localIndex = cell.row.index;
-                const originalIndex = presentationTable?.getOriginalRowIndex(localIndex);
-                if (typeof originalIndex !== 'number') {
-                    return;
-                }
-                cursor.emitCursor(table, {
-                    type: 'position',
-                    row: originalIndex,
-                    column: cell.column.id,
-                    state: 'point.mouseOut' + groupKey,
-                    sourceId: this.id
-                });
-            }
+            emitCellCursor(e.target, 'point.mouseOut');
         };
         addEvent(grid, 'cellMouseOver', onCellHover);
         addEvent(grid, 'cellMouseOut', onCellMouseOut);
         // Return a function that calls the callbacks
         return function () {
-            removeEvent(grid.container, 'cellMouseOver', onCellHover);
-            removeEvent(grid.container, 'cellMouseOut', onCellMouseOut);
+            removeEvent(grid, 'cellMouseOver', onCellHover);
+            removeEvent(grid, 'cellMouseOut', onCellMouseOut);
         };
     },
     handler: function () {

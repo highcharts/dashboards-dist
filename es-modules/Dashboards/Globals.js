@@ -26,7 +26,7 @@
  * Prefix of a GUIElement HTML class name.
  */
 export const classNamePrefix = 'highcharts-dashboards-';
-export const version = '4.2.0';
+export const version = '4.2.1';
 /** @internal */
 export const classNames = {
     layout: classNamePrefix + 'layout',
