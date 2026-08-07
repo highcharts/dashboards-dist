@@ -13,7 +13,7 @@
 import ChartDefaults from './Chart/ChartDefaults.js';
 import H from './Globals.js';
 const { isTouchDevice } = H;
-import Palettes from './Color/Palettes.js';
+import PaletteDefaults from './Color/PaletteDefaults.js';
 import Time from './Time.js';
 import { fireEvent, merge } from '../Shared/Utilities.js';
 /* *
@@ -31,6 +31,7 @@ import { fireEvent, merge } from '../Shared/Utilities.js';
 * @internal
 */
 const defaultOptions = {
+    palette: PaletteDefaults,
     /**
      * An array containing the default colors for the chart's series. When
      * all colors are used, new colors are pulled from the start again.
@@ -43,6 +44,9 @@ const defaultOptions = {
      * are defined in CSS and applied either through series or point class
      * names, or through the [chart.colorCount](#chart.colorCount) option.
      *
+     * The defaults from v13 invoke CSS variables that are set by the
+     * `palette` option's light and dark themes.
+     *
      * @sample {highcharts} highcharts/chart/colors/
      *         Assign a global color theme
      * @sample highcharts/members/theme-v10/
@@ -50,19 +54,56 @@ const defaultOptions = {
      *
      * @type    {Array<Highcharts.ColorType>}
      * @default [
-     *     "#2caffe",
-     *     "#544fc5",
-     *     "#00e272",
-     *     "#fe6a35",
-     *     "#6b8abc",
-     *     "#d568fb",
-     *     "#2ee0ca",
-     *     "#fa4b42",
-     *     "#feb56a",
-     *     "#91e8e1"
+     *     'var(--highcharts-color-0)',
+     *     'var(--highcharts-color-1)',
+     *     'var(--highcharts-color-2)',
+     *     'var(--highcharts-color-3)',
+     *     'var(--highcharts-color-4)',
+     *     'var(--highcharts-color-5)',
+     *     'var(--highcharts-color-6)',
+     *     'var(--highcharts-color-7)',
+     *     'var(--highcharts-color-8)',
+     *     'var(--highcharts-color-9)'
      * ]
      */
-    colors: Palettes.colors,
+    colors: new Array(10).fill(1).map((_, i) => `var(--highcharts-color-${i})`),
+    /**
+     * Options for one or many chart-level data tables. The `dataTable` option,
+     * or its array members, can be either configuration objects or instances of
+     * the `DataTable` class. If a `DataTable` instance is passed, it
+     * will be used directly. If a configuration object is passed, a new
+     * `DataTable` instance will be created based on the provided
+     * configuration.
+     *
+     * The data table is mapped to the series data points based on the
+     * [series.dataMapping](#plotOptions.series.dataMapping) option, unless the
+     * column keys match the point property names (`x`, `y` etc.), in which case
+     * the mapping is automatic.
+     *
+     * @sample {highstock} stock/datatable/candlestick
+     *         Candlestick chart with data table
+     * @sample {highstock} stock/datatable/live-candlestick
+     *         Live candlestick
+     * @sample {highmaps} maps/datatable/chart-datatable
+     *         Map with data table and data mapping
+     * @sample {highmaps} maps/demo/basic-map
+     *         World map
+     * @sample {gantt} gantt/datatable/chart-datatable
+     *         Gantt chart with data table
+     *
+     * @sample highcharts/datatable/chart-datatable-single/
+     *         Chart with one data table as option
+     * @sample highcharts/datatable/chart-datatable-single/
+     *         Chart with one data table as instance
+     * @sample highcharts/datatable/chart-datatable-multiple/
+     *         Chart with two data tables
+     * @sample highcharts/data/getdatatable
+     *         Data table from CSV
+     *
+     * @type {Highcharts.DataTable|Highcharts.DataTableOptionsObject|Array<Highcharts.DataTable|Highcharts.DataTableOptionsObject>}
+     * @since     13.0.0
+     * @apioption dataTable
+     */
     /**
      * Styled mode only. Configuration object for adding SVG definitions for
      * reusable elements. See [gradients, shadows and
@@ -305,7 +346,7 @@ const defaultOptions = {
             /**
              * The fill color for buttons
              */
-            fill: "#f7f7f7" /* Palette.neutralColor3 */,
+            fill: 'var(--highcharts-neutral-color-3)',
             /**
              * The padding of buttons
              */
@@ -317,7 +358,7 @@ const defaultOptions = {
             /**
              * The stroke color for buttons
              */
-            stroke: "#cccccc" /* Palette.neutralColor20 */,
+            stroke: 'var(--highcharts-neutral-color-20)',
             /**
              * The stroke width for buttons
              */
@@ -329,7 +370,7 @@ const defaultOptions = {
                 /**
                  * @type {Highcharts.ColorType}
                  */
-                color: "#333333" /* Palette.neutralColor80 */,
+                color: 'var(--highcharts-neutral-color-80)',
                 cursor: 'pointer',
                 fontSize: '0.8em',
                 fontWeight: 'normal'
@@ -343,7 +384,7 @@ const defaultOptions = {
                  * to the normal state options
                  */
                 hover: {
-                    fill: "#e6e6e6" /* Palette.neutralColor10 */
+                    fill: 'var(--highcharts-neutral-color-10)'
                 },
                 /**
                  * Select state overrides for the buttons are applied in
@@ -353,12 +394,12 @@ const defaultOptions = {
                     /**
                      * @type {Highcharts.ColorType}
                      */
-                    fill: "#e6e9ff" /* Palette.highlightColor10 */,
+                    fill: 'var(--highcharts-highlight-color-10)',
                     style: {
                         /**
                          * @type {Highcharts.ColorType}
                          */
-                        color: "#000000" /* Palette.neutralColor100 */,
+                        color: 'var(--highcharts-neutral-color-100)',
                         fontWeight: 'bold'
                     }
                 },
@@ -371,7 +412,7 @@ const defaultOptions = {
                      * Disabled state CSS style overrides for the buttons' text
                      */
                     style: {
-                        color: "#cccccc" /* Palette.neutralColor20 */
+                        color: 'var(--highcharts-neutral-color-20)'
                     }
                 }
             }
@@ -501,7 +542,7 @@ const defaultOptions = {
          * @sample {highcharts} highcharts/time/useutc-false/
          *         False
          *
-         * @deprecated
+         * @deprecated 12.0.0
          */
         useUTC: void 0
     },
@@ -610,7 +651,7 @@ const defaultOptions = {
             /**
              * @type {Highcharts.ColorType}
              */
-            color: "#333333" /* Palette.neutralColor80 */,
+            color: 'var(--highcharts-neutral-color-80)',
             fontWeight: 'bold'
         },
         /**
@@ -800,7 +841,7 @@ const defaultOptions = {
             /**
              * @type {Highcharts.ColorType}
              */
-            color: "#666666" /* Palette.neutralColor60 */,
+            color: 'var(--highcharts-neutral-color-60)',
             /**
              * @type {number|string}
              */
@@ -878,7 +919,7 @@ const defaultOptions = {
             /**
              * @type {Highcharts.ColorType}
              */
-            color: "#666666" /* Palette.neutralColor60 */,
+            color: 'var(--highcharts-neutral-color-60)',
             /**
              * @type {number|string}
              */
@@ -1180,7 +1221,7 @@ const defaultOptions = {
          * @sample {highcharts} highcharts/legend/lineheight/
          *         Setting padding
          *
-         * @deprecated
+         * @deprecated 2.1.0
          *
          * @type      {number}
          * @default   16
@@ -1236,7 +1277,7 @@ const defaultOptions = {
          *
          * @type {Highcharts.ColorType}
          */
-        borderColor: "#999999" /* Palette.neutralColor40 */,
+        borderColor: 'var(--highcharts-neutral-color-40)',
         /**
          * The border corner radius of the legend.
          *
@@ -1342,7 +1383,7 @@ const defaultOptions = {
              * @type  {Highcharts.ColorType}
              * @since 2.2.4
              */
-            activeColor: "#0022ff" /* Palette.highlightColor100 */,
+            activeColor: 'var(--highcharts-highlight-color-100)',
             /**
              * The color of the inactive up or down arrow in the legend page
              * navigation. .
@@ -1358,7 +1399,7 @@ const defaultOptions = {
              * @type  {Highcharts.ColorType}
              * @since 2.2.4
              */
-            inactiveColor: "#cccccc" /* Palette.neutralColor20 */
+            inactiveColor: 'var(--highcharts-neutral-color-20)'
         },
         /**
          * The inner padding of the legend box.
@@ -1406,7 +1447,7 @@ const defaultOptions = {
          * determined by properties like `align`, `verticalAlign`, `x` and `y`,
          * but the styles are still parsed for backwards compatibility.
          *
-         * @deprecated
+         * @deprecated 2.0.0
          *
          * @type      {Highcharts.CSSObject}
          * @product   highcharts highstock
@@ -1434,7 +1475,7 @@ const defaultOptions = {
             /**
              * @ignore
              */
-            color: "#333333" /* Palette.neutralColor80 */,
+            color: 'var(--highcharts-neutral-color-80)',
             /**
              * @ignore
              */
@@ -1472,7 +1513,7 @@ const defaultOptions = {
             /**
              * @ignore
              */
-            color: "#000000" /* Palette.neutralColor100 */
+            color: 'var(--highcharts-neutral-color-100)'
         },
         /**
          * CSS styles for each legend item when the corresponding series or
@@ -1493,7 +1534,7 @@ const defaultOptions = {
             /**
              * @ignore
              */
-            color: "#666666" /* Palette.neutralColor60 */,
+            color: 'var(--highcharts-neutral-color-60)',
             /**
              * @ignore
              */
@@ -1747,7 +1788,7 @@ const defaultOptions = {
                 /**
                  * @ignore
                  */
-                color: "#333333" /* Palette.neutralColor80 */,
+                color: 'var(--highcharts-neutral-color-80)',
                 /**
                  * @ignore
                  */
@@ -1843,7 +1884,7 @@ const defaultOptions = {
             /**
              * @ignore
              */
-            backgroundColor: "#ffffff" /* Palette.backgroundColor */,
+            backgroundColor: 'var(--highcharts-background-color)',
             /**
              * @ignore
              */
@@ -1861,25 +1902,6 @@ const defaultOptions = {
      * @declare Highcharts.TooltipOptions
      */
     tooltip: {
-        /**
-         * The color of the tooltip border. When `undefined`, the border takes
-         * the color of the corresponding series or point.
-         *
-         * Note that the [borderWidth](#tooltip.borderWidth) is usually 0 by
-         * default, so the border color may not be visible until a border width
-         * is set.
-         *
-         * @sample {highcharts} highcharts/tooltip/bordercolor-default/ Follow
-         *         series by default
-         * @sample {highcharts} highcharts/tooltip/bordercolor-black/ Black
-         *         border
-         * @sample {highstock} stock/tooltip/general/ Styled tooltip
-         * @sample {highmaps} maps/tooltip/background-border/ Background and
-         *         border demo
-         *
-         * @type {Highcharts.ColorType}
-         * @apioption tooltip.borderColor
-         */
         /**
          * A CSS class name to apply to the tooltip, allowing unique CSS
          * styling for each chart.
@@ -1904,7 +1926,7 @@ const defaultOptions = {
          * @sample {highcharts} highcharts/tooltip/crosshairs-x/
          *         Enable a crosshair for the x value
          *
-         * @deprecated
+         * @deprecated 4.1.0
          *
          * @type      {*}
          * @default   true
@@ -2259,6 +2281,27 @@ const defaultOptions = {
             easing: (x) => Math.sqrt(1 - Math.pow(x - 1, 2))
         },
         /**
+         * The color of the tooltip border. When `undefined` or `null`, the
+         * border takes the color of the corresponding series or point.
+         *
+         * By default, in light mode the border color matches the background
+         * color because the shadow makes the tooltip stand out. In dark mode, a
+         * visible line is used because the default shadow is too dark to be
+         * visible on a dark background.
+         *
+         * @sample {highcharts} highcharts/tooltip/bordercolor-default/
+         *         Default border color
+         * @sample {highcharts} highcharts/tooltip/bordercolor-black/
+         *         Black border
+         * @sample {highstock} stock/tooltip/general/
+         *         Styled tooltip
+         * @sample {highmaps} maps/tooltip/background-border/
+         *         Background and border demo
+         *
+         * @type {Highcharts.ColorType}
+         */
+        borderColor: 'light-dark(var(--highcharts-neutral-color-5), var(--highcharts-neutral-color-20))', // eslint-disable-line max-len
+        /**
          * The radius of the rounded border corners.
          *
          * @sample {highcharts} highcharts/tooltip/bordercolor-default/
@@ -2268,7 +2311,7 @@ const defaultOptions = {
          * @sample {highmaps} maps/tooltip/background-border/
          *         Background and border demo
          */
-        borderRadius: 3,
+        borderRadius: 5,
         /**
          * For series on datetime axes, the date format in the tooltip's
          * header will by default be guessed based on the closest data points.
@@ -2289,7 +2332,7 @@ const defaultOptions = {
             day: '%[AebY]',
             week: '%v %[AebY]',
             month: '%[BY]',
-            year: '%Y'
+            year: '%[Y]'
         },
         /**
          * A string to append to the tooltip format.
@@ -2319,8 +2362,96 @@ const defaultOptions = {
          * @type       {Highcharts.TooltipShapeValue}
          * @validvalue ["callout", "rect"]
          * @since      7.0
+         * @deprecated 13.0
+         * @apioption tooltip.headerShape
          */
-        headerShape: 'callout',
+        /**
+         * Options for the tooltip header when [tooltip.split](#tooltip.split)
+         * is enabled. The header is the box containing the X value in a split
+         * tooltip.
+         *
+         * @sample {highcharts} highcharts/tooltip/header
+         *         Header options for split tooltip
+         * @sample {highstock} stock/tooltip/header
+         *         Header options for split tooltip
+         * @since  13.0.0
+         */
+        header: {
+            /**
+             * Background color for the tooltip header when
+             * [tooltip.split](#tooltip.split) is enabled.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             *
+             * @type {Highcharts.ColorType}
+             * @apioption tooltip.header.backgroundColor
+             */
+            /**
+             * Border color for the tooltip header when
+             * [tooltip.split](#tooltip.split) is enabled.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             * @type {Highcharts.ColorType}
+             * @apioption tooltip.header.borderColor
+             */
+            /**
+             * The width of the border for the tooltip header when
+             * [tooltip.split](#tooltip.split) is enabled.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             * @type {number}
+             * @apioption tooltip.header.borderWidth
+             */
+            /**
+             * Distance between the plot area and the header (except the
+             * chevron) in a split tooltip, in pixels. The default value makes
+             * the header text align with the axis labels.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             */
+            distance: 5,
+            /**
+             * The name of a symbol to use for the border around the tooltip
+             * header. Applies only when [tooltip.split](#tooltip.split) is
+             * enabled.
+             *
+             * Custom callbacks for symbol path generation can also be added to
+             * `Highcharts.SVGRenderer.prototype.symbols` the same way as for
+             * [series.marker.symbol](plotOptions.line.marker.symbol).
+             *
+             * @see [tooltip.shape](#tooltip.shape)
+             *
+             * @sample {highstock} stock/tooltip/split-positioner/
+             *         Different shapes for header and split boxes
+             */
+            shape: 'callout',
+            /**
+             * CSS styles for the tooltip header. The default is `{ fontSize:
+             * '1em' }`, ensuring that the header text is the same size as the
+             * axis labels.
+             *
+             * @sample {highcharts} highcharts/tooltip/header
+             *         Header options for split tooltip
+             * @sample {highstock} stock/tooltip/header
+             *         Header options for split tooltip
+             */
+            style: {
+                /** @internal */
+                fontSize: '1em'
+            }
+        },
         /**
          * The number of milliseconds to wait until the tooltip is hidden when
          * mouse out from a point or chart.
@@ -2573,10 +2704,11 @@ const defaultOptions = {
          *
          * @type {Highcharts.ColorType}
          */
-        backgroundColor: "#ffffff" /* Palette.backgroundColor */,
+        backgroundColor: 'var(--highcharts-background-color)',
         /**
-         * The pixel width of the tooltip border. Defaults to 0 for single
-         * tooltips and fixed tooltips, otherwise 1 for split tooltips.
+         * The pixel width of the tooltip border. Defaults to 1, but with a
+         * `borderColor` to match the background in light mode, and a visible
+         * lighter border in dark mode.
          *
          * In styled mode, the stroke width is set in the
          * `.highcharts-tooltip-box` class.
@@ -2641,10 +2773,14 @@ const defaultOptions = {
          * @type {Highcharts.CSSObject}
          */
         style: {
-            /** @type {Highcharts.ColorType} */
-            color: "#333333" /* Palette.neutralColor80 */,
+            /**
+             * @type {Highcharts.ColorType}
+             */
+            color: 'var(--highcharts-neutral-color-80)',
             cursor: 'default',
-            /** @type {number|string} */
+            /**
+             * @type {number|string}
+             */
             fontSize: '0.8em'
         },
         /**
@@ -2722,6 +2858,16 @@ const defaultOptions = {
          * @apioption credits.events.click
          */
         /**
+         * Whether to render the credits as HTML
+         *
+         * @since     13.0.0
+         * @sample    highcharts/palette/branding
+         *            Branding with HTML credits
+         * @type      {boolean}
+         * @default   false
+         * @apioption credits.useHTML
+         */
+        /**
          * Whether to show the credits text.
          *
          * @sample {highcharts} highcharts/credits/enabled-false/
@@ -2771,7 +2917,7 @@ const defaultOptions = {
             /**
              * @type {Highcharts.ColorType}
              */
-            color: "#999999" /* Palette.neutralColor40 */,
+            color: 'var(--highcharts-neutral-color-40)',
             /**
              * @type {number|string}
              */

@@ -19,6 +19,7 @@ declare module './ChartBase' {
  * @extends Highcharts.Chart
  */
 declare class MapChart extends Chart {
+    promise?: Promise<MapChart>;
     /**
      * Initializes the chart. The constructor's arguments are passed on
      * directly.
@@ -28,15 +29,16 @@ declare class MapChart extends Chart {
      * @param {Highcharts.Options} userOptions
      *        Custom options.
      *
-     * @param {Function} [callback]
+     * @param {Function|true} [callback]
      *        Function to run when the chart has loaded and all external
-     *        images are loaded.
+     *        images are loaded. Set to `true` to return a promise that
+     *        resolves when the chart is ready.
      *
      *
      * @emits Highcharts.MapChart#event:init
      * @emits Highcharts.MapChart#event:afterInit
      */
-    init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction): void;
+    init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction | true): void;
     /**
      * Highcharts Maps only. Zoom in or out of the map. See also
      * {@link Point#zoomTo}. See {@link Chart#fromLatLonToPoint} for how to get
@@ -44,7 +46,7 @@ declare class MapChart extends Chart {
      *
      * Deprecated as of v9.3 in favor of [MapView.zoomBy](https://api.highcharts.com/class-reference/Highcharts.MapView#zoomBy).
      *
-     * @deprecated
+     * @deprecated 9.3.0
      * @function Highcharts.Chart#mapZoom
      *
      * @param {number} [howMuch]
@@ -72,11 +74,6 @@ declare class MapChart extends Chart {
     /**
      * A wrapper for the chart's update function that will additionally run
      * recommendMapView on chart.map change.
-     *
-     * @function Highcharts.MapChart#update
-     *
-     * @param {Highcharts.Options} options
-     *        The chart options.
      */
     update(options: Partial<Options>): void;
 }
@@ -118,7 +115,7 @@ declare namespace MapChart {
      * @return {Highcharts.MapChart}
      * The chart object.
      */
-    function mapChart(a: (string | HTMLDOMElement | Partial<Options>), b?: (Chart.CallbackFunction | Partial<Options>), c?: Chart.CallbackFunction): MapChart;
+    function mapChart(a: string | HTMLDOMElement | Partial<Options>, b?: Chart.CallbackFunction | true | Partial<Options>, c?: Chart.CallbackFunction | true): MapChart | Promise<MapChart>;
     /**
      * Utility for reading SVG paths directly.
      *

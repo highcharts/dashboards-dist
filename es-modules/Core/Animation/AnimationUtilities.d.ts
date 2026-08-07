@@ -22,7 +22,7 @@ import type SVGElement from '../Renderer/SVG/SVGElement';
  * This function always relates to a chart, and sets a property on the renderer,
  * so it should be moved to the SVGRenderer.
  */
-declare function setAnimation(animation: (boolean | Partial<AnimationOptions> | undefined), chart: Chart): void;
+export declare function setAnimation(animation: (boolean | Partial<AnimationOptions> | undefined), chart: Chart): void;
 /**
  * Get the animation in object form, where a disabled animation is always
  * returned as `{ duration: 0 }`.
@@ -55,9 +55,14 @@ export declare function animObject(animation?: (boolean | DeepPartial<AnimationO
  * @return {number}
  *        The numeric value.
  */
-declare function getDeferredAnimation(chart: Chart, animation: (boolean | Partial<AnimationOptions> | undefined), series?: Series): Partial<AnimationOptions>;
+export declare function getDeferredAnimation(chart: Chart, animation: (boolean | Partial<AnimationOptions> | undefined), series?: Series): Partial<AnimationOptions>;
 /**
  * The global animate method, which uses Fx to create individual animators.
+ *
+ * @sample highcharts/members/renderer-basic
+ *         SVG elements with animation
+ * @sample highcharts/members/animate
+ *         Animation without an owner element
  *
  * @function Highcharts.animate
  *
@@ -74,7 +79,9 @@ declare function getDeferredAnimation(chart: Chart, animation: (boolean | Partia
  *
  * @return {void}
  */
-declare function animate(el: (HTMLDOMElement | SVGElement), params: (CSSObject | SVGAttributes), opt?: boolean | Partial<AnimationOptions>): void;
+export declare function animate(el?: (HTMLDOMElement | SVGElement), params?: (CSSObject | SVGAttributes | {
+    pos: number;
+}), opt?: boolean | Partial<AnimationOptions>): void;
 /**
  * Stop running animation.
  *
@@ -96,12 +103,4 @@ declare function animate(el: (HTMLDOMElement | SVGElement), params: (CSSObject |
  * improvement in all cases where we stop the animation from .attr. Instead of
  * stopping everything, we can just stop the actual attributes we're setting.
  */
-declare function stop(el: SVGElement | HTMLElement, prop?: string): void;
-declare const animationExports: {
-    animate: typeof animate;
-    animObject: typeof animObject;
-    getDeferredAnimation: typeof getDeferredAnimation;
-    setAnimation: typeof setAnimation;
-    stop: typeof stop;
-};
-export default animationExports;
+export declare const stop: (el: SVGElement | HTMLElement, prop?: string) => void;

@@ -7,6 +7,7 @@ declare module './Axis/TickPositionsArray' {
     }
 }
 declare class Time extends TimeBase {
+    getBoundaryTicks(tickPositions: TickPositionsArray, unitRange: number, visibleMin?: number, visibleMax?: number): Record<number, Time.TimeUnit>;
     /**
      * Return an array with time positions distributed on round time values
      * right and right after min and max. Used in datetime axes as well as for
@@ -43,10 +44,11 @@ declare namespace Time {
         from?: DateTimeFormat;
         list?: DateTimeFormat[];
         main: DateTimeFormat;
+        boundary?: DateTimeFormat;
         range?: boolean;
         to?: DateTimeFormat;
     }
-    type DateTimeLabelFormatOption = (DateTimeFormat | Array<string> | Time.DateTimeLabelFormatObject);
+    type DateTimeLabelFormatOption = (DateTimeFormat | Time.DateTimeLabelFormatObject);
     type DateTimeLabelFormatsOption = (Record<TimeUnit, DateTimeLabelFormatOption>);
     interface TimeOptions {
         Date?: any;

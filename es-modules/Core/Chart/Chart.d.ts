@@ -11,6 +11,8 @@ import type { DeepPartial } from '../../Shared/Types';
 import type Point from '../Series/Point';
 import type { SeriesTypeOptions } from '../Series/SeriesType';
 import Axis from '../Axis/Axis.js';
+import DataTableCore from '../../Data/DataTableCore.js';
+import { DataTableOptionsObject } from '../../Data/DataTableOptions';
 import Series from '../Series/Series.js';
 import SVGElement from '../Renderer/SVG/SVGElement';
 import SVGRenderer from '../Renderer/SVG/SVGRenderer.js';
@@ -119,17 +121,20 @@ declare module '../Series/SeriesBase' {
  * @param {Highcharts.Options} options
  *        The chart options structure.
  *
- * @param {Highcharts.ChartCallbackFunction} [callback]
+ * @param {Highcharts.ChartCallbackFunction|true} [callback]
  *        Function to run when the chart has loaded and all external images
  *        are loaded. Defining a
  *        [chart.events.load](https://api.highcharts.com/highcharts/chart.events.load)
- *        handler is equivalent.
+ *        handler is equivalent. Set to `true` to return a promise that resolves
+ *        when the chart is ready.
  */
 declare class Chart {
     static chart(options: Partial<Options>, callback?: Chart.CallbackFunction): Chart;
+    static chart(options: Partial<Options>, callback: true): Promise<Chart>;
     static chart(renderTo: (string | globalThis.HTMLElement), options: Partial<Options>, callback?: Chart.CallbackFunction): Chart;
-    constructor(options: Partial<Options>, callback?: Chart.CallbackFunction);
-    constructor(renderTo: (string | globalThis.HTMLElement), options: Partial<Options>, callback?: Chart.CallbackFunction);
+    static chart(renderTo: (string | globalThis.HTMLElement), options: Partial<Options>, callback: true): Promise<Chart>;
+    constructor(options: Partial<Options>, callback?: Chart.CallbackFunction | true);
+    constructor(renderTo: (string | globalThis.HTMLElement), options: Partial<Options>, callback?: Chart.CallbackFunction | true);
     /**
      * All the axes in the chart.
      *
@@ -181,6 +186,13 @@ declare class Chart {
      * @type {Highcharts.CaptionObject}
      */
     caption?: SVGElement;
+    /**
+     * The array of data table instances associated with the chart.
+     *
+     * @name Highcharts.Chart#dataTable
+     * @type {Array<Highcharts.DataTable>}
+     */
+    dataTable: Array<DataTableCore>;
     /**
      * Index position of the chart in the {@link Highcharts#charts}
      * property.
@@ -333,14 +345,18 @@ declare class Chart {
      * @param {Highcharts.Options} userOptions
      *        Custom options.
      *
-     * @param {Function} [callback]
+     * @param {Function|true} [callback]
      *        Function to run when the chart has loaded and all external
-     *        images are loaded.
+     *        images are loaded. Set to `true` to return a promise that
+     *        resolves when the chart is ready.
      *
      * @emits Highcharts.Chart#event:init
      * @emits Highcharts.Chart#event:afterInit
      */
-    init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction): void;
+    init(userOptions: Partial<Options>, callback?: Chart.CallbackFunction | true): void;
+    getDataTable(options: {
+        dataTable?: (DataTableCore | DataTableOptionsObject | Array<DataTableCore | DataTableOptionsObject>);
+    }): Array<DataTableCore>;
     /**
      * Check whether a given point is within the plot area.
      *
@@ -984,6 +1000,14 @@ declare namespace Chart {
          *         Custom URL and text
          */
         text?: string;
+        /**
+         * Whether to render the credits as HTML
+         *
+         * @since  13.0.0
+         * @sample highcharts/palette/branding
+         *         Branding with HTML credits
+         */
+        useHTML?: boolean;
     }
     /**
      * Options for the Chart.isInsidePlot function.

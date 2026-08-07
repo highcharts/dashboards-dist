@@ -188,7 +188,7 @@ export declare function extend<T>(a: (T | undefined), b: Partial<T>): T;
 /**
  * Extend a prototyped class by new members.
  *
- * @deprecated
+ * @deprecated 11.0.0
  * @function Highcharts.extendClass<T>
  *
  * @param {Highcharts.Class<T>} parent
@@ -336,7 +336,7 @@ export declare function merge<T1 extends object = object, T2 = unknown, T3 = unk
 /**
  * Take an interval and normalize it to multiples of round numbers.
  *
- * @deprecated
+ * @deprecated 5.0.3
  * @function Highcharts.normalizeTickInterval
  *
  * @param {number} interval
