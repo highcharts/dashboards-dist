@@ -99,7 +99,7 @@ class Fullscreen {
         const editMode = this.board.editMode, contextMenu = editMode && editMode.tools.contextMenu, button = contextMenu && contextMenu.items.viewFullscreen;
         if (button && button.innerElement) {
             const lang = editMode.lang;
-            button.innerElement.innerHTML =
+            button.innerElement.textContent =
                 (this.isOpen ? lang.exitFullscreen : lang.viewFullscreen) || '';
         }
     }

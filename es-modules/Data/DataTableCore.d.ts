@@ -66,6 +66,15 @@ declare class DataTableCore {
     rowCount: number;
     protected versionTag: string;
     /**
+     * Checks whether a key would pollute the prototype if used to index a
+     * plain object (e.g. as a column ID or table ID).
+     *
+     * @private
+     * @param {string|undefined} key The key to check.
+     * @return {boolean} True if the key is unsafe to use.
+     */
+    protected isPollutingKey(key?: string): boolean;
+    /**
      * Applies a row count to the table by setting the `rowCount` property and
      * adjusting the length of all columns.
      *

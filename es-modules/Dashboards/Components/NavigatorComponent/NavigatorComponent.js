@@ -17,7 +17,7 @@ import Globals from '../../Globals.js';
 import NavigatorComponentDefaults from './NavigatorComponentDefaults.js';
 import NavigatorSyncs from './NavigatorSyncs/NavigatorSyncs.js';
 import NavigatorSyncUtils from './NavigatorSyncs/NavigatorSyncUtils.js';
-import { diffObjects, isNumber, isString, merge, pick } from '../../../Shared/Utilities.js';
+import { diffObjects, isNumber, isString, merge } from '../../../Shared/Utilities.js';
 /* *
  *
  *  Class
@@ -54,7 +54,7 @@ class NavigatorComponent extends Component {
      * */
     /** @private */
     adjustNavigator() {
-        const chart = this.chart, height = pick(chart.chartHeight, this.contentElement.clientHeight), width = this.contentElement.clientWidth, chartUpdates = {};
+        const chart = this.chart, height = (chart.chartHeight ?? this.contentElement.clientHeight), width = this.contentElement.clientWidth, chartUpdates = {};
         if (chart.chartHeight !== height ||
             chart.chartWidth !== width) {
             chartUpdates.chart = {
@@ -159,6 +159,9 @@ class NavigatorComponent extends Component {
         }
         timeouts.length = 0;
         timeouts.push(setTimeout(() => {
+            if (!this.chart.container) {
+                return;
+            }
             this.adjustNavigator();
             this.chart.redraw();
         }, 33));
@@ -227,7 +230,7 @@ class NavigatorComponent extends Component {
                 uniqueXValues.push(value);
             }
         }
-        uniqueXValues.sort((a, b) => (pick(a, NaN) < pick(b, NaN) ? -1 : a === b ? 0 : 1));
+        uniqueXValues.sort((a, b) => ((a ?? NaN) < (b ?? NaN) ? -1 : a === b ? 0 : 1));
         let filteredValues;
         const modifierOptions = table.getModifier()?.options;
         if (crossfilterOptions.affectNavigator &&
@@ -287,6 +290,13 @@ class NavigatorComponent extends Component {
         super.resize(width, height);
         this.redrawNavigator();
         return this;
+    }
+    /**
+     * Destroys the navigator component.
+     */
+    destroy() {
+        this.chart.destroy();
+        super.destroy();
     }
     /**
      * Handles updating via options.

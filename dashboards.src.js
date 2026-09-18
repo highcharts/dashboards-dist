@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards v4.2.1 (2026-08-06)
+ * @license Highcharts Dashboards v4.2.2 (2026-09-18)
  * @module dashboards/dashboards
  *
  * (c) 2009-2026 Highsoft AS
@@ -25,36 +25,17 @@ return /******/ (() => { // webpackBootstrap
 /******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter/value functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			if(Array.isArray(definition)) {
-/******/ 				var i = 0;
-/******/ 				while(i < definition.length) {
-/******/ 					var key = definition[i++];
-/******/ 					var binding = definition[i++];
-/******/ 					if(!__webpack_require__.o(exports, key)) {
-/******/ 						if(binding === 0) {
-/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
-/******/ 						} else {
-/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
-/******/ 						}
-/******/ 					} else if(binding === 0) { i++; }
-/******/ 				}
-/******/ 			} else {
-/******/ 				for(var key in definition) {
-/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 					}
-/******/ 				}
+/******/ 	// define getter/value functions for harmony exports
+/******/ 	__webpack_require__.d = (exports, definition) => {
+/******/ 		for(var key in definition) {
+/******/ 			if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 			}
-/******/ 		};
-/******/ 	})();
+/******/ 		}
+/******/ 	};
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
+/******/ 	__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop));
 /******/ 	
 /************************************************************************/
 let __webpack_exports__ = {};
@@ -93,7 +74,7 @@ var Globals;
      *  Constants
      *
      * */
-    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '4.2.1', Globals.win = (typeof window !== 'undefined' ?
+    Globals.SVG_NS = 'http://www.w3.org/2000/svg', Globals.product = 'Highcharts', Globals.version = '4.2.2', Globals.win = (typeof window !== 'undefined' ?
         window :
         {}), // eslint-disable-line node/no-unsupported-features/es-builtins
     Globals.doc = Globals.win.document, Globals.svg = !!Globals.doc?.createElementNS?.(Globals.SVG_NS, 'svg')?.createSVGRect, Globals.pageLang = Globals.doc?.documentElement?.closest('[lang]')?.lang, Globals.userAgent = Globals.win.navigator?.userAgent || '', Globals.isChrome = Globals.win.chrome, Globals.isFirefox = Globals.userAgent.indexOf('Firefox') !== -1, Globals.isMS = /(edge|msie|trident)/i.test(Globals.userAgent) && !Globals.win.opera, Globals.isSafari = !Globals.isChrome && Globals.userAgent.indexOf('Safari') !== -1, Globals.isTouchDevice = /(Mobile|Android|Windows Phone)/.test(Globals.userAgent), Globals.isWebKit = Globals.userAgent.indexOf('AppleWebKit') !== -1, Globals.deg2rad = Math.PI * 2 / 360, Globals.marginNames = [
@@ -104,14 +85,16 @@ var Globals;
     ], Globals.noop = function () { }, Globals.supportsPassiveEvents = (function () {
         // Checks whether the browser supports passive events, (#11353).
         let supportsPassive = false;
-        // Object.defineProperty doesn't work on IE as well as passive
-        // events - instead of using polyfill, we can exclude IE totally.
+        // Accessors don't work on IE as well as passive events - instead
+        // of using polyfill, we can exclude IE totally. The getter has to
+        // be enumerable, or wrappers that shallow-copy the options never
+        // read it (#25092).
         if (!Globals.isMS) {
-            const opts = Object.defineProperty({}, 'passive', {
-                get: function () {
-                    supportsPassive = true;
+            const opts = {
+                get passive() {
+                    return (supportsPassive = true);
                 }
-            });
+            };
             if (Globals.win.addEventListener && Globals.win.removeEventListener) {
                 Globals.win.addEventListener('testPassive', Globals.noop, opts);
                 Globals.win.removeEventListener('testPassive', Globals.noop, opts);
@@ -634,6 +617,13 @@ function extend(a, b) {
         a = {};
     }
     for (n in b) { // eslint-disable-line guard-for-in
+        // Prototype pollution (#14883). Keys like `__proto__` may arrive as
+        // own, enumerable properties through `JSON.parse`, in which case
+        // assigning them would mutate the prototype of the target instead of
+        // adding a property.
+        if (n === '__proto__' || n === 'constructor') {
+            continue;
+        }
         a[n] = b[n];
     }
     return a;
@@ -904,7 +894,7 @@ function getStyle(el, prop, toInt) {
     const css = win.getComputedStyle(el, void 0); // eslint-disable-line no-undefined
     if (css) {
         style = css.getPropertyValue(prop);
-        if (pick(toInt, prop !== 'opacity')) {
+        if (toInt ?? prop !== 'opacity') {
             style = pInt(style);
         }
     }
@@ -1154,7 +1144,7 @@ function merge(extendOrSource, ...sources) {
 function normalizeTickInterval(interval, multiples, magnitude, allowDecimals, hasTickAmount) {
     let i, retInterval = interval;
     // Round to a tenfold of 1, 2, 2.5 or 5
-    magnitude = pick(magnitude, getMagnitude(interval));
+    magnitude = (magnitude ?? getMagnitude(interval));
     const normalized = interval / magnitude;
     // Multiples for a linear scale
     if (!multiples) {
@@ -1267,20 +1257,22 @@ function pad(number, length, padder) {
             .replace('-', '')
             .length).join(padder || '0') + number;
 }
-/* eslint-disable jsdoc/check-param-names */
+/* eslint-disable valid-jsdoc */
 /**
  * Return the first value that is not null or undefined.
  *
+ * @deprecated 13.0.2
+ * Use nullish coalescing (`??`) or explicit fallback logic instead.
+ *
  * @function Highcharts.pick<T>
  *
- * @param {...Array<T|null|undefined>} items
+ * @param {...(T|null|undefined)} args
  *        Variable number of arguments to inspect.
  *
  * @return {T}
  *         The value of the first argument that is not null or undefined.
  */
-function pick() {
-    const args = arguments;
+function pick(...args) {
     const length = args.length;
     for (let i = 0; i < length; i++) {
         const arg = args[i];
@@ -1289,7 +1281,7 @@ function pick() {
         }
     }
 }
-/* eslint-enable jsdoc/check-param-names */
+/* eslint-enable valid-jsdoc */
 /**
  * Shortcut for parseInt
  *
@@ -2820,7 +2812,6 @@ const ColumnUtils = {
 
 ;// ./code/dashboards/es-modules/Core/Utilities.js
 /* unused harmony import specifier */ var Utilities_isNumber;
-/* unused harmony import specifier */ var Utilities_pick;
 /* *
  *
  *  (c) 2010-2026 Highsoft AS
@@ -2936,7 +2927,8 @@ function insertItem(item, collection) {
         !collection[i] ||
             // Handle index option, the element to insert has lower index
             (Utilities_isNumber(indexOption) &&
-                indexOption < Utilities_pick(collection[i].options.index, collection[i]._i)) ||
+                indexOption < (collection[i].options.index ??
+                    collection[i]._i)) ||
             // Insert the new item before other internal items
             // (navigator)
             collection[i].options.isInternal) {
@@ -3022,7 +3014,7 @@ const uniqueKey = (function () {
  * State of the serial mode.
  */
 function useSerialIds(mode) {
-    return (serialMode = Utilities_pick(mode, serialMode));
+    return (serialMode = (mode ?? serialMode));
 }
 /* *
  *
@@ -3460,13 +3452,19 @@ const { setLength: DataTableCore_setLength, splice: DataTableCore_splice } = Dat
 class DataTableCore {
     constructor(options = {}) {
         this.isDataTable = true;
-        this.autoId = !options.id;
+        // Reject IDs that would pollute the prototype of ID-keyed maps.
+        const id = this.isPollutingKey(options.id) ? void 0 : options.id;
+        this.autoId = !id;
         this.columns = {};
-        this.id = (options.id || uniqueKey());
+        this.id = (id || uniqueKey());
         this.rowCount = 0;
         this.versionTag = uniqueKey();
         let rowCount = 0;
         objectEach(options.columns || {}, (column, columnId) => {
+            if (columnId === '__proto__' ||
+                columnId === 'constructor') {
+                return;
+            }
             this.columns[columnId] = column.slice();
             rowCount = Math.max(rowCount, column.length);
         });
@@ -3477,6 +3475,17 @@ class DataTableCore {
      *  Functions
      *
      * */
+    /**
+     * Checks whether a key would pollute the prototype if used to index a
+     * plain object (e.g. as a column ID or table ID).
+     *
+     * @private
+     * @param {string|undefined} key The key to check.
+     * @return {boolean} True if the key is unsafe to use.
+     */
+    isPollutingKey(key) {
+        return key === '__proto__' || key === 'constructor';
+    }
     /**
      * Applies a row count to the table by setting the `rowCount` property and
      * adjusting the length of all columns.
@@ -3635,6 +3644,10 @@ class DataTableCore {
     setColumns(columns, rowIndex, eventDetail) {
         let rowCount = this.rowCount;
         objectEach(columns, (column, columnId) => {
+            if (columnId === '__proto__' ||
+                columnId === 'constructor') {
+                return;
+            }
             this.columns[columnId] = column.slice();
             rowCount = column.length;
         });
@@ -3673,11 +3686,14 @@ class DataTableCore {
      * @emits #afterSetRows
      */
     setRow(row, rowIndex = this.rowCount, insert, eventDetail) {
-        var _a;
         const { columns } = this, indexRowCount = insert ? this.rowCount + 1 : rowIndex + 1, rowKeys = Object.keys(row);
         if (eventDetail?.addColumns !== false) {
             for (let i = 0, iEnd = rowKeys.length; i < iEnd; i++) {
-                columns[_a = rowKeys[i]] || (columns[_a] = new Array(this.rowCount));
+                const rowKey = rowKeys[i];
+                if (!this.isPollutingKey(rowKey) &&
+                    !Object.hasOwnProperty.call(columns, rowKey)) {
+                    columns[rowKey] = new Array(this.rowCount);
+                }
             }
         }
         objectEach(columns, (column, columnId) => {
@@ -4367,6 +4383,9 @@ class DataTable extends Data_DataTableCore {
     hasRowWith(columnId, cellValue) {
         const table = this;
         const column = table.columns[columnId];
+        if (!column) {
+            return false;
+        }
         // Normal array
         if (Array.isArray(column)) {
             return (column.indexOf(cellValue) !== -1);
@@ -4412,8 +4431,14 @@ class DataTable extends Data_DataTableCore {
      * Returns `true` if successful, `false` if the column was not found.
      */
     changeColumnId(columnId, newColumnId) {
+        if (columnId === '__proto__' ||
+            columnId === 'constructor' ||
+            newColumnId === '__proto__' ||
+            newColumnId === 'constructor') {
+            return false;
+        }
         const table = this, columns = table.columns;
-        if (columns[columnId]) {
+        if (Object.hasOwnProperty.call(columns, columnId)) {
             if (columnId !== newColumnId) {
                 columns[newColumnId] = columns[columnId];
                 delete columns[columnId];
@@ -4446,8 +4471,14 @@ class DataTable extends Data_DataTableCore {
      * @emits #afterSetCell
      */
     setCell(columnId, rowIndex, cellValue, eventDetail) {
+        if (columnId === '__proto__' ||
+            columnId === 'constructor') {
+            return;
+        }
         const table = this, columns = table.columns, modifier = table.modifier;
-        let column = columns[columnId];
+        let column = Object.hasOwnProperty.call(columns, columnId) ?
+            columns[columnId] :
+            void 0;
         if (column && column[rowIndex] === cellValue) {
             return;
         }
@@ -4516,6 +4547,10 @@ class DataTable extends Data_DataTableCore {
         else {
             for (let i = 0, iEnd = columnIds.length, column, tableColumn, columnId, ArrayConstructor; i < iEnd; ++i) {
                 columnId = columnIds[i];
+                if (columnId === '__proto__' ||
+                    columnId === 'constructor') {
+                    continue;
+                }
                 column = columns[columnId];
                 tableColumn = tableColumns[columnId];
                 ArrayConstructor = Object.getPrototypeOf((tableColumn && typeAsOriginal) ? tableColumn : column).constructor;
@@ -4730,6 +4765,23 @@ class DataTable extends Data_DataTableCore {
         });
     }
 }
+/**
+ * Type guard narrowing an arbitrary value to a valid table cell value.
+ *
+ * @param {*} value
+ * Candidate value.
+ *
+ * @return {boolean}
+ * `true` when the value is a valid `CellType`.
+ */
+function isCellValue(value) {
+    const valueType = typeof value;
+    return (value === null ||
+        valueType === 'undefined' ||
+        valueType === 'boolean' ||
+        valueType === 'number' ||
+        valueType === 'string');
+}
 /* *
  *
  *  Default Export
@@ -4903,7 +4955,7 @@ class DataConnector {
     getColumnOrder() {
         const connector = this, columns = connector.metadata.columns, names = Object.keys(columns || {});
         if (names.length) {
-            return names.sort((a, b) => (pick(columns[a].index, 0) - pick(columns[b].index, 0)));
+            return names.sort((a, b) => ((columns[a].index ?? 0) - (columns[b].index ?? 0)));
         }
     }
     /**
@@ -5585,7 +5637,7 @@ function buildQueryRange(options = {}) {
     return googleSpreadsheetRange || ((alphabet[startColumn || 0] || 'A') +
         (Math.max((startRow || 0), 0) + 1) +
         ':' +
-        (alphabet[pick(endColumn, 25)] || 'Z') +
+        (alphabet[(endColumn ?? 25)] || 'Z') +
         (endRow ?
             Math.max(endRow, 0) :
             'Z'));
@@ -7696,9 +7748,10 @@ class DataCursor {
      *  Constructor
      *
      * */
-    constructor(stateMap = {}) {
+    constructor(stateMap = Object.create(null)) {
         this.emittingRegister = [];
-        this.listenerMap = {};
+        // Table IDs are used as keys, so keep the maps prototype-less.
+        this.listenerMap = Object.create(null);
         this.stateMap = stateMap;
     }
     /* *
@@ -8626,17 +8679,25 @@ class AST {
                 markup, 'text/html');
         }
         catch {
-            // There are two cases where this fails:
-            // 1. IE9 and PhantomJS, where the DOMParser only supports parsing
-            //    XML
-            // 2. Due to a Chromium issue where chart redraws are triggered by
-            //    a `beforeprint` event (#16931),
-            //    https://issues.chromium.org/issues/40222135
+            // Due to a Chromium issue where chart redraws are triggered by a
+            // `beforeprint` event (#16931),
+            // https://issues.chromium.org/issues/40222135, the Trusted
+            // Types `createHTML` callback can throw "The provided callback
+            // is no longer runnable" while the browser is mid-print. Retry
+            // with the raw string - `DOMParser` itself is not a Trusted
+            // Types sink, so parsing it directly is safe.
+            try {
+                doc = new DOMParser().parseFromString(markup, 'text/html');
+            }
+            catch {
+                // Ignore, fall through to the inert-document fallback below.
+            }
         }
         if (!doc) {
-            const body = createElement('div');
-            body.innerHTML = markup;
-            doc = { body };
+            // Never assign untrusted markup to a live document's innerHTML.
+            // Parse into a detached, inert document instead.
+            doc = Core_Globals.doc.implementation.createHTMLDocument('');
+            doc.body.innerHTML = markup;
         }
         const appendChildNodes = (node, addTo) => {
             // Preserve the camelCase of SVG tags via localName (#24702).
@@ -8873,7 +8934,6 @@ AST.allowedTags = [
     'span',
     'stop',
     'strong',
-    'style',
     'sub',
     'sup',
     'svg',
@@ -9033,7 +9093,7 @@ const ComponentRegistry = {
  * Prefix of a GUIElement HTML class name.
  */
 const classNamePrefix = 'highcharts-dashboards-';
-const version = '4.2.1';
+const version = '4.2.2';
 /** @internal */
 const classNames = {
     layout: classNamePrefix + 'layout',
@@ -9063,24 +9123,6 @@ const Globals_doc = document;
 const noop = function () { };
 const isMS = /(edge|msie|trident)/i
     .test((Globals_win.navigator && Globals_win.navigator.userAgent) || '') && !Globals_win.opera;
-const supportsPassiveEvents = (function () {
-    // Checks whether the browser supports passive events, (#11353).
-    let supportsPassive = false;
-    // Object.defineProperty doesn't work on IE as well as passive
-    // events - instead of using polyfill, we can exclude IE totally.
-    if (!isMS) {
-        const opts = Object.defineProperty({}, 'passive', {
-            get: function () {
-                supportsPassive = true;
-            }
-        });
-        if (Globals_win.addEventListener && Globals_win.removeEventListener) {
-            Globals_win.addEventListener('testPassive', noop, opts);
-            Globals_win.removeEventListener('testPassive', noop, opts);
-        }
-    }
-    return supportsPassive;
-}());
 const Globals_Globals = {
     boards,
     classNamePrefix,
@@ -9089,7 +9131,6 @@ const Globals_Globals = {
     guiElementType,
     isMS,
     noop,
-    supportsPassiveEvents,
     version,
     win: Globals_win
 };
@@ -10534,7 +10575,9 @@ class Row extends Layout_GUIElement {
      * Set the row cells using cell options or cellClassName.
      */
     setCells() {
-        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
+        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = (row.options.cells ??
+            (row.container &&
+                row.container.getElementsByClassName(cellClassName))) || [];
         let cellElement, i, iEnd;
         for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
             cellElement = cellsElements[i];
@@ -10828,7 +10871,9 @@ class Layout extends Layout_GUIElement {
      * Set the layout rows using rows options or rowClassName.
      */
     setRows() {
-        const layout = this, rowsElements = pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
+        const layout = this, rowsElements = (layout.options.rows ??
+            (layout.container &&
+                layout.container.getElementsByClassName(layout.options.rowClassName || ''))) || [];
         let rowElement, i, iEnd;
         for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
             rowElement = rowsElements[i];
@@ -12422,6 +12467,8 @@ class Component {
         /**
          * TODO: Should perhaps set an `isActive` flag to false.
          */
+        // Cancel pending resize timeouts e.g chart components.
+        this.resizeTimeouts.forEach(clearTimeout);
         if (this.sync.isSyncing) {
             this.sync.stop();
         }
@@ -13151,6 +13198,10 @@ class Board {
      *
      * @param newOptions
      * The new options to apply to the dashboard.
+     *
+     * @returns
+     * A promise that resolves with the board instance once all components are
+     * mounted.
      */
     update(newOptions) {
         const board = this;
@@ -13206,9 +13257,9 @@ class Board {
             }
         }
         // Add new components
-        if (board.options.components) {
-            void board.setComponents(board.options.components);
-        }
+        const componentPromises = board.options.components ?
+            board.setComponents(board.options.components) : [];
+        return Promise.all(componentPromises).then(() => board);
     }
     /**
      * Convert the current state of board's options into JSON. The function does
@@ -14799,7 +14850,8 @@ const HighchartsHighlightSync_syncPair = {
                 return;
             }
             for (let i = 0, iEnd = connectorHandlers.length; i < iEnd; ++i) {
-                const table = connectorHandlers[i]?.connector?.getTable();
+                const connectorId = connectorHandlers[i]?.options.id;
+                const table = this.getDataTable(connectorId);
                 if (!table) {
                     continue;
                 }
@@ -15608,13 +15660,18 @@ class HighchartsComponent extends Components_Component {
      */
     createChart() {
         const charter = HighchartsComponent.charter || Dashboards_Globals.win.Highcharts;
-        if (!this.chartConstructor) {
-            this.chartConstructor = 'chart';
-        }
-        const Factory = charter[this.chartConstructor];
+        const constructorType = this.chartConstructor = [
+            'chart',
+            'stockChart',
+            'mapChart',
+            'ganttChart'
+        ].indexOf(this.chartConstructor) >= 0 ?
+            this.chartConstructor :
+            'chart';
+        const Factory = Object.hasOwnProperty.call(charter, constructorType) && charter[constructorType];
         if (Factory) {
             try {
-                if (this.chartConstructor === 'chart') {
+                if (constructorType === 'chart') {
                     return charter.Chart.chart(this.chartContainer, this.chartOptions);
                 }
                 return new Factory(this.chartContainer, this.chartOptions);
@@ -17300,6 +17357,29 @@ const ChartDefaults = {
      * @apioption chart.events.load
      */
     /**
+     * Fires while the chart is panned by mouse drag. Panning must be
+     * enabled through [chart.panning](#chart.panning). One parameter,
+     * `event`, is passed to the function, containing common event
+     * information as well as `event.originalEvent`, the underlying pointer
+     * event. Note that the event fires for every mouse move during the
+     * drag, not once per gesture.
+     *
+     * Calling `event.preventDefault()` or returning false prevents the
+     * default panning of the axes. In Highcharts Maps, and on ordinal axes
+     * in Highcharts Stock, the panning is applied outside the default
+     * action and is not prevented.
+     *
+     * Panning by touch does not fire this event, unless
+     * [chart.zooming.singleTouch](#chart.zooming.singleTouch) is enabled and
+     * no zoom type is set. Single-finger drags are then handled as mouse
+     * drags and fire this event.
+     *
+     * @type      {Highcharts.ChartPanCallbackFunction}
+     * @since     7.0.2
+     * @context   Highcharts.Chart
+     * @apioption chart.events.pan
+     */
+    /**
      * Fires when the chart is redrawn, either after a call to
      * `chart.redraw()` or after an axis, series or point is modified with
      * the `redraw` option set to `true`. One parameter, `event`, is passed
@@ -18690,6 +18770,10 @@ const isDateTimeFormatOptions = (obj) => obj.main === void 0;
  *
  * @param {Highcharts.TimeOptions} [options] Time options as defined in
  * [chart.options.time](/highcharts/time).
+ *
+ * @param {Highcharts.LangOptions} [lang]
+ * Language options. When `options.locale` is not set, `lang.locale` is used as
+ * the locale fallback for locale-aware date formatting.
  */
 class TimeBase {
     /* *
@@ -18708,8 +18792,8 @@ class TimeBase {
         };
         this.variableTimezone = false;
         this.Date = TimeBase_win.Date;
-        this.update(options);
         this.lang = lang;
+        this.update(options);
     }
     /* *
      *
@@ -18821,7 +18905,9 @@ class TimeBase {
     /**
      * Shorthand to get a cached `Intl.DateTimeFormat` instance.
      */
-    dateTimeFormat(options, timestamp, locale = this.options.locale || pageLang) {
+    dateTimeFormat(options, timestamp, locale = (this.options.locale ||
+        this.lang?.locale ||
+        pageLang)) {
         const cacheKey = JSON.stringify(options) + locale;
         if (isString(options)) {
             options = this.str2dtf(options);
@@ -20353,6 +20439,13 @@ const Defaults_defaultOptions = {
          * @apioption title.align
          */
         /**
+         * A CSS class name to apply to the title's container div,
+         * allowing unique CSS styling for each chart.
+         *
+         * @type      {string}
+         * @apioption title.className
+         */
+        /**
          * The margin between the title and the plot area, or if a subtitle
          * is present, the margin between the subtitle and the plot area.
          *
@@ -20413,6 +20506,13 @@ const Defaults_defaultOptions = {
          * @default undefined
          * @since 2.0
          * @apioption subtitle.align
+         */
+        /**
+         * A CSS class name to apply to the subtitle's container div,
+         * allowing unique CSS styling for each chart.
+         *
+         * @type      {string}
+         * @apioption subtitle.className
          */
         /**
          * When the subtitle is floating, the plot area will not move to make
@@ -21653,6 +21753,9 @@ const Defaults_defaultOptions = {
          * below the column, but as `followTouchMove` is true, the tooltip will
          * jump from column to column as the user swipes across the plot area.
          *
+         * @sample {highcharts} highcharts/tooltip/followtouchmove/
+         *         Tooltip follows touch move
+         *
          * @type      {boolean}
          * @default   {highcharts} true
          * @default   {highstock} true
@@ -22543,6 +22646,10 @@ const Defaults_defaultOptions = {
         /**
          * The URL for the credits label.
          *
+         * URLs that do not start with one of the
+         * [AST.allowedReferences](https://api.highcharts.com/class-reference/Highcharts.AST#.allowedReferences),
+         * for example `javascript:` URLs, are ignored.
+         *
          * @sample {highcharts} highcharts/credits/href/
          *         Custom URL and text
          * @sample {highmaps} maps/credits/customized/
@@ -22758,6 +22865,41 @@ const DefaultOptions = {
  * @param {global.Event} event
  *        The event that occurred.
  */
+/**
+ * Gets fired while the chart is panned by mouse drag. Calling
+ * `event.preventDefault()` or returning `false` prevents the default panning
+ * of the axes.
+ *
+ * @callback Highcharts.ChartPanCallbackFunction
+ *
+ * @param {Highcharts.Chart} this
+ *        The chart on which the event occurred.
+ *
+ * @param {Highcharts.ChartPanEventObject} event
+ *        The event that occurred.
+ */
+/**
+ * Contains common event information. Through the `originalEvent` property you
+ * can access the pointer event that triggered the panning.
+ *
+ * @interface Highcharts.ChartPanEventObject
+ */ /**
+* The pointer event that triggered the panning.
+* @name Highcharts.ChartPanEventObject#originalEvent
+* @type {Highcharts.PointerEventObject}
+*/ /**
+* Prevents the default behavior of the event.
+* @name Highcharts.ChartPanEventObject#preventDefault
+* @type {Function}
+*/ /**
+* The event target.
+* @name Highcharts.ChartPanEventObject#target
+* @type {Highcharts.Chart}
+*/ /**
+* The event type.
+* @name Highcharts.ChartPanEventObject#type
+* @type {"pan"}
+*/
 /**
  * Fires when the chart is redrawn, either after a call to `chart.redraw()` or
  * after an axis, series or point is modified with the `redraw` option set to
@@ -23094,7 +23236,7 @@ function format(str = '', ctx, owner) {
                 replacement = `"${replacement}"`;
             }
         }
-        str = str.replace(match.find, pick(replacement, ''));
+        str = str.replace(match.find, (replacement ?? ''));
     });
     return hasSub ? format(str, ctx, owner) : str;
 }
@@ -24158,16 +24300,16 @@ const NavigatorExtremesSync_syncPair = {
                 maxIndex = cursor.lastRow;
                 minIndex = cursor.firstRow;
                 if (cursor.columns) {
-                    extremesColumn = pick(cursor.columns[0], extremesColumn);
+                    extremesColumn = (cursor.columns[0] ?? extremesColumn);
                 }
             }
             else if (cursor.state === 'xAxis.extremes.max' + groupKey) {
-                extremesColumn = pick(cursor.column, extremesColumn);
-                maxIndex = pick(cursor.row, maxIndex);
+                extremesColumn = (cursor.column ?? extremesColumn);
+                maxIndex = (cursor.row ?? maxIndex);
             }
             else {
-                extremesColumn = pick(cursor.column, extremesColumn);
-                minIndex = pick(cursor.row, minIndex);
+                extremesColumn = (cursor.column ?? extremesColumn);
+                minIndex = (cursor.row ?? minIndex);
             }
             const modifier = table.getModifier();
             if (typeof extremesColumn === 'string' &&
@@ -24303,7 +24445,7 @@ class NavigatorComponent extends Components_Component {
      * */
     /** @private */
     adjustNavigator() {
-        const chart = this.chart, height = pick(chart.chartHeight, this.contentElement.clientHeight), width = this.contentElement.clientWidth, chartUpdates = {};
+        const chart = this.chart, height = (chart.chartHeight ?? this.contentElement.clientHeight), width = this.contentElement.clientWidth, chartUpdates = {};
         if (chart.chartHeight !== height ||
             chart.chartWidth !== width) {
             chartUpdates.chart = {
@@ -24408,6 +24550,9 @@ class NavigatorComponent extends Components_Component {
         }
         timeouts.length = 0;
         timeouts.push(setTimeout(() => {
+            if (!this.chart.container) {
+                return;
+            }
             this.adjustNavigator();
             this.chart.redraw();
         }, 33));
@@ -24476,7 +24621,7 @@ class NavigatorComponent extends Components_Component {
                 uniqueXValues.push(value);
             }
         }
-        uniqueXValues.sort((a, b) => (pick(a, NaN) < pick(b, NaN) ? -1 : a === b ? 0 : 1));
+        uniqueXValues.sort((a, b) => ((a ?? NaN) < (b ?? NaN) ? -1 : a === b ? 0 : 1));
         let filteredValues;
         const modifierOptions = table.getModifier()?.options;
         if (crossfilterOptions.affectNavigator &&
@@ -24536,6 +24681,13 @@ class NavigatorComponent extends Components_Component {
         super.resize(width, height);
         this.redrawNavigator();
         return this;
+    }
+    /**
+     * Destroys the navigator component.
+     */
+    destroy() {
+        this.chart.destroy();
+        super.destroy();
     }
     /**
      * Handles updating via options.
@@ -24809,7 +24961,6 @@ G.isObject = isObject;
 G.isString = isString;
 G.merge = merge;
 G.objectEach = objectEach;
-G.pick = pick;
 G.removeEvent = removeEvent;
 G.setOptions = Dashboards_Defaults.setOptions;
 G.splat = splat;

@@ -12,6 +12,7 @@ type FunctionsOf<T> = {
     [K in keyof T as T[K] extends Function ? K : never]: T[K];
 };
 type FunctionNamesOf<T> = keyof FunctionsOf<T>;
+type NullType = null | undefined;
 /**
  * Add an event listener.
  *
@@ -519,7 +520,6 @@ export declare function syncTimeout(fn: Function, delay: number, context?: unkno
  *        is unshifted and passed as the first argument.
  */
 export declare function wrap<T, K extends FunctionNamesOf<T>>(obj: T, method: K, func: WrapProceedFunction<T[K] & ArrowFunction>): void;
-type NullType = (null | undefined);
 type NonArray<T> = T extends Array<unknown> ? never : T;
 type NonFunction<T> = T extends Function ? never : T;
 export interface FindCallback<T> {

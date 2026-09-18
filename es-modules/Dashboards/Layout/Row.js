@@ -19,7 +19,7 @@ import Globals from '../Globals.js';
 import Cell from './Cell.js';
 import GUIElement from './GUIElement.js';
 import EditGlobals from '../EditMode/EditGlobals.js';
-import { defined, fireEvent, merge, objectEach, pick } from '../../Shared/Utilities.js';
+import { defined, fireEvent, merge, objectEach } from '../../Shared/Utilities.js';
 /**
  * @internal
  **/
@@ -91,7 +91,9 @@ class Row extends GUIElement {
      * Set the row cells using cell options or cellClassName.
      */
     setCells() {
-        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = pick(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
+        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = (row.options.cells ??
+            (row.container &&
+                row.container.getElementsByClassName(cellClassName))) || [];
         let cellElement, i, iEnd;
         for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
             cellElement = cellsElements[i];

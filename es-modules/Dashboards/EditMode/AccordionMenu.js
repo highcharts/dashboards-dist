@@ -115,6 +115,10 @@ class AccordionMenu {
      * New value of the property.
      */
     updateOptions(propertyPath, value) {
+        // Reject paths that would allow prototype pollution
+        if (propertyPath.some((key) => (key === '__proto__' || key === 'constructor' || key === 'prototype'))) {
+            return;
+        }
         const pathLength = propertyPath.length - 1;
         let currentLevel = this.changedOptions;
         let currentChartOptionsLevel;

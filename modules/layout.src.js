@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards Layout 4.2.1 (2026-08-06)
+ * @license Highcharts Dashboards Layout 4.2.2 (2026-09-18)
  * @module dashboards/modules/layout
  * @requires dashboards
  *
@@ -11,14 +11,14 @@
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(root["_Dashboards"], root["_Dashboards"]["AST"], root["_Dashboards"]["ComponentRegistry"]);
+		module.exports = factory(root["_Dashboards"]["AST"], root["_Dashboards"]["ComponentRegistry"], root["_Dashboards"]);
 	else if(typeof define === 'function' && define.amd)
-		define("dashboards/modules/layout", ["dashboards/dashboards"], function (amd1) {return factory(amd1,amd1["AST"],amd1["ComponentRegistry"]);});
+		define("dashboards/modules/layout", ["dashboards/dashboards"], function (amd1) {return factory(amd1["AST"],amd1["ComponentRegistry"],amd1);});
 	else if(typeof exports === 'object')
-		exports["dashboards/modules/layout"] = factory(root["_Dashboards"], root["_Dashboards"]["AST"], root["_Dashboards"]["ComponentRegistry"]);
+		exports["dashboards/modules/layout"] = factory(root["_Dashboards"]["AST"], root["_Dashboards"]["ComponentRegistry"], root["_Dashboards"]);
 	else
-		root["Dashboards"] = factory(root["Dashboards"], root["Dashboards"]["AST"], root["Dashboards"]["ComponentRegistry"]);
-})(typeof window === 'undefined' ? this : window, (__WEBPACK_EXTERNAL_MODULE__668__, __WEBPACK_EXTERNAL_MODULE__160__, __WEBPACK_EXTERNAL_MODULE__376__) => {
+		root["Dashboards"] = factory(root["Dashboards"]["AST"], root["Dashboards"]["ComponentRegistry"], root["Dashboards"]);
+})(typeof window === 'undefined' ? this : window, (__WEBPACK_EXTERNAL_MODULE__160__, __WEBPACK_EXTERNAL_MODULE__376__, __WEBPACK_EXTERNAL_MODULE__668__) => {
 return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
@@ -72,48 +72,27 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__668__;
 /******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			const getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = (module) => {
+/******/ 		const getter = module && module.__esModule ?
+/******/ 			() => (module['default']) :
+/******/ 			() => (module);
+/******/ 		__webpack_require__.d(getter, { a: getter });
+/******/ 		return getter;
+/******/ 	};
 /******/ 	
 /******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter/value functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			if(Array.isArray(definition)) {
-/******/ 				var i = 0;
-/******/ 				while(i < definition.length) {
-/******/ 					var key = definition[i++];
-/******/ 					var binding = definition[i++];
-/******/ 					if(!__webpack_require__.o(exports, key)) {
-/******/ 						if(binding === 0) {
-/******/ 							Object.defineProperty(exports, key, { enumerable: true, value: definition[i++] });
-/******/ 						} else {
-/******/ 							Object.defineProperty(exports, key, { enumerable: true, get: binding });
-/******/ 						}
-/******/ 					} else if(binding === 0) { i++; }
-/******/ 				}
-/******/ 			} else {
-/******/ 				for(var key in definition) {
-/******/ 					if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 						Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 					}
-/******/ 				}
+/******/ 	// define getter/value functions for harmony exports
+/******/ 	__webpack_require__.d = (exports, definition) => {
+/******/ 		for(var key in definition) {
+/******/ 			if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 			}
-/******/ 		};
-/******/ 	})();
+/******/ 		}
+/******/ 	};
 /******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ 	})();
+/******/ 	__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop));
 /******/ 	
 /************************************************************************/
 let __webpack_exports__ = {};
@@ -450,7 +429,7 @@ class GUIElement {
             guiElement.container.parentNode.removeChild(guiElement.container);
         }
         // Delete all properties.
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.objectEach)(guiElement, function (val, key) {
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.objectEach)(guiElement, function (val, key) {
             delete guiElement[key];
         });
     }
@@ -586,7 +565,7 @@ class Cell extends Layout_GUIElement {
      * and mounted component.
      */
     destroy() {
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this, 'outdate');
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this, 'outdate');
         const cell = this;
         const { row } = cell;
         // Destroy mounted component.
@@ -629,7 +608,7 @@ class Cell extends Layout_GUIElement {
             cell.row.show();
         }
         setTimeout(() => {
-            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(row, 'cellChange', { row, cell });
+            ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(row, 'cellChange', { row, cell });
         }, 0);
     }
     getParentCell(level) {
@@ -711,7 +690,7 @@ class Cell extends Layout_GUIElement {
                 }
             }
             // Call cellResize board event.
-            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(cell.row.layout.board, 'cellResize', { cell: cell });
+            ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(cell.row.layout.board, 'cellResize', { cell: cell });
             (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(cell.row, 'cellChange', { cell: cell, row: cell.row });
         }
     }
@@ -1012,7 +991,7 @@ function renderCollapseHeader(parentElement, options) {
                 'accordionHeaderWrapper' : 'accordionHeaderBtn']
         }, {}, header);
     }
-    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', {
+    ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', {
         textContent: lang[name] || name
     }, {}, headerBtn);
     if (showToggle && header) {
@@ -1118,7 +1097,7 @@ function renderSelectElement(option, dropdown, placeholder, id, dropdownPointer,
             src: iconURL
         }, {}, selectOptionBtn);
     }
-    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', { textContent: option.name || '' }, {}, selectOptionBtn);
+    ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.createElement)('span', { textContent: option.name || '' }, {}, selectOptionBtn);
     selectOptionBtn.addEventListener('click', function () {
         dropdown.classList.add(EditMode_EditGlobals.classNames.hiddenElement);
         dropdownPointer.classList.toggle(EditMode_EditGlobals.classNames.collapsedElement);
@@ -2003,7 +1982,7 @@ class CellEditToolbar extends Toolbar_EditToolbar {
                 });
                 (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(row, 'cellChange', { cell: row.cells[0], row });
             }
-            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(editMode, 'layoutChanged', {
+            ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(editMode, 'layoutChanged', {
                 type: 'cellDestroyed',
                 target: cellId,
                 board: board
@@ -2748,6 +2727,10 @@ class AccordionMenu {
      * New value of the property.
      */
     updateOptions(propertyPath, value) {
+        // Reject paths that would allow prototype pollution
+        if (propertyPath.some((key) => (key === '__proto__' || key === 'constructor' || key === 'prototype'))) {
+            return;
+        }
         const pathLength = propertyPath.length - 1;
         let currentLevel = this.changedOptions;
         let currentChartOptionsLevel;
@@ -2761,7 +2744,7 @@ class AccordionMenu {
             }
             catch (e) {
                 // TODO: Handle the wrong config passed from the user.
-                (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.error)('Dashboards Error: Wrong JSON config structure passed ' +
+                ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.error)('Dashboards Error: Wrong JSON config structure passed ' +
                     'as chart options. \n____________\n' +
                     String(e));
             }
@@ -2926,7 +2909,7 @@ class AccordionMenu {
             const options = this.changedOptions;
             await component.update(options, true);
         }
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component.board.editMode, 'componentChanged', {
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component.board.editMode, 'componentChanged', {
             target: component,
             changedOptions: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, this.changedOptions),
             oldOptions: (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)({}, this.oldOptionsBuffer)
@@ -3113,7 +3096,7 @@ async function addComponent(options, board, cell) {
         cell.setActiveState();
         component.isActive = true;
     }
-    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component, 'mount');
+    ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component, 'mount');
     // Events
     (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(componentContainer, 'click', () => {
         // Call the component's click callback
@@ -3133,7 +3116,7 @@ async function addComponent(options, board, cell) {
     if (optionsStates?.hover?.enabled) {
         componentContainer.classList.add((dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_default()).classNames.cellHover);
     }
-    (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component, 'afterLoad');
+    ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(component, 'afterLoad');
     return promise;
 }
 function getCell(idOrElement, parentElement) {
@@ -3264,7 +3247,9 @@ class Row extends Layout_GUIElement {
      * Set the row cells using cell options or cellClassName.
      */
     setCells() {
-        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.pick)(row.options.cells, row.container && row.container.getElementsByClassName(cellClassName)) || [];
+        const row = this, cellClassName = (row.layout.options || {}).cellClassName || '', cellsElements = (row.options.cells ??
+            (row.container &&
+                row.container.getElementsByClassName(cellClassName))) || [];
         let cellElement, i, iEnd;
         for (i = 0, iEnd = cellsElements.length; i < iEnd; ++i) {
             cellElement = cellsElements[i];
@@ -3324,7 +3309,7 @@ class Row extends Layout_GUIElement {
                 layout.destroy();
             }
         }
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(editMode, 'rowDestroyed', {
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(editMode, 'rowDestroyed', {
             target: row,
             board: board
         });
@@ -3386,7 +3371,7 @@ class Row extends Layout_GUIElement {
             this.cells.splice(cellIndex, 1);
         }
         setTimeout(() => {
-            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this, 'cellChange', { row: this, cell });
+            ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this, 'cellChange', { row: this, cell });
         }, 0);
     }
     getVisibleCells() {
@@ -3444,7 +3429,7 @@ class Row extends Layout_GUIElement {
                 rowLevels[cellOffsets.top].cells.push(cell);
             }
         }
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.objectEach)(rowLevels, (value) => {
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.objectEach)(rowLevels, (value) => {
             rowLevelsArray.push(value);
         });
         return rowLevelsArray;
@@ -3558,7 +3543,9 @@ class Layout extends Layout_GUIElement {
      * Set the layout rows using rows options or rowClassName.
      */
     setRows() {
-        const layout = this, rowsElements = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.pick)(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
+        const layout = this, rowsElements = (layout.options.rows ??
+            (layout.container &&
+                layout.container.getElementsByClassName(layout.options.rowClassName || ''))) || [];
         let rowElement, i, iEnd;
         for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
             rowElement = rowsElements[i];
@@ -3975,7 +3962,7 @@ class SidebarPopup extends Shared_BaseForm {
             if (!component) {
                 return;
             }
-            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this.editMode, 'layoutChanged', {
+            ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this.editMode, 'layoutChanged', {
                 type: 'newComponent',
                 target: component
             });
@@ -4083,7 +4070,7 @@ class SidebarPopup extends Shared_BaseForm {
      */
     addCloseButton(className = EditMode_EditGlobals.classNames.popupCloseButton) {
         // Close popup when click outside the popup
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'click', (event) => {
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'click', (event) => {
             event.stopPropagation();
             if (this.container.style.display === 'block' &&
                 !this.container.contains(event.target) &&
@@ -4542,7 +4529,7 @@ class DragDrop {
         else if (dragEndCallback) {
             this.dragEndCallback = dragEndCallback;
         }
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(this.mockElement, {
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.css)(this.mockElement, {
             cursor: 'grabbing',
             display: 'block'
         });
@@ -4863,7 +4850,7 @@ class DragDrop {
             }
         }
         // Call cellResize board event.
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(dragDrop.editMode.board, 'cellResize', { cell: draggedCell });
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(dragDrop.editMode.board, 'cellResize', { cell: draggedCell });
         (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(draggedCell.row, 'cellChange', { cell: draggedCell, row: draggedCell.row });
         dragDrop.hideDropPointer();
         draggedCell.show();
@@ -5156,7 +5143,7 @@ class Resizer {
                 currentCell.setSize(void 0, e.clientY - cellOffsets.top);
             }
             // Call cellResize dashboard event.
-            (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this.editMode.board, 'cellResize', {
+            ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(this.editMode.board, 'cellResize', {
                 cell: currentCell
             });
             (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.fireEvent)(currentCell.row, 'cellChange', {
@@ -5294,7 +5281,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.2.1/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.2.2/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(
@@ -5441,7 +5428,7 @@ class EditMode {
                 editMode.setLayoutEvents(board.layouts[i]);
             }
         }
-        (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'keydown', (e) => {
+        ;(0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(document, 'keydown', (e) => {
             if (e.key === 'Escape' && editMode.isActive()) {
                 editMode.hideToolbars(['cell', 'row']);
                 editMode.editCellContext = void 0;
@@ -5576,7 +5563,7 @@ class EditMode {
                     }
                 });
                 // Init dragDrop cell events only when using layouts.
-                if ((editMode.dragDrop || editMode.resizer)) {
+                if (editMode.dragDrop || editMode.resizer) {
                     const dragDrop = editMode.dragDrop;
                     (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.addEvent)(cell.container, 'mousemove', function (e) {
                         if (dragDrop &&
@@ -6038,7 +6025,7 @@ class Fullscreen {
         const editMode = this.board.editMode, contextMenu = editMode && editMode.tools.contextMenu, button = contextMenu && contextMenu.items.viewFullscreen;
         if (button && button.innerElement) {
             const lang = editMode.lang;
-            button.innerElement.innerHTML =
+            button.innerElement.textContent =
                 (this.isOpen ? lang.exitFullscreen : lang.viewFullscreen) || '';
         }
     }
