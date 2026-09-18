@@ -115,8 +115,12 @@ declare class Board {
      *
      * @param newOptions
      * The new options to apply to the dashboard.
+     *
+     * @returns
+     * A promise that resolves with the board instance once all components are
+     * mounted.
      */
-    update(newOptions: DeepPartial<Options>): void;
+    update(newOptions: DeepPartial<Options>): Promise<Board>;
     /**
      * Convert the current state of board's options into JSON. The function does
      * not support converting functions or events into JSON object.

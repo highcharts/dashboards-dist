@@ -17,7 +17,7 @@
 import Row from './Row.js';
 import GUIElement from './GUIElement.js';
 import Globals from '../Globals.js';
-import { defined, pick } from '../../Shared/Utilities.js';
+import { defined } from '../../Shared/Utilities.js';
 /**
  * @internal
  **/
@@ -87,7 +87,9 @@ class Layout extends GUIElement {
      * Set the layout rows using rows options or rowClassName.
      */
     setRows() {
-        const layout = this, rowsElements = pick(layout.options.rows, layout.container && layout.container.getElementsByClassName(layout.options.rowClassName || '')) || [];
+        const layout = this, rowsElements = (layout.options.rows ??
+            (layout.container &&
+                layout.container.getElementsByClassName(layout.options.rowClassName || ''))) || [];
         let rowElement, i, iEnd;
         for (i = 0, iEnd = rowsElements.length; i < iEnd; ++i) {
             rowElement = rowsElements[i];

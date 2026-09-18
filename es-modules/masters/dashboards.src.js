@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards v4.2.1 (2026-08-06)
+ * @license Highcharts Dashboards v4.2.2 (2026-09-18)
  * @module dashboards/dashboards
  *
  * (c) 2009-2026 Highsoft AS
@@ -44,7 +44,7 @@ import HighchartsPlugin from '../Dashboards/Plugins/HighchartsPlugin.js';
 import PluginHandler from '../Dashboards/PluginHandler.js';
 import Sync from '../Dashboards/Components/Sync/Sync.js';
 import Utilities from '../Dashboards/Utilities.js';
-import { addEvent, createElement, css, defined, diffObjects, find, fireEvent, getStyle, isArray, isFunction, isNumber, isObject, isString, merge, objectEach, pick, removeEvent, splat } from '../Shared/Utilities.js';
+import { addEvent, createElement, css, defined, diffObjects, find, fireEvent, getStyle, isArray, isFunction, isNumber, isObject, isString, merge, objectEach, removeEvent, splat } from '../Shared/Utilities.js';
 import { uniqueKey } from '../Core/Utilities.js';
 // Import components
 import GridComponent from '../Dashboards/Components/GridComponent/GridComponent.js';
@@ -75,7 +75,6 @@ G.isObject = isObject;
 G.isString = isString;
 G.merge = merge;
 G.objectEach = objectEach;
-G.pick = pick;
 G.removeEvent = removeEvent;
 G.setOptions = Defaults.setOptions;
 G.splat = splat;

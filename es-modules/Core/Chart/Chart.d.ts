@@ -714,6 +714,9 @@ declare class Chart {
      * Note that when changing series data, `chart.update` may mutate the passed
      * data options.
      *
+     * If the given options don't differ from the current chart options, the
+     * update is skipped and the `afterUpdate` event is not emitted.
+     *
      * See also the
      * [responsive option set](https://api.highcharts.com/highcharts/responsive).
      * Switching between `responsive.rules` basically runs `chart.update` under
@@ -877,6 +880,7 @@ declare namespace Chart {
          * `chart.spacingTop` and `chart.spacingBottom`.
          */
         y?: number;
+        className?: string;
     }
     /**
      * Highcharts by default puts a credits label in the lower right corner
@@ -896,6 +900,10 @@ declare namespace Chart {
         enabled?: boolean;
         /**
          * The URL for the credits label.
+         *
+         * URLs that do not start with one of the
+         * [AST.allowedReferences](https://api.highcharts.com/class-reference/Highcharts.AST#.allowedReferences),
+         * for example `javascript:` URLs, are ignored.
          *
          * @sample {highcharts} highcharts/credits/href/
          *         Custom URL and text
@@ -1138,6 +1146,7 @@ declare namespace Chart {
          * @since 2.0
          */
         y?: number;
+        className?: string;
     }
     /**
      * The chart's main title.
@@ -1299,6 +1308,7 @@ declare namespace Chart {
          * @since 2.0
          */
         y?: number;
+        className?: string;
     }
 }
 export default Chart;

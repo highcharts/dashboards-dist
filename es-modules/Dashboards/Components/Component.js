@@ -566,6 +566,8 @@ class Component {
         /**
          * TODO: Should perhaps set an `isActive` flag to false.
          */
+        // Cancel pending resize timeouts e.g chart components.
+        this.resizeTimeouts.forEach(clearTimeout);
         if (this.sync.isSyncing) {
             this.sync.stop();
         }

@@ -21,10 +21,14 @@ export interface FormulaParserError extends Error {
  * * `false` to expect `,` between arguments and `.` in decimals.
  * * `true` to expect `;` between arguments and `,` in decimals.
  *
+ * @param {number} [nestingLevel]
+ * Current nesting level of the parsed formula. Formulas nested deeper than
+ * 256 levels are rejected.
+ *
  * @return {Formula.Formula}
  * Formula array representing the string.
  */
-declare function parseFormula(text: string, alternativeSeparators: boolean): Formula;
+declare function parseFormula(text: string, alternativeSeparators: boolean, nestingLevel?: number): Formula;
 declare const FormulaParser: {
     parseFormula: typeof parseFormula;
 };

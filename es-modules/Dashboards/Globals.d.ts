@@ -21,7 +21,7 @@ export interface EventCallback<T> {
  * Prefix of a GUIElement HTML class name.
  */
 export declare const classNamePrefix = "highcharts-dashboards-";
-export declare const version = "4.2.1";
+export declare const version = "4.2.2";
 /**
  * Contains all Board instances of this window.
  */
@@ -33,7 +33,6 @@ export declare const win: Window & typeof globalThis;
 export declare const doc: Document;
 export declare const noop: () => void;
 export declare const isMS: boolean;
-export declare const supportsPassiveEvents: boolean;
 declare const Globals: {
     boards: (Board | undefined)[];
     classNamePrefix: string;
@@ -51,7 +50,6 @@ declare const Globals: {
     guiElementType: Record<string, GUIElementType>;
     isMS: boolean;
     noop: () => void;
-    supportsPassiveEvents: boolean;
     version: string;
     win: Window & typeof globalThis;
 };

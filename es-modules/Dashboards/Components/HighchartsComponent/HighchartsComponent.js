@@ -386,13 +386,18 @@ class HighchartsComponent extends Component {
      */
     createChart() {
         const charter = HighchartsComponent.charter || Globals.win.Highcharts;
-        if (!this.chartConstructor) {
-            this.chartConstructor = 'chart';
-        }
-        const Factory = charter[this.chartConstructor];
+        const constructorType = this.chartConstructor = [
+            'chart',
+            'stockChart',
+            'mapChart',
+            'ganttChart'
+        ].indexOf(this.chartConstructor) >= 0 ?
+            this.chartConstructor :
+            'chart';
+        const Factory = Object.hasOwnProperty.call(charter, constructorType) && charter[constructorType];
         if (Factory) {
             try {
-                if (this.chartConstructor === 'chart') {
+                if (constructorType === 'chart') {
                     return charter.Chart.chart(this.chartContainer, this.chartOptions);
                 }
                 return new Factory(this.chartContainer, this.chartOptions);

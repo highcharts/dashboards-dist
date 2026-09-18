@@ -240,6 +240,10 @@ class Board {
      *
      * @param newOptions
      * The new options to apply to the dashboard.
+     *
+     * @returns
+     * A promise that resolves with the board instance once all components are
+     * mounted.
      */
     update(newOptions) {
         const board = this;
@@ -295,9 +299,9 @@ class Board {
             }
         }
         // Add new components
-        if (board.options.components) {
-            void board.setComponents(board.options.components);
-        }
+        const componentPromises = board.options.components ?
+            board.setComponents(board.options.components) : [];
+        return Promise.all(componentPromises).then(() => board);
     }
     /**
      * Convert the current state of board's options into JSON. The function does

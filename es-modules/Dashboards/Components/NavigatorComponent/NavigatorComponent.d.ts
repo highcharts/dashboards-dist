@@ -69,6 +69,10 @@ declare class NavigatorComponent extends Component {
     /** @private */
     resize(width?: (number | string | null), height?: (number | string | null)): this;
     /**
+     * Destroys the navigator component.
+     */
+    destroy(): void;
+    /**
      * Handles updating via options.
      *
      * @param options

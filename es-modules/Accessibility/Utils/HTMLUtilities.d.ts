@@ -28,10 +28,16 @@ declare function cloneTouchEvent(e: TouchEvent): TouchEvent;
  */
 declare function escapeStringForHTML(str: string): string;
 /**
- * Get an element by ID
+ * Get the shadow root the element lives in, if any. Lookups in the main
+ * document do not cross a shadow boundary. (#22682)
  * @private
  */
-declare function getElement(id: string): (DOMElementType | null);
+declare function getShadowRoot(el?: DOMElementType): (ShadowRoot | undefined);
+/**
+ * Get an element by ID, from the reference element's shadow root if it has one.
+ * @private
+ */
+declare function getElement(id: string, referenceElement?: DOMElementType): (DOMElementType | null);
 /**
  * Get a fake mouse event of a given type. If relatedTarget is not given,
  * it will point to simulatedEventTarget, as an indicator that the event
@@ -97,6 +103,7 @@ declare const HTMLUtilities: {
     getElement: typeof getElement;
     getFakeMouseEvent: typeof getFakeMouseEvent;
     getHeadingTagNameForElement: typeof getHeadingTagNameForElement;
+    getShadowRoot: typeof getShadowRoot;
     removeChildNodes: typeof removeChildNodes;
     removeClass: typeof removeClass;
     removeElement: typeof removeElement;
