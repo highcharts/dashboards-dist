@@ -21,7 +21,7 @@ export interface EventCallback<T> {
  * Prefix of a GUIElement HTML class name.
  */
 export declare const classNamePrefix = "highcharts-dashboards-";
-export declare const version = "4.2.2";
+export declare const version = "4.2.3";
 /**
  * Contains all Board instances of this window.
  */

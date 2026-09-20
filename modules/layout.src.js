@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards Layout 4.2.2 (2026-09-18)
+ * @license Highcharts Dashboards Layout 4.2.3 (2026-09-20)
  * @module dashboards/modules/layout
  * @requires dashboards
  *
@@ -3937,7 +3937,7 @@ class SidebarPopup extends Shared_BaseForm {
                     });
                 }
             });
-            gridElement.innerHTML = components[i].text;
+            gridElement.textContent = components[i].text;
         }
         return;
     }
@@ -5281,7 +5281,7 @@ class EditMode {
         /**
          * URL from which the icons will be fetched.
          */
-        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.2.2/gfx/dashboards-icons/';
+        this.iconsURLPrefix = 'https://code.highcharts.com/dashboards/4.2.3/gfx/dashboards-icons/';
         this.iconsURLPrefix =
             (options && options.iconsURLPrefix) || this.iconsURLPrefix;
         this.options = (0,dashboards_commonjs_dashboards_commonjs2_dashboards_root_Dashboards_.merge)(

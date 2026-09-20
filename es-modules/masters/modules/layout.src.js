@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Highcharts
 /**
- * @license Highcharts Dashboards Layout 4.2.2 (2026-09-18)
+ * @license Highcharts Dashboards Layout 4.2.3 (2026-09-20)
  * @module dashboards/modules/layout
  * @requires dashboards
  *
